@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+sqlalchemy
+pymysql
+cryptography
+pydantic
+python-dotenv
+python-multipart
+pytesseract
+pillow
+idna

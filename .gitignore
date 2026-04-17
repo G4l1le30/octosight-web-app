@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+venv/
+.env
+
+# Next.js
+.next/
+out/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+.docker-compose.yml.swp
+
+# Local data
+data/mysql_data/

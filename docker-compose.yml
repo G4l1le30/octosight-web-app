@@ -1,0 +1,80 @@
+version: '3.8'
+
+services:
+  # Next.js Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      - backend
+    networks:
+      - octo-network
+
+  # FastAPI Backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - MYSQL_USER=octouser
+      - MYSQL_PASSWORD=octopassword
+      - MYSQL_DATABASE=octosight_db
+      - MYSQL_HOST=db
+      - WHITELIST_PATH=/app/data/whitelist.txt
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - octo-network
+
+  # MySQL Database
+  db:
+    image: mysql:8.0
+    platform: linux/amd64
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: octosight_db
+      MYSQL_USER: octouser
+      MYSQL_PASSWORD: octopassword
+    ports:
+      - "3307:3306"
+    volumes:
+      - octo-db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "octouser", "-poctopassword"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - octo-network
+
+  # phpMyAdmin
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    environment:
+      - PMA_ARBITRARY=1
+      - PMA_HOST=db
+      - PMA_USER=octouser
+      - PMA_PASSWORD=octopassword
+    ports:
+      - "8081:80"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - octo-network
+
+networks:
+  octo-network:
+    driver: bridge
+
+volumes:
+  octo-db-data:

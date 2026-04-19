@@ -29,6 +29,8 @@ class RuleEngine:
         ]
         self.shorteners = ["bit.ly", "s.id", "tinyurl.com", "t.co", "goo.gl"]
         self.suspicious_tlds = [".top", ".xyz", ".link", ".info", ".online", ".site"]
+        self.malicious_extensions = [".apk", ".exe", ".scr", ".bat", ".com"]
+        self.suspicious_attachments = [".pdf", ".doc", ".docx", ".zip", ".rar"]
 
     def _load_whitelist(self, path):
         try:
@@ -66,10 +68,10 @@ class RuleEngine:
                 pass
         return len(scripts) > 1
 
-    def calculate_risk(self, url):
+    def calculate_risk(self, url, attachments=None, sender_numbers=None):
         parsed = urlparse(url)
         # If no scheme (like raw domain input), re-parse with dummy scheme
-        if not parsed.scheme:
+        if not parsed.scheme and url:
             parsed = urlparse(f"http://{url}")
 
         domain = parsed.netloc.lower()
@@ -77,49 +79,63 @@ class RuleEngine:
         score = 0
         flags = []
 
-        # 1. Whitelist Check (Strip 'www.' for broader matching)
-        clean_domain = domain.replace("www.", "")
-        if clean_domain in self.whitelist or domain in self.whitelist:
-            return {"score": 0, "priority": "Low", "flags": ["on_whitelist"]}
+        # 1. Whitelist Check
+        if url:
+            clean_domain = domain.replace("www.", "")
+            if clean_domain in self.whitelist or domain in self.whitelist:
+                return {"score": 0, "priority": "Low", "flags": ["on_whitelist"]}
 
-        # 2. Punycode Check
-        if self._is_punycode(domain):
-            score += 40
-            flags.append("punycode_detected")
+        # 2. URL Checks (only if URL is provided)
+        if url:
+            if self._is_punycode(domain):
+                score += 40
+                flags.append("punycode_detected")
 
-        # 3. Mixed Script Check
-        if self._has_mixed_scripts(domain):
-            score += 30
-            flags.append("mixed_scripts_detected")
+            if self._has_mixed_scripts(domain):
+                score += 30
+                flags.append("mixed_scripts_detected")
 
-        # 4. URL Shortener Check
-        if any(short in domain for short in self.shorteners):
-            score += 20
-            flags.append("url_shortener_detected")
+            if any(short in domain for short in self.shorteners):
+                score += 20
+                flags.append("url_shortener_detected")
 
-        # 5. Suspicious Keywords Check (Cumulative 10 pts per keyword)
-        triggered_keywords = [
-            kw for kw in self.suspicious_keywords if kw in domain or kw in path
-        ]
-        if triggered_keywords:
-            score += len(triggered_keywords) * 10
-            flags.append(f"suspicious_keywords_found: {triggered_keywords}")
+            triggered_keywords = [
+                kw for kw in self.suspicious_keywords if kw in domain or kw in path
+            ]
+            if triggered_keywords:
+                score += len(triggered_keywords) * 10
+                flags.append(f"suspicious_keywords_found: {triggered_keywords}")
 
-        # 6. Brand Impersonation Check (CIMB/Niaga terms not in whitelist)
-        brand_terms = ["cimb", "niaga"]
-        if any(term in domain for term in brand_terms) and domain not in self.whitelist:
-            score += 40
-            flags.append("brand_impersonation_detected")
+            brand_terms = ["cimb", "niaga"]
+            if any(term in domain for term in brand_terms) and domain not in self.whitelist:
+                score += 40
+                flags.append("brand_impersonation_detected")
 
-        # 7. Suspicious TLD Check
-        if any(domain.endswith(tld) for tld in self.suspicious_tlds):
-            score += 30
-            flags.append("suspicious_tld_detected")
+            if any(domain.endswith(tld) for tld in self.suspicious_tlds):
+                score += 30
+                flags.append("suspicious_tld_detected")
 
-        # 8. Non-HTTPS Check
-        if parsed.scheme == "http":
-            score += 15
-            flags.append("non_https_connection")
+            if parsed.scheme == "http":
+                score += 15
+                flags.append("non_https_connection")
+
+        # 9. Attachment Checks
+        if attachments:
+            for filename in attachments:
+                ext = os.path.splitext(filename.lower())[1]
+                if ext in self.malicious_extensions:
+                    score += 60
+                    flags.append(f"malicious_file_detected: {filename}")
+                elif ext in self.suspicious_attachments:
+                    score += 20
+                    flags.append(f"suspicious_attachment_detected: {filename}")
+
+        # 10. Sender Number Checks (Simplified)
+        if sender_numbers:
+            for num in sender_numbers:
+                if len(num) < 10: # Very short numbers are often spoofed/SMS gateways
+                    score += 10
+                    flags.append(f"short_sender_number: {num}")
 
         # Cap score and classify
         score = min(score, 100)

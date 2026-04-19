@@ -16,7 +16,7 @@ export default function StatusPage() {
     setResult(null);
 
     try {
-      const response = await fetch(`http://localhost:8000/api/v1/tickets/${ticketId}`);
+      const response = await fetch(`http://127.0.0.1:8000/api/v1/tickets/${ticketId}`);
       if (!response.ok) {
         if (response.status === 404) throw new Error("Ticket not found. Please check your ID.");
         throw new Error("Failed to fetch ticket status.");
@@ -75,7 +75,7 @@ export default function StatusPage() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                <div className="space-y-4">
+                <div className="space-y-6">
                   <div>
                     <p className="text-[10px] font-black uppercase text-secondary/40">Automated Risk Score</p>
                     <div className="flex items-center gap-4 mt-1">
@@ -91,9 +91,21 @@ export default function StatusPage() {
                     </div>
                   </div>
                   <div>
-                    <p className="text-[10px] font-black uppercase text-secondary/40">Target URL</p>
-                    <p className="text-sm font-mono break-all opacity-70">{result.url}</p>
+                    <p className="text-[10px] font-black uppercase text-secondary/40">Incident Type</p>
+                    <p className="font-bold">{result.type}</p>
                   </div>
+                  {result.url && (
+                    <div>
+                      <p className="text-[10px] font-black uppercase text-secondary/40">Target URL</p>
+                      <p className="text-sm font-mono break-all opacity-70">{result.url}</p>
+                    </div>
+                  )}
+                  {result.sender_numbers && (
+                    <div>
+                      <p className="text-[10px] font-black uppercase text-secondary/40">Reported Sender</p>
+                      <p className="text-sm font-bold truncate">{result.sender_numbers}</p>
+                    </div>
+                  )}
                 </div>
                 
                 <div className="bg-neutral-page p-6 rounded-xl border border-neutral-border">
@@ -103,14 +115,50 @@ export default function StatusPage() {
                     </svg>
                     Analysis Detail
                   </h3>
-                  <ul className="text-xs space-y-3 font-bold opacity-60">
-                    <li className="flex justify-between"><span>Typosquatting Rules:</span> <span>PROCESSED</span></li>
-                    <li className="flex justify-between"><span>TLD Validation:</span> <span>CHECKED</span></li>
-                    <li className="flex justify-between"><span>Keyword Analysis:</span> <span>ACTIVE</span></li>
-                    <li className="flex justify-between"><span>ML Probability:</span> <span>CALCULATED</span></li>
-                  </ul>
+                  <div className="space-y-4">
+                    <ul className="text-xs space-y-3 font-bold opacity-60">
+                      <li className="flex justify-between"><span>Typosquatting Rules:</span> <span>PROCESSED</span></li>
+                      <li className="flex justify-between"><span>OCR Evidence Analysis:</span> <span>{result.extracted_text ? 'COMPLETE' : 'N/A'}</span></li>
+                      <li className="flex justify-between"><span>Keyword Analysis:</span> <span>ACTIVE</span></li>
+                      <li className="flex justify-between"><span>Malicious Attachment:</span> <span>{result.attachment_names ? 'DETECTED' : 'CLEAN'}</span></li>
+                    </ul>
+                    
+                    {result.attachment_names && (
+                      <div className="pt-4 border-t border-neutral-border/50">
+                        <p className="text-[10px] font-black uppercase text-risk-high mb-2">Caution: Suspicious Files</p>
+                        <div className="text-[9px] font-bold opacity-50 space-y-1">
+                          {result.attachment_names.split(',').map((f, i) => (
+                            <div key={i} className="flex items-center gap-1">
+                              <span className="text-risk-high">⚠️</span> {f}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
+
+              {result.screenshot_paths && (
+                <div className="mb-8">
+                  <p className="text-[10px] font-black uppercase text-secondary/40 mb-4">Evidence Screenshots</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {result.screenshot_paths.split(',').map((path, i) => (
+                      <div key={i} className="bg-neutral-page border border-neutral-border rounded-xl overflow-hidden relative group">
+                        <img 
+                          src={`http://127.0.0.1:8000/uploads/${path}`} 
+                          alt="Screenshot" 
+                          className="w-full h-auto object-contain max-h-[500px] opacity-80 group-hover:opacity-100 transition-all"
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center bg-secondary/10 opacity-0 group-hover:opacity-100 transition-all pointer-events-none">
+                          <span className="text-[8px] font-black uppercase text-white bg-secondary/60 px-2 py-1 rounded">View Only</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-[9px] font-bold opacity-30 mt-2 italic text-center">* Downloads are disabled for security reasons</p>
+                </div>
+              )}
 
               <div className="pt-6 border-t border-neutral-border flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <p className="text-xs font-bold opacity-40 italic">Submitted on {new Date(result.created_at).toLocaleDateString()}</p>

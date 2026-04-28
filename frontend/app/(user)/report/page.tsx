@@ -126,7 +126,7 @@ export default function ReportPage() {
       <div className="card p-8 shadow-md">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <label className="text-sm font-black uppercase tracking-wider text-secondary/60">
+            <label className="text-sm font-bold text-secondary">
               Incident Type
             </label>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -153,7 +153,7 @@ export default function ReportPage() {
           <div className="space-y-2">
             <label
               htmlFor="url"
-              className="text-sm font-black uppercase tracking-wider text-secondary/60"
+              className="text-sm font-bold text-secondary"
             >
               {dynamic.label}
             </label>
@@ -176,7 +176,7 @@ export default function ReportPage() {
             <div className="space-y-2">
               <label
                 htmlFor="senderNumbers"
-                className="text-sm font-black uppercase tracking-wider text-secondary/60"
+                className="text-sm font-bold text-secondary"
               >
                 {dynamic.senderLabel}
               </label>
@@ -190,7 +190,7 @@ export default function ReportPage() {
                   setFormData({ ...formData, senderNumbers: e.target.value })
                 }
               />
-              <p className="text-xs text-secondary-light">
+              <p className="text-sm text-secondary-light">
                 Separate multiple with commas
               </p>
             </div>
@@ -198,7 +198,7 @@ export default function ReportPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-3">
-              <label className="text-sm font-black uppercase tracking-wider text-secondary/60">
+              <label className="text-sm font-bold text-secondary">
                 {dynamic.fileLabel}s
               </label>
               <div className="relative">
@@ -238,7 +238,7 @@ export default function ReportPage() {
                         ? `${screenshots.length} files selected`
                         : "Upload Screenshots"}
                     </p>
-                    <p className="text-xs text-secondary/50">
+                    <p className="text-sm text-secondary/50">
                       PNG, JPG up to 10MB
                     </p>
                   </div>
@@ -247,7 +247,7 @@ export default function ReportPage() {
             </div>
 
             <div className="space-y-3">
-              <label className="text-sm font-black uppercase tracking-wider text-secondary/60">
+              <label className="text-sm font-bold text-secondary">
                 Phishing Attachments
               </label>
               <div className="relative">
@@ -286,7 +286,7 @@ export default function ReportPage() {
                         ? `${attachments.length} files selected`
                         : "Upload Files"}
                     </p>
-                    <p className="text-xs text-secondary/50">
+                    <p className="text-sm text-secondary/50">
                       .apk, .pdf, .zip etc.
                     </p>
                   </div>
@@ -298,7 +298,7 @@ export default function ReportPage() {
           <div className="space-y-2">
             <label
               htmlFor="summary"
-              className="text-sm font-black uppercase tracking-wider text-secondary/60"
+              className="text-sm font-bold text-secondary"
             >
               Brief Summary
             </label>
@@ -348,7 +348,7 @@ export default function ReportPage() {
                 "Analyze & Submit Report"
               )}
             </button>
-            <p className="text-center text-xs opacity-50 mt-4 italic">
+            <p className="text-center text-sm opacity-50 mt-4">
               By submitting, you agree to share this data for security analysis
               purposes.
             </p>

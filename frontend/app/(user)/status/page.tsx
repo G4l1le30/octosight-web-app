@@ -45,9 +45,9 @@ export default function StatusPage() {
           <input 
             type="text" 
             placeholder="Enter Ticket ID (e.g., OCTO-9921)" 
-            className="flex-1 p-4 border-2 border-neutral-border rounded-lg focus:border-primary outline-none transition-all font-mono text-sm uppercase"
+            className="flex-1 p-4 border-2 border-neutral-border rounded-lg focus:border-primary outline-none transition-all font-mono text-base font-bold"
             value={ticketId}
-            onChange={(e) => setTicketId(e.target.value.toUpperCase())}
+            onChange={(e) => setTicketId(e.target.value)}
           />
           <button type="submit" disabled={loading} className="btn-primary px-8 flex items-center gap-2">
             {loading ? "Searching..." : "Track"}

@@ -13,7 +13,7 @@ const Stats: React.FC = () => {
         {statsData.map((stat, index) => (
           <div key={index} className="card p-8">
             <p className="text-primary text-4xl font-black mb-2">{stat.value}</p>
-            <p className="font-semibold opacity-60">{stat.label}</p>
+            <p className="font-bold opacity-60">{stat.label}</p>
           </div>
         ))}
       </div>

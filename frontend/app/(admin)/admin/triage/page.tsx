@@ -24,10 +24,7 @@ export default function TriagePage() {
   const fetchTickets = useCallback(async () => {
     setLoading(true);
     try {
-      const ADMIN_AUTH = btoa("admin:admin1234");
-      const response = await fetch("/api/v1/tickets", {
-        headers: { "Authorization": `Basic ${ADMIN_AUTH}` }
-      });
+      const response = await fetch("/api/v1/tickets");
       
       const contentType = response.headers.get("content-type");
       if (!contentType || !contentType.includes("application/json")) {
@@ -98,8 +95,8 @@ export default function TriagePage() {
     <div className="container mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-black mb-1">Triage Management</h1>
-          <p className="text-secondary-light font-medium">Advanced search and multi-factor threat filtering.</p>
+          <h1 className="text-3xl font-black mb-1 text-secondary">Triage Management</h1>
+          <p className="text-secondary font-normal opacity-70">Advanced search and multi-factor threat filtering.</p>
         </div>
         <div className="flex items-center gap-4">
           <button onClick={fetchTickets} className="text-xs font-bold text-secondary hover:text-primary flex items-center gap-2 bg-white px-4 py-2 rounded-lg border border-neutral-border shadow-sm transition-all">
@@ -108,7 +105,7 @@ export default function TriagePage() {
             </svg>
             Refresh Data
           </button>
-          <Link href="/admin" className="text-sm font-black text-primary hover:underline px-4">← Dashboard</Link>
+          <Link href="/admin" className="text-base font-bold text-primary hover:underline px-4">← Dashboard</Link>
         </div>
       </div>
 
@@ -122,14 +119,14 @@ export default function TriagePage() {
       <div className="card p-6 mb-8 bg-white border-primary/10 border-t-4 shadow-xl">
         <div className="flex items-center gap-2 mb-6 border-b border-neutral-border pb-4">
           <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 8.293A1 1 0 013 7.586V4z"></path></svg>
-          <h2 className="font-black uppercase tracking-widest text-sm">Advanced Search Filters</h2>
+          <h2 className="font-bold text-sm text-secondary">Advanced Search Filters</h2>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6">
           <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase opacity-40">Priority</label>
+            <label className="text-sm font-bold text-secondary">Priority</label>
             <select 
-              className="w-full p-2 bg-neutral-page border border-neutral-border rounded font-bold text-xs outline-none focus:border-primary"
+              className="w-full p-2 bg-neutral-page border border-neutral-border rounded font-bold text-sm outline-none focus:border-primary"
               value={filters.priority}
               onChange={(e) => setFilters({...filters, priority: e.target.value})}
             >
@@ -141,9 +138,9 @@ export default function TriagePage() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase opacity-40">Ticket Status</label>
+            <label className="text-sm font-bold text-secondary">Ticket Status</label>
             <select 
-              className="w-full p-2 bg-neutral-page border border-neutral-border rounded font-bold text-xs outline-none focus:border-primary"
+              className="w-full p-2 bg-neutral-page border border-neutral-border rounded font-bold text-sm outline-none focus:border-primary"
               value={filters.status}
               onChange={(e) => setFilters({...filters, status: e.target.value})}
             >
@@ -157,9 +154,9 @@ export default function TriagePage() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase opacity-40">Channel</label>
+            <label className="text-sm font-bold text-secondary">Channel</label>
             <select 
-              className="w-full p-2 bg-neutral-page border border-neutral-border rounded font-bold text-xs outline-none focus:border-primary"
+              className="w-full p-2 bg-neutral-page border border-neutral-border rounded font-bold text-sm outline-none focus:border-primary"
               value={filters.type}
               onChange={(e) => setFilters({...filters, type: e.target.value})}
             >
@@ -172,9 +169,9 @@ export default function TriagePage() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase opacity-40">Detection Flag</label>
+            <label className="text-sm font-bold text-secondary">Detection Flag</label>
             <select 
-              className="w-full p-2 bg-neutral-page border border-neutral-border rounded font-bold text-xs outline-none focus:border-primary"
+              className="w-full p-2 bg-neutral-page border border-neutral-border rounded font-bold text-sm outline-none focus:border-primary"
               value={filters.flag}
               onChange={(e) => setFilters({...filters, flag: e.target.value})}
             >
@@ -186,20 +183,20 @@ export default function TriagePage() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase opacity-40">From Date</label>
+            <label className="text-sm font-bold text-secondary">From Date</label>
             <input 
               type="date" 
-              className="w-full p-1.5 bg-neutral-page border border-neutral-border rounded font-bold text-[10px] outline-none focus:border-primary"
+              className="w-full p-1.5 bg-neutral-page border border-neutral-border rounded font-bold text-xs outline-none focus:border-primary"
               value={filters.startDate}
               onChange={(e) => setFilters({...filters, startDate: e.target.value})}
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase opacity-40">To Date</label>
+            <label className="text-sm font-bold text-secondary">To Date</label>
             <input 
               type="date" 
-              className="w-full p-1.5 bg-neutral-page border border-neutral-border rounded font-bold text-[10px] outline-none focus:border-primary"
+              className="w-full p-1.5 bg-neutral-page border border-neutral-border rounded font-bold text-xs outline-none focus:border-primary"
               value={filters.endDate}
               onChange={(e) => setFilters({...filters, endDate: e.target.value})}
             />
@@ -207,12 +204,12 @@ export default function TriagePage() {
         </div>
 
         <div className="mt-6 pt-4 border-t border-dashed border-neutral-border flex items-center justify-between">
-          <p className="text-[10px] font-bold opacity-40 italic">
+          <p className="text-xs font-bold opacity-40">
             Found <span className="text-secondary opacity-100">{filteredTickets.length}</span> matching reports out of {tickets.length} total
           </p>
           <button 
             onClick={resetFilters}
-            className="text-[10px] font-black uppercase text-risk-high hover:bg-risk-high/5 px-3 py-1 rounded transition-all underline underline-offset-4"
+            className="text-xs font-bold text-risk-high hover:bg-risk-high/5 px-3 py-1 rounded transition-all underline underline-offset-4"
           >
             Clear All Filters
           </button>
@@ -222,14 +219,14 @@ export default function TriagePage() {
       <div className="card shadow-md overflow-hidden">
         <div className="overflow-x-auto">
           {loading ? (
-            <div className="py-20 text-center opacity-40 font-bold italic">Loading live triage data...</div>
+            <div className="py-20 text-center opacity-40 font-bold">Loading live triage data...</div>
           ) : (
             <table className="w-full text-left">
-              <thead className="bg-white text-xs uppercase font-black text-secondary/40 border-b border-neutral-border">
+              <thead className="bg-neutral-page text-sm font-bold text-secondary border-b border-neutral-border">
                 <tr>
                   <th className="px-6 py-4">Ticket</th>
                   <th className="px-6 py-4">Target URL / Info</th>
-                  <th className="px-6 py-4">Score</th>
+                  <th className="px-6 py-4">Risk Score</th>
                   <th className="px-6 py-4">Status</th>
                   <th className="px-6 py-4 text-right">Actions</th>
                 </tr>
@@ -237,26 +234,26 @@ export default function TriagePage() {
               <tbody className="divide-y divide-neutral-border">
                 {filteredTickets.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-6 py-10 text-center opacity-40 italic">No tickets found for this filter.</td>
+                    <td colSpan={5} className="px-6 py-10 text-center opacity-40">No tickets found for this filter.</td>
                   </tr>
                 ) : (
                   filteredTickets.map((ticket) => (
                     <tr key={ticket.id} className="hover:bg-neutral-page/50 transition-colors group">
                       <td className="px-6 py-5">
                         <div className="flex flex-col">
-                          <span className="font-black text-sm">{ticket.ticket_id}</span>
-                          <span className="text-[10px] opacity-40 font-bold">{new Date(ticket.created_at).toLocaleString()}</span>
+                          <span className="font-bold text-base text-secondary">{ticket.ticket_id}</span>
+                          <span className="text-xs opacity-70 font-normal text-secondary">{new Date(ticket.created_at).toLocaleString()}</span>
                         </div>
                       </td>
                       <td className="px-6 py-5">
-                        <div className="flex flex-col max-w-md">
-                          <span className="text-xs font-black uppercase text-secondary/40 mb-1">{ticket.type}</span>
-                          <span className="text-sm font-mono truncate opacity-80" title={ticket.url || ""}>{ticket.url}</span>
+                        <div className="flex flex-col max-md">
+                          <span className="text-xs font-bold text-secondary opacity-60 mb-1">{ticket.type}</span>
+                          <span className="text-sm font-normal text-secondary break-all line-clamp-1" title={ticket.url || ""}>{ticket.url}</span>
                         </div>
                       </td>
                       <td className="px-6 py-5">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg flex items-center justify-center font-black text-sm" style={{
+                          <div className="w-10 h-10 rounded-lg flex items-center justify-center font-bold text-sm" style={{
                             backgroundColor: ticket.risk_score > 70 ? '#e31e2415' : ticket.risk_score > 30 ? '#f9731615' : '#00a65115',
                             color: ticket.risk_score > 70 ? '#e31e24' : ticket.risk_score > 30 ? '#f97316' : '#00a651'
                           }}>
@@ -271,7 +268,7 @@ export default function TriagePage() {
                         </div>
                       </td>
                       <td className="px-6 py-5">
-                        <span className={`text-[10px] font-black px-2 py-1 rounded-md uppercase ${
+                        <span className={`text-xs font-bold px-2 py-1 rounded-md ${
                           ticket.status === 'Mitigated' || ticket.status === 'Closed' ? 'bg-neutral-border text-secondary/40' : 'bg-primary/10 text-primary'
                         }`}>
                           {ticket.status}
@@ -280,7 +277,7 @@ export default function TriagePage() {
                       <td className="px-6 py-5 text-right">
                         <Link 
                           href={`/admin/investigate/${ticket.ticket_id}`}
-                          className="text-xs font-black text-secondary hover:text-primary transition-colors bg-white border border-neutral-border px-3 py-1.5 rounded-lg shadow-sm"
+                          className="text-xs font-bold text-secondary hover:text-primary transition-colors bg-white border border-neutral-border px-4 py-2 rounded-xl shadow-sm"
                         >
                           Investigate
                         </Link>

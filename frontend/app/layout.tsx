@@ -1,7 +1,7 @@
 import "./globals.css";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
 import { Metadata } from "next";
+import { GeistSans } from 'geist/font/sans';
+import { AuthProvider } from "@/lib/auth-context";
 
 export const metadata: Metadata = {
   title: "OctoSight - Phishing Detection & Mitigation",
@@ -15,12 +15,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="font-sans antialiased text-secondary bg-neutral-page">
-        <Navbar />
-        <main className="min-h-[calc(100vh-4rem-4rem)]">
-          {children}
-        </main>
-        <Footer />
+      <body className={`${GeistSans.className} antialiased text-secondary bg-neutral-page`}>
+        <AuthProvider>
+          <main>
+            {children}
+          </main>
+        </AuthProvider>
       </body>
     </html>
   );

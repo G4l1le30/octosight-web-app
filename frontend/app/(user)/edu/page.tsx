@@ -15,13 +15,13 @@ const EduModuleCard: React.FC<{ mod: Module }> = ({ mod }) => (
       </svg>
     </div>
     <div className="p-6">
-      <span className="text-[10px] font-black uppercase text-primary mb-2 inline-block tracking-widest">{mod.category}</span>
-      <h3 className="font-black mb-4 leading-tight">{mod.title}</h3>
-      <div className="flex items-center justify-between text-[10px] font-bold opacity-40">
+      <span className="text-sm font-bold text-primary mb-2 inline-block tracking-wide">{mod.category}</span>
+      <h3 className="font-bold mb-4 leading-tight">{mod.title}</h3>
+      <div className="flex items-center justify-between text-[10px] font-normal text-secondary/50">
         <span>{mod.duration}</span>
-        <span className="flex items-center gap-1">
+        <span className="flex items-center gap-1 text-primary/80">
           Start Module
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-2.5 w-2.5" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
           </svg>
         </span>
@@ -47,10 +47,10 @@ export default function EducationPage() {
         </div>
         <div className="bg-primary/5 p-4 rounded-xl border border-primary/10 flex items-center gap-4">
           <div className="text-right">
-            <p className="text-[10px] font-black uppercase opacity-40">Your Progress</p>
-            <p className="text-xl font-black text-primary">0 / 4 Modules</p>
+            <p className="text-sm font-bold text-secondary">Your Progress</p>
+            <p className="text-xl font-bold text-primary">0 / 4 Modules</p>
           </div>
-          <div className="w-12 h-12 rounded-full border-4 border-primary/20 flex items-center justify-center text-xs font-black text-primary">0%</div>
+          <div className="w-12 h-12 rounded-full border-4 border-primary/20 flex items-center justify-center text-base font-bold text-primary">0%</div>
         </div>
       </div>
 
@@ -64,7 +64,7 @@ export default function EducationPage() {
         <div className="relative z-10 max-w-xl">
           <h2 className="text-3xl font-black mb-4">Protect Your Account</h2>
           <p className="opacity-70 mb-8">Take the Security Quiz to test your knowledge and receive a personalized security recommendation from our engine.</p>
-          <button className="bg-primary hover:bg-primary-dark text-white font-black px-8 py-3 rounded-lg transition-colors">Take the Quiz</button>
+          <button className="bg-primary hover:bg-primary-dark text-white font-bold px-8 py-3 rounded-lg transition-colors">Take the Quiz</button>
         </div>
         <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full blur-3xl -mr-32 -mt-32"></div>
       </div>

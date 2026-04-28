@@ -11,8 +11,8 @@ const FeatureCard: React.FC<FeatureProps> = ({ icon, title, description }) => (
     <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center text-primary">
       {icon}
     </div>
-    <h3 className="font-black text-xl">{title}</h3>
-    <p className="text-sm opacity-70">{description}</p>
+    <h3 className="font-bold text-xl">{title}</h3>
+    <p className="text-base opacity-70">{description}</p>
   </div>
 );
 

@@ -21,7 +21,7 @@ const ReportSuccess: React.FC<ReportSuccessProps> = ({ ticketData, onReset }) =>
           Thank you for your report. Your Ticket ID is <span className="font-bold text-secondary">{ticketData.ticket_id}</span>.
         </p>
         <div className="bg-neutral-page p-4 rounded-lg mb-8 inline-block">
-          <p className="text-xs font-black uppercase opacity-40 mb-1">Initial Risk Score</p>
+          <p className="text-xs font-bold opacity-40 mb-1">Initial Risk Score</p>
           <p className={`text-2xl font-black ${ticketData.risk_score > 70 ? 'text-risk-high' : 'text-risk-medium'}`}>
             {ticketData.risk_score} / 100
           </p>

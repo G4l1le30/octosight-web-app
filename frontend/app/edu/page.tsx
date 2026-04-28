@@ -1,7 +1,37 @@
-import Link from "next/link";
+import React from "react";
+
+interface Module {
+  title: string;
+  duration: string;
+  category: string;
+}
+
+const EduModuleCard: React.FC<{ mod: Module }> = ({ mod }) => (
+  <div className="card group cursor-pointer hover:border-primary transition-all">
+    <div className="aspect-video bg-neutral-page flex items-center justify-center group-hover:bg-primary/5 transition-colors">
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 opacity-20 group-hover:opacity-100 group-hover:text-primary transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    </div>
+    <div className="p-6">
+      <span className="text-[10px] font-black uppercase text-primary mb-2 inline-block tracking-widest">{mod.category}</span>
+      <h3 className="font-black mb-4 leading-tight">{mod.title}</h3>
+      <div className="flex items-center justify-between text-[10px] font-bold opacity-40">
+        <span>{mod.duration}</span>
+        <span className="flex items-center gap-1">
+          Start Module
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
+          </svg>
+        </span>
+      </div>
+    </div>
+  </div>
+);
 
 export default function EducationPage() {
-  const modules = [
+  const modules: Module[] = [
     { title: "Spotting Typosquatting", duration: "2 min", category: "Basics" },
     { title: "The Danger of SMS Phishing", duration: "3 min", category: "Mobile" },
     { title: "How MFA Protects You", duration: "2 min", category: "Security" },
@@ -26,27 +56,7 @@ export default function EducationPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {modules.map((mod, idx) => (
-          <div key={idx} className="card group cursor-pointer hover:border-primary transition-all">
-            <div className="aspect-video bg-neutral-page flex items-center justify-center group-hover:bg-primary/5 transition-colors">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 opacity-20 group-hover:opacity-100 group-hover:text-primary transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <div className="p-6">
-              <span className="text-[10px] font-black uppercase text-primary mb-2 inline-block tracking-widest">{mod.category}</span>
-              <h3 className="font-black mb-4 leading-tight">{mod.title}</h3>
-              <div className="flex items-center justify-between text-[10px] font-bold opacity-40">
-                <span>{mod.duration}</span>
-                <span className="flex items-center gap-1">
-                  Start Module
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
-                  </svg>
-                </span>
-              </div>
-            </div>
-          </div>
+          <EduModuleCard key={idx} mod={mod} />
         ))}
       </div>
 

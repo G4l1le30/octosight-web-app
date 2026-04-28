@@ -1,10 +1,12 @@
 "use client";
-import { useState, useEffect, use } from "react";
-import Link from "next/link";
 
-export default function InvestigatePage({ params }) {
+import { useState, useEffect, use, useCallback, useMemo } from "react";
+import Link from "next/link";
+import { Ticket } from "@/types/ticket";
+
+export default function InvestigatePage({ params }: { params: Promise<{ id: string }> }) {
   const { id: ticketId } = use(params);
-  const [ticket, setTicket] = useState(null);
+  const [ticket, setTicket] = useState<Ticket | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [notes, setNotes] = useState("");
@@ -16,13 +18,30 @@ export default function InvestigatePage({ params }) {
   const [selectedFile, setSelectedFile] = useState("");
   const [downloadError, setDownloadError] = useState("");
 
+  const ADMIN_AUTH = useMemo(() => btoa("admin:admin1234"), []);
+
+  const fetchTicket = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/v1/tickets/${ticketId}`, {
+        headers: { "Authorization": `Basic ${ADMIN_AUTH}` }
+      });
+      if (!res.ok) throw new Error("Ticket not found");
+      const data = await res.json();
+      setTicket(data);
+      setNotes(data.investigation_notes || "");
+      setStatus(data.status);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }, [ticketId, ADMIN_AUTH]);
+
   useEffect(() => {
     fetchTicket();
-  }, [ticketId]);
+  }, [fetchTicket]);
 
-  const ADMIN_AUTH = btoa("admin:admin1234");
-
-  const openDownloadModal = (filename) => {
+  const openDownloadModal = (filename: string) => {
     setSelectedFile(filename);
     setShowDownloadModal(true);
     setDownloadPassword("");
@@ -32,7 +51,7 @@ export default function InvestigatePage({ params }) {
   const handleConfirmDownload = async () => {
     if (downloadPassword === "admin1234") {
       try {
-        const res = await fetch(`http://127.0.0.1:8000/api/v1/admin/download/${selectedFile}`, {
+        const res = await fetch(`/api/v1/admin/download/${selectedFile}`, {
           headers: { "Authorization": `Basic ${ADMIN_AUTH}` }
         });
         
@@ -41,9 +60,7 @@ export default function InvestigatePage({ params }) {
           return;
         }
         
-        // Directly get as blob (file) to avoid "Body already consumed" error
         const blob = await res.blob();
-        
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -51,7 +68,6 @@ export default function InvestigatePage({ params }) {
         document.body.appendChild(a);
         a.click();
         
-        // Cleanup
         setTimeout(() => {
           window.URL.revokeObjectURL(url);
           document.body.removeChild(a);
@@ -68,27 +84,10 @@ export default function InvestigatePage({ params }) {
     }
   };
 
-  const fetchTicket = async () => {
-    try {
-      const res = await fetch(`http://127.0.0.1:8000/api/v1/tickets/${ticketId}`, {
-        headers: { "Authorization": `Basic ${ADMIN_AUTH}` }
-      });
-      if (!res.ok) throw new Error("Ticket not found");
-      const data = await res.json();
-      setTicket(data);
-      setNotes(data.investigation_notes || "");
-      setStatus(data.status);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleUpdate = async () => {
     setSaving(true);
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/v1/tickets/${ticketId}`, {
+      const res = await fetch(`/api/v1/tickets/${ticketId}`, {
         method: "PATCH",
         headers: { 
           "Content-Type": "application/json",
@@ -199,7 +198,7 @@ export default function InvestigatePage({ params }) {
                   <span className="text-[10px] font-black uppercase opacity-40 block mb-2">Sender Info</span>
                   <div className="flex flex-wrap gap-2">
                     {ticket.sender_numbers.split(',').map((num, i) => (
-                      <span key={i} className="bg-neutral-page border border-neutral-border px-3 py-1 rounded-md font-bold text-xs">{num.strip?.() || num}</span>
+                      <span key={i} className="bg-neutral-page border border-neutral-border px-3 py-1 rounded-md font-bold text-xs">{num.trim()}</span>
                     ))}
                   </div>
                 </div>
@@ -208,7 +207,7 @@ export default function InvestigatePage({ params }) {
               <div>
                 <span className="text-[10px] font-black uppercase opacity-40 block mb-2">User Summary</span>
                 <div className="bg-neutral-page p-4 rounded-xl border border-neutral-border text-sm italic opacity-70">
-                  "{ticket.summary || "No summary provided."}"
+                  &quot;{ticket.summary || "No summary provided."}&quot;
                 </div>
               </div>
 
@@ -218,6 +217,7 @@ export default function InvestigatePage({ params }) {
                   <div className="grid grid-cols-1 gap-6">
                     {ticket.screenshot_paths.split(',').map((path, i) => (
                       <div key={i} className="group relative rounded-xl overflow-hidden border border-neutral-border bg-black/5 flex justify-center">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img 
                           src={`http://127.0.0.1:8000/uploads/${path}`} 
                           alt="Evidence" 

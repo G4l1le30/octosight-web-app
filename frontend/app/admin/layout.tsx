@@ -1,7 +1,10 @@
 "use client";
-import { useState, useEffect } from "react";
 
-export default function AdminLayout({ children }) {
+import Link from "next/link";
+import { useState, useEffect } from "react";
+import React from "react";
+
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -15,7 +18,7 @@ export default function AdminLayout({ children }) {
     }
   }, []);
 
-  const handleLogin = (e) => {
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     const token = btoa(`${username}:${password}`);
     if (username === "admin" && password === "admin1234") {
@@ -29,7 +32,7 @@ export default function AdminLayout({ children }) {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-secondary flex items-center justify-center px-4">
+      <div className="min-h-screen bg-neutral-page flex items-center justify-center px-4">
         <div className="max-w-md w-full bg-white rounded-2xl shadow-2xl p-10">
           <div className="text-center mb-10">
             <div className="w-16 h-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-4">
@@ -73,7 +76,7 @@ export default function AdminLayout({ children }) {
           </form>
           
           <div className="mt-8 text-center">
-            <a href="/" className="text-xs font-bold text-secondary/40 hover:text-primary transition-colors">← Return to Public Site</a>
+            <Link href="/" className="text-xs font-bold text-secondary/40 hover:text-primary transition-colors">← Return to Public Site</Link>
           </div>
         </div>
       </div>
@@ -82,17 +85,17 @@ export default function AdminLayout({ children }) {
 
   return (
     <div className="min-h-screen bg-neutral-page">
-      <nav className="bg-secondary text-white py-4 px-8 flex items-center justify-between sticky top-0 z-50">
+      <nav className="bg-white border-b border-neutral-border py-4 px-8 flex items-center justify-between sticky top-0 z-50">
         <div className="flex items-center gap-4">
-          <div className="bg-primary px-3 py-1 rounded font-black text-sm tracking-tighter">OCTO</div>
-          <span className="font-bold text-xs uppercase tracking-widest opacity-60">Admin Dashboard</span>
+          <div className="bg-primary px-3 py-1 rounded font-black text-sm tracking-tighter text-white">OCTO</div>
+          <span className="font-bold text-xs uppercase tracking-widest opacity-60 text-secondary">Admin Dashboard</span>
         </div>
         <button 
           onClick={() => {
             sessionStorage.removeItem("admin_auth");
             window.location.reload();
           }}
-          className="text-xs font-black hover:text-primary transition-colors uppercase"
+          className="text-xs font-black text-secondary hover:text-primary transition-colors uppercase"
         >
           Logout
         </button>

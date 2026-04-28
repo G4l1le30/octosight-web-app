@@ -1,9 +1,11 @@
 "use client";
-import { useState, useEffect } from "react";
+
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import { Ticket } from "@/types/ticket";
 
 export default function TriagePage() {
-  const [tickets, setTickets] = useState([]);
+  const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   
@@ -17,27 +19,30 @@ export default function TriagePage() {
     endDate: ''
   });
 
-  const [availableFlags, setAvailableFlags] = useState([]);
+  const [availableFlags, setAvailableFlags] = useState<string[]>([]);
 
-  useEffect(() => {
-    fetchTickets();
-  }, []);
-
-  const ADMIN_AUTH = btoa("admin:admin1234");
-
-  const fetchTickets = async () => {
+  const fetchTickets = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/v1/tickets", {
+      const ADMIN_AUTH = btoa("admin:admin1234");
+      const response = await fetch("/api/v1/tickets", {
         headers: { "Authorization": `Basic ${ADMIN_AUTH}` }
       });
+      
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        const text = await response.text();
+        console.error("Non-JSON response received:", text);
+        throw new Error(`Server Error (${response.status}): ${text.substring(0, 50)}...`);
+      }
+
       if (!response.ok) throw new Error("Failed to fetch tickets");
       const data = await response.json();
       setTickets(data);
       
       // Extract unique flags
-      const flags = new Set();
-      data.forEach(t => {
+      const flags = new Set<string>();
+      data.forEach((t: Ticket) => {
         if (t.flags) {
           t.flags.split(',').forEach(f => {
             if (f.trim()) flags.add(f.trim());
@@ -45,12 +50,16 @@ export default function TriagePage() {
         }
       });
       setAvailableFlags(Array.from(flags));
-    } catch (err) {
+    } catch (err: any) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchTickets();
+  }, [fetchTickets]);
 
   const filteredTickets = tickets.filter(t => {
     const matchPriority = filters.priority === 'All' || t.priority === filters.priority;
@@ -228,7 +237,7 @@ export default function TriagePage() {
               <tbody className="divide-y divide-neutral-border">
                 {filteredTickets.length === 0 ? (
                   <tr>
-                    <td colSpan="5" className="px-6 py-10 text-center opacity-40 italic">No tickets found for this filter.</td>
+                    <td colSpan={5} className="px-6 py-10 text-center opacity-40 italic">No tickets found for this filter.</td>
                   </tr>
                 ) : (
                   filteredTickets.map((ticket) => (
@@ -242,7 +251,7 @@ export default function TriagePage() {
                       <td className="px-6 py-5">
                         <div className="flex flex-col max-w-md">
                           <span className="text-xs font-black uppercase text-secondary/40 mb-1">{ticket.type}</span>
-                          <span className="text-sm font-mono truncate opacity-80" title={ticket.url}>{ticket.url}</span>
+                          <span className="text-sm font-mono truncate opacity-80" title={ticket.url || ""}>{ticket.url}</span>
                         </div>
                       </td>
                       <td className="px-6 py-5">
@@ -263,7 +272,7 @@ export default function TriagePage() {
                       </td>
                       <td className="px-6 py-5">
                         <span className={`text-[10px] font-black px-2 py-1 rounded-md uppercase ${
-                          ticket.status === 'Closed' ? 'bg-neutral-border text-secondary/40' : 'bg-primary/10 text-primary'
+                          ticket.status === 'Mitigated' || ticket.status === 'Closed' ? 'bg-neutral-border text-secondary/40' : 'bg-primary/10 text-primary'
                         }`}>
                           {ticket.status}
                         </span>

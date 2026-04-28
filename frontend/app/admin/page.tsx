@@ -1,35 +1,41 @@
 "use client";
-import { useState, useEffect } from "react";
+
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
   Cell, PieChart, Pie
 } from 'recharts';
+import { Ticket, DashboardStats } from "@/types/ticket";
 
 const COLORS = ['#e31e24', '#333333', '#f97316', '#00a651', '#8b5cf6'];
 
 export default function AdminDashboard() {
-  const [tickets, setTickets] = useState([]);
+  const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({
+  const [stats, setStats] = useState<DashboardStats>({
     total: 0,
-    avgScore: 0,
+    avgScore: "0",
     highRisk: 0,
     typeDist: [],
     trendData: [],
     flagDist: []
   });
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
-
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     try {
       const ADMIN_AUTH = btoa("admin:admin1234");
-      const response = await fetch("http://127.0.0.1:8000/api/v1/tickets", {
+      const response = await fetch("/api/v1/tickets", {
         headers: { "Authorization": `Basic ${ADMIN_AUTH}` }
       });
+      
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        const text = await response.text();
+        console.error("Non-JSON response received:", text);
+        throw new Error(`Server returned an error (${response.status})`);
+      }
+
       const data = await response.json();
       setTickets(data);
       calculateStats(data);
@@ -38,9 +44,13 @@ export default function AdminDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const calculateStats = (data) => {
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
+
+  const calculateStats = (data: Ticket[]) => {
     if (!data.length) return;
 
     const total = data.length;
@@ -48,8 +58,8 @@ export default function AdminDashboard() {
     const highRisk = data.filter(t => t.risk_score > 70).length;
 
     // Type Distribution
-    const types = {};
-    const flags = {};
+    const types: Record<string, number> = {};
+    const flags: Record<string, number> = {};
     
     data.forEach(t => {
       // Channel Distribution
@@ -71,7 +81,7 @@ export default function AdminDashboard() {
 
     // Simple Trend (by date)
     const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    const trend = {};
+    const trend: Record<string, number> = {};
     // Init last 7 days
     for(let i=6; i>=0; i--) {
       const d = new Date();
@@ -156,7 +166,7 @@ export default function AdminDashboard() {
                       paddingAngle={5}
                       dataKey="value"
                     >
-                      {stats.typeDist.map((entry, index) => (
+                      {stats.typeDist.map((_, index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>

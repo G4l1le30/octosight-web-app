@@ -15,6 +15,7 @@ import {
   Pie,
 } from "recharts";
 import { Ticket, DashboardStats } from "@/types/ticket";
+import { ThreatTable } from "@/components/admin/ThreatTable";
 
 const COLORS = ["#e31e24", "#333333", "#f97316", "#00a651", "#8b5cf6"];
 
@@ -42,8 +43,11 @@ export default function AdminDashboard() {
       }
 
       const data = await response.json();
-      setTickets(data);
-      calculateStats(data);
+      const sorted = data.sort((a: Ticket, b: Ticket) => 
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+      setTickets(sorted);
+      calculateStats(sorted);
     } catch (err) {
       console.error("Dashboard Fetch Error:", err);
     } finally {
@@ -325,69 +329,10 @@ export default function AdminDashboard() {
               See Full Triage →
             </Link>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead className="bg-neutral-page text-sm font-bold text-secondary border-b border-neutral-border">
-                <tr>
-                  <th className="px-8 py-4">Source</th>
-                  <th className="px-8 py-4">Incident Info</th>
-                  <th className="px-8 py-4 text-center">Risk</th>
-                  <th className="px-8 py-4 text-right">Activity</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-neutral-border bg-white">
-                {tickets.slice(0, 5).map((ticket, idx) => (
-                  <tr
-                    key={idx}
-                    className="hover:bg-neutral-page/50 transition-colors"
-                  >
-                    <td className="px-8 py-5">
-                      <span
-                        className={`text-xs font-bold px-2 py-1 rounded border ${
-                          ticket.type === "WhatsApp"
-                            ? "border-risk-low text-risk-low"
-                            : ticket.type === "Email"
-                              ? "border-secondary text-secondary"
-                              : "border-primary text-primary"
-                        }`}
-                      >
-                        {ticket.type}
-                      </span>
-                    </td>
-                    <td className="px-8 py-5">
-                      <div className="flex flex-col max-w-xs">
-                        <span className="text-sm font-bold truncate opacity-80">
-                          {ticket.url || "No URL provided"}
-                        </span>
-                        <span className="text-sm opacity-60 font-normal truncate">
-                          {ticket.sender_numbers || "Unknown Sender"}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-8 py-5 text-center">
-                      <span
-                        className={`text-sm font-bold ${
-                          ticket.risk_score > 70
-                            ? "text-risk-high"
-                            : "text-risk-medium"
-                        }`}
-                      >
-                        {ticket.risk_score}
-                      </span>
-                    </td>
-                    <td className="px-8 py-5 text-right">
-                      <Link
-                        href={`/admin/investigate/${ticket.ticket_id}`}
-                        className="text-sm font-bold bg-secondary text-white px-3 py-1.5 rounded hover:bg-primary transition-all"
-                      >
-                        Details
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <ThreatTable 
+            tickets={tickets.slice(0, 5)}
+            loading={loading}
+          />
         </div>
       </div>
     </div>

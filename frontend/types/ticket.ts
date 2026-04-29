@@ -17,18 +17,18 @@ export interface Ticket {
   attachment_paths: string | null;
   extracted_text: string | null;
   flags: string | null;
+  analysis_results: string | null;
   admin_notes: string | null;
   investigation_notes: string | null;
   created_at: string;
   updated_at: string;
 }
 
-export interface ReportFormData {
-  type: IncidentType;
-  url: string;
-  summary: string;
-  senderNumbers: string;
-}
+export type ReportFormData =
+  | { type: "Website"; url: string; summary: string; senderNumbers?: string; incidentDate: string }
+  | { type: "SMS"; url: string; summary: string; senderNumbers: string; incidentDate: string }
+  | { type: "WhatsApp"; url: string; summary: string; senderNumbers: string; incidentDate: string }
+  | { type: "Email"; url?: string; summary: string; senderNumbers: string; incidentDate: string };
 
 export interface DashboardStats {
   total: number;

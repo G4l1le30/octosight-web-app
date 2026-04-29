@@ -3,6 +3,11 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { Ticket } from "@/types/ticket";
+import { ChevronLeft, RefreshCw } from "lucide-react";
+import { Select } from "@/components/ui/Select";
+import { DatePicker } from "@/components/ui/DatePicker";
+import { SearchBar } from "@/components/ui/SearchBar";
+import { ThreatTable } from "@/components/admin/ThreatTable";
 
 export default function TriagePage() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
@@ -19,6 +24,7 @@ export default function TriagePage() {
     endDate: ''
   });
 
+  const [searchTerm, setSearchTerm] = useState("");
   const [availableFlags, setAvailableFlags] = useState<string[]>([]);
 
   const fetchTickets = useCallback(async () => {
@@ -94,18 +100,22 @@ export default function TriagePage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-black mb-1 text-secondary">Triage Management</h1>
-          <p className="text-secondary font-normal opacity-70">Advanced search and multi-factor threat filtering.</p>
+        <div className="flex items-center gap-4">
+          <Link href="/admin" className="p-2 hover:bg-neutral-border rounded-full transition-all">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+          </Link>
+          <div>
+            <h1 className="text-3xl font-black text-secondary">Triage Management</h1>
+            <p className="text-secondary font-normal opacity-70">Advanced search and multi-factor threat filtering.</p>
+          </div>
         </div>
         <div className="flex items-center gap-4">
           <button onClick={fetchTickets} className="text-xs font-bold text-secondary hover:text-primary flex items-center gap-2 bg-white px-4 py-2 rounded-lg border border-neutral-border shadow-sm transition-all">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
+            <RefreshCw className="h-4 w-4" />
             Refresh Data
           </button>
-          <Link href="/admin" className="text-base font-bold text-primary hover:underline px-4">← Dashboard</Link>
         </div>
       </div>
 
@@ -116,179 +126,111 @@ export default function TriagePage() {
       )}
 
       {/* Advanced Filter Panel */}
-      <div className="card p-6 mb-8 bg-white border-primary/10 border-t-4 shadow-xl">
+      <div className="card p-6 mb-8 bg-white border-primary/10 border-t-4 shadow-xl overflow-visible">
         <div className="flex items-center gap-2 mb-6 border-b border-neutral-border pb-4">
           <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 8.293A1 1 0 013 7.586V4z"></path></svg>
           <h2 className="font-bold text-sm text-secondary">Advanced Search Filters</h2>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6">
-          <div className="space-y-2">
-            <label className="text-sm font-bold text-secondary">Priority</label>
-            <select 
-              className="w-full p-2 bg-neutral-page border border-neutral-border rounded font-bold text-sm outline-none focus:border-primary"
-              value={filters.priority}
-              onChange={(e) => setFilters({...filters, priority: e.target.value})}
-            >
-              <option value="All">All Priority</option>
-              <option value="High">High</option>
-              <option value="Medium">Medium</option>
-              <option value="Low">Low</option>
-            </select>
-          </div>
+          <Select 
+            label="Priority"
+            value={filters.priority}
+            onChange={(e) => setFilters({...filters, priority: e.target.value})}
+            options={[
+              {value: "All", label: "All Priority"},
+              {value: "High", label: "High"},
+              {value: "Medium", label: "Medium"},
+              {value: "Low", label: "Low"}
+            ]}
+          />
 
-          <div className="space-y-2">
-            <label className="text-sm font-bold text-secondary">Ticket Status</label>
-            <select 
-              className="w-full p-2 bg-neutral-page border border-neutral-border rounded font-bold text-sm outline-none focus:border-primary"
-              value={filters.status}
-              onChange={(e) => setFilters({...filters, status: e.target.value})}
-            >
-              <option value="All">All Status</option>
-              <option value="Submitted">Submitted</option>
-              <option value="In Review">In Review</option>
-              <option value="Confirmed">Confirmed</option>
-              <option value="Mitigated">Mitigated</option>
-              <option value="Closed">Closed</option>
-            </select>
-          </div>
+          <Select 
+            label="Ticket Status"
+            value={filters.status}
+            onChange={(e) => setFilters({...filters, status: e.target.value})}
+            options={[
+              {value: "All", label: "All Status"},
+              {value: "Submitted", label: "Submitted"},
+              {value: "In Review", label: "In Review"},
+              {value: "Confirmed", label: "Confirmed"},
+              {value: "Mitigated", label: "Mitigated"},
+              {value: "Closed", label: "Closed"}
+            ]}
+          />
 
-          <div className="space-y-2">
-            <label className="text-sm font-bold text-secondary">Channel</label>
-            <select 
-              className="w-full p-2 bg-neutral-page border border-neutral-border rounded font-bold text-sm outline-none focus:border-primary"
-              value={filters.type}
-              onChange={(e) => setFilters({...filters, type: e.target.value})}
-            >
-              <option value="All">All Channels</option>
-              <option value="Website">Website</option>
-              <option value="SMS">SMS</option>
-              <option value="WhatsApp">WhatsApp</option>
-              <option value="Email">Email</option>
-            </select>
-          </div>
+          <Select 
+            label="Channel"
+            value={filters.type}
+            onChange={(e) => setFilters({...filters, type: e.target.value})}
+            options={[
+              {value: "All", label: "All Channels"},
+              {value: "Website", label: "Website"},
+              {value: "SMS", label: "SMS"},
+              {value: "WhatsApp", label: "WhatsApp"},
+              {value: "Email", label: "Email"}
+            ]}
+          />
 
-          <div className="space-y-2">
-            <label className="text-sm font-bold text-secondary">Detection Flag</label>
-            <select 
-              className="w-full p-2 bg-neutral-page border border-neutral-border rounded font-bold text-sm outline-none focus:border-primary"
-              value={filters.flag}
-              onChange={(e) => setFilters({...filters, flag: e.target.value})}
-            >
-              <option value="All">Any Flag</option>
-              {availableFlags.map(f => (
-                <option key={f} value={f}>{f.replaceAll('_', ' ')}</option>
-              ))}
-            </select>
-          </div>
+          <Select 
+            label="Detection Flag"
+            value={filters.flag}
+            onChange={(e) => setFilters({...filters, flag: e.target.value})}
+            options={[
+              {value: "All", label: "Any Flag"},
+              ...availableFlags.map(f => ({value: f, label: f.replaceAll('_', ' ')}))
+            ]}
+          />
 
-          <div className="space-y-2">
-            <label className="text-sm font-bold text-secondary">From Date</label>
-            <input 
-              type="date" 
-              className="w-full p-1.5 bg-neutral-page border border-neutral-border rounded font-bold text-xs outline-none focus:border-primary"
-              value={filters.startDate}
-              onChange={(e) => setFilters({...filters, startDate: e.target.value})}
-            />
-          </div>
+          <DatePicker 
+            label="From Date"
+            value={filters.startDate}
+            onChange={(val) => setFilters({...filters, startDate: val})}
+            placeholder="Start Date"
+            triggerClassName="py-2 text-sm"
+          />
 
-          <div className="space-y-2">
-            <label className="text-sm font-bold text-secondary">To Date</label>
-            <input 
-              type="date" 
-              className="w-full p-1.5 bg-neutral-page border border-neutral-border rounded font-bold text-xs outline-none focus:border-primary"
-              value={filters.endDate}
-              onChange={(e) => setFilters({...filters, endDate: e.target.value})}
-            />
-          </div>
+          <DatePicker 
+            label="To Date"
+            value={filters.endDate}
+            onChange={(val) => setFilters({...filters, endDate: val})}
+            placeholder="End Date"
+            triggerClassName="py-2 text-sm"
+          />
         </div>
 
         <div className="mt-6 pt-4 border-t border-dashed border-neutral-border flex items-center justify-between">
-          <p className="text-xs font-bold opacity-40">
+          <p className="text-sm font-medium opacity-60">
             Found <span className="text-secondary opacity-100">{filteredTickets.length}</span> matching reports out of {tickets.length} total
           </p>
           <button 
             onClick={resetFilters}
-            className="text-xs font-bold text-risk-high hover:bg-risk-high/5 px-3 py-1 rounded transition-all underline underline-offset-4"
+            className="text-xs font-bold text-risk-high px-3 py-1 rounded transition-all hover:underline hover:underline-offset-4"
           >
             Clear All Filters
           </button>
         </div>
       </div>
 
-      <div className="card shadow-md overflow-hidden">
-        <div className="overflow-x-auto">
-          {loading ? (
-            <div className="py-20 text-center opacity-40 font-bold">Loading live triage data...</div>
-          ) : (
-            <table className="w-full text-left">
-              <thead className="bg-neutral-page text-sm font-bold text-secondary border-b border-neutral-border">
-                <tr>
-                  <th className="px-6 py-4">Ticket</th>
-                  <th className="px-6 py-4">Target URL / Info</th>
-                  <th className="px-6 py-4">Risk Score</th>
-                  <th className="px-6 py-4">Status</th>
-                  <th className="px-6 py-4 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-neutral-border">
-                {filteredTickets.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="px-6 py-10 text-center opacity-40">No tickets found for this filter.</td>
-                  </tr>
-                ) : (
-                  filteredTickets.map((ticket) => (
-                    <tr key={ticket.id} className="hover:bg-neutral-page/50 transition-colors group">
-                      <td className="px-6 py-5">
-                        <div className="flex flex-col">
-                          <span className="font-bold text-base text-secondary">{ticket.ticket_id}</span>
-                          <span className="text-xs opacity-70 font-normal text-secondary">{new Date(ticket.created_at).toLocaleString()}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-5">
-                        <div className="flex flex-col max-md">
-                          <span className="text-xs font-bold text-secondary opacity-60 mb-1">{ticket.type}</span>
-                          <span className="text-sm font-normal text-secondary break-all line-clamp-1" title={ticket.url || ""}>{ticket.url}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-5">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg flex items-center justify-center font-bold text-sm" style={{
-                            backgroundColor: ticket.risk_score > 70 ? '#e31e2415' : ticket.risk_score > 30 ? '#f9731615' : '#00a65115',
-                            color: ticket.risk_score > 70 ? '#e31e24' : ticket.risk_score > 30 ? '#f97316' : '#00a651'
-                          }}>
-                            {ticket.risk_score}
-                          </div>
-                          <div className="h-1.5 w-16 bg-neutral-border rounded-full overflow-hidden hidden md:block">
-                            <div className="h-full rounded-full" style={{
-                              width: `${ticket.risk_score}%`,
-                              backgroundColor: ticket.risk_score > 70 ? '#e31e24' : ticket.risk_score > 30 ? '#f97316' : '#00a651'
-                            }}></div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-5">
-                        <span className={`text-xs font-bold px-2 py-1 rounded-md ${
-                          ticket.status === 'Mitigated' || ticket.status === 'Closed' ? 'bg-neutral-border text-secondary/40' : 'bg-primary/10 text-primary'
-                        }`}>
-                          {ticket.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-5 text-right">
-                        <Link 
-                          href={`/admin/investigate/${ticket.ticket_id}`}
-                          className="text-xs font-bold text-secondary hover:text-primary transition-colors bg-white border border-neutral-border px-4 py-2 rounded-xl shadow-sm"
-                        >
-                          Investigate
-                        </Link>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+      <div className="mb-8">
+        <SearchBar 
+          value={searchTerm}
+          onChange={setSearchTerm}
+          onSearch={(e) => e.preventDefault()}
+          placeholder="Search Ticket ID (e.g., OCTO-9921)..."
+          buttonText="Search"
+          className="max-w-xl"
+        />
+      </div>
+
+      <div className="card shadow-md">
+        <ThreatTable 
+          tickets={filteredTickets.filter(t => 
+            t.ticket_id.toLowerCase().includes(searchTerm.toLowerCase())
           )}
-        </div>
+          loading={loading}
+          emptyMessage="No reports match your filters and search term."
+        />
       </div>
     </div>
   );

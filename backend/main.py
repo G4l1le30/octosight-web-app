@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, Form, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime, Text
+from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime, Text, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.exc import OperationalError
@@ -84,19 +84,21 @@ class Ticket(Base):
     __tablename__ = "tickets"
     id = Column(Integer, primary_key=True, index=True)
     ticket_id = Column(String(50), unique=True, index=True)
-    url = Column(String(255))
+    url = Column(Text)
     type = Column(String(50))
-    summary = Column(String(500))
+    summary = Column(Text)
     risk_score = Column(Float)
     status = Column(String(50), default="Submitted")
     priority = Column(String(50))
-    flags = Column(String(500))
+    flags = Column(Text)
     investigation_notes = Column(Text)
-    sender_numbers = Column(String(500))
+    sender_numbers = Column(Text)
     extracted_text = Column(Text)
-    attachment_names = Column(String(500))
-    attachment_paths = Column(String(1000))
-    screenshot_paths = Column(String(1000))
+    attachment_names = Column(Text)
+    attachment_paths = Column(Text)
+    screenshot_paths = Column(Text)
+    analysis_results = Column(Text) # JSON string of detailed statuses
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
 class User(Base):
@@ -129,6 +131,13 @@ class RegisterRequest(BaseModel):
 class LoginRequest(BaseModel):
     email: str
     password: str
+
+class AnalysisRequest(BaseModel):
+    type: str
+    url: Optional[str] = ""
+    summary: Optional[str] = ""
+    sender_numbers: Optional[str] = ""
+    attachment_names: Optional[List[str]] = []
 
 # ==================== AUTH DEPENDENCIES ====================
 
@@ -301,7 +310,8 @@ async def create_report(
     sender_numbers: str = Form(""),
     screenshots: List[UploadFile] = File(None),
     attachments: List[UploadFile] = File(None),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
 ):
     all_extracted_text = []
     attachment_list = []
@@ -346,15 +356,18 @@ async def create_report(
         attachment_names = ""
         attachment_paths = ""
 
-    # Analyze Risk
-    sender_list = [n.strip() for n in sender_numbers.split(",") if n.strip()]
+    # Sequential Analysis
+    combined_text = "\n---\n".join(all_extracted_text)
+    
+    # Calculate Risk using the upgraded RuleEngine
     analysis = rule_engine.calculate_risk(
         url=url,
         attachments=orig_names if attachments else None,
-        sender_numbers=sender_list
+        sender_numbers=sender_numbers,
+        extracted_text=combined_text
     )
 
-    combined_text = "\n---\n".join(all_extracted_text)
+    import json
     secure_id = f"OCTO-{random.randint(1000, 9999)}-{random.randint(1000, 9999)}-{random.randint(1000, 9999)}"
 
     db_report = Ticket(
@@ -370,12 +383,30 @@ async def create_report(
         risk_score=analysis["score"],
         priority=analysis["priority"],
         flags=",".join(analysis["flags"]),
-        status="Submitted"
+        analysis_results=json.dumps(analysis["details"]),
+        status="Submitted",
+        user_id=current_user.id
     )
     db.add(db_report)
     db.commit()
     db.refresh(db_report)
     return db_report
+
+@app.post("/api/v1/analyze")
+async def analyze_report_preview(
+    data: AnalysisRequest,
+    current_user = Depends(get_current_user)
+):
+    """Calculate risk score based on form data without saving to DB."""
+    print(f"Analyzing preview: {data}")
+    analysis = rule_engine.calculate_risk(
+        url=data.url,
+        attachments=data.attachment_names,
+        sender_numbers=data.sender_numbers,
+        extracted_text=data.summary
+    )
+    print(f"Analysis result: {analysis}")
+    return analysis
 
 @app.get("/api/v1/tickets/{ticket_id}")
 def get_ticket(ticket_id: str, db: Session = Depends(get_db)):
@@ -383,6 +414,11 @@ def get_ticket(ticket_id: str, db: Session = Depends(get_db)):
     ticket = db.query(Ticket).filter(Ticket.ticket_id == ticket_id).first()
     if not ticket: raise HTTPException(status_code=404, detail="Ticket not found")
     return ticket
+
+@app.get("/api/v1/user/tickets")
+def get_user_tickets(db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+    """Get all tickets for the currently logged in user."""
+    return db.query(Ticket).filter(Ticket.user_id == current_user.id).order_by(Ticket.created_at.desc()).all()
 
 # ==================== ADMIN ENDPOINTS (Protected) ====================
 

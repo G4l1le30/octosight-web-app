@@ -22,8 +22,10 @@ export const IncidentSchemas = {
     ...commonFields,
     url: z
       .string()
-      .min(1, "Required: Enter the website link/URL")
-      .regex(/^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/[^\s]*)?$/i, "Invalid format. Example: example.com"),
+      .optional()
+      .refine((val) => !val || /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/[^\s]*)?$/i.test(val), {
+        message: "Invalid format. Example: example.com",
+      }),
     senderNumbers: z
       .string()
       .min(1, "Required: Enter sender number")
@@ -35,8 +37,10 @@ export const IncidentSchemas = {
     ...commonFields,
     url: z
       .string()
-      .min(1, "Required: Enter the website link/URL")
-      .regex(/^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/[^\s]*)?$/i, "Invalid format. Example: example.com"),
+      .optional()
+      .refine((val) => !val || /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/[^\s]*)?$/i.test(val), {
+        message: "Invalid format. Example: example.com",
+      }),
     senderNumbers: z
       .string()
       .min(1, "Required: Enter WhatsApp number")

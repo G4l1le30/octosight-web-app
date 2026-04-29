@@ -317,7 +317,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Recent Alerts Table Preview */}
-        <div className="card overflow-hidden">
+        <div className="mb-8 card overflow-hidden">
           <div className="px-8 py-5 border-b border-neutral-border flex items-center justify-between bg-white">
             <h3 className="font-bold text-base tracking-wide text-secondary">
               Live Threat Feed

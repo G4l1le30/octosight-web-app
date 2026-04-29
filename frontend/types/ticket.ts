@@ -26,8 +26,8 @@ export interface Ticket {
 
 export type ReportFormData =
   | { type: "Website"; url: string; summary: string; senderNumbers?: string; incidentDate: string }
-  | { type: "SMS"; url: string; summary: string; senderNumbers: string; incidentDate: string }
-  | { type: "WhatsApp"; url: string; summary: string; senderNumbers: string; incidentDate: string }
+  | { type: "SMS"; url?: string; summary: string; senderNumbers: string; incidentDate: string }
+  | { type: "WhatsApp"; url?: string; summary: string; senderNumbers: string; incidentDate: string }
   | { type: "Email"; url?: string; summary: string; senderNumbers: string; incidentDate: string };
 
 export interface DashboardStats {

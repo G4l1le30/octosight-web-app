@@ -253,7 +253,7 @@ export const DatePicker = ({
         <div
           onClick={(e) => e.stopPropagation()}
           className={cn(
-            "absolute z-100 w-72 bg-white rounded-2xl shadow-2xl border border-neutral-border overflow-hidden animate-in fade-in zoom-in duration-200",
+            "absolute z-50 w-72 bg-white rounded-2xl shadow-2xl border border-neutral-border overflow-hidden animate-in fade-in zoom-in duration-200",
             dropdownPosition === "bottom" ? "top-full mt-2" : "bottom-full mb-2"
           )}
         >

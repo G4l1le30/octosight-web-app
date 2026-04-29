@@ -20,6 +20,7 @@ import { ReportFormData } from "@/types/ticket";
 
 interface ReportConfirmationProps {
   formData: ReportFormData;
+  analysisResult: { score: number; priority: string } | null;
   onBack: () => void;
   onSubmit: () => void;
   isSubmitting?: boolean;
@@ -51,13 +52,14 @@ const getRiskStatus = (score: number): string => {
 
 export const ReportConfirmation = ({
   formData,
+  analysisResult,
   onBack,
   onSubmit,
   isSubmitting,
 }: ReportConfirmationProps) => {
-  // Simple risk estimation for preview (this would ideally be dynamic or from VT)
-  const initialRiskScore = 0;
-  const isScanning = false; // We can implement actual scanning logic later if needed
+  const initialRiskScore = analysisResult?.score || 0;
+  const initialRiskStatus = analysisResult?.priority ? `${analysisResult.priority} Risk` : "Low Risk";
+  const isScanning = false;
 
   const formatDate = (dateStr: string) => {
     if (!dateStr) return "-";
@@ -189,7 +191,7 @@ export const ReportConfirmation = ({
             ) : (
               <RiskScoreCard
                 score={initialRiskScore}
-                status={getRiskStatus(initialRiskScore)}
+                status={initialRiskStatus}
               />
             )}
           </div>

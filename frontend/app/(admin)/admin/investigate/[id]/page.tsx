@@ -28,7 +28,7 @@ export default function InvestigatePage({
     isOpen: false,
     type: "success" as "success" | "error",
     title: "",
-    message: ""
+    message: "",
   });
 
   const router = useRouter();
@@ -104,20 +104,20 @@ export default function InvestigatePage({
           investigation_notes: notes,
         }),
       });
-      
+
       if (res.ok) {
         setModalConfig({
           isOpen: true,
           type: "success",
           title: "Update Successful",
-          message: `Ticket ${ticketId} has been updated successfully.`
+          message: `Ticket ${ticketId} has been updated successfully.`,
         });
       } else {
         setModalConfig({
           isOpen: true,
           type: "error",
           title: "Update Failed",
-          message: "Could not update the ticket. Please try again later."
+          message: "Could not update the ticket. Please try again later.",
         });
       }
     } catch (err) {
@@ -125,7 +125,7 @@ export default function InvestigatePage({
         isOpen: true,
         type: "error",
         title: "Connection Error",
-        message: "An error occurred while connecting to the server."
+        message: "An error occurred while connecting to the server.",
       });
     } finally {
       setSaving(false);
@@ -211,33 +211,33 @@ export default function InvestigatePage({
               {/* Left Column: Metadata */}
               <div className="space-y-8">
                 <div className="space-y-1">
-                  <span className="text-sm font-bold opacity-70 block text-secondary">
+                  <span className="text-sm font-bold block text-secondary">
                     Type
                   </span>
-                  <span className="text-base font-bold text-secondary">
+                  <span className="text-base font-medium text-secondary">
                     {ticket.type}
                   </span>
                 </div>
 
                 <div className="space-y-1">
-                  <span className="text-sm font-bold opacity-70 block text-secondary">
+                  <span className="text-sm font-bold block text-secondary">
                     Submitted
                   </span>
-                  <span className="text-base font-bold text-secondary">
+                  <span className="text-base font-medium text-secondary">
                     {new Date(ticket.created_at).toLocaleDateString()}
                   </span>
                 </div>
 
                 {ticket.sender_numbers && (
                   <div className="space-y-1">
-                    <span className="text-sm font-bold opacity-70 block text-secondary">
+                    <span className="text-sm font-bold block text-secondary">
                       Sender Info
                     </span>
                     <div className="flex flex-wrap gap-2">
                       {ticket.sender_numbers.split(",").map((num, i) => (
                         <span
                           key={i}
-                          className="bg-neutral-page border border-neutral-border px-3 py-1 rounded-lg font-bold text-sm text-secondary"
+                          className="bg-neutral-page border border-neutral-border px-3 py-1 rounded-lg font-medium text-sm text-secondary"
                         >
                           {num.trim()}
                         </span>
@@ -250,7 +250,7 @@ export default function InvestigatePage({
               {/* Right Column: Status & Priority */}
               <div className="space-y-8">
                 <div className="space-y-1">
-                  <span className="text-sm font-bold opacity-70 block text-secondary">
+                  <span className="text-sm font-bold block text-secondary">
                     Priority
                   </span>
                   <span
@@ -265,13 +265,13 @@ export default function InvestigatePage({
                 </div>
 
                 <div className="space-y-1">
-                  <span className="text-sm font-bold opacity-70 block text-secondary">
+                  <span className="text-sm font-bold block text-secondary">
                     Status
                   </span>
                   <select
                     value={status}
                     onChange={(e) => setStatus(e.target.value)}
-                    className="text-base font-bold bg-neutral-page border border-neutral-border rounded px-4 py-2 outline-none focus:border-primary text-secondary transition-all appearance-none pr-10 cursor-pointer w-full md:w-auto"
+                    className="text-base font-medium bg-neutral-page border border-neutral-border rounded px-4 py-2 outline-none focus:border-primary text-secondary transition-all appearance-none pr-10 cursor-pointer w-full md:w-auto"
                     style={{
                       backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
                       backgroundRepeat: "no-repeat",
@@ -337,7 +337,7 @@ export default function InvestigatePage({
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Record investigation findings, domain whois info, or escalation notes here..."
-              className="flex-1 w-full p-4 text-sm bg-neutral-page border border-neutral-border rounded-xl focus:border-primary outline-none transition-all font-normal text-secondary leading-relaxed resize-none"
+              className="flex-1 w-full p-4 text-sm bg-neutral-page border border-neutral-border rounded-xl focus:border-primary outline-none transition-all font-normal text-black leading-relaxed resize-none"
             ></textarea>
           </div>
         </div>
@@ -351,51 +351,76 @@ export default function InvestigatePage({
 
             <div className="space-y-6">
               <div>
-                <span className="text-base font-bold opacity-70 block mb-3 text-secondary">
+                <span className="text-base font-bold block mb-3 text-secondary">
                   User Summary
                 </span>
-                <div className="bg-neutral-page p-6 rounded-xl border border-neutral-border text-sm font-medium text-secondary leading-relaxed">
+                <div className="bg-neutral-page/50 p-4 rounded-xl border border-neutral-border text-sm font-medium text-secondary/80 leading-relaxed max-h-40 overflow-y-auto custom-scrollbar">
                   &quot;{ticket.summary || "No summary provided."}&quot;
                 </div>
               </div>
 
               {ticket.screenshot_paths && (
                 <div>
-                  <span className="text-base font-bold opacity-70 block mb-4 text-secondary">
+                  <span className="text-base font-bold block mb-4 text-secondary">
                     Evidence Screenshots
                   </span>
-                  <div className="grid grid-cols-1 gap-6">
-                    {ticket.screenshot_paths.split(",").map((path, i) => (
-                      <div
-                        key={i}
-                        className="group relative rounded-xl overflow-hidden border border-neutral-border bg-neutral-page flex justify-center"
-                      >
-                        <img
-                          src={`/api/v1/uploads/${path}`}
-                          alt="Evidence"
-                          className="max-w-full h-auto object-contain max-h-[600px] transition-all"
-                        />
-                        <div className="absolute inset-0 bg-secondary/20 opacity-0 group-hover:opacity-100 transition-all flex items-start justify-end p-4">
-                          <a
-                            href={`/api/v1/uploads/${path}`}
-                            target="_blank"
-                            className="px-4 py-2 bg-white text-secondary rounded-xl font-bold text-xs hover:bg-primary hover:text-white transition-all shadow-xl"
+                  <div className="grid grid-cols-1 gap-4">
+                    {ticket.screenshot_paths.split(",").map((path, i) => {
+                      const filename = path.split("/").pop() || path;
+                      return (
+                        <div
+                          key={i}
+                          className="flex items-center justify-between p-4 bg-risk-high/5 border border-risk-high/20 rounded-xl group transition-all"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="p-1.5 bg-risk-high/10 rounded-lg text-risk-high">
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="size-4"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              >
+                                <rect
+                                  x="3"
+                                  y="3"
+                                  width="18"
+                                  height="18"
+                                  rx="2"
+                                  ry="2"
+                                />
+                                <circle cx="8.5" cy="8.5" r="1.5" />
+                                <polyline points="21 15 16 10 5 21" />
+                              </svg>
+                            </div>
+                            <span className="text-xs font-bold text-secondary opacity-80 truncate max-w-[250px] sm:max-w-none">
+                              {filename}
+                            </span>
+                          </div>
+                          <button
+                            onClick={() =>
+                              window.open(`/api/v1/uploads/${path}`, "_blank")
+                            }
+                            className="px-3 py-1.5 bg-risk-high text-white text-xs font-bold rounded-lg hover:bg-risk-high/90 transition-all"
                           >
-                            View Original
-                          </a>
+                            Open
+                          </button>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               )}
 
               {ticket.extracted_text && (
                 <div>
-                  <span className="text-base font-bold opacity-70 block mb-3 text-secondary">
+                  <span className="text-base font-bold block mb-3 text-secondary">
                     Extracted OCR Text
                   </span>
-                  <div className="bg-neutral-page p-6 rounded-xl border border-neutral-border text-sm font-medium text-secondary leading-relaxed whitespace-pre-wrap max-h-96 overflow-y-auto">
+                  <div className="bg-neutral-page/50 p-4 rounded-xl border border-neutral-border text-sm font-medium text-secondary/80 leading-relaxed whitespace-pre-wrap max-h-40 overflow-y-auto custom-scrollbar">
                     {ticket.extracted_text}
                   </div>
                 </div>
@@ -403,10 +428,10 @@ export default function InvestigatePage({
 
               {ticket.attachment_names && (
                 <div>
-                  <span className="text-base font-bold opacity-70 block mb-4 text-secondary">
+                  <span className="text-base font-bold block mb-4 text-secondary">
                     Attachments
                   </span>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4">
                     {ticket.attachment_names.split(",").map((origName, i) => {
                       const hashedPath =
                         ticket.attachment_paths?.split(",")[i] || origName;
@@ -432,7 +457,7 @@ export default function InvestigatePage({
                             </svg>
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-bold truncate text-secondary">
+                            <p className="text-sm font-bold truncate text-secondary opacity-80">
                               {origName}
                             </p>
                             <p className="text-xs font-bold text-risk-high opacity-70">
@@ -517,7 +542,7 @@ export default function InvestigatePage({
 
             <div className="space-y-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-bold opacity-70 text-secondary">
+                <label className="text-xs font-bold text-secondary opacity-80">
                   Confirmation
                 </label>
                 <input
@@ -555,7 +580,7 @@ export default function InvestigatePage({
       )}
 
       {/* Status Dialog Modal */}
-      <StatusModal 
+      <StatusModal
         {...modalConfig}
         onClose={() => {
           setModalConfig({ ...modalConfig, isOpen: false });

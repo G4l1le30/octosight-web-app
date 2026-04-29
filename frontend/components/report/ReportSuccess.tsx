@@ -94,7 +94,7 @@ export default function ReportSuccess({
           <Button
             size="md"
             className="flex-1 text-base shadow-xl shadow-primary/10 transition-all active:scale-[0.98]"
-            onClick={() => router.push("/status")}
+            onClick={() => router.push(`/report/${ticketData.ticket_id}`)}
           >
             View Report Status
           </Button>

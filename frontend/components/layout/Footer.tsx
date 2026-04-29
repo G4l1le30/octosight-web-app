@@ -4,8 +4,12 @@ import { Mail, Instagram, Twitter } from "lucide-react";
 
 const Footer: React.FC = () => {
   return (
-    <footer className="bg-primary text-white pt-16 pb-16 px-6 mt-auto">
-      <div className="container mx-auto max-w-6xl">
+    <footer className="relative bg-gradient-to-br from-primary via-primary-dark to-primary-light text-white pt-24 pb-16 px-6 mt-auto overflow-hidden">
+      {/* Decorative Background Elements */}
+      <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
+      <div className="absolute bottom-0 left-0 w-96 h-96 bg-black/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/3 pointer-events-none"></div>
+      
+      <div className="container mx-auto max-w-6xl relative z-10">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-10 md:gap-12">
           {/* Brand Column */}
           <div className="col-span-1 sm:col-span-2 text-center sm:text-left">
@@ -16,7 +20,8 @@ const Footer: React.FC = () => {
               OCTOSIGHT
             </Link>
             <p className="text-white/80 text-sm leading-relaxed mb-8 max-w-sm mx-auto sm:mx-0 font-medium">
-              Empowering users to detect and report phishing threats with
+              Empowering users to detect and rep
+              ort phishing threats with
               advanced AI-driven analysis and real-time security intelligence.
             </p>
             <div className="space-y-1">

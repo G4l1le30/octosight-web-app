@@ -47,6 +47,10 @@ export default function ReportPage() {
   const [confirmedData, setConfirmedData] = useState<ReportFormData | null>(
     null,
   );
+  const [analysisResult, setAnalysisResult] = useState<{
+    score: number;
+    priority: string;
+  } | null>(null);
 
   const [incidentType, setIncidentType] = useState<IncidentType>("Website");
   const [screenshots, setScreenshots] = useState<File[]>([]);
@@ -76,10 +80,39 @@ export default function ReportPage() {
     } as any,
   });
 
-  const onSubmit = (data: ReportFormData) => {
-    setConfirmedData(data);
-    setIsConfirming(true);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+  const onSubmit = async (data: ReportFormData) => {
+    setLoading(true);
+    setError("");
+    try {
+      const payload = {
+        type: incidentType,
+        url: data.url,
+        summary: data.summary,
+        sender_numbers: data.senderNumbers,
+        attachment_names: attachments.map((a) => a.name),
+      };
+      console.log("Sending pre-analysis payload:", payload);
+
+      const response = await fetch("/api/v1/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) throw new Error("Pre-analysis failed");
+      const analysis = await response.json();
+      console.log("Pre-analysis result received:", analysis);
+
+      setAnalysisResult(analysis);
+      setConfirmedData(data);
+      setIsConfirming(true);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch (err: any) {
+      console.error("Pre-analysis error:", err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleFinalSubmit = async () => {
@@ -206,6 +239,7 @@ export default function ReportPage() {
         )}
         <ReportConfirmation
           formData={confirmedData}
+          analysisResult={analysisResult}
           onBack={() => setIsConfirming(false)}
           onSubmit={handleFinalSubmit}
           isSubmitting={loading}
@@ -232,7 +266,12 @@ export default function ReportPage() {
       )}
 
       <div className="card p-8 bg-white border border-neutral-border overflow-visible">
-        <form onSubmit={handleSubmit(onSubmit as any)} className="space-y-8">
+        <form 
+          onSubmit={handleSubmit(onSubmit as any, (errors) => {
+            console.log("Form Validation Errors:", errors);
+          })} 
+          className="space-y-8"
+        >
           {/* Incident Type */}
           <div className="space-y-4">
             <label className="text-base font-bold text-secondary">
@@ -313,7 +352,6 @@ export default function ReportPage() {
                     value={field.value}
                     onChange={field.onChange}
                     error={errors.incidentDate?.message}
-                    className="z-50"
                   />
                 )}
               />

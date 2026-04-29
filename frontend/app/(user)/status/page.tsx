@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { SearchBar } from "@/components/ui/SearchBar";
-import StatusResult from "@/components/status/StatusResult";
 import { Ticket } from "@/types/ticket";
 import { useAuth } from "@/lib/auth-context";
 import { AlertTriangle, Loader2 } from "lucide-react";
@@ -14,7 +13,6 @@ export default function StatusPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const [ticketId, setTicketId] = useState("");
-  const [result, setResult] = useState<Ticket | null>(null);
   const [history, setHistory] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(false);
   const [historyLoading, setHistoryLoading] = useState(false);
@@ -47,7 +45,6 @@ export default function StatusPage() {
     
     setLoading(true);
     setError("");
-    setResult(null);
 
     try {
       const response = await fetch(`/api/v1/tickets/${ticketId}`);

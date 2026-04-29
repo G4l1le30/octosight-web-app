@@ -8,6 +8,7 @@ import { Select } from "@/components/ui/Select";
 import { DatePicker } from "@/components/ui/DatePicker";
 import { SearchBar } from "@/components/ui/SearchBar";
 import { ThreatTable } from "@/components/admin/ThreatTable";
+import { Pagination } from "@/components/ui/Pagination";
 
 export default function TriagePage() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
@@ -26,6 +27,10 @@ export default function TriagePage() {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [availableFlags, setAvailableFlags] = useState<string[]>([]);
+  
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const fetchTickets = useCallback(async () => {
     setLoading(true);
@@ -64,11 +69,20 @@ export default function TriagePage() {
     fetchTickets();
   }, [fetchTickets]);
 
+  // Reset pagination when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters, searchTerm]);
+
   const filteredTickets = tickets.filter(t => {
     const matchPriority = filters.priority === 'All' || t.priority === filters.priority;
     const matchStatus = filters.status === 'All' || t.status === filters.status;
     const matchType = filters.type === 'All' || t.type === filters.type;
     const matchFlag = filters.flag === 'All' || (t.flags && t.flags.includes(filters.flag));
+    
+    const matchSearch = t.ticket_id.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                       (t.url?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false) ||
+                       (t.sender_numbers?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
     
     let matchDate = true;
     if (filters.startDate || filters.endDate) {
@@ -83,8 +97,13 @@ export default function TriagePage() {
       }
     }
 
-    return matchPriority && matchStatus && matchType && matchFlag && matchDate;
+    return matchPriority && matchStatus && matchType && matchFlag && matchDate && matchSearch;
   });
+
+  // Calculate paginated data
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentTickets = filteredTickets.slice(indexOfFirstItem, indexOfLastItem);
 
   const resetFilters = () => {
     setFilters({
@@ -95,6 +114,7 @@ export default function TriagePage() {
       startDate: '',
       endDate: ''
     });
+    setSearchTerm("");
   };
 
   return (
@@ -223,13 +243,21 @@ export default function TriagePage() {
         />
       </div>
 
-      <div className="card shadow-md">
+      <div className="mb-8 card shadow-md overflow-hidden border border-neutral-border">
         <ThreatTable 
-          tickets={filteredTickets.filter(t => 
-            t.ticket_id.toLowerCase().includes(searchTerm.toLowerCase())
-          )}
+          tickets={currentTickets}
           loading={loading}
           emptyMessage="No reports match your filters and search term."
+        />
+        <Pagination 
+          currentPage={currentPage}
+          totalItems={filteredTickets.length}
+          itemsPerPage={itemsPerPage}
+          onPageChange={setCurrentPage}
+          onItemsPerPageChange={(val) => {
+            setItemsPerPage(val);
+            setCurrentPage(1);
+          }}
         />
       </div>
     </div>

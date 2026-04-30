@@ -1,0 +1,340 @@
+"use client";
+
+import { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Cell,
+  PieChart,
+  Pie,
+} from "recharts";
+import { Ticket, DashboardStats } from "@/types/ticket";
+import { ThreatTable } from "@/components/admin/ThreatTable";
+
+const COLORS = ["#e31e24", "#333333", "#f97316", "#00a651", "#8b5cf6"];
+
+export default function AdminDashboard() {
+  const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState<DashboardStats>({
+    total: 0,
+    avgScore: "0",
+    highRisk: 0,
+    typeDist: [],
+    trendData: [],
+    flagDist: [],
+  });
+
+  const fetchDashboardData = useCallback(async () => {
+    try {
+      const response = await fetch("/api/v1/tickets");
+
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        const text = await response.text();
+        console.error("Non-JSON response received:", text);
+        throw new Error(`Server returned an error (${response.status})`);
+      }
+
+      const data = await response.json();
+      const sorted = data.sort((a: Ticket, b: Ticket) => 
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+      setTickets(sorted);
+      calculateStats(sorted);
+    } catch (err) {
+      console.error("Dashboard Fetch Error:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
+
+  const calculateStats = (data: Ticket[]) => {
+    if (!data.length) return;
+
+    const total = data.length;
+    const avgScore = (
+      data.reduce((acc, t) => acc + t.risk_score, 0) / total
+    ).toFixed(1);
+    const highRisk = data.filter((t) => t.risk_score > 70).length;
+
+    // Type Distribution
+    const types: Record<string, number> = {};
+    const flags: Record<string, number> = {};
+
+    data.forEach((t) => {
+      // Channel Distribution
+      types[t.type] = (types[t.type] || 0) + 1;
+
+      // Flag Distribution
+      if (t.flags) {
+        t.flags.split(",").forEach((f) => {
+          const cleanFlag = f.trim();
+          if (cleanFlag) flags[cleanFlag] = (flags[cleanFlag] || 0) + 1;
+        });
+      }
+    });
+
+    const typeDist = Object.entries(types).map(([name, value]) => ({
+      name,
+      value,
+    }));
+    const flagDist = Object.entries(flags)
+      .map(([name, value]) => ({ name: name.replace(/_/g, " "), value }))
+      .sort((a, b) => b.value - a.value);
+
+    // Simple Trend (by date)
+    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const trend: Record<string, number> = {};
+    // Init last 7 days
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      trend[days[d.getDay()]] = 0;
+    }
+    data.forEach((t) => {
+      const d = new Date(t.created_at);
+      const dayName = days[d.getDay()];
+      if (trend[dayName] !== undefined) trend[dayName]++;
+    });
+    const trendData = Object.entries(trend).map(([name, incidents]) => ({
+      name,
+      incidents,
+    }));
+
+    setStats({ total, avgScore, highRisk, typeDist, trendData, flagDist });
+  };
+
+  if (loading)
+    return (
+      <div className="p-20 text-center font-bold opacity-40">
+        Loading Analytics...
+      </div>
+    );
+
+  return (
+    <div className="bg-neutral-page min-h-screen">
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+          <div>
+            <h1 className="text-3xl font-black mb-1">
+              Threat Intelligence Dashboard
+            </h1>
+            <p className="text-secondary-light">
+              Unified monitoring for Website, SMS, WhatsApp, and Email threats.
+            </p>
+          </div>
+          <div className="flex gap-3">
+            <Link
+              href="/admin/triage"
+              className="btn-primary flex items-center gap-2"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+                <path
+                  fillRule="evenodd"
+                  d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              Review Triage
+            </Link>
+          </div>
+        </div>
+
+        {/* Key Metrics */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          {[
+            {
+              label: "Total Incidents",
+              value: stats.total,
+              color: "text-secondary",
+            },
+            {
+              label: "Avg Risk Level",
+              value: stats.avgScore,
+              color: "text-risk-medium",
+            },
+            {
+              label: "Critical Threats",
+              value: stats.highRisk,
+              color: "text-risk-high",
+            },
+            {
+              label: "Active Channels",
+              value: stats.typeDist.length,
+              color: "text-risk-low",
+            },
+          ].map((stat, idx) => (
+            <div key={idx} className="card p-6 border-b-4 border-b-primary/10">
+              <p className="text-sm font-bold text-secondary mb-1 tracking-wide">
+                {stat.label}
+              </p>
+              <h3 className={`text-3xl font-black ${stat.color}`}>
+                {stat.value}
+              </h3>
+            </div>
+          ))}
+        </div>
+
+        {/* Charts Row */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          <div className="card p-8">
+            <h3 className="font-bold mb-6 text-base tracking-wide text-secondary">
+              Incident Volume (Last 7 Days)
+            </h3>
+            <div className="h-64 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={stats.trendData}>
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    vertical={false}
+                    stroke="#eee"
+                  />
+                  <XAxis
+                    dataKey="name"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 12, fontWeight: "bold" }}
+                  />
+                  <YAxis
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 12, fontWeight: "bold" }}
+                  />
+                  <Tooltip
+                    cursor={{ fill: "#f9fafb" }}
+                    contentStyle={{
+                      borderRadius: "12px",
+                      border: "none",
+                      boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)",
+                    }}
+                  />
+                  <Bar
+                    dataKey="incidents"
+                    fill="#e31e24"
+                    radius={[6, 6, 0, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          <div className="card p-8">
+            <h3 className="font-bold mb-6 text-base tracking-wide text-secondary">
+              Threat Channel Distribution
+            </h3>
+            <div className="h-64 w-full flex flex-col md:flex-row items-center justify-between">
+              <div className="w-full h-full md:w-1/2">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={stats.typeDist}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={85}
+                      paddingAngle={5}
+                      dataKey="value"
+                    >
+                      {stats.typeDist.map((_, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={COLORS[index % COLORS.length]}
+                        />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="w-full md:w-1/2 space-y-4 pl-6">
+                {stats.typeDist.map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center justify-between text-sm"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="w-3 h-3 rounded-sm shadow-sm"
+                        style={{ backgroundColor: COLORS[idx % COLORS.length] }}
+                      ></div>
+                      <span className="font-bold opacity-60">{item.name}</span>
+                    </div>
+                    <span className="font-bold text-secondary">
+                      {item.value}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Charts Row 2: Sub-Categories / Flags */}
+        <div className="grid grid-cols-1 gap-8 mb-8">
+          <div className="card p-8">
+            <h3 className="font-bold mb-6 text-base tracking-wide text-secondary">
+              Security Flag Analysis (Sub-Categories)
+            </h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              {stats.flagDist.length > 0 ? (
+                stats.flagDist.map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="bg-neutral-page border border-neutral-border p-4 rounded-xl flex flex-col items-center text-center group hover:border-primary transition-all"
+                  >
+                    <span className="text-sm font-bold text-secondary mb-2 group-hover:text-primary transition-colors">
+                      {item.name}
+                    </span>
+                    <span className="text-2xl font-black text-secondary">
+                      {item.value}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <p className="col-span-full py-10 text-center opacity-40 font-bold">
+                  No detection flags triggered yet.
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Recent Alerts Table Preview */}
+        <div className="mb-8 card overflow-hidden">
+          <div className="px-8 py-5 border-b border-neutral-border flex items-center justify-between bg-white">
+            <h3 className="font-bold text-base tracking-wide text-secondary">
+              Live Threat Feed
+            </h3>
+            <Link
+              href="/admin/triage"
+              className="text-sm font-bold text-primary hover:underline px-3 py-1 bg-primary/5 rounded-full"
+            >
+              See Full Triage →
+            </Link>
+          </div>
+          <ThreatTable 
+            tickets={tickets.slice(0, 5)}
+            loading={loading}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}

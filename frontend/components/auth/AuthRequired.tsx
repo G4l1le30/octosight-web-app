@@ -40,7 +40,7 @@ export function AuthRequired({
             </Button>
             <div className="pt-2 text-center">
               <p className="text-sm font-medium text-secondary/40">
-                Don't have an account?{" "}
+                Don&apos;t have an account?{" "}
                 <Link href="/register" className="text-primary hover:underline font-bold">
                   Register now
                 </Link>

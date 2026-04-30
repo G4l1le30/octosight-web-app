@@ -402,11 +402,10 @@ export default function InvestigatePage({
                           </div>
                           <button
                             onClick={() =>
-                              window.open(`/api/v1/uploads/${path}`, "_blank")
+                              window.open(`/uploads/${path}`, "_blank")
                             }
                             className="px-3 py-1.5 bg-risk-high text-white text-xs font-bold rounded-lg hover:bg-risk-high/90 transition-all"
-                          >
-                            Open
+                          >                            Open
                           </button>
                         </div>
                       );

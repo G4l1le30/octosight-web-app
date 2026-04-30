@@ -142,7 +142,7 @@ export function ReportHistory({
         </div>
       ) : (
         <div className="py-12 text-center bg-neutral-page rounded-xl border-2 border-dashed border-neutral-border">
-          <p className="text-secondary/40 font-medium text-sm">You haven't submitted any reports yet.</p>
+          <p className="text-secondary/40 font-medium text-sm">You haven&apos;t submitted any reports yet.</p>
           <Link href="/report" className="text-primary font-bold text-sm hover:underline mt-2 inline-block">
             Submit your first report
           </Link>

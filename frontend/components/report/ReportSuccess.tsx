@@ -45,7 +45,7 @@ export default function ReportSuccess({
           </h1>
           <p className="text-secondary/70 text-base md:text-lg max-w-[480px] mx-auto leading-relaxed font-medium">
             Our team will review your report within 24 hours. You will receive a
-            notification if there's a status update.
+            notification if there&apos;s a status update.
           </p>
         </div>
 

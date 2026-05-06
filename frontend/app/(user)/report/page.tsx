@@ -50,6 +50,10 @@ export default function ReportPage() {
   const [analysisResult, setAnalysisResult] = useState<{
     score: number;
     priority: string;
+    rule_score?: number;
+    ml_score?: number;
+    ml_category?: string;
+    ml_confidence?: number;
   } | null>(null);
 
   const [incidentType, setIncidentType] = useState<IncidentType>("Website");

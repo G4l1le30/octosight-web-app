@@ -48,8 +48,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.detail || "Login failed");
+      let errorMessage = "Login failed";
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.detail || errorMessage;
+      } catch (e) {
+        if (response.status >= 500) {
+          errorMessage = "Internal Server Error. Backend might be unreachable.";
+        } else if (response.status === 404) {
+          errorMessage = "API Endpoint not found. Please check backend connection.";
+        } else {
+          errorMessage = `Unexpected error: ${response.statusText || response.status}`;
+        }
+      }
+      throw new Error(errorMessage);
     }
 
     const userData = await response.json();
@@ -64,8 +76,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.detail || "Registration failed");
+      let errorMessage = "Registration failed";
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.detail || errorMessage;
+      } catch (e) {
+        if (response.status >= 500) {
+          errorMessage = "Internal Server Error. Backend might be unreachable.";
+        } else if (response.status === 404) {
+          errorMessage = "API Endpoint not found. Please check backend connection.";
+        } else {
+          errorMessage = `Unexpected error: ${response.statusText || response.status}`;
+        }
+      }
+      throw new Error(errorMessage);
     }
 
     const userData = await response.json();

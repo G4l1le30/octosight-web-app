@@ -4,7 +4,6 @@ from urllib.parse import urlparse
 
 import idna
 
-
 class RuleEngine:
     def __init__(self, whitelist_path=None):
         if whitelist_path is None:

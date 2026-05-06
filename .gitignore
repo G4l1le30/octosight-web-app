@@ -27,6 +27,7 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
+backend/models/*.pkl
 
 # OS
 .DS_Store

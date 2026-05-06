@@ -21,9 +21,9 @@ const Navbar: React.FC = () => {
 
   const getLinkClass = (path: string) => {
     const isActive = pathname === path;
-    return `text-base font-medium transition-all duration-200 ${
+    return `relative h-full flex items-center text-base font-bold transition-all duration-200 ${
       isActive
-        ? "text-black underline decoration-2 underline-offset-[8px] decoration-primary"
+        ? "text-black after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[3px] after:bg-primary"
         : "text-secondary/80 hover:text-primary"
     }`;
   };
@@ -42,7 +42,7 @@ const Navbar: React.FC = () => {
           )}
         </Link>
 
-        <nav className="hidden lg:flex items-center gap-6">
+        <nav className="hidden lg:flex items-stretch gap-6 h-full">
           {isAdminRoute ? (
             <>
               <Link href="/" className={getLinkClass("/")}>
@@ -51,7 +51,10 @@ const Navbar: React.FC = () => {
               <Link href="/admin" className={getLinkClass("/admin")}>
                 Dashboard
               </Link>
-              <Link href="/admin/triage" className={getLinkClass("/admin/triage")}>
+              <Link
+                href="/admin/triage"
+                className={getLinkClass("/admin/triage")}
+              >
                 Triage
               </Link>
             </>
@@ -72,12 +75,12 @@ const Navbar: React.FC = () => {
             </>
           )}
 
-          <div className="w-px h-4 bg-neutral-border mx-2"></div>
+          <div className="self-center w-px h-4 bg-neutral-border mx-2"></div>
 
           {loading ? (
             <div className="w-20 h-8 bg-neutral-page rounded-lg animate-pulse"></div>
           ) : user ? (
-            <div className="relative">
+            <div className="self-center relative">
               <button
                 onClick={() => setProfileOpen(!profileOpen)}
                 className="flex items-center gap-2 px-3 py-1.5 border border-neutral-border rounded-lg hover:border-primary/30 transition-all"
@@ -90,7 +93,7 @@ const Navbar: React.FC = () => {
                 </span>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className={`h-3.5 w-3.5 text-secondary/40 transition-transform ${profileOpen ? "rotate-180" : ""}`}
+                  className={`h-3.5 w-3.5 text-secondary/60 transition-transform ${profileOpen ? "rotate-180" : ""}`}
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -148,7 +151,7 @@ const Navbar: React.FC = () => {
               )}
             </div>
           ) : (
-            <div className="flex items-center gap-2">
+            <div className="self-center flex items-center gap-2">
               <Link
                 href="/login"
                 className="text-sm font-bold text-secondary hover:text-primary px-3 py-1.5 transition-colors"

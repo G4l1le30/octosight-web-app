@@ -24,7 +24,7 @@ import random
 import shutil
 import time
 import uuid
-from typing import List
+from typing import List, Optional
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from sqlalchemy.orm import Session
@@ -78,6 +78,13 @@ def _compute_hybrid_score(rule_score: float, combined_text: str) -> dict:
     # OctoSight Aturan #2: rule 35% + ML 65%
     final_score = min(100.0, round((rule_score * 0.35) + (ml_score * 0.65), 2))
 
+    print(f"--- Hybrid Score Calculation ---")
+    print(f"Rule Score: {rule_score} (weight 35%) -> {rule_score * 0.35}")
+    print(f"ML Score: {ml_score} (weight 65%) -> {ml_score * 0.65}")
+    print(f"ML Category: {ml_category}, Confidence: {ml_confidence}")
+    print(f"Final Score: {final_score}")
+    print(f"-------------------------------")
+
     return {
         "final_score": final_score,
         "rule_score": rule_score,
@@ -115,7 +122,7 @@ def _save_upload(file: UploadFile, prefix: str) -> str:
 @router.post("/report", summary="Submit a phishing/fraud report")
 async def create_report(
     url: str = Form(""),
-    type: str = Form(...),
+    report_type: str = Form(...),
     summary: str = Form(""),
     sender_numbers: str = Form(""),
     screenshots: List[UploadFile] = File(None),
@@ -132,6 +139,13 @@ async def create_report(
 
     Evidence files are stored to disk; only their paths are saved in the DB.
     """
+    # 0. Validation: Require either summary or screenshots
+    if not summary.strip() and not screenshots:
+        raise HTTPException(
+            status_code=400,
+            detail="Either message content (summary) or an evidence screenshot is required."
+        )
+
     all_extracted_text: List[str] = []
     screenshot_list: List[str] = []
     orig_attachment_names: List[str] = []
@@ -172,7 +186,9 @@ async def create_report(
     rule_score: float = rule_analysis["score"]
 
     # 4. Hybrid scoring: Rule (35%) + ML (65%)
-    hybrid = _compute_hybrid_score(rule_score, combined_text or summary)
+    # Combine user-provided summary and OCR text for more comprehensive analysis
+    ml_input_text = f"{summary}\n{combined_text}".strip()
+    hybrid = _compute_hybrid_score(rule_score, ml_input_text)
     final_score = hybrid["final_score"]
     priority = _resolve_priority(final_score)
 
@@ -201,7 +217,7 @@ async def create_report(
     db_ticket = Ticket(
         ticket_id=ticket_id,
         url=url,
-        type=type,
+        type=report_type,
         summary=summary,
         sender_numbers=sender_numbers,
         extracted_text=combined_text,
@@ -226,32 +242,59 @@ async def create_report(
 
 @router.post("/analyze", summary="Preview risk score without saving")
 async def analyze_preview(
-    data: AnalysisRequest,
-    current_user=Depends(get_current_user),
+    report_type: str = Form(""),
+    url: str = Form(""),
+    summary: str = Form(""),
+    sender_numbers: str = Form(""),
+    attachment_names: str = Form("[]"),
+    screenshots: List[UploadFile] = File([]),
 ):
     """
     Calculate the hybrid risk score from form data **without** saving a ticket.
-    Useful for real-time feedback while the user fills in the report form.
+    Includes OCR analysis for a more accurate preview if screenshots are provided.
     """
+    # 1. Volatile OCR for preview
+    combined_ocr_text = ""
+    if screenshots:
+        for ss in screenshots:
+            try:
+                content = await ss.read()
+                await ss.seek(0)
+                text = ocr_engine.extract_text_from_bytes(content)
+                if text:
+                    combined_ocr_text += f"\n{text}"
+            except Exception as e:
+                print(f"Preview OCR Error: {e}")
+
+    # 2. Rule Engine calculation
+    # We combine summary and OCR text for rule engine too in preview
+    full_text_context = f"{summary}\n{combined_ocr_text}".strip()
+    
+    try:
+        att_list = json.loads(attachment_names) if attachment_names else []
+    except Exception:
+        att_list = []
+
     rule_analysis = rule_engine.calculate_risk(
-        url=data.url,
-        attachments=data.attachment_names or None,
-        sender_numbers=data.sender_numbers,
-        extracted_text=data.summary,
+        url=url,
+        attachments=att_list or None,
+        sender_numbers=sender_numbers,
+        extracted_text=full_text_context,
     )
     rule_score: float = rule_analysis["score"]
 
-    # Include ML in preview as well
-    text_to_analyse = data.summary or data.url or ""
-    hybrid = _compute_hybrid_score(rule_score, text_to_analyse)
+    # 3. Hybrid scoring (Rule 35% + ML 65%)
+    # Use the same combined text for ML Engine
+    hybrid = _compute_hybrid_score(rule_score, full_text_context or url)
 
     return {
         **rule_analysis,
-        "score": hybrid["final_score"],        # override with hybrid final
+        "score": hybrid["final_score"],
         "rule_score": hybrid["rule_score"],
         "ml_score": hybrid["ml_score"],
         "ml_category": hybrid["ml_category"],
         "ml_confidence": hybrid["ml_confidence"],
+        "extracted_ocr_text": combined_ocr_text.strip(),
     }
 
 

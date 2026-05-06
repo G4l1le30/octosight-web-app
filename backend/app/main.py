@@ -17,7 +17,9 @@ import os
 import time
 import uuid
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, status
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.exc import OperationalError
@@ -59,7 +61,27 @@ UPLOAD_DIR = os.getenv("UPLOAD_DIR", "uploads")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
-# ── Routers ────────────────────────────────────────────────────────────────────
+# ── Exception Handlers ────────────────────────────────────────────────────────
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """
+    Custom handler to prevent 'UnicodeDecodeError' when a validation error 
+    occurs on a request containing binary data (like images).
+    """
+    print(f"--- Request Validation Error ---")
+    print(f"Path: {request.url.path}")
+    print(f"Errors: {exc.errors()}")
+    print(f"-------------------------------")
+    
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content={
+            "detail": "Invalid input provided. Please check your form data.",
+            "errors": str(exc.errors())
+        },
+    )
+
+# ── Routes ────────────────────────────────────────────────────────────────────
 
 app.include_router(auth_router.router)
 app.include_router(tickets_router.router)

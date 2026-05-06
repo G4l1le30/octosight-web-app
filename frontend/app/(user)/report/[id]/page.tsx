@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import StatusResult from "@/components/status/StatusResult";
 import { Ticket } from "@/types/ticket";
@@ -18,13 +18,7 @@ export default function DetailedReportPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    if (user && ticketId) {
-      fetchTicket();
-    }
-  }, [user, ticketId]);
-
-  const fetchTicket = async () => {
+  const fetchTicket = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
@@ -40,13 +34,19 @@ export default function DetailedReportPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [ticketId]);
+
+  useEffect(() => {
+    if (user && ticketId) {
+      fetchTicket();
+    }
+  }, [user, ticketId, fetchTicket]);
 
   if (authLoading) {
     return (
       <div className="container mx-auto px-4 py-32 text-center">
         <Loader2 className="animate-spin size-12 text-primary mx-auto mb-4" />
-        <p className="text-secondary font-medium">Loading your profile...</p>
+        <p className="text-secondary font-medium">Loading...</p>
       </div>
     );
   }
@@ -93,7 +93,7 @@ export default function DetailedReportPage() {
       <div className="mb-10 flex items-center gap-4 animate-in fade-in slide-in-from-left-4 duration-500">
         <button
           onClick={() => router.push("/status")}
-          className="p-2 rounded-xl border border-neutral-border hover:bg-neutral-page transition-all text-secondary/40 hover:text-primary group shadow-sm"
+          className="p-2 rounded-xl border border-neutral-border hover:bg-neutral-page transition-all text-secondary/60 hover:text-primary group shadow-sm"
           title="Back to History"
         >
           <ChevronLeft className="size-6 group-hover:-translate-x-0.5 transition-transform" />
@@ -102,7 +102,7 @@ export default function DetailedReportPage() {
           <h1 className="text-3xl font-black text-secondary">
             Analysis Report
           </h1>
-          <p className="text-sm font-bold text-secondary/40 mt-2">
+          <p className="text-sm font-bold text-secondary/60 mt-2">
             Verified Phishing Investigation Details
           </p>
         </div>

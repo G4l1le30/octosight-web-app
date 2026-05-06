@@ -17,32 +17,25 @@ export const RiskScoreCard = ({
   className,
 }: RiskScoreCardProps) => {
   // Guard against NaN / null / undefined
-  const score = typeof rawScore === "number" && !isNaN(rawScore) ? rawScore : 0;
+  const score = typeof rawScore === "number" && !isNaN(rawScore) ? Math.round(rawScore) : 0;
 
   const getRiskDetails = (score: number) => {
     if (score < 40)
       return {
         label: "Low Risk",
-        stroke: "text-green-500",
-        text: "text-green-600",
-        badge: "text-green-700 bg-green-50",
+        stroke: "text-risk-low",
+        text: "text-risk-low",
+        badge: "text-risk-low bg-risk-low/10",
       };
-    if (score < 60)
+    if (score < 70)
       return {
         label: "Medium Risk",
-        stroke: "text-yellow-500",
-        text: "text-yellow-600",
-        badge: "text-yellow-700 bg-yellow-50",
-      };
-    if (score < 80)
-      return {
-        label: "High Risk",
-        stroke: "text-orange-500",
-        text: "text-orange-600",
-        badge: "text-orange-700 bg-orange-50",
+        stroke: "text-risk-medium",
+        text: "text-risk-medium",
+        badge: "text-risk-medium bg-risk-medium/10",
       };
     return {
-      label: "Critical Risk",
+      label: "High Risk",
       stroke: "text-risk-high",
       text: "text-risk-high",
       badge: "text-risk-high bg-risk-high/10",

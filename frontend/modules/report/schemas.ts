@@ -10,9 +10,9 @@ export const ReportTypeSchema = z.object({
 const commonFields = {
   summary: z
     .string()
-    .min(1, "Required: Please describe the chronology of events")
-    .min(10, "Minimum 10 characters for chronology")
-    .max(2000),
+    .max(2000)
+    .optional()
+    .or(z.literal("")),
   incidentDate: z.string().min(1, "Required: Please select the time of occurrence"),
 };
 

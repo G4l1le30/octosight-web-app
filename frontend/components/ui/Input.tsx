@@ -19,7 +19,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         )}
         <div className="relative group">
           {leftIcon && (
-            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/40 group-focus-within:text-primary transition-colors">
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/60 group-focus-within:text-primary transition-colors">
               {leftIcon}
             </div>
           )}
@@ -28,16 +28,18 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             className={cn(
               "w-full bg-white border-2 border-neutral-border rounded-lg outline-none transition-all font-medium placeholder:text-secondary/30",
               "focus:border-primary focus:ring-4 focus:ring-primary/5",
-              error ? "border-risk-high focus:border-risk-high focus:ring-risk-high/5" : "border-neutral-border",
+              error
+                ? "border-risk-high focus:border-risk-high focus:ring-risk-high/5"
+                : "border-neutral-border",
               leftIcon ? "pl-11" : "px-4",
               rightIcon ? "pr-11" : "px-4",
               "py-3.5",
-              className
+              className,
             )}
             {...props}
           />
           {rightIcon && (
-            <div className="absolute right-4 top-1/2 -translate-y-1/2 text-secondary/40 group-focus-within:text-primary transition-colors">
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 text-secondary/60 group-focus-within:text-primary transition-colors">
               {rightIcon}
             </div>
           )}
@@ -49,7 +51,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         )}
       </div>
     );
-  }
+  },
 );
 
 Input.displayName = "Input";

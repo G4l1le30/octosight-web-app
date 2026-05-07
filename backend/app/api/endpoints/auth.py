@@ -8,6 +8,7 @@ Routes:
   POST /api/v1/auth/logout    Clear the auth cookie
 """
 
+import os
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, Response
@@ -51,6 +52,8 @@ def register(data: RegisterRequest, response: Response, db: Session = Depends(ge
     db.commit()
     db.refresh(user)
 
+    is_production = os.getenv("ENVIRONMENT") == "production"
+    
     token = create_access_token(
         {"sub": str(user.id), "email": user.email, "role": user.role}
     )
@@ -58,6 +61,7 @@ def register(data: RegisterRequest, response: Response, db: Session = Depends(ge
         key="access_token",
         value=token,
         httponly=True,
+        secure=is_production,
         samesite="lax",
         max_age=_COOKIE_MAX_AGE,
         path="/",
@@ -77,6 +81,8 @@ def login(data: LoginRequest, response: Response, db: Session = Depends(get_db))
     if not user or not verify_password(data.password, user.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid email or password")
 
+    is_production = os.getenv("ENVIRONMENT") == "production"
+    
     token = create_access_token(
         {"sub": str(user.id), "email": user.email, "role": user.role}
     )
@@ -84,6 +90,7 @@ def login(data: LoginRequest, response: Response, db: Session = Depends(get_db))
         key="access_token",
         value=token,
         httponly=True,
+        secure=is_production,
         samesite="lax",
         max_age=_COOKIE_MAX_AGE,
         path="/",

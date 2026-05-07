@@ -26,12 +26,14 @@ from sqlalchemy.exc import OperationalError
 
 from app.db.session import Base, SessionLocal, engine
 from app.db.migrations import apply_migrations
+from app.db.education_seeding import seed_education_data
 from app.models.models import Ticket, User
 from app.core.security import hash_password
 
 from app.api.endpoints import auth as auth_router
 from app.api.endpoints import tickets as tickets_router
 from app.api.endpoints import detection as detection_router
+from app.api.endpoints import education as education_router
 
 # ── App ───────────────────────────────────────────────────────────────────────
 
@@ -47,13 +49,29 @@ app = FastAPI(
 
 # ── Middleware ─────────────────────────────────────────────────────────────────
 
+# Allow configurable frontend origins, default to common development ports
+allowed_origins = os.getenv(
+    "ALLOWED_ORIGINS", 
+    "http://localhost:3000,http://127.0.0.1:3000"
+).split(",")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    """Add standard security headers to all responses."""
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    return response
 
 # ── Static file serving ────────────────────────────────────────────────────────
 
@@ -86,6 +104,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 app.include_router(auth_router.router)
 app.include_router(tickets_router.router)
 app.include_router(detection_router.router)
+app.include_router(education_router.router)
 
 
 # ── Startup ────────────────────────────────────────────────────────────────────
@@ -162,6 +181,7 @@ def startup_event() -> None:
             try:
                 apply_migrations(db)
                 _seed_db(db)
+                seed_education_data(db)
             finally:
                 db.close()
             print("[Startup] Database ready.")

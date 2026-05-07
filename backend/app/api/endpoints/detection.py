@@ -34,6 +34,7 @@ from app.db.session import get_db
 from app.models.models import Ticket
 from app.schemas.schemas import AnalysisRequest, MessageRequest, SpamPredictionResponse
 from app.core.engines import analyze_spam, ocr_engine, rule_engine
+from app.modules.education.gemini_service import GeminiEducationService
 
 router = APIRouter(prefix="/api/v1", tags=["detection"])
 
@@ -236,6 +237,23 @@ async def create_report(
     db.add(db_ticket)
     db.commit()
     db.refresh(db_ticket)
+
+    # TAMBAHAN: Generate education recommendation
+    try:
+        recommendation = GeminiEducationService.generate_education_recommendation(
+            ticket_type=db_ticket.type,
+            url=db_ticket.url,
+            rule_score=db_ticket.rule_score or 0,
+            ml_score=db_ticket.ml_score or 0,
+            ticket_content=db_ticket.extracted_text[:1000] if db_ticket.extracted_text else "",
+            ticket_summary=db_ticket.summary or ""
+        )
+        
+        db_ticket.education_recommendation = recommendation
+        db.commit()
+        db.refresh(db_ticket)
+    except Exception as e:
+        print(f"Failed to generate education recommendation: {e}")
 
     return db_ticket
 

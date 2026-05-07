@@ -27,6 +27,7 @@ def apply_migrations(db: Session) -> None:
             "rule_score":         "FLOAT",
             "ml_score":           "FLOAT",
             "updated_at":         "DATETIME",
+            "education_recommendation": "JSON",
         },
         "users": {
             "updated_at": "DATETIME",

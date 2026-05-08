@@ -113,7 +113,7 @@ class RuleEngine:
             brand_terms = ["cimb", "niaga", "octo", "niag"]
             if any(term in domain for term in brand_terms):
                 score += 40
-                flags.append("brand_impersonation_detected")
+                flags.append("brand_impersonation")
                 details["typosquatting"] = "Highly Suspicious"
                 url_risk = True
             
@@ -126,7 +126,7 @@ class RuleEngine:
                 details["typosquatting"] = "Detected"
             elif any(domain.endswith(tld) for tld in self.suspicious_tlds):
                 score += 15
-                flags.append("suspicious_tld_detected")
+                flags.append("suspicious_tld")
                 details["typosquatting"] = "Warning"
 
         # 3. Keyword Analysis (Summary + OCR)
@@ -134,7 +134,9 @@ class RuleEngine:
         found_keywords = [kw for kw in self.suspicious_keywords if kw in all_content]
         if found_keywords:
             score += min(len(found_keywords) * 15, 45)
-            flags.append(f"malicious_keywords: {found_keywords[:3]}")
+            # Use underscores and pipe instead of comma for parsing safety
+            kws = "|".join(found_keywords[:3])
+            flags.append(f"malicious_keywords:{kws}")
             details["keywords"] = "High Risk"
         elif any(kw in domain for kw in self.suspicious_keywords):
             details["keywords"] = "Detected"
@@ -145,11 +147,11 @@ class RuleEngine:
                 ext = os.path.splitext(filename.lower())[1]
                 if ext in self.malicious_extensions:
                     score += 65
-                    flags.append(f"malicious_file: {filename}")
+                    flags.append("malicious_file_detected")
                     details["attachments"] = "Malicious"
                 elif ext in self.suspicious_attachments:
                     score += 25
-                    flags.append(f"suspicious_file: {filename}")
+                    flags.append("suspicious_file_detected")
                     details["attachments"] = "Suspicious"
 
         # 5. OCR Status

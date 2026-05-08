@@ -196,9 +196,11 @@ async def create_report(
     # Append ML flag for transparency
     flags: List[str] = list(rule_analysis["flags"])
     if not hybrid["ml_available"]:
-        flags.append("ml_engine_unavailable")
+        flags.append("ml_engine_offline")
     else:
-        flags.append(f"ml_prediction:{hybrid['ml_category']}")
+        # Use underscore instead of colon/space for standard parsing
+        category = hybrid['ml_category'].replace(' ', '_')
+        flags.append(f"ml_prediction_{category}")
 
     # 5. Build enriched analysis_results for the admin dashboard
     details = {

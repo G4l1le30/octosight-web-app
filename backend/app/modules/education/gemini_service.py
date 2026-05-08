@@ -1,15 +1,14 @@
 import os
 import json
-import google.generativeai as genai
+from google import genai
 from typing import Dict, List
 
 class GeminiEducationService:
     @staticmethod
-    def _get_model():
+    def _get_client():
         api_key = os.getenv("GEMINI_API_KEY", "")
         if api_key:
-            genai.configure(api_key=api_key)
-            return genai.GenerativeModel('gemini-1.5-flash')
+            return genai.Client(api_key=api_key)
         return None
 
     @staticmethod
@@ -21,11 +20,9 @@ class GeminiEducationService:
         ticket_content: str,
         ticket_summary: str
     ) -> Dict:
-        model = GeminiEducationService._get_model()
-        if not model:
-            print("GEMINI_API_KEY not configured, returning default recommendations.")
+        client = GeminiEducationService._get_client() # Ambil client
+        if not client:
             return GeminiEducationService._get_default_recommendation(ticket_type)
-
         prompt = f"""
 Analyze the following cybersecurity ticket and provide educational recommendations for low-literacy users.
 
@@ -54,9 +51,12 @@ Example format:
 }}
 """
         try:
-            response = model.generate_content(prompt)
-            result = json.loads(response.text.strip('` \n'))
-            return result
+            response = client.models.generate_content(
+                model='gemini-2.0-flash',
+                contents=prompt
+            )
+            clean_json = response.text.replace('```json', '').replace('```', '').strip()
+            return json.loads(clean_json)
         except Exception as e:
             print(f"Error calling Gemini API: {e}")
             return GeminiEducationService._get_default_recommendation(ticket_type)
@@ -68,9 +68,8 @@ Example format:
         module_description: str,
         article_titles: List[str]
     ) -> Dict:
-        model = GeminiEducationService._get_model()
-        if not model:
-            print("GEMINI_API_KEY not configured, returning default quiz.")
+        client = GeminiEducationService._get_client()
+        if not client:
             return GeminiEducationService._get_default_quiz(module_id)
 
         articles_text = ", ".join(article_titles)
@@ -105,7 +104,10 @@ RESPONSE FORMAT (JSON ONLY):
 }}
 """
         try:
-            response = model.generate_content(prompt)
+            response = client.models.generate_content(
+                model='gemini-2.0-flash',  # Change from 1.5-flash to 2.0-flash
+                contents=prompt
+            )
             result = json.loads(response.text.strip('` \n'))
             if "questions" in result and len(result["questions"]) == 10:
                 return result

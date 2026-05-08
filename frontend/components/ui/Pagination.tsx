@@ -45,15 +45,22 @@ export const Pagination: React.FC<PaginationProps> = ({
     <div
       className={cn(
         "flex flex-col md:flex-row items-center justify-between gap-4 px-6 py-4 bg-white border-t border-neutral-border",
-        className
+        className,
       )}
     >
       <div className="flex items-center gap-4">
         <span className="text-sm text-secondary/60 font-medium">
-          Showing <span className="text-secondary font-bold">{startItem}-{endItem}</span> of <span className="text-secondary font-bold">{totalItems}</span> reports
+          Showing{" "}
+          <span className="text-secondary font-bold">
+            {startItem}-{endItem}
+          </span>{" "}
+          of <span className="text-secondary font-bold">{totalItems}</span>{" "}
+          reports
         </span>
         <div className="flex items-center gap-2">
-          <span className="text-xs font-bold text-secondary/40 uppercase tracking-wider">Show</span>
+          <span className="text-xs font-bold text-secondary/60 uppercase tracking-wider">
+            Show
+          </span>
           <select
             value={itemsPerPage}
             onChange={(e) => onItemsPerPageChange(Number(e.target.value))}
@@ -87,8 +94,8 @@ export const Pagination: React.FC<PaginationProps> = ({
               page === currentPage
                 ? "bg-primary text-white border-primary shadow-lg shadow-primary/20"
                 : page === "..."
-                ? "border-transparent cursor-default"
-                : "border-neutral-border hover:bg-neutral-page text-secondary"
+                  ? "border-transparent cursor-default"
+                  : "border-neutral-border hover:bg-neutral-page text-secondary",
             )}
           >
             {page}

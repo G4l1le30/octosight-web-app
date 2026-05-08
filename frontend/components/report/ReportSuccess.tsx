@@ -71,7 +71,7 @@ export default function ReportSuccess({
                   {copied ? (
                     <CheckCircle2 className="size-5 text-green-600" />
                   ) : (
-                    <Copy className="size-5 text-secondary/40 group-hover/copy:text-secondary" />
+                    <Copy className="size-5 text-secondary/60 group-hover/copy:text-secondary" />
                   )}
                 </button>
               </div>

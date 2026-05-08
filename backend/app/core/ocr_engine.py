@@ -1,5 +1,6 @@
 import os
 import re
+import io
 
 import pytesseract
 from PIL import Image
@@ -17,6 +18,15 @@ class OCREngine:
                 return f"Error: File {image_path} not found."
 
             img = Image.open(image_path)
+            text = pytesseract.image_to_string(img, config=self.config)
+            return text
+        except Exception as e:
+            return f"OCR Error: {str(e)}"
+
+    def extract_text_from_bytes(self, image_bytes: bytes):
+        """Extracts raw text from image bytes in memory."""
+        try:
+            img = Image.open(io.BytesIO(image_bytes))
             text = pytesseract.image_to_string(img, config=self.config)
             return text
         except Exception as e:

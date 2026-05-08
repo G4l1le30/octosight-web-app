@@ -1,5 +1,6 @@
 import React from "react";
 import { Ticket } from "@/types/ticket";
+import { Info } from "lucide-react";
 
 interface StatusResultProps {
   result: Ticket;
@@ -10,7 +11,7 @@ const StatusResult: React.FC<StatusResultProps> = ({ result }) => {
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="card overflow-hidden">
         <div
-          className={`p-1 ${result.risk_score > 70 ? "bg-risk-high" : result.risk_score > 30 ? "bg-risk-medium" : "bg-risk-low"}`}
+          className={`p-1 ${result.risk_score >= 70 ? "bg-risk-high" : result.risk_score >= 40 ? "bg-risk-medium" : "bg-risk-low"}`}
         ></div>
         <div className="p-8">
           <div className="flex items-center justify-between mb-8">
@@ -56,7 +57,7 @@ const StatusResult: React.FC<StatusResultProps> = ({ result }) => {
                 </p>
                 <div className="flex items-center gap-4 mt-1">
                   <span
-                    className={`text-3xl font-black ${result.risk_score > 70 ? "text-risk-high" : result.risk_score > 30 ? "text-risk-medium" : "text-risk-low"}`}
+                    className={`text-3xl font-black ${result.risk_score >= 70 ? "text-risk-high" : result.risk_score >= 40 ? "text-risk-medium" : "text-risk-low"}`}
                   >
                     {result.risk_score}/100
                   </span>
@@ -66,9 +67,9 @@ const StatusResult: React.FC<StatusResultProps> = ({ result }) => {
                       style={{
                         width: `${result.risk_score}%`,
                         backgroundColor:
-                          result.risk_score > 70
+                          result.risk_score >= 70
                             ? "#e31e24"
-                            : result.risk_score > 30
+                            : result.risk_score >= 40
                               ? "#f97316"
                               : "#00a651",
                       }}
@@ -76,6 +77,7 @@ const StatusResult: React.FC<StatusResultProps> = ({ result }) => {
                   </div>
                 </div>
               </div>
+
               <div>
                 <p className="text-sm font-bold text-secondary">
                   Incident Type
@@ -125,25 +127,57 @@ const StatusResult: React.FC<StatusResultProps> = ({ result }) => {
                   </div>
                 </div>
               )}
-
-
             </div>
 
             <div className="space-y-6">
+              {/* Hybrid Score Breakdown */}
+              <div className="pt-2">
+                <h3 className="text-sm font-bold text-secondary mb-4">
+                  Hybrid Score Breakdown
+                </h3>
+                <div className="grid grid-cols-1 gap-4">
+                  <div className="bg-neutral-page/50 p-3 rounded-xl border border-neutral-border/50">
+                    <div className="flex justify-between text-sm font-bold text-secondary mb-1">
+                      <span>Rule-based (35%)</span>
+                      <span>{Number(result.rule_score).toFixed(2)} / 100</span>
+                    </div>
+                    <div className="w-full bg-neutral-border/30 rounded-full h-1.5 overflow-hidden">
+                      <div
+                        className="bg-secondary h-full rounded-full transition-all duration-1000"
+                        style={{ width: `${result.rule_score}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                  <div className="bg-neutral-page/50 p-3 rounded-xl border border-neutral-border/50">
+                    <div className="flex justify-between text-sm font-bold text-secondary mb-1">
+                      <span>ML Engine (65%)</span>
+                      <span>{Number(result.ml_score).toFixed(2)} / 100</span>
+                    </div>
+                    <div className="w-full bg-neutral-border/30 rounded-full h-1.5 overflow-hidden">
+                      <div
+                        className="bg-primary h-full rounded-full transition-all duration-1000"
+                        style={{ width: `${result.ml_score}%` }}
+                      ></div>
+                    </div>
+                    {result.flags?.includes("ml_prediction:") && (
+                      <p className="text-xs font-medium text-secondary/80 mt-1.5">
+                        Prediction:{" "}
+                        <span className="text-secondary">
+                          {
+                            result.flags
+                              .split("ml_prediction:")[1]
+                              .split(",")[0]
+                          }
+                        </span>
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
               <div className="bg-neutral-page p-6 rounded-xl border border-neutral-border shadow-sm">
-                <h3 className="text-sm font-bold mb-4 flex items-center gap-2">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4 text-primary"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
+                <h3 className="text-base font-bold mb-4 flex items-center gap-2">
+                  <Info className="size-4 text-primary" />
                   Analysis Detail
                 </h3>
                 <div className="space-y-4">
@@ -242,7 +276,7 @@ const StatusResult: React.FC<StatusResultProps> = ({ result }) => {
                     Investigation Notes
                   </h3>
                   <div className="max-h-32 overflow-y-auto pr-2 custom-scrollbar">
-                    <p className="text-sm font-medium text-secondary/70 leading-relaxed italic">
+                    <p className="text-sm font-medium text-secondary/70 leading-relaxed">
                       &quot;{result.investigation_notes}&quot;
                     </p>
                   </div>

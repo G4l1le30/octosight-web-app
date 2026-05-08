@@ -10,6 +10,8 @@ export interface Ticket {
   summary: string | null;
   sender_numbers: string | null;
   risk_score: number;
+  rule_score: number;
+  ml_score: number;
   priority: "High" | "Medium" | "Low";
   status: TicketStatus;
   screenshot_paths: string | null;
@@ -25,10 +27,10 @@ export interface Ticket {
 }
 
 export type ReportFormData =
-  | { type: "Website"; url: string; summary: string; senderNumbers?: string; incidentDate: string }
-  | { type: "SMS"; url?: string; summary: string; senderNumbers: string; incidentDate: string }
-  | { type: "WhatsApp"; url?: string; summary: string; senderNumbers: string; incidentDate: string }
-  | { type: "Email"; url?: string; summary: string; senderNumbers: string; incidentDate: string };
+  | { type: "Website"; url: string; summary?: string; senderNumbers?: string; incidentDate: string }
+  | { type: "SMS"; url?: string; summary?: string; senderNumbers: string; incidentDate: string }
+  | { type: "WhatsApp"; url?: string; summary?: string; senderNumbers: string; incidentDate: string }
+  | { type: "Email"; url?: string; summary?: string; senderNumbers: string; incidentDate: string };
 
 export interface DashboardStats {
   total: number;

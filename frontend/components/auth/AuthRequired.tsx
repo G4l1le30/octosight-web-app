@@ -10,9 +10,9 @@ interface AuthRequiredProps {
   description?: string;
 }
 
-export function AuthRequired({ 
-  title = "Login Required", 
-  description = "Please log in to your account to access this feature and track your progress."
+export function AuthRequired({
+  title = "Login Required",
+  description = "Please log in to your account to access this feature and track your progress.",
 }: AuthRequiredProps) {
   return (
     <div className="min-h-[calc(100vh-64px)] flex flex-col items-center justify-center px-4 py-12 animate-in fade-in zoom-in duration-500">
@@ -31,17 +31,20 @@ export function AuthRequired({
 
           {/* Action Buttons */}
           <div className="space-y-4">
-            <Button 
-              size="md" 
-              className="w-full text-base" 
-              onClick={() => window.location.href = "/login"}
+            <Button
+              size="md"
+              className="w-full text-base"
+              onClick={() => (window.location.href = "/login")}
             >
               Sign In to OctoSight
             </Button>
             <div className="pt-2 text-center">
-              <p className="text-sm font-medium text-secondary/40">
+              <p className="text-sm font-medium text-secondary/60">
                 Don&apos;t have an account?{" "}
-                <Link href="/register" className="text-primary hover:underline font-bold">
+                <Link
+                  href="/register"
+                  className="text-primary hover:underline font-bold"
+                >
                   Register now
                 </Link>
               </p>

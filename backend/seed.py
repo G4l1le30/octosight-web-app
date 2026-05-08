@@ -1,6 +1,6 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from main import Ticket, User, Base, hash_password
+from app.db.session import SessionLocal, engine
+from app.models.models import Ticket, User, Base
+from app.core.security import hash_password
 import os
 import random
 import uuid
@@ -13,9 +13,10 @@ MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD", "octopassword")
 MYSQL_DB = os.getenv("MYSQL_DATABASE", "octosight_db")
 MYSQL_HOST = os.getenv("MYSQL_HOST", "localhost")
 
-SQLALCHEMY_DATABASE_URL = f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}/{MYSQL_DB}"
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+DEFAULT_ADMIN_EMAIL = os.getenv("DEFAULT_ADMIN_EMAIL", "admin@octosight.id")
+DEFAULT_ADMIN_PASSWORD = os.getenv("DEFAULT_ADMIN_PASSWORD", "admin123")
+DEFAULT_USER_EMAIL = os.getenv("DEFAULT_USER_EMAIL", "user@octosight.id")
+DEFAULT_USER_PASSWORD = os.getenv("DEFAULT_USER_PASSWORD", "user123")
 
 def seed():
     db = SessionLocal()
@@ -31,15 +32,15 @@ def seed():
         admin = User(
             id=str(uuid.uuid4()),
             full_name="OctoSight Admin",
-            email="admin@octosight.id",
-            hashed_password=hash_password("admin123"),
+            email=DEFAULT_ADMIN_EMAIL,
+            hashed_password=hash_password(DEFAULT_ADMIN_PASSWORD),
             role="admin"
         )
         user = User(
             id=str(uuid.uuid4()),
             full_name="OctoSight User",
-            email="user@octosight.id",
-            hashed_password=hash_password("user123"),
+            email=DEFAULT_USER_EMAIL,
+            hashed_password=hash_password(DEFAULT_USER_PASSWORD),
             role="user"
         )
         db.add(admin)
@@ -108,7 +109,6 @@ def seed():
                 flags=",".join(current_flags),
                 analysis_results=json.dumps(details),
                 investigation_notes=f"Admin investigated this {ticket_type} report on day {i}. Found potential threats." if status != "Submitted" else None,
-                admin_notes="Priority assigned based on risk score." if priority == "High" else None,
                 user_id=user.id,
                 created_at=datetime.utcnow() - timedelta(days=random.randint(0, 30), hours=random.randint(0, 23))
             )
@@ -116,8 +116,8 @@ def seed():
         
         db.commit()
         print(f"Database seeded successfully with 25 diverse tickets!")
-        print(f"Admin: admin@octosight.id / admin123")
-        print(f"User: user@octosight.id / user123")
+        print(f"Admin: {DEFAULT_ADMIN_EMAIL} / ********")
+        print(f"User: {DEFAULT_USER_EMAIL} / ********")
 
     except Exception as e:
         print(f"Error seeding database: {e}")

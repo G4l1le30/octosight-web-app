@@ -2,7 +2,12 @@
 
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import { cn } from "@/lib/utils";
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Clock } from "lucide-react";
+import {
+  Calendar as CalendarIcon,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+} from "lucide-react";
 
 interface DatePickerProps {
   label?: string;
@@ -24,11 +29,14 @@ export const DatePicker = ({
   placeholder = "Select date and time...",
 }: DatePickerProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [dropdownPosition, setDropdownPosition] = useState<"bottom" | "top">("bottom");
+  const [dropdownPosition, setDropdownPosition] = useState<"bottom" | "top">(
+    "bottom",
+  );
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Helper to validate date
-  const isValidDate = (d: any): d is Date => d instanceof Date && !isNaN(d.getTime());
+  const isValidDate = (d: any): d is Date =>
+    d instanceof Date && !isNaN(d.getTime());
 
   // Derive the selected date from value prop
   const selectedDate = useMemo(() => {
@@ -57,14 +65,26 @@ export const DatePicker = ({
         setViewDate(selectedDate);
       }
     }
-  }, [isOpen]);
+  }, [isOpen, selectedDate]);
 
-  const daysInMonth = (year: number, month: number) => new Date(year, month + 1, 0).getDate();
-  const startDayOfMonth = (year: number, month: number) => new Date(year, month, 1).getDay();
+  const daysInMonth = (year: number, month: number) =>
+    new Date(year, month + 1, 0).getDate();
+  const startDayOfMonth = (year: number, month: number) =>
+    new Date(year, month, 1).getDay();
 
   const months = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
   ];
 
   // Dynamic Positioning Logic
@@ -79,7 +99,10 @@ export const DatePicker = ({
   // Click outside logic
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
@@ -96,10 +119,17 @@ export const DatePicker = ({
   const handleNextMonth = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const nextMonth = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1);
+    const nextMonth = new Date(
+      viewDate.getFullYear(),
+      viewDate.getMonth() + 1,
+      1,
+    );
     const now = new Date();
-    if (nextMonth.getFullYear() > now.getFullYear() ||
-      (nextMonth.getFullYear() === now.getFullYear() && nextMonth.getMonth() > now.getMonth())) {
+    if (
+      nextMonth.getFullYear() > now.getFullYear() ||
+      (nextMonth.getFullYear() === now.getFullYear() &&
+        nextMonth.getMonth() > now.getMonth())
+    ) {
       return;
     }
     setViewDate(nextMonth);
@@ -119,7 +149,7 @@ export const DatePicker = ({
 
     if (isValidDate(cappedDate)) {
       const offset = cappedDate.getTimezoneOffset();
-      const localDate = new Date(cappedDate.getTime() - (offset * 60 * 1000));
+      const localDate = new Date(cappedDate.getTime() - offset * 60 * 1000);
       onChange(localDate.toISOString().slice(0, 16));
     }
   };
@@ -148,10 +178,16 @@ export const DatePicker = ({
 
   const handleTimeBlur = (type: "h" | "m") => {
     if (type === "h") {
-      const h = Math.min(23, parseInt(tempHours) || (selectedDate?.getHours() ?? 0));
+      const h = Math.min(
+        23,
+        parseInt(tempHours) || (selectedDate?.getHours() ?? 0),
+      );
       setTempHours(h.toString().padStart(2, "0"));
     } else {
-      const m = Math.min(59, parseInt(tempMinutes) || (selectedDate?.getMinutes() ?? 0));
+      const m = Math.min(
+        59,
+        parseInt(tempMinutes) || (selectedDate?.getMinutes() ?? 0),
+      );
       setTempMinutes(m.toString().padStart(2, "0"));
     }
   };
@@ -184,12 +220,14 @@ export const DatePicker = ({
     const now = new Date();
     for (let day = 1; day <= totalDays; day++) {
       const isFuture = isFutureDate(year, month, day);
-      const isSelected = selectedDate &&
+      const isSelected =
+        selectedDate &&
         selectedDate.getDate() === day &&
         selectedDate.getMonth() === month &&
         selectedDate.getFullYear() === year;
 
-      const isToday = now.getDate() === day &&
+      const isToday =
+        now.getDate() === day &&
         now.getMonth() === month &&
         now.getFullYear() === year;
 
@@ -205,13 +243,15 @@ export const DatePicker = ({
           }}
           className={cn(
             "p-1.5 text-xs rounded-lg transition-all font-bold relative",
-            isSelected ? "bg-primary text-white shadow-md" : "text-secondary hover:bg-neutral-page",
+            isSelected
+              ? "bg-primary text-white shadow-md"
+              : "text-secondary hover:bg-neutral-page",
             isToday && !isSelected && "text-primary border border-primary/20",
-            isFuture && "opacity-25 cursor-not-allowed hover:bg-transparent"
+            isFuture && "opacity-25 cursor-not-allowed hover:bg-transparent",
           )}
         >
           {day}
-        </button>
+        </button>,
       );
     }
     return days;
@@ -219,7 +259,10 @@ export const DatePicker = ({
 
   const isViewingCurrentMonth = useMemo(() => {
     const now = new Date();
-    return viewDate.getFullYear() === now.getFullYear() && viewDate.getMonth() === now.getMonth();
+    return (
+      viewDate.getFullYear() === now.getFullYear() &&
+      viewDate.getMonth() === now.getMonth()
+    );
   }, [viewDate]);
 
   return (
@@ -241,11 +284,13 @@ export const DatePicker = ({
           triggerClassName,
           isOpen && "border-primary ring-4 ring-primary/5 shadow-sm",
           error && "border-risk-high",
-          !value ? "text-secondary/40 font-medium" : "text-secondary font-medium"
+          !value
+            ? "text-secondary/60 font-medium"
+            : "text-secondary font-medium",
         )}
       >
         <span className="truncate text-base">{formatDisplayDate(value)}</span>
-        <CalendarIcon className="size-5 text-secondary/40 shrink-0" />
+        <CalendarIcon className="size-5 text-secondary/60 shrink-0" />
       </div>
 
       {/* Popover Panel */}
@@ -254,7 +299,9 @@ export const DatePicker = ({
           onClick={(e) => e.stopPropagation()}
           className={cn(
             "absolute z-50 w-72 bg-white rounded-2xl shadow-2xl border border-neutral-border overflow-hidden animate-in fade-in zoom-in duration-200",
-            dropdownPosition === "bottom" ? "top-full mt-2" : "bottom-full mb-2"
+            dropdownPosition === "bottom"
+              ? "top-full mt-2"
+              : "bottom-full mb-2",
           )}
         >
           {/* Header */}
@@ -276,7 +323,9 @@ export const DatePicker = ({
                 onClick={handleNextMonth}
                 className={cn(
                   "p-1 transition-all rounded-lg",
-                  isViewingCurrentMonth ? "opacity-20 cursor-not-allowed" : "hover:bg-white hover:shadow-sm"
+                  isViewingCurrentMonth
+                    ? "opacity-20 cursor-not-allowed"
+                    : "hover:bg-white hover:shadow-sm",
                 )}
               >
                 <ChevronRight className="size-4 text-secondary" />
@@ -288,20 +337,21 @@ export const DatePicker = ({
           <div className="p-3">
             <div className="grid grid-cols-7 mb-1">
               {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
-                <div key={d} className="text-[10px] uppercase tracking-wider font-extrabold text-secondary/40 text-center">
+                <div
+                  key={d}
+                  className="text-[10px] uppercase tracking-wider font-extrabold text-secondary/60 text-center"
+                >
                   {d}
                 </div>
               ))}
             </div>
-            <div className="grid grid-cols-7 gap-1">
-              {renderDays()}
-            </div>
+            <div className="grid grid-cols-7 gap-1">{renderDays()}</div>
           </div>
 
           {/* Footer - Time Picker */}
           <div className="p-3 bg-neutral-page border-t border-neutral-border">
             <div className="flex items-center gap-2">
-              <Clock className="size-4 text-secondary/40" />
+              <Clock className="size-4 text-secondary/60" />
               <div className="flex items-center gap-1.5">
                 <input
                   type="text"
@@ -311,7 +361,7 @@ export const DatePicker = ({
                   placeholder="HH"
                   className="w-14 bg-white border border-neutral-border rounded-lg p-1.5 text-center font-bold text-sm focus:outline-none focus:border-primary transition-colors"
                 />
-                <span className="font-bold text-secondary/40">:</span>
+                <span className="font-bold text-secondary/60">:</span>
                 <input
                   type="text"
                   value={tempMinutes}

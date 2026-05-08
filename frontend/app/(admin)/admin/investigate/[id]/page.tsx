@@ -405,7 +405,9 @@ export default function InvestigatePage({
                               window.open(`/uploads/${path}`, "_blank")
                             }
                             className="px-3 py-1.5 bg-risk-high text-white text-xs font-bold rounded-lg hover:bg-risk-high/90 transition-all"
-                          >                            Open
+                          >
+                            {" "}
+                            Open
                           </button>
                         </div>
                       );
@@ -568,7 +570,7 @@ export default function InvestigatePage({
                 </button>
                 <button
                   onClick={() => setShowDownloadModal(false)}
-                  className="w-full py-2 font-bold text-xs text-secondary/40 hover:text-secondary transition-colors"
+                  className="w-full py-2 font-bold text-xs text-secondary/60 hover:text-secondary transition-colors"
                 >
                   Cancel
                 </button>

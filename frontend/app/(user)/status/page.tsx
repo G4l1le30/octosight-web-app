@@ -69,7 +69,7 @@ export default function StatusPage() {
     return (
       <div className="container mx-auto px-4 py-32 text-center">
         <div className="size-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-        <p className="text-secondary font-medium">Loading your profile...</p>
+        <p className="text-secondary font-medium">Loading...</p>
       </div>
     );
   }

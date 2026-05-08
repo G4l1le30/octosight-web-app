@@ -10,7 +10,7 @@ All tables follow conventions:
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String, Text
+from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String, Text, JSON
 
 from app.db.session import Base
 
@@ -61,6 +61,9 @@ class Ticket(Base):
 
     # Detailed analysis JSON
     analysis_results = Column(Text)
+    
+    # Education recommendations
+    education_recommendation = Column(JSON, nullable=True)
 
     # Relationships
     user_id = Column(

@@ -1,6 +1,7 @@
 import React from "react";
 import { Ticket } from "@/types/ticket";
 import { Info } from "lucide-react";
+import { RiskEducationPanel } from "./RiskEducationPanel";
 
 interface StatusResultProps {
   result: Ticket;
@@ -381,6 +382,12 @@ const StatusResult: React.FC<StatusResultProps> = ({ result }) => {
               )}
             </div>
           </div>
+
+          {result.education_recommendation && (
+            <div className="mb-8 border-t border-neutral-border pt-8">
+              <RiskEducationPanel recommendation={result.education_recommendation} />
+            </div>
+          )}
 
           <div className="pt-6 border-t border-neutral-border flex flex-col md:flex-row md:items-center justify-between gap-4">
             <p className="text-sm font-normal opacity-90">

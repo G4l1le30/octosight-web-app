@@ -10,6 +10,7 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://backend:8000
     depends_on:
       - backend
     networks:
@@ -28,6 +29,9 @@ services:
       - MYSQL_DATABASE=octosight_db
       - MYSQL_HOST=db
       - WHITELIST_PATH=/app/data/whitelist.txt
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000,http://frontend:3000
+      - ENVIRONMENT=production
     depends_on:
       db:
         condition: service_healthy

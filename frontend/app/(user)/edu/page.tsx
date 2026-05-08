@@ -1,77 +1,53 @@
-import React from "react";
+"use client";
 
-interface Module {
-  title: string;
-  duration: string;
-  category: string;
-}
-
-const EduModuleCard: React.FC<{ mod: Module }> = ({ mod }) => (
-  <div className="card group cursor-pointer hover:border-primary transition-all">
-    <div className="aspect-video bg-neutral-page flex items-center justify-center group-hover:bg-primary/5 transition-colors">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        className="h-10 w-10 opacity-20 group-hover:opacity-100 group-hover:text-primary transition-all"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
-        />
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-        />
-      </svg>
-    </div>
-    <div className="p-6">
-      <span className="text-sm font-bold text-primary mb-2 inline-block tracking-wide">
-        {mod.category}
-      </span>
-      <h3 className="font-bold mb-4 leading-tight">{mod.title}</h3>
-      <div className="flex items-center justify-between text-[10px] font-normal text-secondary/70">
-        <span>{mod.duration}</span>
-        <span className="flex items-center gap-1 text-primary/80">
-          Start Module
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-2.5 w-2.5"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path
-              fillRule="evenodd"
-              d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
-              clipRule="evenodd"
-            />
-          </svg>
-        </span>
-      </div>
-    </div>
-  </div>
-);
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { EducationModuleWithProgress } from "@/types/education";
+import { useAuth } from "@/lib/auth-context";
+import { Loader2, Lock, CheckCircle2, PlayCircle, BookOpen } from "lucide-react";
+import { AuthRequired } from "@/components/auth/AuthRequired";
 
 export default function EducationPage() {
-  const modules: Module[] = [
-    { title: "Spotting Typosquatting", duration: "2 min", category: "Basics" },
-    {
-      title: "The Danger of SMS Phishing",
-      duration: "3 min",
-      category: "Mobile",
-    },
-    { title: "How MFA Protects You", duration: "2 min", category: "Security" },
-    {
-      title: "Secure Browsing Habits",
-      duration: "5 min",
-      category: "Advanced",
-    },
-  ];
+  const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
+  const [modules, setModules] = useState<EducationModuleWithProgress[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (user) {
+      fetchModules();
+    }
+  }, [user]);
+
+  const fetchModules = async () => {
+    try {
+      const response = await fetch("/api/v1/education/modules");
+      if (response.ok) {
+        const data = await response.json();
+        setModules(data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch modules:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (authLoading) {
+    return (
+      <div className="container mx-auto px-4 py-32 text-center">
+        <Loader2 className="animate-spin size-12 text-primary mx-auto mb-4" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <AuthRequired description="Please log in to access the security microlearning modules." />;
+  }
+
+  const completedCount = modules.filter((m) => m.status === "COMPLETED").length;
+  const totalCount = modules.length;
+  const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
   return (
     <div className="container mx-auto px-4 py-12 max-w-5xl">
@@ -79,39 +55,92 @@ export default function EducationPage() {
         <div className="max-w-2xl">
           <h1 className="text-4xl font-black mb-4">Security Microlearning</h1>
           <p className="text-secondary-light">
-            Boost your digital literacy with our byte-sized security modules
-            designed for busy individuals.
+            Tingkatkan literasi digital Anda dengan modul keamanan berukuran kecil
+            yang dirancang untuk mencegah penipuan.
           </p>
         </div>
         <div className="bg-primary/5 p-4 rounded-xl border border-primary/10 flex items-center gap-4">
           <div className="text-right">
-            <p className="text-sm font-bold text-secondary">Your Progress</p>
-            <p className="text-xl font-bold text-primary">0 / 4 Modules</p>
+            <p className="text-sm font-bold text-secondary">Progres Belajar</p>
+            <p className="text-xl font-black text-primary">
+              {completedCount} / {totalCount} Modul
+            </p>
           </div>
-          <div className="w-12 h-12 rounded-full border-4 border-primary/20 flex items-center justify-center text-base font-bold text-primary">
-            0%
+          <div className="w-14 h-14 rounded-full border-4 border-primary/20 flex items-center justify-center text-lg font-black text-primary relative overflow-hidden bg-white">
+            <div 
+              className="absolute bottom-0 left-0 right-0 bg-primary/20" 
+              style={{ height: `${progressPercent}%` }}
+            />
+            <span className="relative z-10">{progressPercent}%</span>
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {modules.map((mod, idx) => (
-          <EduModuleCard key={idx} mod={mod} />
-        ))}
-      </div>
+        {loading ? (
+          Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="card p-6 h-64 animate-pulse flex items-center justify-center">
+              <Loader2 className="size-8 text-neutral-border animate-spin" />
+            </div>
+          ))
+        ) : modules.map((mod) => {
+          const isLocked = mod.status === "LOCKED";
+          const isCompleted = mod.status === "COMPLETED";
 
-      <div className="mt-16 bg-secondary text-white p-12 rounded-2xl relative overflow-hidden">
-        <div className="relative z-10 max-w-xl">
-          <h2 className="text-3xl font-black mb-4">Protect Your Account</h2>
-          <p className="opacity-70 mb-8">
-            Take the Security Quiz to test your knowledge and receive a
-            personalized security recommendation from our engine.
-          </p>
-          <button className="bg-primary hover:bg-primary-dark text-white font-bold px-8 py-3 rounded-lg transition-colors">
-            Take the Quiz
-          </button>
-        </div>
-        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full blur-3xl -mr-32 -mt-32"></div>
+          return (
+            <div 
+              key={mod.id} 
+              onClick={() => !isLocked && router.push(`/edu/${mod.id}`)}
+              className={`card group transition-all relative overflow-hidden ${
+                isLocked ? "opacity-60 cursor-not-allowed bg-neutral-page" : "cursor-pointer hover:border-primary hover:shadow-md"
+              }`}
+            >
+              <div className="p-6">
+                <div className="flex justify-between items-start mb-4">
+                  <span className={`text-xs font-bold px-2 py-1 rounded-md ${
+                    isLocked ? "bg-neutral-border/50 text-secondary" :
+                    isCompleted ? "bg-green-100 text-green-700" :
+                    "bg-blue-100 text-blue-700"
+                  }`}>
+                    {mod.level}
+                  </span>
+                  {isLocked ? (
+                    <Lock className="size-5 text-secondary/40" />
+                  ) : isCompleted ? (
+                    <CheckCircle2 className="size-5 text-green-500" />
+                  ) : (
+                    <PlayCircle className="size-5 text-primary" />
+                  )}
+                </div>
+                
+                <h3 className="font-bold mb-2 leading-tight min-h-[48px]">{mod.title}</h3>
+                
+                <div className="flex items-center text-xs font-bold text-secondary/60 mb-4 gap-1">
+                  <BookOpen className="size-3" />
+                  <span>{mod.duration_mins} Menit</span>
+                </div>
+                
+                <div className="flex items-center justify-between text-xs font-bold mt-4 pt-4 border-t border-neutral-border/50">
+                  {isCompleted && mod.quiz_score !== undefined ? (
+                    <span className="text-green-600">Skor: {mod.quiz_score.toFixed(0)}%</span>
+                  ) : isLocked ? (
+                    <span className="text-secondary/50">Terkunci</span>
+                  ) : (
+                    <span className="text-primary group-hover:underline">Mulai Modul →</span>
+                  )}
+                </div>
+              </div>
+              
+              {/* Progress bar di bagian bawah card */}
+              <div className="absolute bottom-0 left-0 right-0 h-1 bg-neutral-border">
+                <div 
+                  className={`h-full ${isCompleted ? "bg-green-500" : isLocked ? "bg-transparent" : "bg-blue-500 w-1/3"}`} 
+                  style={isCompleted ? { width: "100%" } : {}}
+                />
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

@@ -2,6 +2,8 @@ export type IncidentType = "Website" | "SMS" | "WhatsApp" | "Email";
 
 export type TicketStatus = "Submitted" | "In Review" | "Confirmed" | "False Positive" | "Mitigated" | "Closed";
 
+import { EducationRecommendation } from "./education";
+
 export interface Ticket {
   id: number;
   ticket_id: string;
@@ -20,6 +22,7 @@ export interface Ticket {
   extracted_text: string | null;
   flags: string | null;
   analysis_results: string | null;
+  education_recommendation: EducationRecommendation | null;
   admin_notes: string | null;
   investigation_notes: string | null;
   created_at: string;

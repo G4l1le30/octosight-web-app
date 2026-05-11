@@ -10,9 +10,9 @@ interface StatusResultProps {
 const StatusResult: React.FC<StatusResultProps> = ({ result }) => {
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="card overflow-hidden">
+      <div className="bg-white rounded-3xl border border-neutral-border shadow-xl overflow-hidden">
         <div
-          className={`p-1 ${result.risk_score >= 70 ? "bg-risk-high" : result.risk_score >= 40 ? "bg-risk-medium" : "bg-risk-low"}`}
+          className={`h-1.5 ${result.risk_score >= 70 ? "bg-risk-high" : result.risk_score >= 40 ? "bg-risk-medium" : "bg-risk-low"}`}
         ></div>
         <div className="p-8">
           <div className="flex items-center justify-between mb-8">
@@ -20,7 +20,7 @@ const StatusResult: React.FC<StatusResultProps> = ({ result }) => {
               <span className="text-sm font-bold text-secondary">
                 Ticket ID
               </span>
-              <h2 className="text-2xl font-black">{result.ticket_id}</h2>
+              <h2 className="text-2xl font-bold">{result.ticket_id}</h2>
             </div>
             <div className="text-right">
               <span className="text-sm font-bold text-secondary">
@@ -58,11 +58,11 @@ const StatusResult: React.FC<StatusResultProps> = ({ result }) => {
                 </p>
                 <div className="flex items-center gap-4 mt-1">
                   <span
-                    className={`text-3xl font-black ${result.risk_score >= 70 ? "text-risk-high" : result.risk_score >= 40 ? "text-risk-medium" : "text-risk-low"}`}
+                    className={`text-3xl font-bold ${result.risk_score >= 70 ? "text-risk-high" : result.risk_score >= 40 ? "text-risk-medium" : "text-risk-low"}`}
                   >
-                    {result.risk_score}/100
+                    {Number(result.risk_score)}/100
                   </span>
-                  <div className="flex-1 h-2 bg-neutral-border rounded-full">
+                  <div className="flex-1 h-2 bg-neutral-border/60 rounded-full">
                     <div
                       className="h-full rounded-full"
                       style={{
@@ -83,12 +83,12 @@ const StatusResult: React.FC<StatusResultProps> = ({ result }) => {
                 <p className="text-sm font-bold text-secondary">
                   Incident Type
                 </p>
-                <p className="text-base font-medium">{result.type}</p>
+                <p className="text-base font-semibold">{result.type}</p>
               </div>
               {result.url && (
                 <div>
                   <p className="text-sm font-bold text-secondary">Target URL</p>
-                  <p className="text-base font-medium break-all opacity-90">
+                  <p className="text-base font-semibold break-all opacity-90">
                     {result.url}
                   </p>
                 </div>
@@ -98,7 +98,7 @@ const StatusResult: React.FC<StatusResultProps> = ({ result }) => {
                   <p className="text-sm font-bold text-secondary">
                     Reported Sender
                   </p>
-                  <p className="text-base font-medium truncate">
+                  <p className="text-base font-semibold truncate">
                     {result.sender_numbers}
                   </p>
                 </div>
@@ -108,8 +108,8 @@ const StatusResult: React.FC<StatusResultProps> = ({ result }) => {
                 <p className="text-sm font-bold text-secondary mb-2">
                   User Summary
                 </p>
-                <div className="max-h-40 overflow-y-auto pr-2 custom-scrollbar bg-neutral-page/50 p-3 rounded-xl border border-neutral-border/50">
-                  <p className="text-xs font-medium text-secondary/80 leading-relaxed whitespace-pre-wrap">
+                <div className="max-h-40 overflow-y-auto pr-2 custom-scrollbar bg-neutral-page/30 p-3 rounded-xl border border-neutral-border/50">
+                  <p className="text-xs font-semibold text-secondary/80 leading-relaxed whitespace-pre-wrap">
                     &quot;{result.summary || "No summary provided."}&quot;
                   </p>
                 </div>
@@ -121,8 +121,8 @@ const StatusResult: React.FC<StatusResultProps> = ({ result }) => {
                   <p className="text-sm font-bold text-secondary mb-2">
                     Extracted OCR Text
                   </p>
-                  <div className="max-h-40 overflow-y-auto pr-2 custom-scrollbar bg-neutral-page/50 p-3 rounded-lg border border-neutral-border/50">
-                    <p className="text-xs font-medium text-secondary/80 leading-relaxed whitespace-pre-wrap">
+                  <div className="max-h-40 overflow-y-auto pr-2 custom-scrollbar bg-neutral-page/30 p-3 rounded-lg border border-neutral-border/50">
+                    <p className="text-xs font-semibold text-secondary/80 leading-relaxed whitespace-pre-wrap">
                       {result.extracted_text}
                     </p>
                   </div>
@@ -137,31 +137,31 @@ const StatusResult: React.FC<StatusResultProps> = ({ result }) => {
                   Hybrid Score Breakdown
                 </h3>
                 <div className="grid grid-cols-1 gap-4">
-                  <div className="bg-neutral-page/50 p-3 rounded-xl border border-neutral-border/50">
+                  <div className="bg-neutral-page/30 p-3 rounded-xl border border-neutral-border/50">
                     <div className="flex justify-between text-sm font-bold text-secondary mb-1">
                       <span>Rule-based (35%)</span>
-                      <span>{Number(result.rule_score).toFixed(2)} / 100</span>
+                      <span>{Number(result.rule_score)} / 100</span>
                     </div>
-                    <div className="w-full bg-neutral-border/30 rounded-full h-1.5 overflow-hidden">
+                    <div className="w-full bg-neutral-border/60 rounded-full h-1.5 overflow-hidden">
                       <div
                         className="bg-secondary h-full rounded-full transition-all duration-1000"
                         style={{ width: `${result.rule_score}%` }}
                       ></div>
                     </div>
                   </div>
-                  <div className="bg-neutral-page/50 p-3 rounded-xl border border-neutral-border/50">
+                  <div className="bg-neutral-page/30 p-3 rounded-xl border border-neutral-border/50">
                     <div className="flex justify-between text-sm font-bold text-secondary mb-1">
                       <span>ML Engine (65%)</span>
-                      <span>{Number(result.ml_score).toFixed(2)} / 100</span>
+                      <span>{Number(result.ml_score)} / 100</span>
                     </div>
-                    <div className="w-full bg-neutral-border/30 rounded-full h-1.5 overflow-hidden">
+                    <div className="w-full bg-neutral-border/60 rounded-full h-1.5 overflow-hidden">
                       <div
                         className="bg-primary h-full rounded-full transition-all duration-1000"
                         style={{ width: `${result.ml_score}%` }}
                       ></div>
                     </div>
                     {result.flags?.includes("ml_prediction:") && (
-                      <p className="text-xs font-medium text-secondary/80 mt-1.5">
+                      <p className="text-xs font-semibold text-secondary mt-1.5">
                         Prediction:{" "}
                         <span className="text-secondary">
                           {
@@ -176,8 +176,8 @@ const StatusResult: React.FC<StatusResultProps> = ({ result }) => {
                 </div>
               </div>
 
-              <div className="bg-neutral-page p-6 rounded-xl border border-neutral-border shadow-sm">
-                <h3 className="text-base font-bold mb-4 flex items-center gap-2">
+              <div className="bg-neutral-page/30 p-6 rounded-xl border border-neutral-border shadow-sm">
+                <h3 className="text-base font-bold text-secondary mb-4 flex items-center gap-2">
                   <Info className="size-4 text-primary" />
                   Analysis Detail
                 </h3>
@@ -206,7 +206,7 @@ const StatusResult: React.FC<StatusResultProps> = ({ result }) => {
                     return (
                       <ul className="text-sm space-y-3 font-bold opacity-90">
                         <li className="flex justify-between">
-                          <span>Typosquatting Rules:</span>
+                          <span className="text-secondary">Typosquatting Rules:</span>
                           <span
                             className={
                               details.typosquatting !== "Safe" &&
@@ -219,7 +219,7 @@ const StatusResult: React.FC<StatusResultProps> = ({ result }) => {
                           </span>
                         </li>
                         <li className="flex justify-between">
-                          <span>OCR Evidence Analysis:</span>
+                          <span className="text-secondary">OCR Evidence Analysis:</span>
                           <span
                             className={
                               details.ocr === "Complete" ? "text-green-600" : ""
@@ -229,7 +229,7 @@ const StatusResult: React.FC<StatusResultProps> = ({ result }) => {
                           </span>
                         </li>
                         <li className="flex justify-between">
-                          <span>Keyword Analysis:</span>
+                          <span className="text-secondary">Keyword Analysis:</span>
                           <span
                             className={
                               details.keywords !== "Clean"
@@ -241,7 +241,7 @@ const StatusResult: React.FC<StatusResultProps> = ({ result }) => {
                           </span>
                         </li>
                         <li className="flex justify-between">
-                          <span>Malicious Attachment:</span>
+                          <span className="text-secondary">Malicious Attachment:</span>
                           <span
                             className={
                               details.attachments !== "Clean"
@@ -259,8 +259,8 @@ const StatusResult: React.FC<StatusResultProps> = ({ result }) => {
               </div>
 
               {result.investigation_notes && (
-                <div className="bg-neutral-page p-6 rounded-xl border border-neutral-border shadow-sm">
-                  <h3 className="text-sm font-bold mb-3 flex items-center gap-2">
+                <div className="bg-neutral-page/30 p-6 rounded-xl border border-neutral-border shadow-sm">
+                  <h3 className="text-sm font-bold text-secondary mb-3 flex items-center gap-2">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="h-4 w-4 text-primary"
@@ -277,7 +277,7 @@ const StatusResult: React.FC<StatusResultProps> = ({ result }) => {
                     Investigation Notes
                   </h3>
                   <div className="max-h-32 overflow-y-auto pr-2 custom-scrollbar">
-                    <p className="text-sm font-medium text-secondary/70 leading-relaxed">
+                    <p className="text-sm font-medium text-secondary leading-relaxed">
                       &quot;{result.investigation_notes}&quot;
                     </p>
                   </div>
@@ -383,14 +383,8 @@ const StatusResult: React.FC<StatusResultProps> = ({ result }) => {
             </div>
           </div>
 
-          {result.education_recommendation && (
-            <div className="mb-8 border-t border-neutral-border pt-8">
-              <RiskEducationPanel recommendation={result.education_recommendation} />
-            </div>
-          )}
-
           <div className="pt-6 border-t border-neutral-border flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <p className="text-sm font-normal opacity-90">
+            <p className="text-sm font-semibold text-secondary">
               Submitted on{" "}
               {new Date(result.created_at).toLocaleDateString("en-US", {
                 month: "long",
@@ -405,7 +399,7 @@ const StatusResult: React.FC<StatusResultProps> = ({ result }) => {
               })}
             </p>
             <div className="flex gap-2">
-              <button className="text-sm font-bold px-4 py-2 border border-neutral-border rounded-lg hover:bg-neutral-page transition-all">
+              <button className="text-sm font-bold px-4 py-2 border border-neutral-border rounded-lg hover:bg-neutral-page transition-all text-secondary/80">
                 Report Accuracy Issue
               </button>
               <button className="text-sm font-bold px-4 py-2 bg-secondary text-white rounded-lg">
@@ -415,6 +409,17 @@ const StatusResult: React.FC<StatusResultProps> = ({ result }) => {
           </div>
         </div>
       </div>
+
+      {result.education_recommendation && (
+        <div className="bg-white rounded-3xl border border-neutral-border shadow-xl overflow-hidden">
+          <div
+            className={`h-1.5 ${result.risk_score >= 70 ? "bg-risk-high" : result.risk_score >= 40 ? "bg-risk-medium" : "bg-risk-low"}`}
+          ></div>
+          <div className="p-8">
+            <RiskEducationPanel recommendation={result.education_recommendation} />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

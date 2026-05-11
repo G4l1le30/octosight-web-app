@@ -14,6 +14,7 @@ python-jose[cryptography]
 bcrypt==4.0.1
 joblib
 scikit-learn==1.6.1
+torch
 sentence-transformers
 google-genai
 alembic

@@ -1,15 +1,25 @@
 export interface EducationArticle {
-  id: number;
+  id: string;
   title: string;
   url: string;
   author: string;
   duration_mins: number;
   publication_date?: string;
   description?: string;
+  is_read?: boolean;
+}
+
+export interface QuizAttempt {
+  id: number;
+  score: number;
+  passed: boolean;
+  attempt_number: number;
+  created_at: string;
+  details: string; // JSON string
 }
 
 export interface EducationModuleWithProgress {
-  id: number;
+  id: string;
   title: string;
   level: "BASIC" | "BEGINNER" | "INTERMEDIATE" | "ADVANCED" | "EXPERT";
   order_index: number;
@@ -19,7 +29,9 @@ export interface EducationModuleWithProgress {
   status: "LOCKED" | "IN_PROGRESS" | "COMPLETED";
   quiz_score?: number;
   completed_at?: string;
+  quiz_attempts_history: QuizAttempt[];
 }
+
 
 export interface QuizQuestion {
   question: string;
@@ -44,11 +56,15 @@ export interface QuizResult {
     explanation: string;
   }[];
   passed: boolean;
+  attempt_id?: number;
 }
 
 export interface EducationRecommendation {
   warnings: string[];
   suggested_actions: string[];
   tips: string[];
-  relevant_modules: number[];
+  relevant_modules: {
+    id: number;
+    title: string;
+  }[];
 }

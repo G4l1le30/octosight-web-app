@@ -242,13 +242,18 @@ async def create_report(
 
     # TAMBAHAN: Generate education recommendation
     try:
+        from app.models.education import EducationModule
+        modules = db.query(EducationModule).order_by(EducationModule.order_index).all()
+        available_modules = [{"id": m.id, "title": m.title} for m in modules]
+
         recommendation = GeminiEducationService.generate_education_recommendation(
             ticket_type=db_ticket.type,
             url=db_ticket.url,
             rule_score=db_ticket.rule_score or 0,
             ml_score=db_ticket.ml_score or 0,
             ticket_content=db_ticket.extracted_text[:1000] if db_ticket.extracted_text else "",
-            ticket_summary=db_ticket.summary or ""
+            ticket_summary=db_ticket.summary or "",
+            available_modules=available_modules
         )
         
         db_ticket.education_recommendation = recommendation

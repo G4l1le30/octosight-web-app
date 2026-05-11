@@ -1,0 +1,22 @@
+0 verbose cli D:\Node.js\node.exe D:\Node.js\node_modules\npm\bin\npm-cli.js
+1 info using npm@10.9.2
+2 info using node@v22.13.1
+3 silly config load:file:D:\Node.js\node_modules\npm\npmrc
+4 silly config load:file:D:\capstone-project\octosight-web-app\.npmrc
+5 silly config load:file:C:\Users\Rhesa Tsaqif\.npmrc
+6 silly config load:file:C:\Users\Rhesa Tsaqif\AppData\Roaming\npm\etc\npmrc
+7 verbose title npm exec tsc --noEmit
+8 verbose argv "exec" "--" "tsc" "--noEmit"
+9 verbose logfile logs-max:10 dir:D:\capstone-project\octosight-web-app\node_cache\_logs\2026-05-11T02_40_57_549Z-
+10 verbose logfile D:\capstone-project\octosight-web-app\node_cache\_logs\2026-05-11T02_40_57_549Z-debug-0.log
+11 silly logfile done cleaning log files
+12 silly packumentCache heap:4345298944 maxSize:1086324736 maxEntrySize:543162368
+13 http fetch GET 200 https://registry.npmjs.org/tsc 409ms (cache revalidated)
+14 silly packumentCache heap:4345298944 maxSize:1086324736 maxEntrySize:543162368
+15 silly packumentCache heap:4345298944 maxSize:1086324736 maxEntrySize:543162368
+16 verbose cwd D:\capstone-project\octosight-web-app
+17 verbose os Windows_NT 10.0.22631
+18 verbose node v22.13.1
+19 verbose npm  v10.9.2
+20 verbose exit 1
+21 verbose code 1

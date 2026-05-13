@@ -7,6 +7,7 @@ import { ThreatTable } from "@/components/admin/ThreatTable";
 import { Pagination } from "@/components/ui/Pagination";
 import { TriageFilters } from "@/components/admin/triage/TriageFilters";
 import { useTriageTickets } from "@/modules/admin/hooks/useTriageTickets";
+import { Button } from "@/components/ui/Button";
 
 export default function TriagePage() {
   const {
@@ -52,22 +53,23 @@ export default function TriagePage() {
             </svg>
           </Link>
           <div>
-            <h1 className="text-3xl font-black text-secondary">
+            <h1 className="text-3xl font-bold text-secondary">
               Triage Management
             </h1>
-            <p className="text-secondary font-normal opacity-70">
+            <p className="text-secondary font-normal mt-2">
               Advanced search and multi-factor threat filtering.
             </p>
           </div>
         </div>
         <div className="flex items-center gap-4">
-          <button
+          <Button
+            variant="outline"
+            size="sm"
             onClick={fetchTickets}
-            className="text-xs font-bold text-secondary hover:text-primary flex items-center gap-2 bg-white px-4 py-2 rounded-lg border border-neutral-border shadow-sm transition-all"
+            leftIcon={<RefreshCw className="h-4 w-4" />}
           >
-            <RefreshCw className="h-4 w-4" />
             Refresh Data
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -93,7 +95,7 @@ export default function TriagePage() {
           onSearch={(e) => e.preventDefault()}
           placeholder="Search Ticket ID (e.g., OCTO-9921)..."
           buttonText="Search"
-          className="max-w-xl"
+          className="max-w-2xl"
         />
       </div>
 

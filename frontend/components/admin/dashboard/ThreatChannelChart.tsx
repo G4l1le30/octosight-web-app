@@ -17,7 +17,7 @@ interface ThreatChannelChartProps {
 export const ThreatChannelChart: React.FC<ThreatChannelChartProps> = ({ typeDist }) => {
   return (
     <div className="card p-8">
-      <h3 className="font-bold mb-6 text-base tracking-wide text-secondary">
+      <h3 className="font-bold mb-6 text-lg text-secondary">
         Threat Channel Distribution
       </h3>
       <div className="h-64 w-full flex flex-col md:flex-row items-center justify-between">
@@ -55,7 +55,7 @@ export const ThreatChannelChart: React.FC<ThreatChannelChartProps> = ({ typeDist
                   className="w-3 h-3 rounded-sm shadow-sm"
                   style={{ backgroundColor: COLORS[idx % COLORS.length] }}
                 ></div>
-                <span className="font-bold opacity-60">{item.name}</span>
+                <span className="font-bold">{item.name}</span>
               </div>
               <span className="font-bold text-secondary">
                 {item.value}

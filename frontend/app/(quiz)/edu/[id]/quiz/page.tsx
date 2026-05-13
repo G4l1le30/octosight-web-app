@@ -183,7 +183,7 @@ export default function QuizPage() {
   const isLastStep = currentStep === totalQuestions - 1;
 
   return (
-    <div className="container mx-auto px-4 py-12 max-w-3xl">
+    <div className="container mx-auto px-4 py-16 max-w-5xl">
       <div className="mb-8 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <button

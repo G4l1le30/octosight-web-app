@@ -268,7 +268,7 @@ export const DatePicker = ({
   return (
     <div className={cn("w-full relative", className)} ref={containerRef}>
       {label && (
-        <label className="block text-sm font-bold text-secondary mb-2">
+        <label className="block text-sm font-medium text-black mb-2">
           {label}
         </label>
       )}

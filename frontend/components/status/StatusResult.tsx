@@ -2,6 +2,8 @@ import React from "react";
 import { Ticket } from "@/types/ticket";
 import { Info } from "lucide-react";
 import { RiskEducationPanel } from "./RiskEducationPanel";
+import { formatDateTime } from "@/lib/utils";
+import { Button } from "@/components/ui/Button";
 
 interface StatusResultProps {
   result: Ticket;
@@ -133,9 +135,16 @@ const StatusResult: React.FC<StatusResultProps> = ({ result }) => {
             <div className="space-y-6">
               {/* Hybrid Score Breakdown */}
               <div className="pt-2">
-                <h3 className="text-sm font-bold text-secondary mb-4">
-                  Hybrid Score Breakdown
-                </h3>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-sm font-bold text-secondary">
+                    Hybrid Score Breakdown
+                  </h3>
+                  {result.flags?.includes("BLACKLISTED") && (
+                    <span className="px-2 py-0.5 rounded-md bg-secondary text-white text-[10px] font-bold tracking-wider">
+                      Blacklist
+                    </span>
+                  )}
+                </div>
                 <div className="grid grid-cols-1 gap-4">
                   <div className="bg-neutral-page/30 p-3 rounded-xl border border-neutral-border/50">
                     <div className="flex justify-between text-sm font-bold text-secondary mb-1">
@@ -385,26 +394,15 @@ const StatusResult: React.FC<StatusResultProps> = ({ result }) => {
 
           <div className="pt-6 border-t border-neutral-border flex flex-col md:flex-row md:items-center justify-between gap-4">
             <p className="text-sm font-semibold text-secondary">
-              Submitted on{" "}
-              {new Date(result.created_at).toLocaleDateString("en-US", {
-                month: "long",
-                day: "numeric",
-                year: "numeric",
-              })}{" "}
-              •{" "}
-              {new Date(result.created_at).toLocaleTimeString("en-US", {
-                hour: "numeric",
-                minute: "2-digit",
-                hour12: true,
-              })}
+              Submitted on {formatDateTime(result.created_at).full}
             </p>
             <div className="flex gap-2">
-              <button className="text-sm font-bold px-4 py-2 border border-neutral-border rounded-lg hover:bg-neutral-page transition-all text-secondary/80">
+              <Button variant="outline" size="md">
                 Report Accuracy Issue
-              </button>
-              <button className="text-sm font-bold px-4 py-2 bg-secondary text-white rounded-lg">
+              </Button>
+              <Button variant="secondary" size="md">
                 Notify Support
-              </button>
+              </Button>
             </div>
           </div>
         </div>

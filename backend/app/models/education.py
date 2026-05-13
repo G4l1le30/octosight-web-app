@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime, timezone
-from sqlalchemy import Column, Integer, String, Text, Date, Float, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Text, Date, Float, DateTime, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import relationship
 from app.db.session import Base
 
@@ -50,6 +50,9 @@ class UserLearningProgress(Base):
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
     
+    # Ensure only one progress record per user and module
+    __table_args__ = (UniqueConstraint('user_id', 'module_id', name='_user_module_uc'),)
+
     # Relationships
     module = relationship("EducationModule", back_populates="user_progress")
 

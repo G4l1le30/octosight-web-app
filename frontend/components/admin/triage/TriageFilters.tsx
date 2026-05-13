@@ -36,7 +36,7 @@ export const TriageFilters: React.FC<TriageFiltersProps> = ({
         <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 8.293A1 1 0 013 7.586V4z"></path>
         </svg>
-        <h2 className="font-bold text-sm text-secondary">Advanced Search Filters</h2>
+        <h2 className="font-bold text-slgm text-secondary">Advanced Search Filters</h2>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6">
@@ -112,7 +112,7 @@ export const TriageFilters: React.FC<TriageFiltersProps> = ({
         </p>
         <button 
           onClick={onReset}
-          className="text-xs font-bold text-risk-high px-3 py-1 rounded transition-all hover:underline hover:underline-offset-4"
+          className="text-sm font-bold text-risk-high px-3 py-1 rounded transition-all hover:underline hover:underline-offset-4"
         >
           Clear All Filters
         </button>

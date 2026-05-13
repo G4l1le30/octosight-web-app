@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Ticket } from "@/types/ticket";
 import { StatusModal } from "@/components/ui/StatusModal";
+import { BlacklistModal } from "@/components/admin/investigate/BlacklistModal";
 
 import { InvestigateHeader } from "@/components/admin/investigate/InvestigateHeader";
 import { InvestigateTargetInfo } from "@/components/admin/investigate/InvestigateTargetInfo";
@@ -24,11 +25,12 @@ export default function InvestigatePage({
   const [notes, setNotes] = useState("");
   const [status, setStatus] = useState("");
 
-  // Download Modal State
   const [showDownloadModal, setShowDownloadModal] = useState(false);
   const [downloadPassword, setDownloadPassword] = useState("");
   const [selectedFile, setSelectedFile] = useState("");
   const [downloadError, setDownloadError] = useState("");
+
+  const [showBlacklistModal, setShowBlacklistModal] = useState(false);
 
   const [modalConfig, setModalConfig] = useState({
     isOpen: false,
@@ -69,12 +71,10 @@ export default function InvestigatePage({
     if (downloadPassword === "confirm") {
       try {
         const res = await fetch(`/api/v1/admin/download/${selectedFile}`);
-
         if (!res.ok) {
           setDownloadError("Download failed. Server returned an error.");
           return;
         }
-
         const blob = await res.blob();
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement("a");
@@ -82,12 +82,10 @@ export default function InvestigatePage({
         a.download = selectedFile;
         document.body.appendChild(a);
         a.click();
-
         setTimeout(() => {
           window.URL.revokeObjectURL(url);
           document.body.removeChild(a);
         }, 100);
-
         setShowDownloadModal(false);
         setDownloadPassword("");
       } catch (err) {
@@ -105,28 +103,17 @@ export default function InvestigatePage({
       const res = await fetch(`/api/v1/tickets/${ticketId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          status: status,
-          investigation_notes: notes,
-        }),
+        body: JSON.stringify({ status, investigation_notes: notes }),
       });
-
-      if (res.ok) {
-        setModalConfig({
-          isOpen: true,
-          type: "success",
-          title: "Update Successful",
-          message: `Ticket ${ticketId} has been updated successfully.`,
-        });
-      } else {
-        setModalConfig({
-          isOpen: true,
-          type: "error",
-          title: "Update Failed",
-          message: "Could not update the ticket. Please try again later.",
-        });
-      }
-    } catch (err) {
+      setModalConfig({
+        isOpen: true,
+        type: res.ok ? "success" : "error",
+        title: res.ok ? "Update Successful" : "Update Failed",
+        message: res.ok
+          ? `Ticket ${ticketId} has been updated successfully.`
+          : "Could not update the ticket. Please try again later.",
+      });
+    } catch {
       setModalConfig({
         isOpen: true,
         type: "error",
@@ -159,9 +146,7 @@ export default function InvestigatePage({
         saving={saving}
       />
 
-      {/* Main Grid Structure */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* ROW 1: Target Indicator & Internal Notes */}
         <div className="lg:col-span-2">
           <InvestigateTargetInfo
             ticket={ticket}
@@ -174,7 +159,6 @@ export default function InvestigatePage({
           <InvestigateNotes notes={notes} setNotes={setNotes} />
         </div>
 
-        {/* ROW 2: Incident Evidence & Mitigation Actions */}
         <div className="lg:col-span-2">
           <InvestigateEvidence
             ticket={ticket}
@@ -182,24 +166,32 @@ export default function InvestigatePage({
           />
         </div>
 
+        {/* Mitigation Actions */}
         <div className="lg:col-span-1">
           <div className="card p-8 bg-white border border-neutral-border shadow-sm h-full">
-            <h3 className="text-lg font-bold text-secondary mb-6">
+            <h3 className="text-xl font-bold text-secondary mb-6">
               Mitigation Actions
             </h3>
             <div className="space-y-3">
-              <button className="w-full py-3 bg-neutral-page hover:bg-primary/5 text-sm font-bold text-secondary rounded-xl transition-all text-left px-5 flex items-center justify-between group border border-neutral-border">
-                Add to Internal Blacklist
+              <button
+                id="btn-add-blacklist"
+                onClick={() => setShowBlacklistModal(true)}
+                disabled={!ticket.url}
+                className="w-full py-3 bg-neutral-page hover:bg-primary/5 text-sm font-bold text-secondary rounded-xl transition-all text-left px-5 flex items-center justify-between group border border-neutral-border disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <span>Add to Internal Blacklist</span>
                 <span className="opacity-0 group-hover:opacity-100 transition-all translate-x-[-4px] group-hover:translate-x-0">
                   →
                 </span>
               </button>
+
               <button className="w-full py-3 bg-neutral-page hover:bg-primary/5 text-sm font-bold text-secondary rounded-xl transition-all text-left px-5 flex items-center justify-between group border border-neutral-border">
                 Generate Warning Template
                 <span className="opacity-0 group-hover:opacity-100 transition-all translate-x-[-4px] group-hover:translate-x-0">
                   →
                 </span>
               </button>
+
               <button className="w-full py-3 bg-neutral-page hover:bg-risk-medium/5 text-sm font-bold text-secondary rounded-xl transition-all text-left px-5 flex items-center justify-between group border border-neutral-border">
                 Escalate to SOC Team
                 <span className="opacity-0 group-hover:opacity-100 transition-all translate-x-[-4px] group-hover:translate-x-0">
@@ -211,6 +203,14 @@ export default function InvestigatePage({
         </div>
       </div>
 
+      {/* Blacklist Modal — reusable component */}
+      <BlacklistModal
+        isOpen={showBlacklistModal}
+        url={ticket.url ?? ""}
+        ticketId={ticket.ticket_id}
+        onClose={() => setShowBlacklistModal(false)}
+      />
+
       <DownloadModal
         isOpen={showDownloadModal}
         downloadPassword={downloadPassword}
@@ -220,7 +220,6 @@ export default function InvestigatePage({
         onCancel={() => setShowDownloadModal(false)}
       />
 
-      {/* Status Dialog Modal */}
       <StatusModal
         {...modalConfig}
         onClose={() => {

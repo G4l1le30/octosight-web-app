@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import { Button } from "@/components/ui/Button";
 
 interface InvestigateHeaderProps {
   ticketId: string;
@@ -34,18 +35,18 @@ export const InvestigateHeader: React.FC<InvestigateHeaderProps> = ({
             />
           </svg>
         </Link>
-        <h1 className="text-3xl font-black text-secondary">
+        <h1 className="text-3xl font-bold text-secondary">
           Investigate {ticketId}
         </h1>
       </div>
       <div className="flex gap-3">
-        <button
+        <Button
           onClick={onSave}
-          disabled={saving}
-          className="btn-primary px-8 py-2 text-sm font-bold"
+          loading={saving}
+          className="px-8"
         >
-          {saving ? "Saving..." : "Save Changes"}
-        </button>
+          Save Changes
+        </Button>
       </div>
     </div>
   );

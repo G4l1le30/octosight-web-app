@@ -191,7 +191,7 @@ export default function ReportPage() {
   );
 
   if (isConfirming && confirmedData) return (
-    <div className="container mx-auto px-4 py-12 max-w-4xl">
+    <div className="container mx-auto px-4 py-12 max-w-5xl">
       {error && <div className="bg-risk-high/10 text-risk-high p-4 rounded-lg mb-6 font-bold text-sm text-center border border-risk-high/20">Error: {error}</div>}
       <ReportConfirmation
         formData={confirmedData}
@@ -204,7 +204,7 @@ export default function ReportPage() {
   );
 
   return (
-    <div className="container mx-auto px-4 py-12 max-w-3xl">
+    <div className="container mx-auto px-4 py-12 max-w-5xl">
       <div className="mb-10 text-center">
         <h1 className="text-4xl font-bold mb-4 text-secondary">Report Phishing Incident</h1>
         <p className="text-secondary opacity-70 font-medium">Help us protect the community by reporting suspicious activities.</p>

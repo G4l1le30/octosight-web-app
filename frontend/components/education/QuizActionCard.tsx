@@ -97,7 +97,7 @@ export const QuizActionCard: React.FC<QuizActionCardProps> = ({
               <div className="flex flex-wrap justify-center gap-4">
                 <Button 
                   onClick={onStartQuiz}
-                  className="gap-2 px-10 py-7 text-xl shadow-lg shadow-primary/20"
+                  className="gap-2 px-10 py-7 text-xl shadow-lg shadow-black/10"
                 >
                   <Play className="size-5" /> {savedQuiz ? "Continue Quiz" : hasAttempted ? "Retake Quiz" : "Start Quiz"}
                 </Button>

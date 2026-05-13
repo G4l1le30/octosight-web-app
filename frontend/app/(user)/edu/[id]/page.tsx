@@ -145,7 +145,7 @@ export default function ModuleDetailPage() {
   const hasAttempted = (mod.quiz_attempts_history || []).length > 0;
 
   return (
-    <div className="container mx-auto px-4 py-12 max-w-4xl">
+    <div className="container mx-auto px-4 py-12 max-w-6xl">
       <div className="mb-8 flex items-center gap-4">
         <button
           onClick={() => router.push("/edu")}

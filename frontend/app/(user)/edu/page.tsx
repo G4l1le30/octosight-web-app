@@ -6,6 +6,7 @@ import { EducationModuleWithProgress } from "@/types/education";
 import { useAuth } from "@/lib/auth-context";
 import { Loader2, Lock, CheckCircle2, BookOpen } from "lucide-react";
 import { AuthRequired } from "@/components/auth/AuthRequired";
+import { Button } from "@/components/ui/Button";
 
 export default function EducationPage() {
   const router = useRouter();
@@ -62,7 +63,7 @@ export default function EducationPage() {
   const totalModulesCount = modules.length;
 
   return (
-    <div className="container mx-auto px-4 py-12 max-w-5xl">
+    <div className="container mx-auto px-4 py-12 max-w-6xl">
       <div className="flex flex-col md:flex-row items-end justify-between gap-6 mb-12">
         <div className="max-w-2xl">
           <h1 className="text-4xl font-bold mb-4">Security Microlearning</h1>
@@ -88,12 +89,12 @@ export default function EducationPage() {
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto mt-16">
+      <div className="max-w-6xl mx-auto mt-16">
         <div className="relative">
           {/* Vertical Line */}
           {!loading && <div className="absolute left-[24px] md:left-1/2 top-4 bottom-4 w-0.5 bg-neutral-border/80 md:-translate-x-1/2 z-0 hidden md:block"></div>}
 
-          <div className="space-y-12">
+          <div className="space-y-16">
             {loading ? (
               <div className="py-20 text-center">
                 <Loader2 className="size-10 text-primary animate-spin mx-auto mb-4" />
@@ -216,21 +217,22 @@ export default function EducationPage() {
         {/* Continue Learning Action */}
         {!loading && modules.length > 0 && (
           <div className="mt-16 mb-10 text-center border-t border-neutral-border pt-12">
-            <h3 className="text-2xl font-bold mb-3">Ready to continue your journey?</h3>
-            <p className="text-secondary-light mb-8 max-w-xl mx-auto">
+            <h3 className="text-3xl font-bold mb-4">Ready to continue your journey?</h3>
+            <p className="text-secondary mb-8 max-w-xl mx-auto">
               Pick up where you left off and keep improving your security awareness.
             </p>
-            <button 
+            <Button 
+              size="lg"
               onClick={() => {
                 const inProgressMod = modules.find(m => m.status === "IN_PROGRESS");
                 const firstLockedMod = modules.find(m => m.status === "LOCKED");
                 const targetMod = inProgressMod || firstLockedMod || modules[modules.length - 1];
                 if (targetMod) router.push(`/edu/${targetMod.id}`);
               }} 
-              className="bg-primary hover:bg-primary-dark text-white font-bold py-4 px-10 rounded-full transition-colors shadow-lg shadow-primary/20"
+              className="px-12"
             >
               Continue Learning
-            </button>
+            </Button>
           </div>
         )}
       </div>

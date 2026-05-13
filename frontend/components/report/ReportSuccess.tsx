@@ -51,7 +51,7 @@ export default function ReportSuccess({
 
         {/* Ticket Reference Card */}
         <div className="w-full border-2 border-neutral-border rounded-3xl p-6 md:p-8 mb-10 relative group">
-          <p className="text-md font-bold text-secondary/60 mb-4 text-center">
+          <p className="text-md font-bold text-secondary mb-4 text-center">
             Ticket Reference
           </p>
           <div className="relative flex flex-col items-center">

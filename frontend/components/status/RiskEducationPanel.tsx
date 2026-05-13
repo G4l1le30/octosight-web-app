@@ -28,12 +28,12 @@ export const RiskEducationPanel: React.FC<RiskEducationPanelProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Warnings */}
         {recommendation.warnings && recommendation.warnings.length > 0 && (
-          <div className="bg-white border-2 border-risk-high rounded-2xl p-6">
+          <div className="bg-white border border-neutral-border rounded-2xl p-4">
             <div className="flex items-center gap-2 mb-4 text-risk-high">
               <AlertCircle className="size-5" />
               <h4 className="font-bold">Risk Warnings</h4>
             </div>
-            <ul className="space-y-2">
+            <ul className="space-y-1">
               {recommendation.warnings.map((warning, idx) => (
                 <li
                   key={idx}
@@ -50,12 +50,12 @@ export const RiskEducationPanel: React.FC<RiskEducationPanelProps> = ({
         {/* Suggested Actions */}
         {recommendation.suggested_actions &&
           recommendation.suggested_actions.length > 0 && (
-            <div className="bg-white border-2 border-blue-600 rounded-2xl p-6">
+            <div className="bg-white border border-neutral-border rounded-2xl p-4">
               <div className="flex items-center gap-2 mb-4 text-blue-600">
                 <CheckCircle2 className="size-5" />
                 <h4 className="font-bold">Suggested Actions</h4>
               </div>
-              <ul className="space-y-2">
+              <ul className="space-y-1">
                 {recommendation.suggested_actions.map((action, idx) => (
                   <li
                     key={idx}
@@ -71,7 +71,7 @@ export const RiskEducationPanel: React.FC<RiskEducationPanelProps> = ({
 
         {/* Tips */}
         {recommendation.tips && recommendation.tips.length > 0 && (
-          <div className="bg-white border-2 border-green-600 rounded-2xl p-6 md:col-span-2">
+          <div className="bg-white border border-neutral-border rounded-2xl p-4 md:col-span-2">
             <div className="flex items-center gap-2 mb-4 text-green-600">
               <Lightbulb className="size-5" />
               <h4 className="font-bold">Prevention Tips</h4>
@@ -94,7 +94,7 @@ export const RiskEducationPanel: React.FC<RiskEducationPanelProps> = ({
       {/* Relevant Modules */}
       {recommendation.relevant_modules &&
         recommendation.relevant_modules.length > 0 && (
-          <div className="bg-neutral-page/30 border border-neutral-border rounded-2xl p-6">
+          <div className="bg-neutral-page/30 border border-neutral-border rounded-2xl p-4">
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-2 text-secondary">
                 <BookOpen className="size-5 text-primary" />

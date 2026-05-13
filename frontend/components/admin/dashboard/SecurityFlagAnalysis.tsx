@@ -10,7 +10,7 @@ export const SecurityFlagAnalysis: React.FC<SecurityFlagAnalysisProps> = ({ flag
 
   return (
     <div className="card p-8">
-      <h3 className="font-bold mb-6 text-base tracking-wide text-secondary">
+      <h3 className="font-bold mb-6 text-xl text-secondary">
         Security Flag Analysis (Sub-Categories)
       </h3>
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
@@ -23,7 +23,7 @@ export const SecurityFlagAnalysis: React.FC<SecurityFlagAnalysisProps> = ({ flag
               <span className="text-sm font-bold text-secondary mb-3 group-hover:text-primary transition-colors">
                 {item.name}
               </span>
-              <span className="text-2xl font-black text-secondary mt-auto">
+              <span className="text-2xl font-bold text-secondary mt-auto">
                 {item.value}
               </span>
             </div>

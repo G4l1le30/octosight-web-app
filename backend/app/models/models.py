@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String, Text, JSON
+from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String, Text, JSON, Boolean
 
 from app.db.session import Base
 
@@ -60,6 +60,25 @@ class Ticket(Base):
     user_id = Column(
         String(36), ForeignKey("users.id", ondelete="SET NULL"), nullable=True
     )
+
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(
+        DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc)
+    )
+
+
+class BlacklistedURL(Base):
+    """Internally blacklisted URLs/domains added by admins during investigation."""
+
+    __tablename__ = "blacklisted_urls"
+
+    id = Column(Integer, primary_key=True, index=True)
+    url = Column(Text, nullable=False)
+    domain = Column(String(255), nullable=False, index=True)
+    reason = Column(Text, nullable=True)
+    ticket_id = Column(String(50), nullable=True)   # linked ticket, if any
+    added_by = Column(String(36), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    is_active = Column(Boolean, default=True)
 
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at = Column(

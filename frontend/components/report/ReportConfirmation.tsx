@@ -20,13 +20,14 @@ import { ReportFormData } from "@/types/ticket";
 
 interface ReportConfirmationProps {
   formData: ReportFormData;
-  analysisResult: {
+    analysisResult: {
     score: number;
     priority: string;
     rule_score?: number;
     ml_score?: number;
     ml_category?: string;
     extracted_ocr_text?: string;
+    is_blacklisted?: boolean;
   } | null;
   onBack: () => void;
   onSubmit: () => void;
@@ -105,7 +106,7 @@ export const ReportConfirmation = ({
   return (
     <div className="mx-auto max-w-4xl">
       <div className="mb-10 text-center">
-        <h1 className="text-4xl font-black mb-4 text-secondary">
+        <h1 className="text-4xl font-bold mb-4 text-secondary">
           Report Phishing Incident
         </h1>
         <p className="text-secondary opacity-70 font-medium">
@@ -207,9 +208,16 @@ export const ReportConfirmation = ({
                 {analysisResult?.rule_score !== undefined &&
                   analysisResult?.ml_score !== undefined && (
                     <div className="bg-transparent rounded-2xl p-4 border border-neutral-border">
-                      <h3 className="text-sm font-bold text-secondary mb-4">
-                        Hybrid Score Breakdown
-                      </h3>
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-sm font-bold text-secondary">
+                          Hybrid Score Breakdown
+                        </h3>
+                        {analysisResult?.is_blacklisted && (
+                          <span className="px-2 py-0.5 rounded-md bg-secondary text-white text-[10px] font-bold tracking-wider">
+                            Blacklist
+                          </span>
+                        )}
+                      </div>
                       <div className="space-y-4">
                         <div>
                           <div className="flex justify-between text-sm font-semibold mb-1.5">
@@ -285,14 +293,14 @@ export const ReportConfirmation = ({
           <div className="flex flex-col sm:flex-row items-center gap-4 max-w-2xl mx-auto">
             <Button
               variant="outline"
-              size="md"
+              size="lg"
               className="w-full text-lg"
               onClick={onBack}
             >
               Back to Previous Step
             </Button>
             <Button
-              size="md"
+              size="lg"
               className="w-full text-lg"
               onClick={onSubmit}
               loading={isSubmitting}

@@ -29,7 +29,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   return (
     <form onSubmit={onSearch} className={cn("flex flex-col sm:flex-row gap-3", className)}>
       <div className="relative flex-1">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-secondary/30" />
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-secondary/60" />
         <input 
           type="text" 
           placeholder={placeholder} 

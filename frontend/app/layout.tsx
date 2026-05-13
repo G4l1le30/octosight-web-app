@@ -6,6 +6,9 @@ import { AuthProvider } from "@/lib/auth-context";
 export const metadata: Metadata = {
   title: "OctoSight - Phishing Detection & Mitigation",
   description: "Advanced anti-phishing system for modern digital banking.",
+  icons: {
+    icon: "/logo_octosight.png",
+  },
 };
 
 export default function RootLayout({

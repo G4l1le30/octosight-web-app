@@ -2,22 +2,12 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Cell,
-  PieChart,
-  Pie,
-} from "recharts";
 import { Ticket, DashboardStats } from "@/types/ticket";
 import { ThreatTable } from "@/components/admin/ThreatTable";
-
-const COLORS = ["#e31e24", "#333333", "#f97316", "#00a651", "#8b5cf6"];
+import { DashboardStatsCards } from "@/components/admin/dashboard/DashboardStatsCards";
+import { IncidentTrendChart } from "@/components/admin/dashboard/IncidentTrendChart";
+import { ThreatChannelChart } from "@/components/admin/dashboard/ThreatChannelChart";
+import { SecurityFlagAnalysis } from "@/components/admin/dashboard/SecurityFlagAnalysis";
 
 export default function AdminDashboard() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
@@ -30,7 +20,6 @@ export default function AdminDashboard() {
     trendData: [],
     flagDist: [],
   });
-  const [flagsExpanded, setFlagsExpanded] = useState(false);
 
   const fetchDashboardData = useCallback(async () => {
     try {
@@ -158,188 +147,15 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Key Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          {[
-            {
-              label: "Total Incidents",
-              value: stats.total,
-              color: "text-secondary",
-            },
-            {
-              label: "Avg Risk Level",
-              value: stats.avgScore,
-              color: "text-risk-medium",
-            },
-            {
-              label: "Critical Threats",
-              value: stats.highRisk,
-              color: "text-risk-high",
-            },
-            {
-              label: "Active Channels",
-              value: stats.typeDist.length,
-              color: "text-risk-low",
-            },
-          ].map((stat, idx) => (
-            <div key={idx} className="card p-6 border-b-4 border-b-primary/10">
-              <p className="text-sm font-bold text-secondary mb-1 tracking-wide">
-                {stat.label}
-              </p>
-              <h3 className={`text-3xl font-black ${stat.color}`}>
-                {stat.value}
-              </h3>
-            </div>
-          ))}
-        </div>
+        <DashboardStatsCards stats={stats} />
 
-        {/* Charts Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          <div className="card p-8">
-            <h3 className="font-bold mb-6 text-base tracking-wide text-secondary">
-              Incident Volume (Last 7 Days)
-            </h3>
-            <div className="h-64 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={stats.trendData}>
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    vertical={false}
-                    stroke="#eee"
-                  />
-                  <XAxis
-                    dataKey="name"
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fontSize: 12, fontWeight: "bold" }}
-                  />
-                  <YAxis
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fontSize: 12, fontWeight: "bold" }}
-                  />
-                  <Tooltip
-                    cursor={{ fill: "#f9fafb" }}
-                    contentStyle={{
-                      borderRadius: "12px",
-                      border: "none",
-                      boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)",
-                    }}
-                  />
-                  <Bar
-                    dataKey="incidents"
-                    fill="#e31e24"
-                    radius={[6, 6, 0, 0]}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          <div className="card p-8">
-            <h3 className="font-bold mb-6 text-base tracking-wide text-secondary">
-              Threat Channel Distribution
-            </h3>
-            <div className="h-64 w-full flex flex-col md:flex-row items-center justify-between">
-              <div className="w-full h-full md:w-1/2">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={stats.typeDist}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={85}
-                      paddingAngle={5}
-                      dataKey="value"
-                    >
-                      {stats.typeDist.map((_, index) => (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={COLORS[index % COLORS.length]}
-                        />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-              <div className="w-full md:w-1/2 space-y-4 pl-6">
-                {stats.typeDist.map((item, idx) => (
-                  <div
-                    key={idx}
-                    className="flex items-center justify-between text-sm"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="w-3 h-3 rounded-sm shadow-sm"
-                        style={{ backgroundColor: COLORS[idx % COLORS.length] }}
-                      ></div>
-                      <span className="font-bold opacity-60">{item.name}</span>
-                    </div>
-                    <span className="font-bold text-secondary">
-                      {item.value}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+          <IncidentTrendChart trendData={stats.trendData} />
+          <ThreatChannelChart typeDist={stats.typeDist} />
         </div>
 
-        {/* Charts Row 2: Sub-Categories / Flags */}
         <div className="grid grid-cols-1 gap-8 mb-8">
-          <div className="card p-8">
-            <h3 className="font-bold mb-6 text-base tracking-wide text-secondary">
-              Security Flag Analysis (Sub-Categories)
-            </h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-              {stats.flagDist.length > 0 ? (
-                (flagsExpanded ? stats.flagDist : stats.flagDist.slice(0, 12)).map((item, idx) => (
-                  <div
-                    key={idx}
-                    className="bg-neutral-page border border-neutral-border p-4 rounded-xl flex flex-col items-center text-center group hover:border-primary transition-all h-full"
-                  >
-                    <span className="text-sm font-bold text-secondary mb-3 group-hover:text-primary transition-colors">
-                      {item.name}
-                    </span>
-                    <span className="text-2xl font-black text-secondary mt-auto">
-                      {item.value}
-                    </span>
-                  </div>
-                ))
-              ) : (
-                <p className="col-span-full py-10 text-center opacity-40 font-bold">
-                  No detection flags triggered yet.
-                </p>
-              )}
-            </div>
-            
-            {stats.flagDist.length > 12 && (
-              <div className="mt-6 flex justify-center border-t border-neutral-border pt-4">
-                <button 
-                  onClick={() => setFlagsExpanded(!flagsExpanded)}
-                  className="flex items-center gap-2 text-sm font-bold text-primary hover:bg-primary/5 px-6 py-2 rounded-lg transition-all"
-                >
-                  {flagsExpanded ? (
-                    <>
-                      <span>View Less</span>
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clipRule="evenodd" />
-                      </svg>
-                    </>
-                  ) : (
-                    <>
-                      <span>View More</span>
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                      </svg>
-                    </>
-                  )}
-                </button>
-              </div>
-            )}
-          </div>
+          <SecurityFlagAnalysis flagDist={stats.flagDist} />
         </div>
 
         {/* Recent Alerts Table Preview */}

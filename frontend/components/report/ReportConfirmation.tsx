@@ -115,13 +115,12 @@ export const ReportConfirmation = ({
 
       <div className="bg-white rounded-3xl border border-neutral-border shadow-xl overflow-hidden">
         <div className="p-8 md:p-12">
-          <h2 className="text-xl md:text-2xl font-bold text-secondary mb-8">
-            Review Your Report
-          </h2>
-
-          <div className="grid md:grid-cols-2 gap-12 items-center">
+          <div className="grid md:grid-cols-2 gap-12 items-start">
             {/* Left Side: Summary Details */}
             <div className="space-y-6">
+              <h2 className="text-xl md:text-2xl font-bold text-secondary mb-8">
+                Review Your Report
+              </h2>
               {/* Report Type */}
               <div className="flex items-center gap-5">
                 <div className="p-3.5 rounded-2xl bg-primary/5 text-primary">

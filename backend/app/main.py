@@ -1,21 +1,11 @@
 """
 main.py — OctoSight FastAPI application entry point.
-
-This file is intentionally thin. All business logic lives in:
-  routers/auth.py       — authentication
-  routers/tickets.py    — ticket CRUD
-  routers/detection.py  — hybrid phishing analysis & ML prediction
-
-Startup sequence:
-  1. Wait for MySQL to be ready (retry loop)
-  2. Create all ORM tables via metadata
-  3. Apply idempotent column migrations
-  4. Run seed data (admin user + dummy tickets)
 """
 
 import os
 import time
 import uuid
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
@@ -35,79 +25,7 @@ from app.api.endpoints import tickets as tickets_router
 from app.api.endpoints import detection as detection_router
 from app.api.endpoints import education as education_router
 
-# ── App ───────────────────────────────────────────────────────────────────────
-
-app = FastAPI(
-    title="OctoSight API",
-    description=(
-        "Anti-phishing and fraud detection API for digital banking. "
-        "Risk scores are computed using a hybrid Rule Engine (35%) + "
-        "ML Engine (65%) pipeline."
-    ),
-    version="1.0.0",
-)
-
-# ── Middleware ─────────────────────────────────────────────────────────────────
-
-# Allow configurable frontend origins, default to common development ports
-allowed_origins = os.getenv(
-    "ALLOWED_ORIGINS", 
-    "http://localhost:3000,http://127.0.0.1:3000"
-).split(",")
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=allowed_origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-@app.middleware("http")
-async def add_security_headers(request: Request, call_next):
-    """Add standard security headers to all responses."""
-    response = await call_next(request)
-    response.headers["X-Content-Type-Options"] = "nosniff"
-    response.headers["X-Frame-Options"] = "DENY"
-    response.headers["X-XSS-Protection"] = "1; mode=block"
-    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
-    return response
-
-# ── Static file serving ────────────────────────────────────────────────────────
-
-UPLOAD_DIR = os.getenv("UPLOAD_DIR", "uploads")
-os.makedirs(UPLOAD_DIR, exist_ok=True)
-app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
-
-# ── Exception Handlers ────────────────────────────────────────────────────────
-@app.exception_handler(RequestValidationError)
-async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    """
-    Custom handler to prevent 'UnicodeDecodeError' when a validation error 
-    occurs on a request containing binary data (like images).
-    """
-    print(f"--- Request Validation Error ---")
-    print(f"Path: {request.url.path}")
-    print(f"Errors: {exc.errors()}")
-    print(f"-------------------------------")
-    
-    return JSONResponse(
-        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-        content={
-            "detail": "Invalid input provided. Please check your form data.",
-            "errors": str(exc.errors())
-        },
-    )
-
-# ── Routes ────────────────────────────────────────────────────────────────────
-
-app.include_router(auth_router.router)
-app.include_router(tickets_router.router)
-app.include_router(detection_router.router)
-app.include_router(education_router.router)
-
-
-# ── Startup ────────────────────────────────────────────────────────────────────
+# ── Startup Logic ─────────────────────────────────────────────────────────────
 
 def _seed_db(db) -> None:
     """Seed a default admin account and minimal dummy tickets if the DB is empty."""
@@ -170,8 +88,8 @@ def _seed_db(db) -> None:
         print(f"[Seed] {len(dummy)} dummy tickets created")
 
 
-@app.on_event("startup")
-def startup_event() -> None:
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     """Wait for DB, create schema, migrate, seed."""
     retries = 10
     while retries > 0:
@@ -185,14 +103,88 @@ def startup_event() -> None:
             finally:
                 db.close()
             print("[Startup] Database ready.")
-            return
+            break
         except OperationalError as exc:
             retries -= 1
             print(f"[Startup] DB not ready, retrying... ({retries} left) — {exc}")
             time.sleep(5)
+    
+    if retries == 0:
+        print("[Startup] ERROR: Could not connect to database after 10 retries.")
+    
+    yield
 
-    print("[Startup] ERROR: Could not connect to database after 10 retries.")
+# ── App ───────────────────────────────────────────────────────────────────────
 
+app = FastAPI(
+    title="OctoSight API",
+    description=(
+        "Anti-phishing and fraud detection API for digital banking. "
+        "Risk scores are computed using a hybrid Rule Engine (35%) + "
+        "ML Engine (65%) pipeline."
+    ),
+    version="1.0.0",
+    lifespan=lifespan,
+)
+
+# ── Middleware ─────────────────────────────────────────────────────────────────
+
+allowed_origins = os.getenv(
+    "ALLOWED_ORIGINS", 
+    "http://localhost:3000,http://127.0.0.1:3000"
+).split(",")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=allowed_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    """Add standard security headers to all responses."""
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    return response
+
+# ── Static file serving ────────────────────────────────────────────────────────
+
+UPLOAD_DIR = os.getenv("UPLOAD_DIR", "uploads")
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
+
+# ── Exception Handlers ────────────────────────────────────────────────────────
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """
+    Custom handler to prevent 'UnicodeDecodeError' when a validation error 
+    occurs on a request containing binary data (like images).
+    """
+    print(f"--- Request Validation Error ---")
+    print(f"Path: {request.url.path}")
+    print(f"Errors: {exc.errors()}")
+    print(f"-------------------------------")
+    
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content={
+            "detail": "Invalid input provided. Please check your form data.",
+            "errors": str(exc.errors())
+        },
+    )
+
+# ── Routes ────────────────────────────────────────────────────────────────────
+
+app.include_router(auth_router.router)
+app.include_router(tickets_router.router)
+app.include_router(detection_router.router)
+app.include_router(education_router.router)
 
 # ── Health check ───────────────────────────────────────────────────────────────
 

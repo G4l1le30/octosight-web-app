@@ -5,13 +5,14 @@ from datetime import datetime
 # ===== MODULE SCHEMAS =====
 
 class EducationArticleRead(BaseModel):
-    id: int
+    id: str
     title: str
     url: str
     author: str
     duration_mins: int
     publication_date: Optional[datetime] = None
     description: Optional[str] = None
+    is_read: bool = False
     
     class Config:
         from_attributes = True
@@ -24,7 +25,7 @@ class EducationModuleCreate(BaseModel):
     duration_mins: int
 
 class EducationModuleRead(BaseModel):
-    id: int
+    id: str
     title: str
     level: str
     order_index: int
@@ -35,16 +36,29 @@ class EducationModuleRead(BaseModel):
     class Config:
         from_attributes = True
 
+class QuizAttemptRead(BaseModel):
+    id: int
+    score: float
+    passed: bool
+    attempt_number: int
+    created_at: datetime
+    details: Optional[str] = None # JSON string
+
+    class Config:
+        from_attributes = True
+
 class EducationModuleWithProgress(EducationModuleRead):
     status: str  # LOCKED, IN_PROGRESS, COMPLETED
     quiz_score: Optional[float] = None
     completed_at: Optional[datetime] = None
+    quiz_attempts_history: List[QuizAttemptRead] = []
+
 
 # ===== PROGRESS SCHEMAS =====
 
 class UserLearningProgressCreate(BaseModel):
     user_id: str
-    module_id: int
+    module_id: str
 
 class UserLearningProgressUpdate(BaseModel):
     status: Optional[str] = None
@@ -53,7 +67,7 @@ class UserLearningProgressUpdate(BaseModel):
 class UserLearningProgressRead(BaseModel):
     id: int
     user_id: str
-    module_id: int
+    module_id: str
     status: str
     quiz_score: Optional[float] = None
     quiz_attempts: int
@@ -75,6 +89,7 @@ class QuizResponse(BaseModel):
 
 class QuizSubmission(BaseModel):
     answers: List[int]  # Index of selected answers
+    questions: Optional[List[QuizQuestion]] = None  # Quiz questions from GET /quiz (avoids re-calling Gemini)
 
 class QuizResult(BaseModel):
     score: float  # Percentage (0-100)
@@ -82,6 +97,7 @@ class QuizResult(BaseModel):
     correct_answers: int
     questions_with_explanations: List[dict]
     passed: bool  # True if score >= 70
+    attempt_id: int
 
 # ===== EDUCATION RECOMMENDATION SCHEMA =====
 
@@ -89,4 +105,4 @@ class EducationRecommendation(BaseModel):
     warnings: List[str]
     suggested_actions: List[str]
     tips: List[str]
-    relevant_modules: List[int]  # Module IDs yang relevant
+    relevant_modules: List[dict]  # Module objects yang relevant: [{"id": "...", "title": "..."}]

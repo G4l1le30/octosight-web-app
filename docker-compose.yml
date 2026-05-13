@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # Next.js Frontend
   frontend:
@@ -61,6 +59,7 @@ services:
       retries: 10
     networks:
       - octo-network
+    command: ["mysqld", "--host-cache-size=0"]
 
   # phpMyAdmin
   phpmyadmin:

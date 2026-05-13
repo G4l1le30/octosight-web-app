@@ -7,13 +7,9 @@ import ReportSuccess from "@/components/report/ReportSuccess";
 import { ReportConfirmation } from "@/components/report/ReportConfirmation";
 import { Ticket, ReportFormData, IncidentType } from "@/types/ticket";
 import { IncidentSchemas } from "@/modules/report/schemas";
-import { Input } from "@/components/ui/Input";
-import { Textarea } from "@/components/ui/Textarea";
-import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/lib/auth-context";
 import { AuthRequired } from "@/components/auth/AuthRequired";
-import { IncidentTypeCard } from "@/components/report/IncidentTypeCard";
-import { EvidenceUpload } from "@/components/report/EvidenceUpload";
+import { ReportForm } from "@/components/report/ReportForm";
 
 const getLocalISOString = () => {
   const now = new Date();
@@ -81,13 +77,7 @@ export default function ReportPage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [isConfirming, submitted]);
 
-  const {
-    handleSubmit,
-    register,
-    formState: { errors },
-    reset,
-    setError: setFormError,
-  } = useForm<ReportFormData>({
+  const form = useForm<ReportFormData>({
     resolver: (values, context, options) => {
       const schema = IncidentSchemas[incidentType];
       return zodResolver(schema)(values, context, options);
@@ -103,7 +93,7 @@ export default function ReportPage() {
 
   const onSubmit = async (data: ReportFormData) => {
     if (!data.summary?.trim() && screenshots.length === 0) {
-      setFormError("summary", { 
+      form.setError("summary", { 
         type: "manual", 
         message: "Required: Please provide message text or upload a screenshot." 
       });
@@ -195,7 +185,7 @@ export default function ReportPage() {
         setTicketData(null);
         setIsConfirming(false);
         setConfirmedData(null);
-        reset();
+        form.reset();
       }}
     />
   );
@@ -222,69 +212,21 @@ export default function ReportPage() {
 
       {error && <div className="bg-risk-high/10 text-risk-high p-4 rounded-lg mb-6 font-bold text-sm text-center border border-risk-high/20">Error: {error}. Is the backend running?</div>}
 
-      <div className="card p-8 bg-white border border-neutral-border overflow-visible">
-        <form onSubmit={handleSubmit(onSubmit as any)} className="space-y-8">
-          <div className="space-y-4">
-            <label className="text-base font-bold text-secondary">Incident Type</label>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {(["Website", "SMS", "WhatsApp", "Email"] as IncidentType[]).map((type) => (
-                <IncidentTypeCard 
-                  key={type} 
-                  type={type} 
-                  selected={incidentType === type} 
-                  onClick={() => {
-                    setIncidentType(type);
-                    reset({ type, url: "", summary: "", senderNumbers: "", incidentDate: getLocalISOString() } as any);
-                  }} 
-                />
-              ))}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className={incidentType === "Website" ? "md:col-span-2" : ""}>
-              <Input 
-                label={dynamic.urlLabel} 
-                placeholder={dynamic.urlPlaceholder} 
-                error={errors.url?.message} 
-                {...register("url")} 
-              />
-            </div>
-            {incidentType !== "Website" && (
-              <Input 
-                label={dynamic.senderLabel} 
-                placeholder={dynamic.senderPlaceholder} 
-                error={errors.senderNumbers?.message} 
-                {...register("senderNumbers")} 
-              />
-            )}
-          </div>
-
-          <Textarea label={dynamic.summaryLabel} placeholder={dynamic.summaryPlaceholder} error={errors.summary?.message} {...register("summary")} className="min-h-[150px]" />
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <EvidenceUpload 
-              id="screenshots-upload" 
-              label={dynamic.fileLabel} 
-              files={screenshots} 
-              onFilesChange={(files) => { setScreenshots(files); if (files.length > 0) setScreenshotError(false); }} 
-              error={screenshotError} 
-              errorMessage="Required: Please upload a screenshot if message text is empty." 
-              accept="image/*" 
-              multiple 
-            />
-            <EvidenceUpload 
-              id="attachments-upload" 
-              label="Phishing Attachments" 
-              files={attachments} 
-              onFilesChange={setAttachments} 
-              accept="*" 
-            />
-          </div>
-
-          <Button type="submit" loading={loading} className="w-full text-lg">Analyze Report</Button>
-        </form>
-      </div>
+      <ReportForm
+        form={form}
+        onSubmit={onSubmit}
+        loading={loading}
+        incidentType={incidentType}
+        setIncidentType={setIncidentType}
+        dynamic={dynamic}
+        screenshots={screenshots}
+        setScreenshots={setScreenshots}
+        screenshotError={screenshotError}
+        setScreenshotError={setScreenshotError}
+        attachments={attachments}
+        setAttachments={setAttachments}
+        getLocalISOString={getLocalISOString}
+      />
     </div>
   );
 }

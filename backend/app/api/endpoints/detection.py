@@ -196,9 +196,11 @@ async def create_report(
     # Append ML flag for transparency
     flags: List[str] = list(rule_analysis["flags"])
     if not hybrid["ml_available"]:
-        flags.append("ml_engine_unavailable")
+        flags.append("ml_engine_offline")
     else:
-        flags.append(f"ml_prediction:{hybrid['ml_category']}")
+        # Use underscore instead of colon/space for standard parsing
+        category = hybrid['ml_category'].replace(' ', '_')
+        flags.append(f"ml_prediction_{category}")
 
     # 5. Build enriched analysis_results for the admin dashboard
     details = {
@@ -240,13 +242,18 @@ async def create_report(
 
     # TAMBAHAN: Generate education recommendation
     try:
+        from app.models.education import EducationModule
+        modules = db.query(EducationModule).order_by(EducationModule.order_index).all()
+        available_modules = [{"id": m.id, "title": m.title} for m in modules]
+
         recommendation = GeminiEducationService.generate_education_recommendation(
             ticket_type=db_ticket.type,
             url=db_ticket.url,
             rule_score=db_ticket.rule_score or 0,
             ml_score=db_ticket.ml_score or 0,
             ticket_content=db_ticket.extracted_text[:1000] if db_ticket.extracted_text else "",
-            ticket_summary=db_ticket.summary or ""
+            ticket_summary=db_ticket.summary or "",
+            available_modules=available_modules
         )
         
         db_ticket.education_recommendation = recommendation

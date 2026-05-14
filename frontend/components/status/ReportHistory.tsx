@@ -15,6 +15,8 @@ import {
   MoreHorizontal,
 } from "lucide-react";
 import Link from "next/link";
+import { formatDateTime } from "@/lib/utils";
+import { Button } from "@/components/ui/Button";
 
 interface ReportHistoryProps {
   history: Ticket[];
@@ -70,12 +72,7 @@ export function ReportHistory({
   };
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
+    return formatDateTime(dateString).date;
   };
 
   return (
@@ -89,7 +86,7 @@ export function ReportHistory({
             Submission History
           </h2>
         </div>
-        <span className="text-xs font-bold text-secondary/60">
+        <span className="text-sm font-bold text-secondary/80">
           {history.length} Reports Found
         </span>
       </div>
@@ -97,7 +94,7 @@ export function ReportHistory({
       {loading ? (
         <div className="py-12 text-center">
           <Loader2 className="animate-spin size-8 text-primary mx-auto mb-4" />
-          <p className="text-secondary/60 font-medium">Loading history...</p>
+          <p className="text-secondary/80 font-medium">Loading history...</p>
         </div>
       ) : history.length > 0 ? (
         <div className="space-y-3">
@@ -115,7 +112,7 @@ export function ReportHistory({
                 <p className="text-sm font-bold text-secondary">
                   {ticket.ticket_id}
                 </p>
-                <p className="text-[10px] font-bold text-secondary/30 flex items-center gap-1 mt-0.5">
+                <p className="text-xs font-medium text-secondary/80 flex items-center gap-1 mt-0.5">
                   <Clock className="size-3" />
                   {formatDate(ticket.created_at)}
                 </p>
@@ -125,14 +122,14 @@ export function ReportHistory({
                 <div className="p-1.5 rounded bg-neutral-page border border-neutral-border text-primary">
                   {getTypeIcon(ticket.type)}
                 </div>
-                <p className="text-xs font-bold text-secondary truncate max-w-full">
+                <p className="text-sm font-bold text-secondary truncate max-w-full">
                   {ticket.url || ticket.sender_numbers || "No data"}
                 </p>
               </div>
 
               <div className="col-span-2 flex justify-center">
                 <span
-                  className={`text-[11px] font-black ${
+                  className={`text-sm font-bold ${
                     ticket.risk_score > 70
                       ? "text-risk-high"
                       : ticket.risk_score > 30
@@ -140,13 +137,13 @@ export function ReportHistory({
                         : "text-green-600"
                   }`}
                 >
-                  {ticket.risk_score}/100
+                  {ticket.risk_score}
                 </span>
               </div>
 
               <div className="col-span-2 flex justify-end items-center gap-2">
                 <span
-                  className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border whitespace-nowrap ${getStatusColor(ticket.status)}`}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold border whitespace-nowrap ${getStatusColor(ticket.status)}`}
                 >
                   {ticket.status}
                 </span>
@@ -157,18 +154,20 @@ export function ReportHistory({
 
           {visibleCount < history.length && (
             <div className="pt-4 text-center">
-              <button
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => setVisibleCount((prev) => prev + 10)}
-                className="px-6 py-2 bg-neutral-page border border-neutral-border rounded-xl text-xs font-bold text-secondary hover:border-primary/30 hover:bg-white transition-all shadow-sm"
+                className="px-8"
               >
                 Show More Reports
-              </button>
+              </Button>
             </div>
           )}
         </div>
       ) : (
         <div className="py-12 text-center bg-neutral-page rounded-xl border-2 border-dashed border-neutral-border">
-          <p className="text-secondary/60 font-medium text-sm">
+          <p className="text-secondary/80 font-medium text-sm">
             You haven&apos;t submitted any reports yet.
           </p>
           <Link

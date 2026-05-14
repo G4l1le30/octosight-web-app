@@ -117,7 +117,7 @@ export default function AdminDashboard() {
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-3xl font-black mb-1">
+            <h1 className="text-3xl font-bold mb-2">
               Threat Intelligence Dashboard
             </h1>
             <p className="text-secondary-light">
@@ -161,7 +161,7 @@ export default function AdminDashboard() {
         {/* Recent Alerts Table Preview */}
         <div className="mb-8 card overflow-hidden">
           <div className="px-8 py-5 border-b border-neutral-border flex items-center justify-between bg-white">
-            <h3 className="font-bold text-base tracking-wide text-secondary">
+            <h3 className="font-bold text-xl text-secondary">
               Live Threat Feed
             </h3>
             <Link

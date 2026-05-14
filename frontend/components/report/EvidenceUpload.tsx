@@ -3,6 +3,7 @@
 import React from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/Button";
 
 interface EvidenceUploadProps {
   label: string;
@@ -75,17 +76,18 @@ export const EvidenceUpload = ({
                     +{files.length - 1} more files
                   </span>
                 )}
-                <button
-                  type="button"
+                <Button
+                  variant="danger"
+                  size="sm"
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
                     onFilesChange([]);
                   }}
-                  className="mt-3 px-4 py-1.5 bg-risk-high text-white text-xs font-bold rounded-full hover:bg-risk-high/90 transition-all shadow-lg active:scale-95"
+                  className="mt-3 px-4"
                 >
                   Clear
-                </button>
+                </Button>
               </div>
             </div>
           ) : (

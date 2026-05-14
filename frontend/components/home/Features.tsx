@@ -7,12 +7,12 @@ interface FeatureProps {
 }
 
 const FeatureCard: React.FC<FeatureProps> = ({ icon, title, description }) => (
-  <div className="space-y-4">
-    <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center text-primary">
+  <div className="card p-8 border border-neutral-border h-full transition-all hover:border-primary/30 hover:shadow-md group">
+    <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary mb-6 group-hover:scale-110 transition-transform">
       {icon}
     </div>
-    <h3 className="font-bold text-xl">{title}</h3>
-    <p className="text-base opacity-70">{description}</p>
+    <h3 className="font-bold text-xl mb-2 text-secondary">{title}</h3>
+    <p className="text-base text-secondary/80 leading-relaxed">{description}</p>
   </div>
 );
 
@@ -57,9 +57,11 @@ const Features: React.FC = () => {
   ];
 
   return (
-    <section className="py-20 bg-white">
-      <div className="container mx-auto px-4">
-        <h2 className="text-3xl font-black text-center mb-16">The OctoSight Ecosystem</h2>
+    <section className="pt-24 pb-32 bg-white">
+      <div className="container mx-auto px-4 max-w-7xl">
+        <h2 className="text-3xl md:text-4xl font-black text-center mb-20 text-secondary">
+          The OctoSight Ecosystem
+        </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {features.map((feature, index) => (
             <FeatureCard key={index} {...feature} />

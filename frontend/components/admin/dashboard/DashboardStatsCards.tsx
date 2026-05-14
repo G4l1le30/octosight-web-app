@@ -34,7 +34,7 @@ export const DashboardStatsCards: React.FC<DashboardStatsCardsProps> = ({ stats 
           <p className="text-sm font-bold text-secondary mb-1 tracking-wide">
             {stat.label}
           </p>
-          <h3 className={`text-3xl font-black ${stat.color}`}>
+          <h3 className={`text-3xl font-bold ${stat.color}`}>
             {stat.value}
           </h3>
         </div>

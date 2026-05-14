@@ -38,3 +38,8 @@ Thumbs.db
 
 # Local data
 data/mysql_data/
+node_cache/
+
+# Markdown
+*.md
+!README.md

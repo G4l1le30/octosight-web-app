@@ -50,8 +50,8 @@ export const Pagination: React.FC<PaginationProps> = ({
         className,
       )}
     >
-      <div className="flex items-center gap-4">
-        <span className="text-sm text-secondary/60 font-medium">
+      <div className="flex items-center gap-8">
+        <span className="text-sm text-secondary/80 font-medium">
           Showing{" "}
           <span className="text-secondary font-bold">
             {startItem}-{endItem}
@@ -60,7 +60,7 @@ export const Pagination: React.FC<PaginationProps> = ({
           reports
         </span>
         <div className="flex items-center gap-2">
-          <span className="text-xs font-bold text-secondary/60 uppercase tracking-wider">
+          <span className="text-sm font-bold text-secondary/80 tracking-wide">
             Show
           </span>
           <select

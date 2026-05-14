@@ -9,7 +9,7 @@ interface InvestigateEvidenceProps {
 export const InvestigateEvidence: React.FC<InvestigateEvidenceProps> = ({ ticket, onDownloadAttachment }) => {
   return (
     <div className="card p-8 h-full">
-      <h3 className="text-lg font-bold mb-6 text-secondary">
+      <h3 className="text-xl font-bold mb-6 text-secondary">
         Incident Evidence
       </h3>
 

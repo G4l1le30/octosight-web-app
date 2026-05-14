@@ -21,21 +21,21 @@ const Hero: React.FC = () => {
 
       <div className="container mx-auto px-4 text-center max-w-5xl py-20 relative z-10">
         {/* Badge */}
-        <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/5 border border-primary/10 rounded-full mb-8 animate-in fade-in slide-in-from-bottom-2 duration-700">
+        <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/5 border border-primary/10 rounded-full mb-12 animate-in fade-in slide-in-from-bottom-2 duration-700">
           <div className="w-2 h-2 bg-primary rounded-full animate-ping"></div>
-          <span className="text-xs font-bold uppercase tracking-wide text-primary">
+          <span className="text-sm font-bold uppercase tracking-wide text-primary">
             Welcome to OctoSight Intelligence
           </span>
         </div>
 
-        <h1 className="text-4xl md:text-6xl font-black text-secondary leading-[1.1] mb-6 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150">
+        <h1 className="text-4xl md:text-6xl font-black text-secondary leading-[1.1] mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150">
           Proactive Phishing Detection <br />
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-primary-dark to-primary-light">
             Powered by Hybrid Risk Scoring
           </span>
         </h1>
 
-        <p className="text-lg text-secondary/70 mb-12 max-w-2xl mx-auto font-medium leading-relaxed animate-in fade-in slide-in-from-bottom-6 duration-700 delay-300">
+        <p className="text-xl text-secondary/80 mb-16 max-w-3xl mx-auto font-medium leading-relaxed animate-in fade-in slide-in-from-bottom-6 duration-700 delay-300">
           OctoSight combines human intelligence with machine learning to
           identify and mitigate phishing threats in real-time. Secure your
           digital banking experience.
@@ -44,7 +44,7 @@ const Hero: React.FC = () => {
         <div className="flex flex-col sm:flex-row gap-5 justify-center mb-16 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-500">
           <Link
             href="/report"
-            className="btn-primary text-lg px-12 py-4 shadow-2xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all"
+            className="btn-primary text-lg px-12 py-4 shadow-2xl shadow-black/10 hover:scale-105 active:scale-95 transition-all"
           >
             Report Incident
           </Link>

@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
+import { Button } from "@/components/ui/Button";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -149,13 +150,13 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <button
+            <Button
               type="submit"
-              disabled={loading}
-              className="w-full btn-primary py-3 text-sm"
+              loading={loading}
+              className="w-full"
             >
-              {loading ? "Signing in..." : "Sign In"}
-            </button>
+              Sign In
+            </Button>
           </form>
 
           {/* Footer */}

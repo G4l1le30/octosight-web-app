@@ -11,7 +11,7 @@ export const InvestigateNotes: React.FC<InvestigateNotesProps> = ({
 }) => {
   return (
     <div className="card p-8 h-full flex flex-col">
-      <h3 className="text-lg font-bold mb-6 flex items-center gap-2 text-secondary">
+      <h3 className="text-xl font-bold mb-6 flex items-center gap-2 text-secondary">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           className="h-5 w-5 text-primary"

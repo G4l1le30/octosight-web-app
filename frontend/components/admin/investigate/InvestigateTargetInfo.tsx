@@ -1,5 +1,6 @@
 import React from "react";
 import { Ticket } from "@/types/ticket";
+import { formatDateTime } from "@/lib/utils";
 
 interface InvestigateTargetInfoProps {
   ticket: Ticket;
@@ -16,7 +17,7 @@ export const InvestigateTargetInfo: React.FC<InvestigateTargetInfoProps> = ({
     <div className="card p-8 h-full flex flex-col">
       <div className="flex justify-between items-start mb-8">
         <div className="space-y-2">
-          <h3 className="text-lg font-bold text-secondary">
+          <h3 className="text-xl font-bold text-secondary">
             Target Indicator
           </h3>
           <p className="text-xl font-medium text-primary break-all">
@@ -26,7 +27,7 @@ export const InvestigateTargetInfo: React.FC<InvestigateTargetInfoProps> = ({
         <div className="text-right">
           <h3 className="text-lg font-bold text-secondary">Risk Score</h3>
           <p
-            className={`text-4xl font-black ${ticket.risk_score >= 80 ? "text-risk-high" : ticket.risk_score >= 50 ? "text-risk-medium" : "text-risk-low"}`}
+            className={`text-4xl font-bold ${ticket.risk_score >= 80 ? "text-risk-high" : ticket.risk_score >= 50 ? "text-risk-medium" : "text-risk-low"}`}
           >
             {ticket.risk_score.toFixed(0)}
           </p>
@@ -50,7 +51,7 @@ export const InvestigateTargetInfo: React.FC<InvestigateTargetInfoProps> = ({
               Submitted
             </span>
             <span className="text-base font-medium text-secondary">
-              {new Date(ticket.created_at).toLocaleDateString()}
+              {formatDateTime(ticket.created_at).full}
             </span>
           </div>
 
@@ -97,7 +98,7 @@ export const InvestigateTargetInfo: React.FC<InvestigateTargetInfoProps> = ({
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value)}
-              className="text-base font-medium bg-neutral-page border border-neutral-border rounded px-4 py-2 outline-none focus:border-primary text-secondary transition-all appearance-none pr-10 cursor-pointer w-full md:w-auto"
+              className="text-sm font-medium bg-neutral-page border border-neutral-border rounded-lg px-4 py-2 outline-none focus:border-primary text-secondary transition-all appearance-none pr-10 cursor-pointer w-full md:w-auto"
               style={{
                 backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
                 backgroundRepeat: "no-repeat",

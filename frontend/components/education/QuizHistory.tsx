@@ -1,5 +1,6 @@
 import React from "react";
 import { QuizAttempt } from "@/types/education";
+import { formatDateTime } from "@/lib/utils";
 
 interface QuizHistoryProps {
   history: QuizAttempt[];
@@ -25,14 +26,7 @@ export const QuizHistory: React.FC<QuizHistoryProps> = ({ history, onViewAttempt
                 {Math.round(attempt.score / 10)} / 10
               </div>
               <div className="font-medium text-secondary/80">
-                {new Date(attempt.created_at + (attempt.created_at.includes('Z') ? '' : 'Z')).toLocaleString('en-GB', {
-                  year: 'numeric',
-                  month: 'numeric',
-                  day: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  hour12: false
-                }).replace(',', '')}
+                {formatDateTime(attempt.created_at).full}
               </div>
             </div>
             <button 

@@ -16,7 +16,7 @@ export const QuizLoadingUI: React.FC = () => {
       setLoadingStepIndex(prev => Math.min(prev + 1, loadingSteps.length - 1));
     }, 2500);
     return () => clearInterval(interval);
-  }, [loadingSteps.length]);
+  }, []);
 
   const CurrentIcon = loadingSteps[loadingStepIndex].icon;
   const progressPercentage = ((loadingStepIndex + 1) / loadingSteps.length) * 100;

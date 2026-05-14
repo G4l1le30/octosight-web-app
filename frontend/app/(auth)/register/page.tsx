@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
+import { Button } from "@/components/ui/Button";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -231,16 +232,14 @@ export default function RegisterPage() {
               )}
             </div>
 
-            <button
+            <Button
               type="submit"
-              disabled={
-                loading ||
-                (confirmPassword !== "" && password !== confirmPassword)
-              }
-              className="w-full btn-primary py-3 text-sm"
+              loading={loading}
+              disabled={confirmPassword !== "" && password !== confirmPassword}
+              className="w-full"
             >
-              {loading ? "Creating Account..." : "Create Account"}
-            </button>
+              Create Account
+            </Button>
           </form>
 
           {/* Footer */}

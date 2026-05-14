@@ -31,12 +31,37 @@ from sqlalchemy.orm import Session
 
 from app.core.security import get_current_user
 from app.db.session import get_db
-from app.models.models import Ticket
+from app.models.models import Ticket, BlacklistedURL
 from app.schemas.schemas import AnalysisRequest, MessageRequest, SpamPredictionResponse
 from app.core.engines import analyze_spam, ocr_engine, rule_engine
 from app.modules.education.gemini_service import GeminiEducationService
+from app.api.endpoints.blacklist import normalize_url_for_match, _extract_domain
 
 router = APIRouter(prefix="/api/v1", tags=["detection"])
+
+
+# ── Helpers ───────────────────────────────────────────────────────────────────
+
+def _check_blacklist(db: Session, url: str) -> Optional[BlacklistedURL]:
+    """Reusable helper to check if a URL matches any active blacklist entry."""
+    if not url:
+        return None
+        
+    normalized_report_url = normalize_url_for_match(url)
+    report_domain = _extract_domain(url)
+    
+    # Get all active blacklist entries
+    all_blacklist = db.query(BlacklistedURL).filter(BlacklistedURL.is_active == True).all()
+    
+    for entry in all_blacklist:
+        normalized_entry_url = normalize_url_for_match(entry.url)
+        # Match if:
+        # 1. Domains match exactly (protocol-agnostic)
+        # 2. Normalized report URL contains the normalized blacklisted URL (supports path matching)
+        if (entry.domain and entry.domain == report_domain) or (normalized_entry_url and normalized_entry_url in normalized_report_url):
+            return entry
+            
+    return None
 
 UPLOAD_DIR = os.getenv("UPLOAD_DIR", "uploads")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
@@ -178,6 +203,11 @@ async def create_report(
 
     # 3. Rule-based analysis
     combined_text = "\n---\n".join(all_extracted_text)
+    # 3. Check Blacklist FIRST (User request: 'cek blacklist dulu baru jalankan engine')
+    blacklisted_entry = _check_blacklist(db, url)
+    
+    # 4. Engine execution
+    # 4a. Rule Engine
     rule_analysis = rule_engine.calculate_risk(
         url=url,
         attachments=orig_attachment_names or None,
@@ -186,15 +216,37 @@ async def create_report(
     )
     rule_score: float = rule_analysis["score"]
 
-    # 4. Hybrid scoring: Rule (35%) + ML (65%)
-    # Combine user-provided summary and OCR text for more comprehensive analysis
+    if blacklisted_entry:
+        rule_score = 100.0
+        rule_analysis["flags"].append("domain_blacklisted")
+        print(f"[Blacklist] Match found for '{url}' against blacklisted '{blacklisted_entry.url}' — forcing rule_score=100")
+
+    # 4b. Hybrid scoring: Rule (35%) + ML (65%)
     ml_input_text = f"{summary}\n{combined_text}".strip()
-    hybrid = _compute_hybrid_score(rule_score, ml_input_text)
+    
+    # Append ML flag for transparency
+    flags: List[str] = list(rule_analysis["flags"])
+
+    if blacklisted_entry:
+        # If blacklisted, everything is forced to 100
+        hybrid = {
+            "final_score": 100.0,
+            "rule_score": 100.0,
+            "ml_score": 100.0,
+            "ml_category": "phishing",
+            "ml_confidence": 100.0,
+            "ml_available": True
+        }
+        if "BLACKLISTED" not in flags:
+            flags.append("BLACKLISTED")
+        print(f"[Blacklist] Match found for '{url}' — forcing all scores to 100.0")
+    else:
+        hybrid = _compute_hybrid_score(rule_score, ml_input_text)
+    
     final_score = hybrid["final_score"]
     priority = _resolve_priority(final_score)
 
     # Append ML flag for transparency
-    flags: List[str] = list(rule_analysis["flags"])
     if not hybrid["ml_available"]:
         flags.append("ml_engine_offline")
     else:
@@ -273,6 +325,7 @@ async def analyze_preview(
     sender_numbers: str = Form(""),
     attachment_names: str = Form("[]"),
     screenshots: List[UploadFile] = File([]),
+    db: Session = Depends(get_db),
 ):
     """
     Calculate the hybrid risk score from form data **without** saving a ticket.
@@ -291,7 +344,10 @@ async def analyze_preview(
             except Exception as e:
                 print(f"Preview OCR Error: {e}")
 
-    # 2. Rule Engine calculation
+    # 2. Blacklist check FIRST
+    blacklisted_entry = _check_blacklist(db, url)
+
+    # 3. Rule Engine calculation
     # We combine summary and OCR text for rule engine too in preview
     full_text_context = f"{summary}\n{combined_ocr_text}".strip()
     
@@ -308,18 +364,37 @@ async def analyze_preview(
     )
     rule_score: float = rule_analysis["score"]
 
-    # 3. Hybrid scoring (Rule 35% + ML 65%)
-    # Use the same combined text for ML Engine
-    hybrid = _compute_hybrid_score(rule_score, full_text_context or url)
+    if blacklisted_entry:
+        rule_score = 100.0
+        if "domain_blacklisted" not in rule_analysis["flags"]:
+            rule_analysis["flags"].append("domain_blacklisted")
+
+    # 4. Hybrid scoring (Rule 35% + ML 65%)
+    if blacklisted_entry:
+        hybrid = {
+            "final_score": 100.0,
+            "rule_score": 100.0,
+            "ml_score": 100.0,
+            "ml_category": "phishing",
+            "ml_confidence": 100.0,
+            "ml_available": True
+        }
+        if "BLACKLISTED" not in rule_analysis["flags"]:
+            rule_analysis["flags"].append("BLACKLISTED")
+        final_score = 100.0
+    else:
+        hybrid = _compute_hybrid_score(rule_score, full_text_context or url)
+        final_score = hybrid["final_score"]
 
     return {
         **rule_analysis,
-        "score": hybrid["final_score"],
+        "score": final_score,
         "rule_score": hybrid["rule_score"],
         "ml_score": hybrid["ml_score"],
         "ml_category": hybrid["ml_category"],
         "ml_confidence": hybrid["ml_confidence"],
         "extracted_ocr_text": combined_ocr_text.strip(),
+        "is_blacklisted": blacklisted_entry is not None
     }
 
 

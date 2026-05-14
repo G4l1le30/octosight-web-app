@@ -4,20 +4,14 @@ import Link from "next/link";
 import React, { useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { usePathname } from "next/navigation";
+import { ProfileDropdown } from "./ProfileDropdown";
 
 const Navbar: React.FC = () => {
   const { user, loading, logout } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [profileOpen, setProfileOpen] = useState(false);
   const pathname = usePathname();
 
   const isAdminRoute = pathname.startsWith("/admin");
-
-  const handleLogout = async () => {
-    await logout();
-    setProfileOpen(false);
-    window.location.href = "/";
-  };
 
   const getLinkClass = (path: string) => {
     const isActive = pathname === path;
@@ -30,7 +24,7 @@ const Navbar: React.FC = () => {
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-neutral-border shadow-sm">
-      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+      <div className="container mx-auto px-4 h-16 flex items-center justify-between max-w-7xl">
         <Link href="/" className="flex items-center gap-2">
           <span className="text-primary text-2xl font-black tracking-tight">
             OCTOSIGHT
@@ -57,6 +51,12 @@ const Navbar: React.FC = () => {
               >
                 Triage
               </Link>
+              <Link
+                href="/admin/blacklist"
+                className={getLinkClass("/admin/blacklist")}
+              >
+                Blacklist
+              </Link>
             </>
           ) : (
             <>
@@ -80,76 +80,11 @@ const Navbar: React.FC = () => {
           {loading ? (
             <div className="w-20 h-8 bg-neutral-page rounded-lg animate-pulse"></div>
           ) : user ? (
-            <div className="self-center relative">
-              <button
-                onClick={() => setProfileOpen(!profileOpen)}
-                className="flex items-center gap-2 px-3 py-1.5 border border-neutral-border rounded-lg hover:border-primary/30 transition-all"
-              >
-                <div className="w-7 h-7 bg-primary/10 text-primary rounded-full flex items-center justify-center text-xs font-black">
-                  {user.full_name.charAt(0).toUpperCase()}
-                </div>
-                <span className="text-sm font-bold text-secondary max-w-[120px] truncate">
-                  {user.full_name}
-                </span>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className={`h-3.5 w-3.5 text-secondary/60 transition-transform ${profileOpen ? "rotate-180" : ""}`}
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
-              </button>
-
-              {profileOpen && (
-                <>
-                  <div
-                    className="fixed inset-0 z-40"
-                    onClick={() => setProfileOpen(false)}
-                  ></div>
-                  <div className="absolute right-0 mt-2 w-56 bg-white border border-neutral-border rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-                    <div className="px-4 py-3 border-b border-neutral-border bg-neutral-page">
-                      <p className="text-sm font-bold text-secondary truncate">
-                        {user.full_name}
-                      </p>
-                      <p className="text-xs text-secondary/60 truncate">
-                        {user.email}
-                      </p>
-                      <span
-                        className={`inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded ${
-                          user.role === "admin"
-                            ? "bg-primary/10 text-primary"
-                            : "bg-neutral-border text-secondary/60"
-                        }`}
-                      >
-                        {user.role.toUpperCase()}
-                      </span>
-                    </div>
-                    {user.role === "admin" && (
-                      <Link
-                        href="/admin"
-                        onClick={() => setProfileOpen(false)}
-                        className="block px-4 py-2.5 text-sm font-bold text-secondary hover:bg-neutral-page transition-colors"
-                      >
-                        Admin Dashboard
-                      </Link>
-                    )}
-                    <button
-                      onClick={handleLogout}
-                      className="w-full text-left px-4 py-2.5 text-sm font-bold text-risk-high hover:bg-risk-high/5 transition-colors"
-                    >
-                      Sign Out
-                    </button>
-                  </div>
-                </>
-              )}
-            </div>
+            <ProfileDropdown 
+              user={user} 
+              logout={logout} 
+              isAdminRoute={isAdminRoute} 
+            />
           ) : (
             <div className="self-center flex items-center gap-2">
               <Link
@@ -216,6 +151,13 @@ const Navbar: React.FC = () => {
               >
                 Triage
               </Link>
+              <Link
+                href="/admin/blacklist"
+                onClick={() => setMobileOpen(false)}
+                className="block py-2 text-sm font-medium hover:text-primary"
+              >
+                Blacklist
+              </Link>
             </>
           ) : (
             <>
@@ -254,7 +196,7 @@ const Navbar: React.FC = () => {
             {user ? (
               <>
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-8 h-8 bg-primary/10 text-primary rounded-full flex items-center justify-center text-xs font-black">
+                  <div className="w-8 h-8 bg-primary/10 text-primary rounded-full flex items-center justify-center text-xs font-bold">
                     {user.full_name.charAt(0).toUpperCase()}
                   </div>
                   <div>
@@ -264,15 +206,19 @@ const Navbar: React.FC = () => {
                 </div>
                 {user.role === "admin" && (
                   <Link
-                    href="/admin"
+                    href={isAdminRoute ? "/" : "/admin"}
                     onClick={() => setMobileOpen(false)}
                     className="block py-2 text-sm font-bold text-primary"
                   >
-                    Admin Dashboard
+                    {isAdminRoute ? "User Page" : "Admin Dashboard"}
                   </Link>
                 )}
                 <button
-                  onClick={handleLogout}
+                  onClick={async () => {
+                    await logout();
+                    setMobileOpen(false);
+                    window.location.href = "/";
+                  }}
                   className="block w-full text-left py-2 text-sm font-bold text-risk-high"
                 >
                   Sign Out

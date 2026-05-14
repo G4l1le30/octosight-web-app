@@ -24,7 +24,7 @@ export const QuizQuestionCard: React.FC<QuizQuestionCardProps> = ({
           <button
             key={oIdx}
             onClick={() => onSelectOption(oIdx)}
-            className={`w-full text-left px-6 py-5 rounded-2xl border-2 transition-all font-medium text-base ${
+            className={`w-full text-left px-6 py-5 rounded-xl border-2 transition-all font-medium text-base ${
               selectedAnswer === oIdx 
                 ? "border-primary bg-primary/5 text-primary shadow-sm" 
                 : "border-neutral-border hover:bg-neutral-page text-secondary group"

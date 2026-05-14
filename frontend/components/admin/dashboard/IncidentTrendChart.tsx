@@ -17,7 +17,7 @@ interface IncidentTrendChartProps {
 export const IncidentTrendChart: React.FC<IncidentTrendChartProps> = ({ trendData }) => {
   return (
     <div className="card p-8">
-      <h3 className="font-bold mb-6 text-base tracking-wide text-secondary">
+      <h3 className="font-bold mb-6 text-lg text-secondary">
         Incident Volume (Last 7 Days)
       </h3>
       <div className="h-64 w-full">

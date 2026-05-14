@@ -46,7 +46,7 @@ export const ReportForm: React.FC<ReportFormProps> = ({
   } = form;
 
   return (
-    <div className="card p-8 bg-white border border-neutral-border overflow-visible">
+    <div className="card p-8 mb-8 bg-white border border-neutral-border overflow-visible">
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
         <div className="space-y-4">
           <label className="text-base font-bold text-secondary">Incident Type</label>
@@ -106,7 +106,7 @@ export const ReportForm: React.FC<ReportFormProps> = ({
           />
         </div>
 
-        <Button type="submit" loading={loading} className="w-full text-lg">Analyze Report</Button>
+        <Button type="submit" loading={loading} size="lg" className="w-full text-lg">Analyze Report</Button>
       </form>
     </div>
   );

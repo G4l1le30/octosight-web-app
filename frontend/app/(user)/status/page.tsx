@@ -83,7 +83,7 @@ export default function StatusPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-12 max-w-4xl">
+    <div className="container mx-auto px-4 py-12 max-w-6xl">
       <div className="mb-12 text-center">
         <h1 className="text-4xl font-bold mb-4 text-secondary">Track Your Reports</h1>
         <p className="text-secondary opacity-70 font-medium max-w-xl mx-auto">

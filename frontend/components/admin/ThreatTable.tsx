@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { Ticket } from "@/types/ticket";
-import { cn } from "@/lib/utils";
+import { cn, formatDateTime } from "@/lib/utils";
 
 interface ThreatTableProps {
   tickets: Ticket[];
@@ -32,7 +32,7 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
         <thead className="bg-neutral-page text-sm font-bold text-secondary border-b border-neutral-border">
           <tr>
             <th className="px-6 py-4 w-[20%]">Ticket</th>
-            <th className="px-6 py-4 w-[15%]">Indicator / Target</th>
+            <th className="px-6 py-4 w-[20%]">Indicator / Target</th>
             <th className="px-6 py-4">Priority</th>
             <th className="px-6 py-4">Risk Score</th>
             <th className="px-6 py-4">Key Findings</th>
@@ -55,21 +55,21 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
               >
                 <td className="px-6 py-5">
                   <div className="flex flex-col">
-                    <span className="font-bold text-base text-secondary">
+                    <span className="font-bold text-base text-black">
                       {ticket.ticket_id}
                     </span>
-                    <span className="text-xs opacity-70 font-normal text-secondary">
-                      {new Date(ticket.created_at).toLocaleString()}
+                    <span className="text-xs font-medium text-secondary">
+                      {formatDateTime(ticket.created_at).full}
                     </span>
                   </div>
                 </td>
                 <td className="px-6 py-5">
                   <div className="flex flex-col">
-                    <span className="text-xs font-bold text-secondary opacity-60 mb-1">
+                    <span className="text-xs font-bold text-secondary mb-1">
                       {ticket.type}
                     </span>
                     <span
-                      className="text-sm font-normal text-secondary break-all line-clamp-1"
+                      className="text-sm font-medium text-secondary break-all line-clamp-1"
                       title={
                         ticket.type === "SMS" || ticket.type === "WhatsApp"
                           ? ticket.sender_numbers || "N/A"
@@ -142,13 +142,13 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
                         .map((f, i) => (
                           <span
                             key={i}
-                            className="text-[10px] font-bold border border-neutral-border text-secondary/70 px-2 py-0.5 rounded uppercase tracking-wider"
+                            className="text-[10px] font-bold border border-neutral-border text-secondary/80 px-2 py-0.5 rounded uppercase"
                           >
                             {f.replace(/_/g, " ")}
                           </span>
                         ))
                     ) : (
-                      <span className="text-xs text-secondary/60">None</span>
+                      <span className="text-xs text-secondary/80">None</span>
                     )}
                     {ticket.flags && ticket.flags.split(",").length > 2 && (
                       <span className="text-[10px] font-bold text-secondary/70">

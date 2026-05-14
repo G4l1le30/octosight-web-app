@@ -17,13 +17,14 @@ from sqlalchemy.exc import OperationalError
 from app.db.session import Base, SessionLocal, engine
 from app.db.migrations import apply_migrations
 from app.db.education_seeding import seed_education_data
-from app.models.models import Ticket, User
+from app.models.models import Ticket, User, BlacklistedURL  # noqa: F401 — ensures table is created
 from app.core.security import hash_password
 
 from app.api.endpoints import auth as auth_router
 from app.api.endpoints import tickets as tickets_router
 from app.api.endpoints import detection as detection_router
 from app.api.endpoints import education as education_router
+from app.api.endpoints import blacklist as blacklist_router
 
 # ── Startup Logic ─────────────────────────────────────────────────────────────
 
@@ -185,6 +186,7 @@ app.include_router(auth_router.router)
 app.include_router(tickets_router.router)
 app.include_router(detection_router.router)
 app.include_router(education_router.router)
+app.include_router(blacklist_router.router)
 
 # ── Health check ───────────────────────────────────────────────────────────────
 

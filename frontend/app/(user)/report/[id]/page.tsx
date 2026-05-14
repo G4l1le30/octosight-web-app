@@ -89,7 +89,7 @@ export default function DetailedReportPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-12 max-w-4xl">
+    <div className="container mx-auto px-4 py-12 max-w-5xl">
       <div className="mb-10 flex items-center gap-4 animate-in fade-in slide-in-from-left-4 duration-500">
         <button
           onClick={() => router.push("/status")}
@@ -99,7 +99,7 @@ export default function DetailedReportPage() {
           <ChevronLeft className="size-6 group-hover:-translate-x-0.5 transition-transform" />
         </button>
         <div>
-          <h1 className="text-3xl font-black text-secondary">
+          <h1 className="text-3xl font-bold text-secondary">
             Analysis Report
           </h1>
           <p className="text-sm font-bold text-secondary/60 mt-2">

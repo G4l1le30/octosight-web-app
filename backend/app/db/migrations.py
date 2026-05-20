@@ -31,6 +31,8 @@ def apply_migrations(db: Session) -> None:
         },
         "users": {
             "updated_at": "DATETIME",
+            "failed_login_attempts": "INTEGER DEFAULT 0",
+            "locked_until": "DATETIME",
         },
     }
 

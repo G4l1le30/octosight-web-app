@@ -2,6 +2,7 @@ import "./globals.css";
 import { Metadata } from "next";
 import { GeistSans } from 'geist/font/sans';
 import { AuthProvider } from "@/lib/auth-context";
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
 export const metadata: Metadata = {
   title: "OctoSight - Phishing Detection & Mitigation",
@@ -19,11 +20,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${GeistSans.className} antialiased text-secondary bg-neutral-page`}>
-        <AuthProvider>
-          <main>
-            {children}
-          </main>
-        </AuthProvider>
+        <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ""}>
+          <AuthProvider>
+            <main>
+              {children}
+            </main>
+          </AuthProvider>
+        </GoogleOAuthProvider>
       </body>
     </html>
   );

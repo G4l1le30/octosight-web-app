@@ -12,6 +12,8 @@ from jose import JWTError, jwt
 from datetime import datetime, timedelta, timezone
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
 
 from app.db.session import get_db
 from app.models.models import User
@@ -23,10 +25,16 @@ SECRET_KEY = os.getenv(
 )
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = int(
-    os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "1440")
+    os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "15")
+)
+REFRESH_TOKEN_EXPIRE_DAYS = int(
+    os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", "7")
 )
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+# Rate Limiter Configuration
+limiter = Limiter(key_func=get_remote_address)
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -47,7 +55,15 @@ def create_access_token(data: dict, expires_delta: timedelta = None) -> str:
     expire = datetime.now(timezone.utc) + (
         expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     )
-    payload.update({"exp": expire})
+    payload.update({"exp": expire, "type": "access"})
+    return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+
+
+def create_refresh_token(data: dict) -> str:
+    """Encode a signed JWT refresh token."""
+    payload = data.copy()
+    expire = datetime.now(timezone.utc) + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
+    payload.update({"exp": expire, "type": "refresh"})
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 
 

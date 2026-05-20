@@ -13,10 +13,10 @@ from app.models.education import EducationModule, EducationArticle
 from app.core.security import hash_password
 
 # Configuration
-DEFAULT_ADMIN_EMAIL = os.getenv("DEFAULT_ADMIN_EMAIL", "admin@octosight.id")
-DEFAULT_ADMIN_PASSWORD = os.getenv("DEFAULT_ADMIN_PASSWORD", "admin123")
-DEFAULT_USER_EMAIL = os.getenv("DEFAULT_USER_EMAIL", "user@octosight.id")
-DEFAULT_USER_PASSWORD = os.getenv("DEFAULT_USER_PASSWORD", "user123")
+DEFAULT_ADMIN_EMAIL = os.getenv("DEFAULT_ADMIN_EMAIL")
+DEFAULT_ADMIN_PASSWORD = os.getenv("DEFAULT_ADMIN_PASSWORD")
+DEFAULT_USER_EMAIL = os.getenv("DEFAULT_USER_EMAIL")
+DEFAULT_USER_PASSWORD = os.getenv("DEFAULT_USER_PASSWORD")
 
 # Education Data
 EDUCATION_MODULES_DATA = [
@@ -286,24 +286,29 @@ def main_seed():
 
         # 2. Seed Users
         print("Seeding users...")
-        admin = User(
-            id=str(uuid.uuid4()),
-            full_name="OctoSight Admin",
-            email=DEFAULT_ADMIN_EMAIL,
-            hashed_password=hash_password(DEFAULT_ADMIN_PASSWORD),
-            role="admin"
-        )
-        user = User(
-            id=str(uuid.uuid4()),
-            full_name="OctoSight User",
-            email=DEFAULT_USER_EMAIL,
-            hashed_password=hash_password(DEFAULT_USER_PASSWORD),
-            role="user"
-        )
-        db.add(admin)
-        db.add(user)
-        db.commit()
-        db.refresh(user)
+        user = None
+        if DEFAULT_ADMIN_EMAIL and DEFAULT_ADMIN_PASSWORD:
+            admin = User(
+                id=str(uuid.uuid4()),
+                full_name="OctoSight Admin",
+                email=DEFAULT_ADMIN_EMAIL,
+                hashed_password=hash_password(DEFAULT_ADMIN_PASSWORD),
+                role="admin"
+            )
+            db.add(admin)
+        if DEFAULT_USER_EMAIL and DEFAULT_USER_PASSWORD:
+            user = User(
+                id=str(uuid.uuid4()),
+                full_name="OctoSight User",
+                email=DEFAULT_USER_EMAIL,
+                hashed_password=hash_password(DEFAULT_USER_PASSWORD),
+                role="user"
+            )
+            db.add(user)
+            db.commit()
+            db.refresh(user)
+        else:
+            db.commit()
 
         # 3. Seed Education
         print("Seeding education data...")
@@ -348,7 +353,7 @@ def main_seed():
                 extracted_text=base.get("extracted_text"),
                 attachment_names=base.get("attachment_names"),
                 flags=base["flags"],
-                user_id=user.id,
+                user_id=user.id if user else None,
                 created_at=created_at,
                 investigation_notes=f"Investigasi awal menunjukkan adanya {base['flags'].replace(',', ', ')}. Langkah mitigasi sedang dilakukan." if status != "Submitted" else None
             )
@@ -358,7 +363,7 @@ def main_seed():
         db.commit()
 
         print("\nSeeding completed successfully!")
-        print(f"Users created: {DEFAULT_ADMIN_EMAIL}, {DEFAULT_USER_EMAIL}")
+        print(f"Users created based on ENV vars.")
         print(f"Tickets created: 20")
         print(f"Education Modules: {len(EDUCATION_MODULES_DATA)}")
 

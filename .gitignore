@@ -2,6 +2,8 @@
 node_modules/
 venv/
 .env
+.env.*
+*.env
 
 # Next.js
 .next/
@@ -39,6 +41,7 @@ Thumbs.db
 # Local data
 data/mysql_data/
 node_cache/
+frontend/node_cache/
 
 # Markdown
 *.md

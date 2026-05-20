@@ -18,3 +18,5 @@ torch
 sentence-transformers
 google-genai
 alembic
+google-auth
+slowapi

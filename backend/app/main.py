@@ -18,7 +18,9 @@ from app.db.session import Base, SessionLocal, engine
 from app.db.migrations import apply_migrations
 from app.db.education_seeding import seed_education_data
 from app.models.models import Ticket, User, BlacklistedURL  # noqa: F401 — ensures table is created
-from app.core.security import hash_password
+from app.core.security import hash_password, limiter
+from slowapi.errors import RateLimitExceeded
+from slowapi import _rate_limit_exceeded_handler
 
 from app.api.endpoints import auth as auth_router
 from app.api.endpoints import tickets as tickets_router
@@ -31,10 +33,10 @@ from app.api.endpoints import blacklist as blacklist_router
 def _seed_db(db) -> None:
     """Seed a default admin account and minimal dummy tickets if the DB is empty."""
     # Admin account
-    admin_email = os.getenv("DEFAULT_ADMIN_EMAIL", "admin@octosight.id")
-    admin_password = os.getenv("DEFAULT_ADMIN_PASSWORD", "admin1234")
+    admin_email = os.getenv("DEFAULT_ADMIN_EMAIL")
+    admin_password = os.getenv("DEFAULT_ADMIN_PASSWORD")
     
-    if not db.query(User).filter(User.email == admin_email).first():
+    if admin_email and admin_password and not db.query(User).filter(User.email == admin_email).first():
         db.add(
             User(
                 id=str(uuid.uuid4()),
@@ -45,7 +47,7 @@ def _seed_db(db) -> None:
             )
         )
         db.commit()
-        print(f"[Seed] Admin user created: {admin_email} / ********")
+        print(f"[Seed] Admin user created: {admin_email}")
 
     # Dummy tickets (only if table is completely empty)
     if db.query(Ticket).count() == 0:
@@ -127,6 +129,9 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan,
 )
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # ── Middleware ─────────────────────────────────────────────────────────────────
 

@@ -8,6 +8,8 @@ interface AuthContextType {
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (fullName: string, email: string, password: string) => Promise<void>;
+  loginWithGoogle: (accessToken: string) => Promise<void>;
+  registerWithGoogle: (accessToken: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -19,9 +21,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchMe = useCallback(async () => {
     try {
-      const response = await fetch("/api/v1/auth/me", {
+      let response = await fetch("/api/v1/auth/me", {
         headers: { "Accept": "application/json" },
       });
+      
+      // If unauthorized, attempt to refresh token
+      if (response.status === 401) {
+        const refreshRes = await fetch("/api/v1/auth/refresh", { method: "POST" });
+        if (refreshRes.ok) {
+          // Retry original request if refresh succeeded
+          response = await fetch("/api/v1/auth/me", {
+            headers: { "Accept": "application/json" },
+          });
+        }
+      }
+
       if (response.ok) {
         const data = await response.json();
         setUser(data);
@@ -96,6 +110,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(userData);
   };
 
+  const loginWithGoogle = async (accessToken: string) => {
+    const response = await fetch("/api/v1/auth/google/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ credential: accessToken }),
+    });
+
+    if (!response.ok) {
+      let errorMessage = "Google Sign-In failed";
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.detail || errorMessage;
+      } catch (e) {}
+      throw new Error(errorMessage);
+    }
+
+    const userData = await response.json();
+    setUser(userData);
+  };
+
+  const registerWithGoogle = async (accessToken: string) => {
+    const response = await fetch("/api/v1/auth/google/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ credential: accessToken }),
+    });
+
+    if (!response.ok) {
+      let errorMessage = "Google Sign-Up failed";
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.detail || errorMessage;
+      } catch (e) {}
+      throw new Error(errorMessage);
+    }
+  };
+
   const logout = async () => {
     try {
       await fetch("/api/v1/auth/logout", { method: "POST" });
@@ -106,7 +157,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, loginWithGoogle, registerWithGoogle, logout }}>
       {children}
     </AuthContext.Provider>
   );

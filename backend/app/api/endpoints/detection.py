@@ -26,7 +26,7 @@ import time
 import uuid
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, BackgroundTasks
 from sqlalchemy.orm import Session
 
 from app.core.security import get_current_user
@@ -36,6 +36,7 @@ from app.schemas.schemas import AnalysisRequest, MessageRequest, SpamPredictionR
 from app.core.engines import analyze_spam, ocr_engine, rule_engine
 from app.modules.education.gemini_service import GeminiEducationService
 from app.api.endpoints.blacklist import normalize_url_for_match, _extract_domain
+from app.modules.notifications.service import send_email_notification
 
 router = APIRouter(prefix="/api/v1", tags=["detection"])
 
@@ -147,6 +148,7 @@ def _save_upload(file: UploadFile, prefix: str) -> str:
 
 @router.post("/report", summary="Submit a phishing/fraud report")
 async def create_report(
+    background_tasks: BackgroundTasks,
     url: str = Form(""),
     report_type: str = Form(...),
     summary: str = Form(""),
@@ -292,7 +294,7 @@ async def create_report(
     db.commit()
     db.refresh(db_ticket)
 
-    # TAMBAHAN: Generate education recommendation
+    # ADDITION: Generate education recommendation
     try:
         from app.models.education import EducationModule
         modules = db.query(EducationModule).order_by(EducationModule.order_index).all()
@@ -313,6 +315,20 @@ async def create_report(
         db.refresh(db_ticket)
     except Exception as e:
         print(f"Failed to generate education recommendation: {e}")
+
+    if current_user and current_user.email:
+        send_email_notification(
+            background_tasks=background_tasks,
+            subject=f"OctoSight - Report Received [{db_ticket.ticket_id}]",
+            email_to=current_user.email,
+            template_name="form_submit.html",
+            template_body={
+                "ticket_id": db_ticket.ticket_id,
+                "url": db_ticket.url or "N/A",
+                "risk_score": db_ticket.risk_score,
+                "priority": db_ticket.priority
+            }
+        )
 
     return db_ticket
 

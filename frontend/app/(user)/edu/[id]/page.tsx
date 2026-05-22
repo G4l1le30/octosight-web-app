@@ -90,22 +90,66 @@ export default function ModuleDetailPage() {
     }
   }, [user, moduleId, fetchModule]);
 
-  const handleArticleClick = async (articleId: string, url: string) => {
+  const [readingArticleId, setReadingArticleId] = useState<string | null>(null);
+  const [readingTimeLeft, setReadingTimeLeft] = useState<number>(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const savedArticleId = localStorage.getItem(`octo_reading_article_id_${moduleId}`);
+      const savedEndTime = localStorage.getItem(`octo_reading_end_time_${moduleId}`);
+
+      if (savedArticleId && savedEndTime) {
+        const endTime = parseInt(savedEndTime, 10);
+        const timeLeft = Math.max(0, Math.ceil((endTime - Date.now()) / 1000));
+
+        if (timeLeft > 0) {
+          setReadingArticleId(savedArticleId);
+          setReadingTimeLeft(timeLeft);
+        } else {
+          // Time is up
+          setReadingArticleId(null);
+          setReadingTimeLeft(0);
+
+          localStorage.removeItem(`octo_reading_article_id_${moduleId}`);
+          localStorage.removeItem(`octo_reading_end_time_${moduleId}`);
+
+          // Mark as read
+          fetch(`/api/v1/education/articles/${savedArticleId}/read`, {
+            method: "POST"
+          }).catch(err => console.error("Failed to mark article as read:", err));
+
+          if (mod) {
+            // Check if it's already marked as read to prevent infinite state updates
+            const article = mod.articles.find(a => a.id === savedArticleId);
+            if (article && !article.is_read) {
+              const updatedArticles = mod.articles.map(a => 
+                a.id === savedArticleId ? { ...a, is_read: true } : a
+              );
+              setMod({ ...mod, articles: updatedArticles });
+            }
+          }
+        }
+      } else {
+        setReadingArticleId(null);
+        setReadingTimeLeft(0);
+      }
+    }, 1000);
+    
+    return () => clearInterval(interval);
+  }, [moduleId, mod]);
+
+  const handleArticleClick = (articleId: string, url: string) => {
     window.open(url, "_blank", "noopener,noreferrer");
-
+    
     if (mod) {
-      const updatedArticles = mod.articles.map(a => 
-        a.id === articleId ? { ...a, is_read: true } : a
-      );
-      setMod({ ...mod, articles: updatedArticles });
-    }
-
-    try {
-      await fetch(`/api/v1/education/articles/${articleId}/read`, {
-        method: "POST"
-      });
-    } catch (err) {
-      console.error("Failed to mark article as read:", err);
+      const article = mod.articles.find(a => a.id === articleId);
+      if (article && !article.is_read && readingArticleId !== articleId) {
+        // Start timer globally via localStorage (60 seconds)
+        localStorage.setItem(`octo_reading_article_id_${moduleId}`, articleId);
+        localStorage.setItem(`octo_reading_end_time_${moduleId}`, (Date.now() + 60000).toString());
+        setReadingArticleId(articleId);
+        setReadingTimeLeft(60);
+      }
     }
   };
 
@@ -165,6 +209,8 @@ export default function ModuleDetailPage() {
         completedArticles={completedArticles}
         totalArticles={totalArticles}
         isCompleted={isCompleted}
+        readingArticleId={readingArticleId}
+        readingTimeLeft={readingTimeLeft}
       />
 
       <QuizActionCard 

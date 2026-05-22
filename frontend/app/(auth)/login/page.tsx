@@ -134,7 +134,7 @@ function LoginForm() {
         <div className="absolute inset-0 flex items-center">
           <div className="w-full border-t border-neutral-border"></div>
         </div>
-        <div className="relative flex justify-center text-xs uppercase">
+        <div className="relative flex justify-center text-xs">
           <span className="bg-neutral-page px-2 text-secondary/60">
             Or continue with
           </span>

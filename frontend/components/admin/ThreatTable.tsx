@@ -161,18 +161,14 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
                   <span
                     className={cn(
                       "text-[11px] font-bold px-2.5 py-1 rounded-full whitespace-nowrap border uppercase",
-                      ticket.status === "False Positive"
-                        ? "bg-orange-50 text-orange-600 border-orange-200"
-                        : ticket.status === "Confirmed"
-                          ? "bg-risk-high/10 text-risk-high border-risk-high/20"
-                          : ticket.status === "Mitigated"
-                            ? "bg-cyan-50 text-cyan-700 border-cyan-200"
-                            : ticket.status === "Closed"
-                              ? "bg-gray-100 text-gray-600 border-gray-200"
-                              : "bg-primary/10 text-primary border-primary/20",
+                      ticket.priority === "High"
+                        ? "bg-risk-high/10 text-risk-high border-risk-high/20"
+                        : ticket.priority === "Medium"
+                          ? "bg-risk-medium/10 text-risk-medium border-risk-medium/20"
+                          : "bg-risk-low/10 text-risk-low border-risk-low/20",
                     )}
                   >
-                    {ticket.status}
+                    {ticket.priority}
                   </span>
                 </td>
                 <td className="px-6 py-5 text-right">

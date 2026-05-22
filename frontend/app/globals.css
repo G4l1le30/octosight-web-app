@@ -44,9 +44,3 @@ body {
     @apply bg-white border border-neutral-border rounded-3xl shadow-xl overflow-hidden;
   }
 }
-
-/* Hide native browser password toggles (like Edge's eye icon) */
-input[type="password"]::-ms-reveal,
-input[type="password"]::-ms-clear {
-  display: none;
-}

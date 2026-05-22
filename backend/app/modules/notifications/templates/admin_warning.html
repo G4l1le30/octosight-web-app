@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f5f7; padding: 20px; }
+        .container { background-color: #ffffff; padding: 30px; border-radius: 8px; max-width: 600px; margin: auto; border-top: 5px solid #ef4444; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .header { color: #dc2626; margin-bottom: 20px; border-bottom: 2px solid #fee2e2; padding-bottom: 10px; }
+        .warning-box { background-color: #fef2f2; padding: 20px; border-radius: 6px; margin: 25px 0; border: 1px solid #fca5a5; }
+        .message-text { color: #7f1d1d; font-size: 16px; line-height: 1.5; }
+        .ticket-ref { font-size: 14px; color: #6b7280; margin-top: 15px; }
+        .footer { font-size: 12px; color: #9ca3af; margin-top: 30px; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 class="header">⚠️ OctoSight Security Warning</h2>
+        <p>Hello,</p>
+        <p>An OctoSight security administrator has sent an important warning message regarding your activity or report:</p>
+        
+        <div class="warning-box">
+            <div class="message-text">
+                {{ warning_message | safe | replace('\n', '<br>') }}
+            </div>
+            {% if ticket_id %}
+            <div class="ticket-ref">
+                Report Reference: <strong>{{ ticket_id }}</strong>
+            </div>
+            {% endif %}
+        </div>
+        
+        <p>Please follow up on this warning immediately to ensure the security of your account and device. Avoid further interaction with suspicious links or parties.</p>
+        
+        <div class="footer">
+            &copy; 2026 OctoSight Security Team
+        </div>
+    </div>
+</body>
+</html>

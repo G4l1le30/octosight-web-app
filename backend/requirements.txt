@@ -20,3 +20,5 @@ google-genai
 alembic
 google-auth
 slowapi
+fastapi-mail
+jinja2

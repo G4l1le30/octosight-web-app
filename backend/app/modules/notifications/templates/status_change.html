@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f5f7; padding: 20px; }
+        .container { background-color: #ffffff; padding: 30px; border-radius: 8px; max-width: 600px; margin: auto; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .header { color: #1e3a8a; margin-bottom: 20px; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px; }
+        .status-box { background-color: #f3f4f6; padding: 15px; border-radius: 6px; margin: 25px 0; }
+        .status-new { font-size: 20px; font-weight: bold; color: #047857; text-transform: uppercase; }
+        .notes { font-style: italic; color: #4b5563; margin-top: 15px; padding-left: 10px; border-left: 3px solid #d1d5db; }
+        .footer { font-size: 12px; color: #9ca3af; margin-top: 30px; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 class="header">OctoSight Status Update</h2>
+        <p>Hello,</p>
+        <p>Your report status for ticket ID <strong>{{ ticket_id }}</strong> has been updated by the OctoSight Admin.</p>
+        
+        <div class="status-box">
+            <p>Previous status: <s>{{ old_status }}</s></p>
+            <p>Current status: <span class="status-new">{{ new_status }}</span></p>
+            
+            {% if notes %}
+            <div class="notes">
+                <strong>Admin Notes:</strong><br>
+                {{ notes }}
+            </div>
+            {% endif %}
+        </div>
+        
+        <p>Please visit the OctoSight dashboard to view further details.</p>
+        
+        <div class="footer">
+            &copy; 2026 OctoSight Anti-Phishing & Fraud System
+        </div>
+    </div>
+</body>
+</html>

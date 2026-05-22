@@ -11,7 +11,7 @@ Routes:
 import os
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi import APIRouter, Depends, HTTPException, Response, BackgroundTasks
 from sqlalchemy.orm import Session
 from google.oauth2 import id_token
 from google.auth.transport import requests
@@ -28,6 +28,7 @@ from app.db.session import get_db
 from app.models.models import User
 from app.schemas.schemas import LoginRequest, RegisterRequest, UserResponse, GoogleLoginRequest
 from fastapi import Request
+from app.modules.notifications.service import send_email_notification
 
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 
@@ -38,7 +39,7 @@ _COOKIE_MAX_AGE = 86400  # 24 hours in seconds
 
 @router.post("/register", response_model=UserResponse, summary="Register a new user")
 @limiter.limit("5/minute")
-def register(request: Request, data: RegisterRequest, response: Response, db: Session = Depends(get_db)):
+def register(request: Request, data: RegisterRequest, response: Response, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     """
     Create a new user account. Role is always forced to 'user'.
     Returns user profile and sets an httpOnly JWT cookie.
@@ -59,6 +60,14 @@ def register(request: Request, data: RegisterRequest, response: Response, db: Se
     db.add(user)
     db.commit()
     db.refresh(user)
+
+    send_email_notification(
+        background_tasks=background_tasks,
+        subject="OctoSight - Registration Successful",
+        email_to=user.email,
+        template_name="otp.html",
+        template_body={"otp_code": "SUCCESS", "user_name": user.full_name}
+    )
 
     is_production = os.getenv("ENVIRONMENT") == "production"
     

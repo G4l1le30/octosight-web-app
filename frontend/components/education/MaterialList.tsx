@@ -9,6 +9,8 @@ interface MaterialListProps {
   completedArticles: number;
   totalArticles: number;
   isCompleted: boolean;
+  readingArticleId?: string | null;
+  readingTimeLeft?: number;
 }
 
 export const MaterialList: React.FC<MaterialListProps> = ({
@@ -17,7 +19,9 @@ export const MaterialList: React.FC<MaterialListProps> = ({
   onArticleClick,
   completedArticles,
   totalArticles,
-  isCompleted
+  isCompleted,
+  readingArticleId,
+  readingTimeLeft
 }) => {
   return (
     <>
@@ -38,8 +42,12 @@ export const MaterialList: React.FC<MaterialListProps> = ({
 
       <div className="space-y-4 mb-12">
         {articles.map((article, idx) => {
+          // Article is locked if the module is locked, OR if it's not the first article and the previous one isn't read yet
+          const isArticleLocked = isLocked || (idx > 0 && !articles[idx - 1].is_read);
+          const isReadingThis = readingArticleId === article.id;
+
           const content = (
-            <div className={`flex items-start justify-between ${isLocked ? 'opacity-60' : ''}`}>
+            <div className={`flex items-start justify-between ${isArticleLocked ? 'opacity-60' : ''}`}>
               <div className="flex gap-4">
                 <div className={`mt-1 shrink-0 size-6 rounded-full flex items-center justify-center border-2 ${
                   article.is_read 
@@ -49,7 +57,7 @@ export const MaterialList: React.FC<MaterialListProps> = ({
                   {article.is_read ? <CheckCircle2 className="size-4" /> : <span className="text-xs font-bold">{idx + 1}</span>}
                 </div>
                 <div>
-                  <h3 className={`text-lg font-bold mb-1 ${isLocked ? 'text-secondary' : 'text-secondary group-hover:text-primary transition-colors'}`}>
+                  <h3 className={`text-lg font-bold mb-1 ${isArticleLocked ? 'text-secondary' : 'text-secondary group-hover:text-primary transition-colors'}`}>
                     {article.title}
                   </h3>
                   <p className="text-sm text-secondary-light font-medium mb-3 line-clamp-2">
@@ -59,10 +67,15 @@ export const MaterialList: React.FC<MaterialListProps> = ({
                     <span>By: {article.author}</span>
                     <span>•</span>
                     <span>{article.duration_mins} Mins read</span>
+                    {isReadingThis && readingTimeLeft !== undefined && readingTimeLeft > 0 && (
+                      <span className="text-primary bg-primary/10 px-2 py-0.5 rounded animate-pulse">
+                        Reading... {readingTimeLeft}s
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
-              {isLocked ? (
+              {isArticleLocked ? (
                 <Lock className="size-5 text-secondary/30 shrink-0" />
               ) : (
                 <ExternalLink className="size-5 text-secondary/40 group-hover:text-primary shrink-0" />
@@ -70,7 +83,7 @@ export const MaterialList: React.FC<MaterialListProps> = ({
             </div>
           );
 
-          if (isLocked) {
+          if (isArticleLocked) {
             return (
               <div key={article.id} className="block bg-neutral-page border border-neutral-border rounded-xl p-6 cursor-not-allowed">
                 {content}
@@ -82,7 +95,7 @@ export const MaterialList: React.FC<MaterialListProps> = ({
             <button
               key={article.id}
               onClick={() => onArticleClick(article.id, article.url)}
-              className="w-full text-left block bg-white border border-neutral-border hover:border-primary hover:shadow-md rounded-xl p-6 transition-all group"
+              className={`w-full text-left block bg-white border ${isReadingThis ? 'border-primary ring-1 ring-primary/20' : 'border-neutral-border hover:border-primary hover:shadow-md'} rounded-xl p-6 transition-all group`}
             >
               {content}
             </button>

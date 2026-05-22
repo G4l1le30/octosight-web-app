@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f5f7; padding: 20px; }
+        .container { background-color: #ffffff; padding: 30px; border-radius: 8px; max-width: 600px; margin: auto; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .header { color: #1e3a8a; margin-bottom: 20px; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px; }
+        .details-box { background-color: #f3f4f6; padding: 15px; border-radius: 6px; margin: 25px 0; }
+        .label { font-weight: bold; color: #4b5563; }
+        .value { color: #1f2937; }
+        .risk-score { font-size: 18px; font-weight: bold; color: #dc2626; }
+        .footer { font-size: 12px; color: #9ca3af; margin-top: 30px; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 class="header">OctoSight Report Submitted</h2>
+        <p>Hello,</p>
+        <p>Thank you for participating in maintaining digital security. Your report has been successfully received and is currently under review.</p>
+        
+        <div class="details-box">
+            <p><span class="label">Ticket ID:</span> <span class="value">{{ ticket_id }}</span></p>
+            <p><span class="label">URL/Indicator:</span> <span class="value">{{ url }}</span></p>
+            <p><span class="label">Risk Level (Initial):</span> <span class="risk-score">{{ risk_score }}%</span></p>
+            <p><span class="label">Priority:</span> <span class="value">{{ priority }}</span></p>
+        </div>
+        
+        <p>You can monitor the status of this report in the report dashboard menu on the OctoSight application.</p>
+        
+        <div class="footer">
+            &copy; 2026 OctoSight Anti-Phishing & Fraud System<br>
+            This message is generated automatically, please do not reply.
+        </div>
+    </div>
+</body>
+</html>

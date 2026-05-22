@@ -17,14 +17,14 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  
+
   const [fieldErrors, setFieldErrors] = useState({
     fullName: "",
     email: "",
     password: "",
     confirmPassword: ""
   });
-  
+
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -40,7 +40,7 @@ export default function RegisterPage() {
       newErrors.fullName = "Full Name is required";
       hasErrors = true;
     }
-    
+
     if (!email.trim()) {
       newErrors.email = "Email Address is required";
       hasErrors = true;
@@ -48,15 +48,18 @@ export default function RegisterPage() {
       newErrors.email = "Please enter a valid email address";
       hasErrors = true;
     }
-    
+
     if (!password) {
       newErrors.password = "Password is required";
       hasErrors = true;
     } else if (password.length < 8) {
       newErrors.password = "Password must be at least 8 characters";
       hasErrors = true;
+    } else if (!/[A-Z]/.test(password)) {
+      newErrors.password = "Password must contain at least one uppercase letter";
+      hasErrors = true;
     }
-    
+
     if (password && confirmPassword && password !== confirmPassword) {
       newErrors.confirmPassword = "Passwords do not match";
       hasErrors = true;
@@ -127,7 +130,7 @@ export default function RegisterPage() {
           id="register-email"
           label="Email Address"
           type="email"
-          placeholder="you@example.com"
+          placeholder="name@gmail.com"
           value={email}
           onChange={(e) => {
             setEmail(e.target.value);
@@ -182,7 +185,7 @@ export default function RegisterPage() {
         <div className="absolute inset-0 flex items-center">
           <div className="w-full border-t border-neutral-border"></div>
         </div>
-        <div className="relative flex justify-center text-xs uppercase">
+        <div className="relative flex justify-center text-xs">
           <span className="bg-neutral-page px-2 text-secondary/60">
             Or continue with
           </span>

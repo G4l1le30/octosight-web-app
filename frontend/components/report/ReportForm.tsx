@@ -6,6 +6,8 @@ import { Textarea } from "@/components/ui/Textarea";
 import { Button } from "@/components/ui/Button";
 import { IncidentTypeCard } from "@/components/report/IncidentTypeCard";
 import { EvidenceUpload } from "@/components/report/EvidenceUpload";
+import { ChevronDown, ChevronUp, ShieldCheck } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface ReportFormProps {
   form: UseFormReturn<ReportFormData>;
@@ -44,6 +46,8 @@ export const ReportForm: React.FC<ReportFormProps> = ({
     formState: { errors },
     reset,
   } = form;
+
+  const [showAdvanced, setShowAdvanced] = React.useState(false);
 
   return (
     <div className="card p-8 mb-8 bg-white border border-neutral-border overflow-visible">
@@ -85,6 +89,59 @@ export const ReportForm: React.FC<ReportFormProps> = ({
         </div>
 
         <Textarea label={dynamic.summaryLabel} placeholder={dynamic.summaryPlaceholder} error={errors.summary?.message} {...register("summary")} className="min-h-[150px]" />
+
+        {/* Advanced Information Section */}
+        <div className="border border-neutral-border rounded-xl overflow-hidden shadow-sm">
+          <button
+            type="button"
+            onClick={() => setShowAdvanced(!showAdvanced)}
+            className="w-full flex items-center justify-between p-4 bg-neutral-page hover:bg-neutral-border/20 transition-colors text-left"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-primary/10 rounded-lg text-primary">
+                <ShieldCheck className="size-5" />
+              </div>
+              <div>
+                <span className="font-bold text-secondary block leading-tight">Advanced Information (Optional)</span>
+                <span className="text-[10px] text-secondary/60 uppercase font-black tracking-wider">Bank & Transaction Details</span>
+              </div>
+            </div>
+            {showAdvanced ? <ChevronUp className="size-5 text-secondary" /> : <ChevronDown className="size-5 text-secondary" />}
+          </button>
+          
+          <div className={cn(
+            "p-6 space-y-6 bg-white border-t border-neutral-border animate-in fade-in duration-300",
+            showAdvanced ? "block" : "hidden"
+          )}>
+            <p className="text-xs font-medium text-secondary/60 leading-relaxed">
+              If the incident involves a bank transfer or if you have specific payment info, please fill these out. 
+              This information is used to improve our global blacklist system.
+            </p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Input 
+                label="Attacker Bank Name" 
+                placeholder="e.g., CIMB NIAGA, OCTO Pay" 
+                error={errors.bankName?.message}
+                {...register("bankName")} 
+              />
+              <Input 
+                label="Attacker Account Number" 
+                placeholder="e.g., 706123456789" 
+                error={errors.bankAccount?.message}
+                {...register("bankAccount")} 
+              />
+              <div className="md:col-span-2">
+                <Input 
+                  label="Reference / Invoice Number" 
+                  placeholder="e.g., TRX-9921-X99-FAKE" 
+                  error={errors.referenceNumber?.message}
+                  {...register("referenceNumber")} 
+                />
+              </div>
+            </div>
+          </div>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <EvidenceUpload 

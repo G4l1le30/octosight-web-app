@@ -14,6 +14,9 @@ import {
   Loader2,
   User,
   FileText,
+  CreditCard,
+  Hash,
+  ShieldCheck,
 } from "lucide-react";
 import { RiskScoreCard } from "./RiskScoreCard";
 import { ReportFormData } from "@/types/ticket";
@@ -25,9 +28,15 @@ interface ReportConfirmationProps {
     priority: string;
     rule_score?: number;
     ml_score?: number;
+    rule_weight?: number;
+    ml_weight?: number;
     ml_category?: string;
     extracted_ocr_text?: string;
     is_blacklisted?: boolean;
+    details?: {
+      detected_scam_type?: string;
+      transaction_validation?: string;
+    };
   } | null;
   onBack: () => void;
   onSubmit: () => void;
@@ -90,6 +99,9 @@ export const ReportConfirmation = ({
       return dateStr;
     }
   };
+
+  const isScamScenario = analysisResult?.details?.detected_scam_type && analysisResult.details.detected_scam_type !== "General Phishing";
+  const isNoUrlScam = !formData.url?.trim() && isScamScenario;
 
   const typeConfig = REPORT_TYPE_LABELS[formData.type] || {
     label: formData.type || "Laporan",
@@ -173,6 +185,40 @@ export const ReportConfirmation = ({
                 </div>
               )}
 
+              {/* Bank Info (If present) */}
+              {formData.bankAccount && (
+                <div className="flex items-center gap-5">
+                  <div className="p-3.5 rounded-2xl bg-primary/5 text-primary">
+                    <CreditCard className="size-6" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-secondary/60 mb-1">
+                      {formData.bankName || "Reported Bank Account"}
+                    </p>
+                    <p className="text-lg font-semibold text-secondary truncate">
+                      {formData.bankAccount}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Reference Number (If present) */}
+              {formData.referenceNumber && (
+                <div className="flex items-center gap-5">
+                  <div className="p-3.5 rounded-2xl bg-primary/5 text-primary">
+                    <Hash className="size-6" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-secondary/60 mb-1">
+                      Reference Number
+                    </p>
+                    <p className="text-lg font-semibold text-secondary truncate">
+                      {formData.referenceNumber}
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {/* Incident Time */}
               <div className="flex items-center gap-5">
                 <div className="p-3.5 rounded-2xl bg-primary/5 text-primary">
@@ -205,12 +251,11 @@ export const ReportConfirmation = ({
                 />
 
                 {/* Hybrid Score Breakdown */}
-                {analysisResult?.rule_score !== undefined &&
-                  analysisResult?.ml_score !== undefined && (
+                {analysisResult?.ml_score !== undefined && (
                     <div className="bg-transparent rounded-2xl p-4 border border-neutral-border">
                       <div className="flex items-center justify-between mb-4">
                         <h3 className="text-sm font-bold text-secondary">
-                          Hybrid Score Breakdown
+                          {isNoUrlScam ? "Scam Analysis Weights" : "Hybrid Score Breakdown"}
                         </h3>
                         {analysisResult?.is_blacklisted && (
                           <span className="px-2 py-0.5 rounded-md bg-secondary text-white text-[10px] font-bold tracking-wider">
@@ -219,30 +264,32 @@ export const ReportConfirmation = ({
                         )}
                       </div>
                       <div className="space-y-4">
+                        {analysisResult.rule_score !== undefined && (
+                          <div>
+                            <div className="flex justify-between text-sm font-semibold mb-1.5">
+                              <span className="text-secondary/70">
+                                Rule-based ({analysisResult.rule_weight ?? 35}%)
+                              </span>
+                              <span className="text-secondary">
+                                {Number(analysisResult.rule_score).toLocaleString(
+                                  "en-US",
+                                  { maximumFractionDigits: 2 },
+                                )}{" "}
+                                / 100
+                              </span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-2">
+                              <div
+                                className="bg-secondary h-2 rounded-full"
+                                style={{ width: `${analysisResult.rule_score}%` }}
+                              ></div>
+                            </div>
+                          </div>
+                        )}
                         <div>
                           <div className="flex justify-between text-sm font-semibold mb-1.5">
                             <span className="text-secondary/70">
-                              Rule-based (35%)
-                            </span>
-                            <span className="text-secondary">
-                              {Number(analysisResult.rule_score).toLocaleString(
-                                "en-US",
-                                { maximumFractionDigits: 2 },
-                              )}{" "}
-                              / 100
-                            </span>
-                          </div>
-                          <div className="w-full bg-gray-200 rounded-full h-2">
-                            <div
-                              className="bg-secondary h-2 rounded-full"
-                              style={{ width: `${analysisResult.rule_score}%` }}
-                            ></div>
-                          </div>
-                        </div>
-                        <div>
-                          <div className="flex justify-between text-sm font-semibold mb-1.5">
-                            <span className="text-secondary/70">
-                              ML Engine (65%)
+                              ML Engine ({analysisResult.ml_weight ?? 65}%)
                             </span>
                             <span className="text-secondary">
                               {Number(analysisResult.ml_score).toLocaleString(
@@ -258,18 +305,47 @@ export const ReportConfirmation = ({
                               style={{ width: `${analysisResult.ml_score}%` }}
                             ></div>
                           </div>
-                          {analysisResult.ml_category && (
-                            <p className="text-xs text-secondary/60 font-medium mt-1.5">
-                              Prediction:{" "}
-                              <span className="text-secondary">
-                                {analysisResult.ml_category}
-                              </span>
-                            </p>
-                          )}
+                          <div className="flex justify-between items-center mt-1.5">
+                            {analysisResult.ml_category && (
+                              <p className="text-xs text-secondary/60 font-medium">
+                                Prediction:{" "}
+                                <span className="text-secondary">
+                                  {analysisResult.ml_category}
+                                </span>
+                              </p>
+                            )}
+                          </div>
                         </div>
+                        {isNoUrlScam && (
+                          <div className="pt-2 mt-2 border-t border-dashed border-neutral-border">
+                            <p className="text-[10px] text-secondary/40 font-medium leading-tight italic">
+                              *Rule-based detection is prioritized (100%) for social engineering scams without URLs. Phishing AI remains as language context.
+                            </p>
+                          </div>
+                        )}
                       </div>
                     </div>
                   )}
+
+                {/* Specific Scam Analysis Result */}
+                {analysisResult?.details?.detected_scam_type && (
+                  <div className="bg-primary/5 rounded-2xl p-4 border border-primary/20">
+                    <div className="flex items-center gap-2 mb-2">
+                      <ShieldCheck className="size-4 text-primary" />
+                      <h3 className="text-xs font-black text-secondary uppercase tracking-wider">
+                        Scenario Analysis
+                      </h3>
+                    </div>
+                    <p className="text-sm font-bold text-secondary">
+                      Detected: <span className="text-primary">{analysisResult.details.detected_scam_type}</span>
+                    </p>
+                    {analysisResult.details.transaction_validation !== "N/A" && (
+                      <p className="text-xs text-secondary/70 mt-1 italic">
+                        {analysisResult.details.transaction_validation}
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </div>

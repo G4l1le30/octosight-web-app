@@ -17,7 +17,7 @@ from sqlalchemy.exc import OperationalError
 from app.db.session import Base, SessionLocal, engine
 from app.db.migrations import apply_migrations
 from app.db.education_seeding import seed_education_data
-from app.models.models import Ticket, User, BlacklistedURL  # noqa: F401 — ensures table is created
+from app.models.models import Ticket, User, BlacklistedURL, BlacklistedAccount, MockBankTransaction, BlacklistedPhone, BlacklistedEmail  # noqa: F401 — ensures table is created
 from app.core.security import hash_password, limiter
 from slowapi.errors import RateLimitExceeded
 from slowapi import _rate_limit_exceeded_handler
@@ -89,6 +89,74 @@ def _seed_db(db) -> None:
         db.add_all(dummy)
         db.commit()
         print(f"[Seed] {len(dummy)} dummy tickets created")
+
+    # Mock Bank Transactions (simulated valid CIMB transactions)
+    # Check if OCTO-REF-001 exists, if not, re-seed the core CIMB data
+    if db.query(MockBankTransaction).filter(MockBankTransaction.reference_number == "OCTO-REF-001").count() == 0:
+        # Clear old/partial mock data to prevent conflicts
+        db.query(MockBankTransaction).delete()
+        mock_txs = [
+            MockBankTransaction(
+                reference_number="OCTO-REF-001", 
+                sender_name="Budi CIMB User", 
+                sender_account="706123456789", 
+                sender_bank="CIMB NIAGA",
+                receiver_account="704987654321",
+                receiver_bank="CIMB NIAGA",
+                amount=500000.0
+            ),
+            MockBankTransaction(
+                reference_number="OCTO-REF-002", 
+                sender_name="Siti Niaga", 
+                sender_account="701234555111", 
+                sender_bank="CIMB NIAGA",
+                receiver_account="704987654321",
+                receiver_bank="CIMB NIAGA",
+                amount=1250000.0
+            ),
+            MockBankTransaction(
+                reference_number="OCTO-REF-003", 
+                sender_name="Dedi Oktoman", 
+                sender_account="705556667770", 
+                sender_bank="CIMB NIAGA",
+                receiver_account="704987654321",
+                receiver_bank="CIMB NIAGA",
+                amount=200000.0
+            ),
+        ]
+        db.add_all(mock_txs)
+        db.commit()
+        print(f"[Seed] {len(mock_txs)} mock CIMB transactions created/updated")
+
+    # Blacklisted Accounts (known scammers)
+    if db.query(BlacklistedAccount).count() == 0:
+        bad_accounts = [
+            BlacklistedAccount(account_number="1234567890", bank_name="OCTO Virtual", reason="Penipuan modus salah kirim"),
+            BlacklistedAccount(account_number="081234567890", bank_name="E-Wallet Scam", reason="Dompet digital penipu barang fiktif"),
+        ]
+        db.add_all(bad_accounts)
+        db.commit()
+        print(f"[Seed] {len(bad_accounts)} blacklisted accounts created")
+
+    # Blacklisted Phones
+    if db.query(BlacklistedPhone).count() == 0:
+        bad_phones = [
+            BlacklistedPhone(phone_number="08968554576", reason="Spam penipuan anak kecelakaan"),
+            BlacklistedPhone(phone_number="08123456789", reason="SMS phishing hadiah palsu"),
+        ]
+        db.add_all(bad_phones)
+        db.commit()
+        print(f"[Seed] {len(bad_phones)} blacklisted phones created")
+
+    # Blacklisted Emails
+    if db.query(BlacklistedEmail).count() == 0:
+        bad_emails = [
+            BlacklistedEmail(email="scammer@urgent-cimb.com", reason="Email impersonasi CIMB NIAGA"),
+            BlacklistedEmail(email="admin@secure-payment.xyz", reason="Email phishing payment gateway"),
+        ]
+        db.add_all(bad_emails)
+        db.commit()
+        print(f"[Seed] {len(bad_emails)} blacklisted emails created")
 
 
 @asynccontextmanager

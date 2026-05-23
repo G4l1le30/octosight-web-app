@@ -30,7 +30,16 @@ export default function InvestigatePage({
   const [selectedFile, setSelectedFile] = useState("");
   const [downloadError, setDownloadError] = useState("");
 
-  const [showBlacklistModal, setShowBlacklistModal] = useState(false);
+  const [blacklistConfig, setBlacklistConfig] = useState<{
+    isOpen: boolean;
+    type: "url" | "account" | "phone" | "email";
+    value: string;
+    metadata?: any;
+  }>({
+    isOpen: false,
+    type: "url",
+    value: "",
+  });
 
   const [modalConfig, setModalConfig] = useState({
     isOpen: false,
@@ -65,6 +74,15 @@ export default function InvestigatePage({
     setShowDownloadModal(true);
     setDownloadPassword("");
     setDownloadError("");
+  };
+
+  const openBlacklistModal = (type: "url" | "account" | "phone" | "email", value: string, metadata?: any) => {
+    setBlacklistConfig({
+      isOpen: true,
+      type,
+      value,
+      metadata
+    });
   };
 
   const handleConfirmDownload = async () => {
@@ -173,27 +191,44 @@ export default function InvestigatePage({
               Mitigation Actions
             </h3>
             <div className="space-y-3">
-              <button
-                id="btn-add-blacklist"
-                onClick={() => setShowBlacklistModal(true)}
-                disabled={!ticket.url}
-                className="w-full py-3 bg-neutral-page hover:bg-primary/5 text-sm font-bold text-secondary rounded-xl transition-all text-left px-5 flex items-center justify-between group border border-neutral-border disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                <span>Add to Internal Blacklist</span>
-                <span className="opacity-0 group-hover:opacity-100 transition-all translate-x-[-4px] group-hover:translate-x-0">
-                  →
-                </span>
-              </button>
+              {ticket.url && (
+                <button
+                  id="btn-add-blacklist-url"
+                  onClick={() => openBlacklistModal("url", ticket.url!)}
+                  className="w-full py-3 bg-neutral-page hover:bg-primary/5 text-sm font-bold text-secondary rounded-xl transition-all text-left px-5 flex items-center justify-between group border border-neutral-border"
+                >
+                  <span>Block Domain/URL</span>
+                  <span className="opacity-0 group-hover:opacity-100 transition-all translate-x-[-4px] group-hover:translate-x-0">→</span>
+                </button>
+              )}
 
-              <button className="w-full py-3 bg-neutral-page hover:bg-primary/5 text-sm font-bold text-secondary rounded-xl transition-all text-left px-5 flex items-center justify-between group border border-neutral-border">
-                Generate Warning Template
-                <span className="opacity-0 group-hover:opacity-100 transition-all translate-x-[-4px] group-hover:translate-x-0">
-                  →
-                </span>
-              </button>
+              {ticket.bank_account && (
+                <button
+                  id="btn-add-blacklist-account"
+                  onClick={() => openBlacklistModal("account", ticket.bank_account!, { bank_name: ticket.bank_name })}
+                  className="w-full py-3 bg-neutral-page hover:bg-primary/5 text-sm font-bold text-secondary rounded-xl transition-all text-left px-5 flex items-center justify-between group border border-neutral-border"
+                >
+                  <span>Block Bank Account</span>
+                  <span className="opacity-0 group-hover:opacity-100 transition-all translate-x-[-4px] group-hover:translate-x-0">→</span>
+                </button>
+              )}
+
+              {ticket.sender_numbers && (
+                <button
+                  id="btn-add-blacklist-sender"
+                  onClick={() => {
+                    const type = ticket.sender_numbers!.includes("@") ? "email" : "phone";
+                    openBlacklistModal(type, ticket.sender_numbers!);
+                  }}
+                  className="w-full py-3 bg-neutral-page hover:bg-primary/5 text-sm font-bold text-secondary rounded-xl transition-all text-left px-5 flex items-center justify-between group border border-neutral-border"
+                >
+                  <span>Block Sender ({ticket.sender_numbers!.includes("@") ? "Email" : "Phone"})</span>
+                  <span className="opacity-0 group-hover:opacity-100 transition-all translate-x-[-4px] group-hover:translate-x-0">→</span>
+                </button>
+              )}
 
               <button className="w-full py-3 bg-neutral-page hover:bg-risk-medium/5 text-sm font-bold text-secondary rounded-xl transition-all text-left px-5 flex items-center justify-between group border border-neutral-border">
-                Escalate to SOC Team
+                Generate Warning Template
                 <span className="opacity-0 group-hover:opacity-100 transition-all translate-x-[-4px] group-hover:translate-x-0">
                   →
                 </span>
@@ -203,12 +238,14 @@ export default function InvestigatePage({
         </div>
       </div>
 
-      {/* Blacklist Modal — reusable component */}
+      {/* Blacklist Modal */}
       <BlacklistModal
-        isOpen={showBlacklistModal}
-        url={ticket.url ?? ""}
+        isOpen={blacklistConfig.isOpen}
+        type={blacklistConfig.type}
+        value={blacklistConfig.value}
+        metadata={blacklistConfig.metadata}
         ticketId={ticket.ticket_id}
-        onClose={() => setShowBlacklistModal(false)}
+        onClose={() => setBlacklistConfig({ ...blacklistConfig, isOpen: false })}
       />
 
       <DownloadModal

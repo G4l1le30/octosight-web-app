@@ -28,11 +28,20 @@ def apply_migrations(db: Session) -> None:
             "ml_score":           "FLOAT",
             "updated_at":         "DATETIME",
             "education_recommendation": "JSON",
+            "bank_name":          "VARCHAR(100)",
+            "bank_account":       "VARCHAR(50)",
+            "reference_number":   "VARCHAR(100)",
         },
         "users": {
             "updated_at": "DATETIME",
             "failed_login_attempts": "INTEGER DEFAULT 0",
             "locked_until": "DATETIME",
+        },
+        "mock_bank_transactions": {
+            "sender_account":     "VARCHAR(50)",
+            "receiver_account":   "VARCHAR(50)",
+            "sender_bank":        "VARCHAR(100)",
+            "receiver_bank":      "VARCHAR(100)",
         },
     }
 

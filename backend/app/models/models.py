@@ -45,6 +45,11 @@ class Ticket(Base):
     flags = Column(Text)
     investigation_notes = Column(Text)
 
+    # Advanced Information
+    bank_name = Column(String(100), nullable=True)
+    bank_account = Column(String(50), nullable=True)
+    reference_number = Column(String(100), nullable=True)
+
     # Report content
     sender_numbers = Column(Text)
     extracted_text = Column(Text)
@@ -86,3 +91,76 @@ class BlacklistedURL(Base):
     updated_at = Column(
         DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc)
     )
+
+
+class BlacklistedAccount(Base):
+    """Internally blacklisted Bank Accounts / E-Wallets."""
+
+    __tablename__ = "blacklisted_accounts"
+
+    id = Column(Integer, primary_key=True, index=True)
+    account_number = Column(String(50), unique=True, index=True, nullable=False)
+    bank_name = Column(String(100), nullable=False)
+    reason = Column(Text, nullable=True)
+    ticket_id = Column(String(50), nullable=True)   # linked ticket, if any
+    added_by = Column(String(36), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    is_active = Column(Boolean, default=True)
+
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(
+        DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc)
+    )
+
+
+class BlacklistedPhone(Base):
+    """Internally blacklisted Phone Numbers."""
+
+    __tablename__ = "blacklisted_phones"
+
+    id = Column(Integer, primary_key=True, index=True)
+    phone_number = Column(String(50), unique=True, index=True, nullable=False)
+    reason = Column(Text, nullable=True)
+    ticket_id = Column(String(50), nullable=True)   # linked ticket, if any
+    added_by = Column(String(36), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    is_active = Column(Boolean, default=True)
+
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(
+        DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc)
+    )
+
+
+class BlacklistedEmail(Base):
+    """Internally blacklisted Email Addresses."""
+
+    __tablename__ = "blacklisted_emails"
+
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String(255), unique=True, index=True, nullable=False)
+    reason = Column(Text, nullable=True)
+    ticket_id = Column(String(50), nullable=True)   # linked ticket, if any
+    added_by = Column(String(36), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    is_active = Column(Boolean, default=True)
+
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(
+        DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc)
+    )
+
+
+class MockBankTransaction(Base):
+    """Dummy transaction data for verifying receipt validity."""
+
+    __tablename__ = "mock_bank_transactions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    reference_number = Column(String(100), unique=True, index=True, nullable=False)
+    sender_name = Column(String(255), nullable=False)
+    sender_account = Column(String(50), nullable=True)
+    sender_bank = Column(String(100), nullable=True)
+    receiver_account = Column(String(50), nullable=True)
+    receiver_bank = Column(String(100), nullable=True)
+    amount = Column(Float, nullable=False)
+    transaction_date = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))

@@ -4,7 +4,7 @@ import { IncidentType } from "@/types/ticket";
 // --- Validation Schemas ---
 
 export const ReportTypeSchema = z.object({
-  type: z.enum(["Website", "SMS", "WhatsApp", "Email"] as const),
+  type: z.enum(["Website", "SMS", "WhatsApp", "Email", "Transaction"] as const),
 });
 
 const commonFields = {
@@ -14,6 +14,9 @@ const commonFields = {
     .optional()
     .or(z.literal("")),
   incidentDate: z.string().min(1, "Required: Please select the time of occurrence"),
+  bankName: z.string().optional().or(z.literal("")),
+  bankAccount: z.string().optional().or(z.literal("")),
+  referenceNumber: z.string().optional().or(z.literal("")),
 };
 
 export const IncidentSchemas = {
@@ -69,6 +72,21 @@ export const IncidentSchemas = {
       .min(1, "Required: Enter the fake website URL")
       .regex(/^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/[^\s]*)?$/i, "Invalid format. Example: example.com"),
     senderNumbers: z.string().optional(), // Make optional to match ReportFormData
+  }),
+  Transaction: z.object({
+    type: z.literal("Transaction"),
+    ...commonFields,
+    url: z
+      .string()
+      .optional()
+      .refine((val) => !val || /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/[^\s]*)?$/i.test(val), {
+        message: "Invalid format. Example: example.com",
+      }),
+    senderNumbers: z
+      .string()
+      .min(1, "Required: Enter scammer bank account / number")
+      .regex(/^[0-9+,\sA-Z-]+$/, "Invalid format. Use numbers, letters or hyphens.")
+      .min(5, "Account number minimum 5 digits/chars"),
   }),
 };
 

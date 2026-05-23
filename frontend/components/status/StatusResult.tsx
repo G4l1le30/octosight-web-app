@@ -1,6 +1,6 @@
 import React from "react";
 import { Ticket } from "@/types/ticket";
-import { Info } from "lucide-react";
+import { Info, CreditCard, Hash, ShieldCheck } from "lucide-react";
 import { RiskEducationPanel } from "./RiskEducationPanel";
 import { formatDateTime } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
@@ -105,6 +105,40 @@ const StatusResult: React.FC<StatusResultProps> = ({ result }) => {
                   </p>
                 </div>
               )}
+
+              {/* Advanced Bank Details */}
+              {result.bank_account && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-primary/5 rounded-2xl border border-primary/10">
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1 flex items-center gap-1">
+                      <CreditCard className="size-3" />
+                      Reported Bank
+                    </p>
+                    <p className="text-sm font-bold text-secondary truncate">
+                      {result.bank_name || "CIMB NIAGA"}
+                    </p>
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1 flex items-center gap-1">
+                      <Hash className="size-3" />
+                      Account Number
+                    </p>
+                    <p className="text-sm font-bold text-secondary truncate">
+                      {result.bank_account}
+                    </p>
+                  </div>
+                  {result.reference_number && (
+                    <div className="sm:col-span-2 min-w-0 pt-2 border-t border-primary/10">
+                      <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1">
+                        Transaction Reference
+                      </p>
+                      <p className="text-sm font-bold text-secondary truncate">
+                        {result.reference_number}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
               {/* User Summary */}
               <div>
                 <p className="text-sm font-bold text-secondary mb-2">
@@ -146,44 +180,105 @@ const StatusResult: React.FC<StatusResultProps> = ({ result }) => {
                   )}
                 </div>
                 <div className="grid grid-cols-1 gap-4">
-                  <div className="bg-neutral-page/30 p-3 rounded-xl border border-neutral-border/50">
-                    <div className="flex justify-between text-sm font-bold text-secondary mb-1">
-                      <span>Rule-based (35%)</span>
-                      <span>{Number(result.rule_score)} / 100</span>
-                    </div>
-                    <div className="w-full bg-neutral-border/60 rounded-full h-1.5 overflow-hidden">
-                      <div
-                        className="bg-secondary h-full rounded-full transition-all duration-1000"
-                        style={{ width: `${result.rule_score}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                  <div className="bg-neutral-page/30 p-3 rounded-xl border border-neutral-border/50">
-                    <div className="flex justify-between text-sm font-bold text-secondary mb-1">
-                      <span>ML Engine (65%)</span>
-                      <span>{Number(result.ml_score)} / 100</span>
-                    </div>
-                    <div className="w-full bg-neutral-border/60 rounded-full h-1.5 overflow-hidden">
-                      <div
-                        className="bg-primary h-full rounded-full transition-all duration-1000"
-                        style={{ width: `${result.ml_score}%` }}
-                      ></div>
-                    </div>
-                    {result.flags?.includes("ml_prediction:") && (
-                      <p className="text-xs font-semibold text-secondary mt-1.5">
-                        Prediction:{" "}
-                        <span className="text-secondary">
-                          {
-                            result.flags
-                              .split("ml_prediction:")[1]
-                              .split(",")[0]
-                          }
-                        </span>
-                      </p>
-                    )}
-                  </div>
+                  {(() => {
+                    let ruleWeight = 35;
+                    let mlWeight = 65;
+                    let isScamOverride = false;
+                    
+                    try {
+                      const details = JSON.parse(result.analysis_results || "{}");
+                      if (details.hybrid_scoring) {
+                        ruleWeight = details.hybrid_scoring.rule_weight ?? 35;
+                        mlWeight = details.hybrid_scoring.ml_weight ?? 65;
+                        if (ruleWeight === 100 || ruleWeight === 0) isScamOverride = true;
+                      }
+                    } catch (e) {}
+
+                    return (
+                      <>
+                        <div className="bg-neutral-page/30 p-3 rounded-xl border border-neutral-border/50">
+                          <div className="flex justify-between text-sm font-bold text-secondary mb-1">
+                            <span>Rule-based ({ruleWeight}%)</span>
+                            <span>{Number(result.rule_score)} / 100</span>
+                          </div>
+                          <div className="w-full bg-neutral-border/60 rounded-full h-1.5 overflow-hidden">
+                            <div
+                              className="bg-secondary h-full rounded-full transition-all duration-1000"
+                              style={{ width: `${result.rule_score}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                        <div className="bg-neutral-page/30 p-3 rounded-xl border border-neutral-border/50">
+                          <div className="flex justify-between text-sm font-bold text-secondary mb-1">
+                            <span>ML Engine ({mlWeight}%)</span>
+                            <span>{Number(result.ml_score)} / 100</span>
+                          </div>
+                          <div className="w-full bg-neutral-border/60 rounded-full h-1.5 overflow-hidden">
+                            <div
+                              className="bg-primary h-full rounded-full transition-all duration-1000"
+                              style={{ width: `${result.ml_score}%` }}
+                            ></div>
+                          </div>
+                          <div className="flex justify-between items-center mt-1.5">
+                            {result.flags?.includes("ml_prediction:") && (
+                              <p className="text-xs font-semibold text-secondary">
+                                Prediction:{" "}
+                                <span className="text-secondary">
+                                  {
+                                    result.flags
+                                      .split("ml_prediction:")[1]
+                                      .split(",")[0]
+                                  }
+                                </span>
+                              </p>
+                            )}
+                            {isScamOverride && (
+                              <p className="text-[9px] text-primary/60 font-black uppercase">
+                                Context Optimized
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </>
+                    );
+                  })()}
                 </div>
               </div>
+
+              {/* Scenario Analysis Result */}
+              {(() => {
+                try {
+                  const details = JSON.parse(result.analysis_results || "{}");
+                  if (details.detected_scam_type && details.detected_scam_type !== "General Phishing") {
+                    return (
+                      <div className="bg-primary/5 rounded-2xl p-6 border border-primary/20 animate-in fade-in zoom-in-95 duration-500">
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="p-2 bg-white rounded-lg shadow-sm text-primary">
+                            <ShieldCheck className="size-5" />
+                          </div>
+                          <div>
+                            <h3 className="text-xs font-black text-secondary uppercase tracking-widest leading-tight">
+                              Fraud Scenario Analysis
+                            </h3>
+                            <p className="text-sm font-bold text-primary">
+                              {details.detected_scam_type}
+                            </p>
+                          </div>
+                        </div>
+                        
+                        {details.transaction_validation && details.transaction_validation !== "N/A" && (
+                          <div className="bg-white/80 p-3 rounded-xl border border-primary/10">
+                            <p className="text-xs font-bold text-secondary/80 leading-relaxed italic">
+                              &quot;{details.transaction_validation}&quot;
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  }
+                } catch (e) {}
+                return null;
+              })()}
 
               <div className="bg-neutral-page/30 p-6 rounded-xl border border-neutral-border shadow-sm">
                 <h3 className="text-base font-bold text-secondary mb-4 flex items-center gap-2">
@@ -337,7 +432,7 @@ const StatusResult: React.FC<StatusResultProps> = ({ result }) => {
                           </div>
                           <button
                             onClick={() =>
-                              window.open(`/uploads/${filename}`, "_blank")
+                              window.open(`/uploads/${path}`, "_blank")
                             }
                             className="text-xs font-bold text-primary hover:underline transition-colors px-2 py-1"
                           >

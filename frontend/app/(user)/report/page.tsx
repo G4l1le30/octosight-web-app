@@ -10,6 +10,9 @@ import { IncidentSchemas } from "@/modules/report/schemas";
 import { useAuth } from "@/lib/auth-context";
 import { AuthRequired } from "@/components/auth/AuthRequired";
 import { ReportForm } from "@/components/report/ReportForm";
+import { ProcessingAnimation } from "@/components/ui/ProcessingAnimation";
+import { ShieldCheck } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const getLocalISOString = () => {
   const now = new Date();
@@ -19,40 +22,41 @@ const getLocalISOString = () => {
 
 const DYNAMIC_CONTENT = {
   SMS: {
-    urlLabel: "Link in SMS",
+    urlLabel: "Link in SMS (Optional)",
     urlPlaceholder: "https://bit.ly/claim-prize",
-    senderLabel: "Sender Phone Number",
+    senderLabel: "Sender Phone Number (Required)",
     senderPlaceholder: "e.g., +62 812..., 0812...",
-    summaryLabel: "Full Message Content",
+    summaryLabel: "Full Message Content (Required if no screenshot)",
     summaryPlaceholder: "Paste the exact SMS text you received here...",
-    fileLabel: "SMS Screenshot",
+    fileLabel: "SMS Screenshots (Max 10)",
   },
   WhatsApp: {
-    urlLabel: "Link in WhatsApp",
+    urlLabel: "Link in WhatsApp (Optional)",
     urlPlaceholder: "https://wa.me/message/...",
-    senderLabel: "WhatsApp Number / Group",
+    senderLabel: "WhatsApp Number / Group (Required)",
     senderPlaceholder: "e.g., +62 812... or Phishing Group Name",
-    summaryLabel: "Full Message Content",
+    summaryLabel: "Full Message Content (Required if no screenshot)",
     summaryPlaceholder: "Paste the exact WhatsApp message here...",
-    fileLabel: "Chat Screenshot",
+    fileLabel: "Chat Screenshots (Max 10)",
   },
   Email: {
-    urlLabel: "Link in Email",
+    urlLabel: "Link in Email (Optional)",
     urlPlaceholder: "https://cimb-security-update.com",
-    senderLabel: "Sender Email Address",
+    senderLabel: "Sender Email Address (Required)",
     senderPlaceholder: "e.g., support@secure-cimb.xyz",
-    summaryLabel: "Full Message Content",
+    summaryLabel: "Full Message Content (Required if no screenshot)",
     summaryPlaceholder: "Paste the email body or sub-headers here...",
-    fileLabel: "Email Screenshot",
+    fileLabel: "Email Screenshots (Max 10)",
   },
   Website: {
-    urlLabel: "Suspicious URL / Link",
+    urlLabel: "Suspicious URL / Link (Required)",
     urlPlaceholder: "https://clmbniaga.com/login",
-    senderLabel: "Sender Information",
-    senderPlaceholder: "Optional info about the sender",
-    summaryLabel: "Full Message Content",
-    summaryPlaceholder: "Describe how you found this website or paste the referring message...",
-    fileLabel: "Evidence Screenshot",
+    senderLabel: "Source Information (Optional)",
+    senderPlaceholder: "e.g., Found on Facebook ad, pop-up, etc.",
+    summaryLabel: "Additional Context (Optional)",
+    summaryPlaceholder: "Describe how you found this website...",
+    fileLabel: "Evidence Screenshots (Max 10)",
+    urlRequired: true,
   },
 };
 
@@ -110,10 +114,14 @@ export default function ReportPage() {
       payload.append("url", data.url || "");
       payload.append("summary", data.summary || "");
       payload.append("sender_numbers", data.senderNumbers || "");
+      payload.append("bank_name", data.bankName || "");
+      payload.append("bank_account", data.bankAccount || "");
+      payload.append("reference_number", data.referenceNumber || "");
       payload.append("attachment_names", JSON.stringify(attachments.map((a) => a.name)));
       // Include screenshots so OCR is factored into the preview score.
       // Uses /api/analyze (Next.js proxy route) to correctly forward binary files.
-      screenshots.forEach((file) => payload.append("screenshots", file));
+      // Max 10 screenshots
+      screenshots.slice(0, 10).forEach((file) => payload.append("screenshots", file));
 
       const response = await fetch("/api/analyze", {
         method: "POST",
@@ -145,8 +153,12 @@ export default function ReportPage() {
       payload.append("summary", confirmedData.summary ?? "");
       payload.append("sender_numbers", confirmedData.senderNumbers ?? "");
       payload.append("incident_date", confirmedData.incidentDate);
+      payload.append("bank_name", confirmedData.bankName ?? "");
+      payload.append("bank_account", confirmedData.bankAccount ?? "");
+      payload.append("reference_number", confirmedData.referenceNumber ?? "");
 
-      screenshots.forEach((file) => payload.append("screenshots", file));
+      // Max 10 screenshots
+      screenshots.slice(0, 10).forEach((file) => payload.append("screenshots", file));
       attachments.forEach((file) => payload.append("attachments", file));
 
       const response = await fetch("/api/v1/report", {
@@ -193,20 +205,40 @@ export default function ReportPage() {
   if (isConfirming && confirmedData) return (
     <div className="container mx-auto px-4 py-12 max-w-5xl">
       {error && <div className="bg-risk-high/10 text-risk-high p-4 rounded-lg mb-6 font-bold text-sm text-center border border-risk-high/20">Error: {error}</div>}
-      <ReportConfirmation
-        formData={confirmedData}
-        analysisResult={analysisResult}
-        onBack={() => setIsConfirming(false)}
-        onSubmit={handleFinalSubmit}
-        isSubmitting={loading}
-      />
+
+      {loading ? (
+        <div className="card p-12 bg-white border border-neutral-border rounded-3xl shadow-sm text-center">
+           <ProcessingAnimation title="Submitting Final Report" />
+        </div>
+      ) : (
+        <ReportConfirmation
+          formData={confirmedData}
+          analysisResult={analysisResult}
+          onBack={() => setIsConfirming(false)}
+          onSubmit={handleFinalSubmit}
+          isSubmitting={loading}
+        />
+      )}
     </div>
   );
 
   return (
     <div className="container mx-auto px-4 py-12 max-w-5xl">
+      {/* Loading Overlay for Pre-analysis */}
+      {loading && !isConfirming && (
+         <div className="fixed inset-0 z-[100] bg-white/80 backdrop-blur-md flex items-center justify-center p-6">
+            <div className="max-w-md w-full">
+              <ProcessingAnimation title="Scanning Evidence" />
+            </div>
+         </div>
+      )}
+
       <div className="mb-10 text-center">
-        <h1 className="text-4xl font-bold mb-4 text-secondary">Report Phishing Incident</h1>
+        <h1 className="text-4xl font-black text-secondary mb-3 flex items-center justify-center gap-3 tracking-tight">
+          <ShieldCheck className="size-10 text-primary" />
+          Report Phishing Incident
+        </h1>
+
         <p className="text-secondary opacity-70 font-medium">Help us protect the community by reporting suspicious activities.</p>
       </div>
 

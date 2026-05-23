@@ -23,9 +23,36 @@ class RuleEngine:
             "konfirmasi",
             "tarik",
             "hadiah",
-            "niaga",
-            "cimb",
+            "transfer",
+            "pembayaran",
+            "mutasi",
+            "struk",
+            "rekening",
+            "biaya admin",
+            "dana ditahan",
+            "invoice",
+            "tagihan",
+            "pemenang",
+            "undian",
+            "selamat",
+            "kejutan",
+            "resmi",
+            "gebyar",
+            "beruntung",
+            "kode unik",
+            "hadiah gratis",
+            "pajak",
+            "verif",
+            "klik",
+            "limit",
+            "blokir",
         ]
+        self.scam_scenarios = {
+            "accident": ["kecelakaan", "rumah sakit", "operasi", "darurat", "tabrakan", "pendarahan", "kritis"],
+            "legal": ["kantor polisi", "tilang", "narkoba", "ditangkap", "tebusan", "pengadilan"],
+            "wrong_transfer": ["salah kirim", "salah transfer", "minta balik", "kembalikan", "refund", "keliru transfer"],
+            "banking_urgency": ["akun dibekukan", "limit habis", "pembaharuan data", "ancaman blokir", "octo mobile"]
+        }
         self.shorteners = ["bit.ly", "s.id", "tinyurl.com", "t.co", "goo.gl"]
         self.suspicious_tlds = [".top", ".xyz", ".link", ".info", ".online", ".site"]
         self.malicious_extensions = [".apk", ".exe", ".scr", ".bat", ".com"]
@@ -67,7 +94,9 @@ class RuleEngine:
                 pass
         return len(scripts) > 1
 
-    def calculate_risk(self, url, attachments=None, sender_numbers=None, extracted_text=""):
+    def calculate_risk(self, url, attachments=None, sender_numbers=None, extracted_text="", 
+                       is_transaction=False, ref_found=False, ref_valid=False, account_blacklisted=False,
+                       mutation_not_found=False, mutation_found=False):
         parsed = urlparse(url)
         if not parsed.scheme and url:
             parsed = urlparse(f"http://{url}")
@@ -77,14 +106,48 @@ class RuleEngine:
         
         # Categorized Statuses (Default)
         details = {
-            "typosquatting": "Safe",
-            "keywords": "Clean",
-            "attachments": "Clean",
-            "ocr": "N/A"
+            "typosquatting": "Aman",
+            "keywords": "Bersih",
+            "attachments": "Bersih",
+            "ocr": "N/A",
+            "transaction_validation": "N/A",
+            "detected_scam_type": "Phishing Umum"
         }
         
         score = 0
         flags = []
+
+        # 0. Global Hard-Checks (Database Driven)
+        is_verified_bank = False
+        if mutation_found or ref_valid:
+             is_verified_bank = True
+             flags.append("VERIFIED_BY_BANK")
+             details["transaction_validation"] = "Transaksi Terverifikasi dalam Catatan CIMB NIAGA"
+
+        if account_blacklisted:
+            score += 100
+            flags.append("BLACKLISTED_ACCOUNT")
+            details["transaction_validation"] = "Akun Penipu Terdeteksi"
+
+        # 0a. Transaction & Mutation Checks
+        if is_transaction:
+            if ref_found:
+                if not ref_valid:
+                    score += 100
+                    flags.append("INVALID_TRANSACTION_REF")
+                    details["transaction_validation"] = "Struk Palsu Terdeteksi (Referensi Tidak Ditemukan)"
+            else:
+                # If it's a transaction report but no ref number could be extracted from image
+                # This might be suspicious but not definitive 100%
+                score += 20
+                flags.append("NO_TRANSACTION_REF_EXTRACTED")
+                details["transaction_validation"] = "Nomor Referensi Tidak Terdeteksi dalam Gambar"
+        
+        # Check for "Salah Transfer" claim but no mutation record found
+        if mutation_not_found and not is_verified_bank:
+            score += 85
+            flags.append("FAKE_WRONG_TRANSFER_CLAIM")
+            details["transaction_validation"] = "Mutasi Tidak Ditemukan (Diduga Penipuan Salah Transfer)"
 
         # 1. Whitelist Check
         if url:
@@ -94,7 +157,7 @@ class RuleEngine:
                     "score": 0, 
                     "priority": "Low", 
                     "flags": ["on_whitelist"],
-                    "details": {**details, "typosquatting": "Verified Domain"}
+                    "details": {**details, "typosquatting": "Domain Terverifikasi"}
                 }
 
         # 2. URL Checks
@@ -114,7 +177,7 @@ class RuleEngine:
             if any(term in domain for term in brand_terms):
                 score += 40
                 flags.append("brand_impersonation")
-                details["typosquatting"] = "Highly Suspicious"
+                details["typosquatting"] = "Sangat Mencurigakan"
                 url_risk = True
             
             if any(short in domain for short in self.shorteners):
@@ -123,23 +186,62 @@ class RuleEngine:
                 url_risk = True
 
             if url_risk:
-                details["typosquatting"] = "Detected"
+                details["typosquatting"] = "Terdeteksi"
             elif any(domain.endswith(tld) for tld in self.suspicious_tlds):
                 score += 15
                 flags.append("suspicious_tld")
-                details["typosquatting"] = "Warning"
+                details["typosquatting"] = "Peringatan"
 
         # 3. Keyword Analysis (Summary + OCR)
         all_content = f"{path} {extracted_text}".lower()
+        
+        # General suspicious keywords
         found_keywords = [kw for kw in self.suspicious_keywords if kw in all_content]
         if found_keywords:
-            score += min(len(found_keywords) * 15, 45)
+            score += min(len(found_keywords) * 12, 40)
             # Use underscores and pipe instead of comma for parsing safety
             kws = "|".join(found_keywords[:3])
             flags.append(f"malicious_keywords:{kws}")
-            details["keywords"] = "High Risk"
-        elif any(kw in domain for kw in self.suspicious_keywords):
-            details["keywords"] = "Detected"
+            details["keywords"] = "Risiko Tinggi"
+
+        # Specific Scenario Analysis (High Impact)
+        for scenario, keywords in self.scam_scenarios.items():
+            matches = [kw for kw in keywords if kw in all_content]
+            if matches:
+                # Direct Hit on a dangerous scenario: Give high base score
+                # Accident and Legal are extremely high risk social engineering
+                if scenario in ["accident", "legal", "wrong_transfer"]:
+                    score += 70  # Force it to be high risk
+                else:
+                    score += 40
+                
+                flags.append(f"scam_scenario:{scenario}")
+                
+                scenario_map = {
+                    "accident": "Kecelakaan",
+                    "legal": "Masalah Hukum",
+                    "wrong_transfer": "Salah Transfer",
+                    "banking_urgency": "Urgensi Perbankan"
+                }
+                details["detected_scam_type"] = scenario_map.get(scenario, scenario.replace("_", " ").title())
+                
+                if scenario == "accident" or scenario == "legal":
+                    details["keywords"] = "Pola Ancaman Risiko Tinggi"
+                
+                # Boost based on number of matching keywords within the scenario
+                score += min(len(matches) * 5, 20)
+        
+        # FINAL SCORING ADJUSTMENTS
+        if is_verified_bank:
+            # If the bank verified the transaction, we ignore all accumulated suspicion
+            # and set a very low score.
+            score = 15
+            details["keywords"] = "Bersih (Terverifikasi)"
+            details["detected_scam_type"] = "Transaksi Terverifikasi"
+            details["transaction_validation"] = "Transaksi Dikonfirmasi oleh Catatan Core CIMB NIAGA"
+
+        if not found_keywords and any(kw in domain for kw in self.suspicious_keywords):
+            details["keywords"] = "Terdeteksi"
 
         # 4. Attachment Checks
         if attachments:
@@ -148,15 +250,15 @@ class RuleEngine:
                 if ext in self.malicious_extensions:
                     score += 65
                     flags.append("malicious_file_detected")
-                    details["attachments"] = "Malicious"
+                    details["attachments"] = "Berbahaya"
                 elif ext in self.suspicious_attachments:
                     score += 25
                     flags.append("suspicious_file_detected")
-                    details["attachments"] = "Suspicious"
+                    details["attachments"] = "Mencurigakan"
 
         # 5. OCR Status
         if extracted_text.strip():
-            details["ocr"] = "Complete"
+            details["ocr"] = "Selesai"
 
         # 6. Combined Score (Simulated ML Weighting - Rule Based 35% + Heuristic 65%)
         # Here we normalize the rule score and apply priority logic

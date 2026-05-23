@@ -18,7 +18,7 @@ from sqlalchemy.orm import Session
 
 from app.core.security import get_current_user, require_admin
 from app.db.session import get_db
-from app.models.models import BlacklistedURL
+from app.models.models import BlacklistedURL, BlacklistedAccount, BlacklistedPhone, BlacklistedEmail
 
 router = APIRouter(prefix="/api/v1/admin/blacklist", tags=["blacklist"])
 
@@ -35,6 +35,65 @@ class BlacklistResponse(BaseModel):
     id: int
     url: str
     domain: str
+    reason: Optional[str]
+    ticket_id: Optional[str]
+    added_by: Optional[str]
+    is_active: bool
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class AccountBlacklistAddRequest(BaseModel):
+    account_number: str
+    bank_name: str
+    reason: Optional[str] = None
+    ticket_id: Optional[str] = None
+
+
+class AccountBlacklistResponse(BaseModel):
+    id: int
+    account_number: str
+    bank_name: str
+    reason: Optional[str]
+    ticket_id: Optional[str]
+    added_by: Optional[str]
+    is_active: bool
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class PhoneBlacklistAddRequest(BaseModel):
+    phone_number: str
+    reason: Optional[str] = None
+    ticket_id: Optional[str] = None
+
+
+class PhoneBlacklistResponse(BaseModel):
+    id: int
+    phone_number: str
+    reason: Optional[str]
+    ticket_id: Optional[str]
+    added_by: Optional[str]
+    is_active: bool
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class EmailBlacklistAddRequest(BaseModel):
+    email: str
+    reason: Optional[str] = None
+    ticket_id: Optional[str] = None
+
+
+class EmailBlacklistResponse(BaseModel):
+    id: int
+    email: str
     reason: Optional[str]
     ticket_id: Optional[str]
     added_by: Optional[str]
@@ -174,3 +233,139 @@ def check_url(
         "entry_id": entry.id if entry else None,
         "reason": entry.reason if entry else None,
     }
+
+
+# ── Account Endpoints ─────────────────────────────────────────────────────────
+
+@router.post("/accounts", response_model=AccountBlacklistResponse, summary="Add bank account to blacklist")
+def add_account_to_blacklist(
+    body: AccountBlacklistAddRequest,
+    db: Session = Depends(get_db),
+    admin=Depends(require_admin),
+):
+    clean_acc = body.account_number.strip().replace(" ", "").replace("-", "")
+    existing = db.query(BlacklistedAccount).filter(
+        BlacklistedAccount.account_number == clean_acc,
+        BlacklistedAccount.is_active == True
+    ).first()
+    
+    if existing:
+        raise HTTPException(status_code=409, detail=f"Account '{clean_acc}' is already blacklisted.")
+
+    entry = BlacklistedAccount(
+        account_number=clean_acc,
+        bank_name=body.bank_name,
+        reason=body.reason,
+        ticket_id=body.ticket_id,
+        added_by=admin.id,
+        is_active=True,
+    )
+    db.add(entry)
+    db.commit()
+    db.refresh(entry)
+    return entry
+
+
+@router.get("/accounts", response_model=list[AccountBlacklistResponse], summary="List blacklisted accounts")
+def list_account_blacklist(db: Session = Depends(get_db), _admin=Depends(require_admin)):
+    return db.query(BlacklistedAccount).order_by(BlacklistedAccount.created_at.desc()).all()
+
+
+@router.delete("/accounts/{entry_id}", summary="Remove account from blacklist")
+def remove_account_from_blacklist(entry_id: int, db: Session = Depends(get_db), _admin=Depends(require_admin)):
+    entry = db.query(BlacklistedAccount).filter(BlacklistedAccount.id == entry_id).first()
+    if not entry:
+        raise HTTPException(status_code=404, detail="Entry not found")
+    entry.is_active = False
+    db.commit()
+    return {"message": "Account removed from blacklist"}
+
+
+# ── Phone Endpoints ───────────────────────────────────────────────────────────
+
+@router.post("/phones", response_model=PhoneBlacklistResponse, summary="Add phone number to blacklist")
+def add_phone_to_blacklist(
+    body: PhoneBlacklistAddRequest,
+    db: Session = Depends(get_db),
+    admin=Depends(require_admin),
+):
+    clean_phone = body.phone_number.strip().replace(" ", "").replace("-", "")
+    existing = db.query(BlacklistedPhone).filter(
+        BlacklistedPhone.phone_number == clean_phone,
+        BlacklistedPhone.is_active == True
+    ).first()
+    
+    if existing:
+        raise HTTPException(status_code=409, detail=f"Phone '{clean_phone}' is already blacklisted.")
+
+    entry = BlacklistedPhone(
+        phone_number=clean_phone,
+        reason=body.reason,
+        ticket_id=body.ticket_id,
+        added_by=admin.id,
+        is_active=True,
+    )
+    db.add(entry)
+    db.commit()
+    db.refresh(entry)
+    return entry
+
+
+@router.get("/phones", response_model=list[PhoneBlacklistResponse], summary="List blacklisted phones")
+def list_phone_blacklist(db: Session = Depends(get_db), _admin=Depends(require_admin)):
+    return db.query(BlacklistedPhone).order_by(BlacklistedPhone.created_at.desc()).all()
+
+
+@router.delete("/phones/{entry_id}", summary="Remove phone from blacklist")
+def remove_phone_from_blacklist(entry_id: int, db: Session = Depends(get_db), _admin=Depends(require_admin)):
+    entry = db.query(BlacklistedPhone).filter(BlacklistedPhone.id == entry_id).first()
+    if not entry:
+        raise HTTPException(status_code=404, detail="Entry not found")
+    entry.is_active = False
+    db.commit()
+    return {"message": "Phone removed from blacklist"}
+
+
+# ── Email Endpoints ───────────────────────────────────────────────────────────
+
+@router.post("/emails", response_model=EmailBlacklistResponse, summary="Add email to blacklist")
+def add_email_to_blacklist(
+    body: EmailBlacklistAddRequest,
+    db: Session = Depends(get_db),
+    admin=Depends(require_admin),
+):
+    clean_email = body.email.strip().lower()
+    existing = db.query(BlacklistedEmail).filter(
+        BlacklistedEmail.email == clean_email,
+        BlacklistedEmail.is_active == True
+    ).first()
+    
+    if existing:
+        raise HTTPException(status_code=409, detail=f"Email '{clean_email}' is already blacklisted.")
+
+    entry = BlacklistedEmail(
+        email=clean_email,
+        reason=body.reason,
+        ticket_id=body.ticket_id,
+        added_by=admin.id,
+        is_active=True,
+    )
+    db.add(entry)
+    db.commit()
+    db.refresh(entry)
+    return entry
+
+
+@router.get("/emails", response_model=list[EmailBlacklistResponse], summary="List blacklisted emails")
+def list_email_blacklist(db: Session = Depends(get_db), _admin=Depends(require_admin)):
+    return db.query(BlacklistedEmail).order_by(BlacklistedEmail.created_at.desc()).all()
+
+
+@router.delete("/emails/{entry_id}", summary="Remove email from blacklist")
+def remove_email_from_blacklist(entry_id: int, db: Session = Depends(get_db), _admin=Depends(require_admin)):
+    entry = db.query(BlacklistedEmail).filter(BlacklistedEmail.id == entry_id).first()
+    if not entry:
+        raise HTTPException(status_code=404, detail="Entry not found")
+    entry.is_active = False
+    db.commit()
+    return {"message": "Email removed from blacklist"}

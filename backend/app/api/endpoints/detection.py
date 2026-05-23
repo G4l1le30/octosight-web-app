@@ -31,7 +31,7 @@ from sqlalchemy.orm import Session
 
 from app.core.security import get_current_user
 from app.db.session import get_db
-from app.models.models import Ticket, BlacklistedURL
+from app.models.models import Ticket, BlacklistedURL, BlacklistedAccount, MockBankTransaction, BlacklistedPhone, BlacklistedEmail
 from app.schemas.schemas import AnalysisRequest, MessageRequest, SpamPredictionResponse
 from app.core.engines import analyze_spam, ocr_engine, rule_engine
 from app.modules.education.gemini_service import GeminiEducationService
@@ -64,23 +64,99 @@ def _check_blacklist(db: Session, url: str) -> Optional[BlacklistedURL]:
             
     return None
 
+
+def _check_account_blacklist(db: Session, account_number: str) -> Optional[BlacklistedAccount]:
+    """Check if a bank account matches any active blacklist entry."""
+    if not account_number:
+        return None
+    
+    # Strip whitespace/formatting
+    clean_acc = account_number.strip().replace(" ", "").replace("-", "")
+    
+    return db.query(BlacklistedAccount).filter(
+        BlacklistedAccount.account_number == clean_acc,
+        BlacklistedAccount.is_active == True
+    ).first()
+
+
+def _check_phone_blacklist(db: Session, phone_number: str) -> Optional[BlacklistedPhone]:
+    """Check if a phone number matches any active blacklist entry."""
+    if not phone_number:
+        return None
+    
+    clean_phone = phone_number.strip().replace(" ", "").replace("-", "").replace("+", "")
+    
+    return db.query(BlacklistedPhone).filter(
+        BlacklistedPhone.phone_number == clean_phone,
+        BlacklistedPhone.is_active == True
+    ).first()
+
+
+def _check_email_blacklist(db: Session, email: str) -> Optional[BlacklistedEmail]:
+    """Check if an email matches any active blacklist entry."""
+    if not email:
+        return None
+    
+    clean_email = email.strip().lower()
+    
+    return db.query(BlacklistedEmail).filter(
+        BlacklistedEmail.email == clean_email,
+        BlacklistedEmail.is_active == True
+    ).first()
+
+
+def _validate_transaction(db: Session, ref_number: str) -> Optional[MockBankTransaction]:
+    """Validate a transaction reference number against the mock bank database."""
+    if not ref_number:
+        return None
+    
+    # Ref numbers are case-insensitive in our mock bank
+    return db.query(MockBankTransaction).filter(
+        MockBankTransaction.reference_number.ilike(ref_number.strip())
+    ).first()
+
+
+def _check_mutation_exists(db: Session, summary: str, extracted_text: str, account_number: str, bank_name: str = "") -> bool:
+    """
+    If the text mentions 'salah transfer/kirim', check if a corresponding 
+    transaction exists in our mock bank for that account and bank.
+    """
+    combined = f"{summary} {extracted_text}".lower()
+    trigger_keywords = ["salah transfer", "salah kirim", "keliru transfer", "salah masuk"]
+    
+    if any(kw in combined for kw in trigger_keywords):
+        if account_number:
+            clean_acc = account_number.strip().replace(" ", "").replace("-", "")
+            # Check if this account exists in our mock bank as sender or receiver
+            # AND if the bank name matches (if provided)
+            query = db.query(MockBankTransaction).filter(
+                (MockBankTransaction.sender_account == clean_acc) | 
+                (MockBankTransaction.receiver_account == clean_acc)
+            )
+            
+            if bank_name:
+                query = query.filter(
+                    (MockBankTransaction.sender_bank.ilike(f"%{bank_name}%")) |
+                    (MockBankTransaction.receiver_bank.ilike(f"%{bank_name}%"))
+                )
+
+            exists = query.first()
+            return exists is not None
+        return False
+    
+    return True
+
+
 UPLOAD_DIR = os.getenv("UPLOAD_DIR", "uploads")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 
 # ── Internal helpers ──────────────────────────────────────────────────────────
 
-def _compute_hybrid_score(rule_score: float, combined_text: str) -> dict:
+def _compute_hybrid_score(rule_score: float, combined_text: str, only_ml: bool = False) -> dict:
     """
     Compute the hybrid (rule + ML) risk score.
-
-    Returns a dict with:
-        final_score  – blended 0-100 score
-        rule_score   – raw rule-engine score
-        ml_score     – normalised ML score (0-100, phishing direction)
-        ml_category  – predicted label from ML model
-        ml_confidence– model confidence (%)
-        ml_available – whether the ML model loaded successfully
+    If only_ml is True, the rule score is ignored (except for hard checks).
     """
     ml_result = analyze_spam(combined_text) if combined_text.strip() else {}
 
@@ -103,11 +179,23 @@ def _compute_hybrid_score(rule_score: float, combined_text: str) -> dict:
         ml_available = True
 
     # OctoSight Aturan #2: rule 35% + ML 65%
-    final_score = min(100.0, round((rule_score * 0.35) + (ml_score * 0.65), 2))
+    # But if only_ml is True, we use 100% ML
+    if only_ml and ml_available:
+        final_score = ml_score
+        formula = "final = ml×1.00 (URL missing)"
+        rule_weight = 0
+        ml_weight = 100
+    else:
+        final_score = round((rule_score * 0.35) + (ml_score * 0.65), 2)
+        formula = "final = rule×0.35 + ml×0.65"
+        rule_weight = 35
+        ml_weight = 65
+    
+    final_score = min(100.0, final_score)
 
     print(f"--- Hybrid Score Calculation ---")
-    print(f"Rule Score: {rule_score} (weight 35%) -> {rule_score * 0.35}")
-    print(f"ML Score: {ml_score} (weight 65%) -> {ml_score * 0.65}")
+    print(f"Rule Score: {rule_score} (weight {rule_weight}%) -> {rule_score * (rule_weight/100)}")
+    print(f"ML Score: {ml_score} (weight {ml_weight}%) -> {ml_score * (ml_weight/100)}")
     print(f"ML Category: {ml_category}, Confidence: {ml_confidence}")
     print(f"Final Score: {final_score}")
     print(f"-------------------------------")
@@ -119,6 +207,9 @@ def _compute_hybrid_score(rule_score: float, combined_text: str) -> dict:
         "ml_category": ml_category,
         "ml_confidence": ml_confidence,
         "ml_available": ml_available,
+        "formula": formula,
+        "rule_weight": rule_weight,
+        "ml_weight": ml_weight
     }
 
 
@@ -130,18 +221,25 @@ def _resolve_priority(score: float) -> str:
     return "Low"
 
 
-def _save_upload(file: UploadFile, prefix: str) -> str:
-    """Save an uploaded file to UPLOAD_DIR with a hashed filename. Returns filename."""
+def _save_upload(file: UploadFile, prefix: str, subfolder: str = "") -> str:
+    """Save an uploaded file to UPLOAD_DIR (optionally in a subfolder). Returns relative filename."""
+    target_dir = os.path.join(UPLOAD_DIR, subfolder) if subfolder else UPLOAD_DIR
+    os.makedirs(target_dir, exist_ok=True)
+    
     ext = os.path.splitext(file.filename)[1]
     salt = uuid.uuid4().hex
     file_hash = hashlib.sha256(
         f"{file.filename}{salt}{time.time()}".encode()
     ).hexdigest()[:20]
     filename = f"{prefix}_{file_hash}{ext}"
-    file_path = os.path.join(UPLOAD_DIR, filename)
-    with open(file_path, "wb") as buf:
+    
+    # Store path relative to UPLOAD_DIR for the DB, but full path for saving
+    relative_path = os.path.join(subfolder, filename) if subfolder else filename
+    full_path = os.path.join(UPLOAD_DIR, relative_path)
+    
+    with open(full_path, "wb") as buf:
         shutil.copyfileobj(file.file, buf)
-    return filename
+    return relative_path
 
 
 # ── Endpoints ─────────────────────────────────────────────────────────────────
@@ -153,6 +251,9 @@ async def create_report(
     report_type: str = Form(...),
     summary: str = Form(""),
     sender_numbers: str = Form(""),
+    bank_name: str = Form(""),
+    bank_account: str = Form(""),
+    reference_number: str = Form(""),
     screenshots: List[UploadFile] = File(None),
     attachments: List[UploadFile] = File(None),
     db: Session = Depends(get_db),
@@ -160,12 +261,9 @@ async def create_report(
 ):
     """
     Submit a new phishing/fraud report.
-
-    Risk is scored using the hybrid engine:
-      - Rule Engine  (35%) — URL heuristics, attachments, keywords
-      - ML Engine    (65%) — SentenceTransformer + Logistic Regression
-
-    Evidence files are stored to disk; only their paths are saved in the DB.
+    - Up to 10 screenshots allowed.
+    - Files grouped in folder by Ticket ID.
+    - Scoring favors ML if URL is missing but Bank Info is present.
     """
     # 0. Validation: Require either summary or screenshots
     if not summary.strip() and not screenshots:
@@ -174,17 +272,21 @@ async def create_report(
             detail="Either message content (summary) or an evidence screenshot is required."
         )
 
+    # 1. Pre-generate Ticket ID for folder grouping
+    ticket_id = f"OCTO-{random.randint(1000, 9999)}-{random.randint(1000, 9999)}-{random.randint(1000, 9999)}"
+
     all_extracted_text: List[str] = []
     screenshot_list: List[str] = []
     orig_attachment_names: List[str] = []
     hashed_attachment_paths: List[str] = []
 
-    # 1. Process screenshots via OCR
+    # 2. Process screenshots via OCR
     if screenshots:
-        for file in screenshots:
+        # Limit to 10 screenshots
+        for file in screenshots[:10]:
             if not file.content_type or not file.content_type.startswith("image/"):
                 continue
-            filename = _save_upload(file, "screenshot")
+            filename = _save_upload(file, "screenshot", subfolder=ticket_id)
             file_path = os.path.join(UPLOAD_DIR, filename)
             screenshot_list.append(filename)
 
@@ -196,67 +298,165 @@ async def create_report(
             if indicators["urls"] and not url:
                 url = indicators["urls"][0]
 
-    # 2. Process attachments (evidence files)
+    # 3. Process attachments (evidence files)
     if attachments:
         for file in attachments:
             orig_attachment_names.append(file.filename)
-            filename = _save_upload(file, "attachment")
+            filename = _save_upload(file, "attachment", subfolder=ticket_id)
             hashed_attachment_paths.append(filename)
 
-    # 3. Rule-based analysis
+    # 4. Rule-based analysis
     combined_text = "\n---\n".join(all_extracted_text)
-    # 3. Check Blacklist FIRST (User request: 'cek blacklist dulu baru jalankan engine')
-    blacklisted_entry = _check_blacklist(db, url)
     
-    # 4. Engine execution
-    # 4a. Rule Engine
+    # --- GLOBAL VALIDATIONS ---
+    is_transaction = report_type == "Transaction"
+    blacklisted_entry = None
+    account_blacklisted = False
+    ref_found = False
+    ref_valid = False
+    global_flags = []
+
+    # 1. Global Account Blacklist Check
+    target_account = bank_account if bank_account else (sender_numbers if is_transaction else "")
+    if target_account:
+        blacklisted_acc = _check_account_blacklist(db, target_account)
+        if blacklisted_acc:
+            account_blacklisted = True
+            global_flags.append("BLACKLISTED_ACCOUNT")
+
+    # 1b. Global Phone & Email Blacklist Check
+    if sender_numbers and not is_transaction:
+        if "@" in sender_numbers:
+            if _check_email_blacklist(db, sender_numbers):
+                account_blacklisted = True
+                global_flags.append("BLACKLISTED_EMAIL")
+        else:
+            if _check_phone_blacklist(db, sender_numbers):
+                account_blacklisted = True
+                global_flags.append("BLACKLISTED_PHONE")
+    
+    # Check indicators extracted by OCR
+    indicators = ocr_engine.find_indicators(combined_text)
+    for phone in indicators["phones"]:
+        if _check_phone_blacklist(db, phone):
+            account_blacklisted = True
+            if "BLACKLISTED_PHONE" not in global_flags:
+                global_flags.append("BLACKLISTED_PHONE")
+    for email in indicators["emails"]:
+        if _check_email_blacklist(db, email):
+            account_blacklisted = True
+            if "BLACKLISTED_EMAIL" not in global_flags:
+                global_flags.append("BLACKLISTED_EMAIL")
+
+    # 2. Global Reference Validation (OCR text or manual input)
+    ref_no = ocr_engine.extract_reference_number(combined_text)
+    if not ref_no and reference_number:
+        ref_no = reference_number
+    
+    if ref_no:
+        ref_found = True
+        valid_tx = _validate_transaction(db, ref_no)
+        if valid_tx:
+            ref_valid = True
+
+    # 3. URL Blacklist (for non-transaction reports)
+    if not is_transaction and url:
+        blacklisted_entry = _check_blacklist(db, url)
+
+    # 4. Specific Social Engineering Mutation Check
+    mutation_not_found = False
+    mutation_found = False
+    if "salah" in (summary + combined_text).lower():
+        mutation_valid = _check_mutation_exists(db, summary, combined_text, bank_account or sender_numbers, bank_name)
+        if mutation_valid:
+            mutation_found = True
+        else:
+            mutation_not_found = True
+    # --------------------------
+
+    # Engine execution
+    # Ensure rule engine looks at both summary and OCR text
+    combined_text_for_rules = f"{summary}\n{combined_text}".strip()
+
     rule_analysis = rule_engine.calculate_risk(
         url=url,
         attachments=orig_attachment_names or None,
         sender_numbers=sender_numbers,
-        extracted_text=combined_text,
+        extracted_text=combined_text_for_rules,
+        is_transaction=is_transaction,
+        ref_found=ref_found,
+        ref_valid=ref_valid,
+        account_blacklisted=account_blacklisted,
+        mutation_not_found=mutation_not_found,
+        mutation_found=mutation_found
     )
+    
+    # Add our global flags to rule analysis
+    for gf in global_flags:
+        if gf not in rule_analysis["flags"]:
+            rule_analysis["flags"].append(gf)
+
     rule_score: float = rule_analysis["score"]
 
     if blacklisted_entry:
         rule_score = 100.0
         rule_analysis["flags"].append("domain_blacklisted")
-        print(f"[Blacklist] Match found for '{url}' against blacklisted '{blacklisted_entry.url}' — forcing rule_score=100")
 
-    # 4b. Hybrid scoring: Rule (35%) + ML (65%)
+    # 5. Hybrid scoring: Rule (35%) + ML (65%)
     ml_input_text = f"{summary}\n{combined_text}".strip()
-    
-    # Append ML flag for transparency
     flags: List[str] = list(rule_analysis["flags"])
 
-    if blacklisted_entry:
-        # If blacklisted, everything is forced to 100
+    if blacklisted_entry or account_blacklisted:
         hybrid = {
             "final_score": 100.0,
             "rule_score": 100.0,
             "ml_score": 100.0,
             "ml_category": "phishing",
             "ml_confidence": 100.0,
-            "ml_available": True
+            "ml_available": True,
+            "rule_weight": 100,
+            "ml_weight": 0,
+            "formula": "final = 100 (Blacklisted)"
         }
         if "BLACKLISTED" not in flags:
             flags.append("BLACKLISTED")
-        print(f"[Blacklist] Match found for '{url}' — forcing all scores to 100.0")
     else:
-        hybrid = _compute_hybrid_score(rule_score, ml_input_text)
+        # Restore standard hybrid scoring (35% Rule + 65% ML)
+        hybrid = _compute_hybrid_score(rule_score, ml_input_text, only_ml=False)
     
     final_score = hybrid["final_score"]
+
+    # --- Context-Aware Scoring Override ---
+    is_scam_scenario = any("scam_scenario:" in f for f in flags)
+    is_valid_ref = "VERIFIED_BY_BANK" in flags
+    is_any_blacklisted = blacklisted_entry or account_blacklisted
+    
+    if not url.strip() and (is_scam_scenario or is_valid_ref) and not is_any_blacklisted:
+        # If it's a scam scenario without a link, Rule Engine is prioritized
+        # User Requirement: ML still gets 20% contribution
+        # ONLY apply this if NOT explicitly blacklisted
+        final_score = round((rule_score * 0.8) + (hybrid["ml_score"] * 0.2), 2)
+        hybrid["rule_weight"] = 80
+        hybrid["ml_weight"] = 20
+        hybrid["formula"] = "final = rule×0.80 + ml×0.20 (Verification Override)"
+        print(f"[Override] Verification override triggered (80/20). Final score: {final_score}")
+    
+    # If blacklisted, ensure everything is consistent at 100
+    if is_any_blacklisted:
+        final_score = 100.0
+        hybrid["final_score"] = 100.0
+        hybrid["rule_weight"] = 100
+        hybrid["ml_weight"] = 0
+    # --------------------------------------
+
     priority = _resolve_priority(final_score)
 
-    # Append ML flag for transparency
     if not hybrid["ml_available"]:
         flags.append("ml_engine_offline")
     else:
-        # Use underscore instead of colon/space for standard parsing
         category = hybrid['ml_category'].replace(' ', '_')
         flags.append(f"ml_prediction_{category}")
 
-    # 5. Build enriched analysis_results for the admin dashboard
     details = {
         **rule_analysis["details"],
         "hybrid_scoring": {
@@ -264,19 +464,22 @@ async def create_report(
             "ml_score": hybrid["ml_score"],
             "ml_category": hybrid["ml_category"],
             "ml_confidence": hybrid["ml_confidence"],
-            "formula": "final = rule×0.35 + ml×0.65",
+            "rule_weight": hybrid.get("rule_weight", 35),
+            "ml_weight": hybrid.get("ml_weight", 65),
+            "formula": hybrid.get("formula", "final = rule×0.35 + ml×0.65"),
         },
     }
 
     # 6. Persist to DB
-    ticket_id = f"OCTO-{random.randint(1000, 9999)}-{random.randint(1000, 9999)}-{random.randint(1000, 9999)}"
-
     db_ticket = Ticket(
         ticket_id=ticket_id,
         url=url,
         type=report_type,
         summary=summary,
         sender_numbers=sender_numbers,
+        bank_name=bank_name,
+        bank_account=bank_account,
+        reference_number=reference_number,
         extracted_text=combined_text,
         attachment_names=",".join(orig_attachment_names),
         attachment_paths=",".join(hashed_attachment_paths),
@@ -339,6 +542,9 @@ async def analyze_preview(
     url: str = Form(""),
     summary: str = Form(""),
     sender_numbers: str = Form(""),
+    bank_name: str = Form(""),
+    bank_account: str = Form(""),
+    reference_number: str = Form(""),
     attachment_names: str = Form("[]"),
     screenshots: List[UploadFile] = File([]),
     db: Session = Depends(get_db),
@@ -350,7 +556,7 @@ async def analyze_preview(
     # 1. Volatile OCR for preview
     combined_ocr_text = ""
     if screenshots:
-        for ss in screenshots:
+        for ss in screenshots[:10]:
             try:
                 content = await ss.read()
                 await ss.seek(0)
@@ -360,8 +566,71 @@ async def analyze_preview(
             except Exception as e:
                 print(f"Preview OCR Error: {e}")
 
-    # 2. Blacklist check FIRST
-    blacklisted_entry = _check_blacklist(db, url)
+    # --- GLOBAL VALIDATIONS ---
+    is_transaction = report_type == "Transaction"
+    blacklisted_entry = None
+    account_blacklisted = False
+    ref_found = False
+    ref_valid = False
+    global_flags = []
+
+    # 1. Global Account Blacklist Check
+    target_account = bank_account if bank_account else (sender_numbers if is_transaction else "")
+    if target_account:
+        blacklisted_acc = _check_account_blacklist(db, target_account)
+        if blacklisted_acc:
+            account_blacklisted = True
+            global_flags.append("BLACKLISTED_ACCOUNT")
+
+    # 1b. Global Phone & Email Blacklist Check
+    if sender_numbers and not is_transaction:
+        if "@" in sender_numbers:
+            if _check_email_blacklist(db, sender_numbers):
+                account_blacklisted = True
+                global_flags.append("BLACKLISTED_EMAIL")
+        else:
+            if _check_phone_blacklist(db, sender_numbers):
+                account_blacklisted = True
+                global_flags.append("BLACKLISTED_PHONE")
+
+    # Check indicators extracted by OCR
+    indicators = ocr_engine.find_indicators(combined_ocr_text)
+    for phone in indicators["phones"]:
+        if _check_phone_blacklist(db, phone):
+            account_blacklisted = True
+            if "BLACKLISTED_PHONE" not in global_flags:
+                global_flags.append("BLACKLISTED_PHONE")
+    for email in indicators["emails"]:
+        if _check_email_blacklist(db, email):
+            account_blacklisted = True
+            if "BLACKLISTED_EMAIL" not in global_flags:
+                global_flags.append("BLACKLISTED_EMAIL")
+
+    # 2. Global Reference Validation (OCR text or manual input)
+    ref_no = ocr_engine.extract_reference_number(combined_ocr_text)
+    if not ref_no and reference_number:
+        ref_no = reference_number
+    
+    if ref_no:
+        ref_found = True
+        valid_tx = _validate_transaction(db, ref_no)
+        if valid_tx:
+            ref_valid = True
+
+    # 3. URL Blacklist (for non-transaction reports)
+    if not is_transaction and url:
+        blacklisted_entry = _check_blacklist(db, url)
+
+    # 4. Specific Social Engineering Mutation Check
+    mutation_not_found = False
+    mutation_found = False
+    if "salah" in (summary + combined_ocr_text).lower():
+        mutation_valid = _check_mutation_exists(db, summary, combined_ocr_text, bank_account or sender_numbers, bank_name)
+        if mutation_valid:
+            mutation_found = True
+        else:
+            mutation_not_found = True
+    # --------------------------
 
     # 3. Rule Engine calculation
     # We combine summary and OCR text for rule engine too in preview
@@ -377,7 +646,18 @@ async def analyze_preview(
         attachments=att_list or None,
         sender_numbers=sender_numbers,
         extracted_text=full_text_context,
+        is_transaction=is_transaction,
+        ref_found=ref_found,
+        ref_valid=ref_valid,
+        account_blacklisted=account_blacklisted,
+        mutation_not_found=mutation_not_found,
+        mutation_found=mutation_found
     )
+    
+    # Add our global flags to rule analysis
+    for gf in global_flags:
+        if gf not in rule_analysis["flags"]:
+            rule_analysis["flags"].append(gf)
     rule_score: float = rule_analysis["score"]
 
     if blacklisted_entry:
@@ -386,21 +666,42 @@ async def analyze_preview(
             rule_analysis["flags"].append("domain_blacklisted")
 
     # 4. Hybrid scoring (Rule 35% + ML 65%)
-    if blacklisted_entry:
+    if blacklisted_entry or account_blacklisted or (is_transaction and ref_found and not ref_valid):
+        final_score = 100.0
         hybrid = {
             "final_score": 100.0,
             "rule_score": 100.0,
             "ml_score": 100.0,
             "ml_category": "phishing",
             "ml_confidence": 100.0,
-            "ml_available": True
+            "ml_available": True,
+            "rule_weight": 100,
+            "ml_weight": 0,
+            "formula": "final = 100 (Blacklisted/Invalid Ref)"
         }
-        if "BLACKLISTED" not in rule_analysis["flags"]:
-            rule_analysis["flags"].append("BLACKLISTED")
-        final_score = 100.0
+        if "BLACKLISTED" not in rule_analysis["flags"] and (blacklisted_entry or account_blacklisted):
+             rule_analysis["flags"].append("BLACKLISTED")
     else:
-        hybrid = _compute_hybrid_score(rule_score, full_text_context or url)
+        # Restore standard hybrid scoring (35% Rule + 65% ML)
+        hybrid = _compute_hybrid_score(rule_score, full_text_context or url, only_ml=False)
         final_score = hybrid["final_score"]
+
+    # --- Context-Aware Scoring Override (Preview) ---
+    is_scam_scenario = any("scam_scenario:" in f for f in rule_analysis["flags"])
+    is_valid_ref = "VERIFIED_BY_BANK" in rule_analysis["flags"]
+    is_any_blacklisted = blacklisted_entry is not None or account_blacklisted
+
+    if not url.strip() and (is_scam_scenario or is_valid_ref) and not is_any_blacklisted:
+        final_score = round((rule_score * 0.8) + (hybrid["ml_score"] * 0.2), 2)
+        hybrid["rule_weight"] = 80
+        hybrid["ml_weight"] = 20
+        hybrid["formula"] = "final = rule×0.80 + ml×0.20 (Verification Override)"
+    
+    if is_any_blacklisted:
+        final_score = 100.0
+        hybrid["rule_weight"] = 100
+        hybrid["ml_weight"] = 0
+    # -----------------------------------------------
 
     return {
         **rule_analysis,
@@ -409,8 +710,11 @@ async def analyze_preview(
         "ml_score": hybrid["ml_score"],
         "ml_category": hybrid["ml_category"],
         "ml_confidence": hybrid["ml_confidence"],
+        "rule_weight": hybrid.get("rule_weight", 35),
+        "ml_weight": hybrid.get("ml_weight", 65),
+        "hybrid_formula": hybrid.get("formula"),
         "extracted_ocr_text": combined_ocr_text.strip(),
-        "is_blacklisted": blacklisted_entry is not None
+        "is_blacklisted": blacklisted_entry is not None or account_blacklisted
     }
 
 

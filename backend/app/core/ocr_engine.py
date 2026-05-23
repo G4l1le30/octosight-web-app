@@ -54,6 +54,27 @@ class OCREngine:
             "phones": list(set(phones)),
         }
 
+    def extract_reference_number(self, text: str) -> str:
+        """
+        Attempts to extract a transaction reference number from OCR text.
+        Common patterns: No. Ref, TRX ID, Ref:, Nomor Transaksi.
+        """
+        # Look for alphanumeric codes after common labels
+        # Patterns like: Ref: 12345, No. Transaksi TRX-999, etc.
+        patterns = [
+            r"(?:Ref|No\.?\s?Ref|No\.?\s?Referensi|Nomor\s?Referensi|Nomor\s?Transaksi|TRX\s?ID|OCTO-REF)[:\s]+([A-Z0-9-]+)",
+            r"ID\s?Transaksi[:\s]+([A-Z0-9-]+)",
+            r"Kode\s?Referensi[:\s]+([A-Z0-9-]+)",
+            r"(OCTO-REF-[0-9]+)"
+        ]
+        
+        for pattern in patterns:
+            match = re.search(pattern, text, re.IGNORECASE)
+            if match:
+                return match.group(1).strip()
+        
+        return ""
+
 
 if __name__ == "__main__":
     # Get the project root relative to this script

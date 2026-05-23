@@ -26,10 +26,47 @@ export const EvidenceUpload = ({
   accept,
   multiple,
 }: EvidenceUploadProps) => {
+  const [isDragging, setIsDragging] = React.useState(false);
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = () => {
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      const droppedFiles = Array.from(e.dataTransfer.files);
+      // Filter by accept type if provided
+      const filteredFiles = accept 
+        ? droppedFiles.filter(file => {
+            const fileType = file.type;
+            const acceptBase = accept.replace("*", "");
+            return fileType.startsWith(acceptBase);
+          })
+        : droppedFiles;
+
+      if (filteredFiles.length > 0) {
+        onFilesChange(multiple ? filteredFiles : [filteredFiles[0]]);
+      }
+    }
+  };
+
   return (
     <div className="space-y-3">
       <label className="text-base font-bold text-secondary">{label}</label>
-      <div className="relative">
+      <div 
+        className="relative"
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+      >
         <input
           type="file"
           id={id}
@@ -47,7 +84,9 @@ export const EvidenceUpload = ({
             "flex flex-col items-center justify-center w-full h-36 border-2 border-dashed rounded-xl cursor-pointer hover:bg-primary/5 transition-all group overflow-hidden p-2",
             error
               ? "border-risk-high bg-risk-high/5"
-              : "border-neutral-border hover:border-primary",
+              : isDragging 
+                ? "border-primary bg-primary/10 scale-[1.02]"
+                : "border-neutral-border hover:border-primary",
           )}
         >
           {files.length > 0 ? (

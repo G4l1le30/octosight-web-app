@@ -66,6 +66,9 @@ const Navbar: React.FC = () => {
               <Link href="/report" className={getLinkClass("/report")}>
                 Report Incident
               </Link>
+              <Link href="/check" className={getLinkClass("/check")}>
+                Fraud Check
+              </Link>
               <Link href="/status" className={getLinkClass("/status")}>
                 Check Status
               </Link>
@@ -174,6 +177,13 @@ const Navbar: React.FC = () => {
                 className="block py-2 text-sm font-medium hover:text-primary"
               >
                 Report Incident
+              </Link>
+              <Link
+                href="/check"
+                onClick={() => setMobileOpen(false)}
+                className="block py-2 text-sm font-medium hover:text-primary"
+              >
+                Fraud Check
               </Link>
               <Link
                 href="/status"

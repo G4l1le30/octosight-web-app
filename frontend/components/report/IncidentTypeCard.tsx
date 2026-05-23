@@ -2,7 +2,7 @@
 
 import React from "react";
 import { cn } from "@/lib/utils";
-import { Globe, MessageSquare, Mail } from "lucide-react";
+import { Globe, MessageSquare, Mail, CreditCard } from "lucide-react";
 import { IncidentType } from "@/types/ticket";
 
 // WhatsApp Icon Component
@@ -25,6 +25,7 @@ export const IncidentTypeCard = ({ type, selected, onClick }: IncidentTypeCardPr
       case "SMS": return <MessageSquare className="size-6 mb-2" />;
       case "WhatsApp": return <WhatsAppIcon className="size-6 mb-2" />;
       case "Email": return <Mail className="size-6 mb-2" />;
+      case "Transaction": return <CreditCard className="size-6 mb-2" />;
     }
   };
 

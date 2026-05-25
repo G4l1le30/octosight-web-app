@@ -109,7 +109,7 @@ export function BlacklistModal({
             {getIcon()}
           </div>
           <div>
-            <h2 className="text-2xl font-black text-secondary tracking-tight">Blacklist {getLabel()}</h2>
+            <h2 className="text-2xl font-bold text-secondary tracking-tight">Blacklist {getLabel()}</h2>
             <p className="text-sm text-secondary/60 font-medium mt-1 px-4">
               Adding this will automatically block future reports containing this indicator.
             </p>
@@ -118,18 +118,18 @@ export function BlacklistModal({
 
         {/* Value preview */}
         <div className="bg-neutral-page rounded-2xl p-4 border border-neutral-border space-y-1">
-          <p className="text-[10px] text-secondary/40 font-black uppercase tracking-widest">
+          <p className="text-[10px] text-secondary/40 font-bold tracking-wide">
             Indicator to Block
           </p>
           <p className="text-sm text-secondary font-bold break-all">
-             {type === "account" && metadata?.bank_name ? `${metadata.bank_name}: ` : ""}{value}
+            {type === "account" && metadata?.bank_name ? `${metadata.bank_name}: ` : ""}{value}
           </p>
         </div>
 
         {/* Reason input — only shown before submission */}
         {!isResolved && (
           <div>
-            <label className="block text-xs font-black text-secondary/40 uppercase tracking-widest mb-2 ml-1">
+            <label className="block text-xs font-bold text-secondary/40 tracking-wide mb-2 ml-1">
               Blacklist Reason
             </label>
             <textarea

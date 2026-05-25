@@ -26,11 +26,11 @@ const Navbar: React.FC = () => {
     <header className="sticky top-0 z-50 bg-white border-b border-neutral-border shadow-sm">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between max-w-7xl">
         <Link href="/" className="flex items-center gap-2">
-          <span className="text-primary text-2xl font-black tracking-tight">
+          <span className="text-primary text-2xl font-bold tracking-wide">
             OCTOSIGHT
           </span>
           {isAdminRoute && (
-            <span className="ml-1 px-1.5 py-0.5 bg-primary text-sm font-bold text-white rounded uppercase">
+            <span className="ml-1 px-1.5 py-0.5 bg-primary text-sm font-bold text-white rounded">
               ADMIN
             </span>
           )}

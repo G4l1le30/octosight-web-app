@@ -32,6 +32,19 @@ export interface Ticket {
   updated_at: string;
 }
 
+export interface TicketAuditLog {
+  id: number;
+  ticket_id: string;
+  admin_id: string | null;
+  admin_name: string;
+  action_taken: string;
+  old_status: string | null;
+  new_status: string | null;
+  notes: string | null;
+  created_at: string;
+}
+
+
 export type ReportFormData =
   | { type: "Website"; url: string; summary?: string; senderNumbers?: string; incidentDate: string; bankName?: string; bankAccount?: string; referenceNumber?: string }
   | { type: "SMS"; url?: string; summary?: string; senderNumbers: string; incidentDate: string; bankName?: string; bankAccount?: string; referenceNumber?: string }

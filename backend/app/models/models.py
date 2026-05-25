@@ -164,3 +164,19 @@ class MockBankTransaction(Base):
     transaction_date = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+class TicketAuditLog(Base):
+    """Audit log tracking ticket history and status transitions."""
+
+    __tablename__ = "ticket_audit_logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    ticket_id = Column(String(50), ForeignKey("tickets.ticket_id", ondelete="CASCADE"), nullable=False, index=True)
+    admin_id = Column(String(36), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    action_taken = Column(String(255), nullable=False)
+    old_status = Column(String(50), nullable=True)
+    new_status = Column(String(50), nullable=True)
+    notes = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+

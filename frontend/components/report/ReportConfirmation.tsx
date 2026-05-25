@@ -258,7 +258,7 @@ export const ReportConfirmation = ({
                           {isNoUrlScam ? "Scam Analysis Weights" : "Hybrid Score Breakdown"}
                         </h3>
                         {analysisResult?.is_blacklisted && (
-                          <span className="px-2 py-0.5 rounded-md bg-secondary text-white text-[10px] font-bold tracking-wider">
+                          <span className="px-2 py-0.5 rounded-md bg-secondary text-white text-xs font-bold tracking-wide">
                             Blacklist
                           </span>
                         )}
@@ -332,7 +332,7 @@ export const ReportConfirmation = ({
                   <div className="bg-primary/5 rounded-2xl p-4 border border-primary/20">
                     <div className="flex items-center gap-2 mb-2">
                       <ShieldCheck className="size-4 text-primary" />
-                      <h3 className="text-xs font-black text-secondary uppercase tracking-wider">
+                      <h3 className="text-xs font-bold text-secondary tracking-wide">
                         Scenario Analysis
                       </h3>
                     </div>

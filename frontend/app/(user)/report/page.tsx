@@ -58,6 +58,15 @@ const DYNAMIC_CONTENT = {
     fileLabel: "Evidence Screenshots (Max 10)",
     urlRequired: true,
   },
+  Transaction: {
+    urlLabel: "Transaction URL / Link (Optional)",
+    urlPlaceholder: "https://cimbniaga.co.id",
+    senderLabel: "Target Account Number (Required)",
+    senderPlaceholder: "e.g., 706123456789",
+    summaryLabel: "Transaction Context (Required if no screenshot)",
+    summaryPlaceholder: "Describe the transfer context here...",
+    fileLabel: "Evidence / Receipts (Max 10)",
+  },
 };
 
 export default function ReportPage() {
@@ -97,9 +106,9 @@ export default function ReportPage() {
 
   const onSubmit = async (data: ReportFormData) => {
     if (!data.summary?.trim() && screenshots.length === 0) {
-      form.setError("summary", { 
-        type: "manual", 
-        message: "Required: Please provide message text or upload a screenshot." 
+      form.setError("summary", {
+        type: "manual",
+        message: "Required: Please provide message text or upload a screenshot."
       });
       setScreenshotError(true);
       return;
@@ -208,7 +217,7 @@ export default function ReportPage() {
 
       {loading ? (
         <div className="card p-12 bg-white border border-neutral-border rounded-3xl shadow-sm text-center">
-           <ProcessingAnimation title="Submitting Final Report" />
+          <ProcessingAnimation title="Submitting Final Report" />
         </div>
       ) : (
         <ReportConfirmation
@@ -226,16 +235,15 @@ export default function ReportPage() {
     <div className="container mx-auto px-4 py-12 max-w-5xl">
       {/* Loading Overlay for Pre-analysis */}
       {loading && !isConfirming && (
-         <div className="fixed inset-0 z-[100] bg-white/80 backdrop-blur-md flex items-center justify-center p-6">
-            <div className="max-w-md w-full">
-              <ProcessingAnimation title="Scanning Evidence" />
-            </div>
-         </div>
+        <div className="fixed inset-0 z-[100] bg-white/80 backdrop-blur-md flex items-center justify-center p-6">
+          <div className="max-w-md w-full">
+            <ProcessingAnimation title="Scanning Evidence" />
+          </div>
+        </div>
       )}
 
       <div className="mb-10 text-center">
-        <h1 className="text-4xl font-black text-secondary mb-3 flex items-center justify-center gap-3 tracking-tight">
-          <ShieldCheck className="size-10 text-primary" />
+        <h1 className="text-4xl font-bold text-secondary mb-3 flex items-center justify-center gap-3 tracking-tight">
           Report Phishing Incident
         </h1>
 

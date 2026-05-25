@@ -339,7 +339,7 @@ export const DatePicker = ({
               {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
                 <div
                   key={d}
-                  className="text-[10px] uppercase tracking-wider font-extrabold text-secondary/60 text-center"
+                  className="text-xs tracking-wide font-bold text-secondary/60 text-center"
                 >
                   {d}
                 </div>

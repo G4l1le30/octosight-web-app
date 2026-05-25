@@ -98,7 +98,7 @@ function LoginForm() {
           id="login-email"
           label="Email Address"
           type="email"
-          placeholder="you@example.com"
+          placeholder="name@gmail.com"
           value={email}
           onChange={(e) => {
             setEmail(e.target.value);

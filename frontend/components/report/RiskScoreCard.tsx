@@ -100,7 +100,7 @@ export const RiskScoreCard = ({
         </p>
         <span
           className={cn(
-            "px-4 py-1.5 rounded-full text-[10px] font-bold uppercase whitespace-nowrap",
+            "px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap",
             activeBadgeClass,
           )}
         >

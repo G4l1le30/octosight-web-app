@@ -56,14 +56,14 @@ export const ReportForm: React.FC<ReportFormProps> = ({
           <label className="text-base font-bold text-secondary">Incident Type</label>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {(["Website", "SMS", "WhatsApp", "Email"] as IncidentType[]).map((type) => (
-              <IncidentTypeCard 
-                key={type} 
-                type={type} 
-                selected={incidentType === type} 
+              <IncidentTypeCard
+                key={type}
+                type={type}
+                selected={incidentType === type}
                 onClick={() => {
                   setIncidentType(type);
                   reset({ type, url: "", summary: "", senderNumbers: "", incidentDate: getLocalISOString() } as any);
-                }} 
+                }}
               />
             ))}
           </div>
@@ -71,19 +71,19 @@ export const ReportForm: React.FC<ReportFormProps> = ({
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className={incidentType === "Website" ? "md:col-span-2" : ""}>
-            <Input 
-              label={dynamic.urlLabel} 
-              placeholder={dynamic.urlPlaceholder} 
-              error={errors.url?.message} 
-              {...register("url")} 
+            <Input
+              label={dynamic.urlLabel}
+              placeholder={dynamic.urlPlaceholder}
+              error={errors.url?.message}
+              {...register("url")}
             />
           </div>
           {incidentType !== "Website" && (
-            <Input 
-              label={dynamic.senderLabel} 
-              placeholder={dynamic.senderPlaceholder} 
-              error={errors.senderNumbers?.message} 
-              {...register("senderNumbers")} 
+            <Input
+              label={dynamic.senderLabel}
+              placeholder={dynamic.senderPlaceholder}
+              error={errors.senderNumbers?.message}
+              {...register("senderNumbers")}
             />
           )}
         </div>
@@ -103,40 +103,40 @@ export const ReportForm: React.FC<ReportFormProps> = ({
               </div>
               <div>
                 <span className="font-bold text-secondary block leading-tight">Advanced Information (Optional)</span>
-                <span className="text-[10px] text-secondary/60 uppercase font-black tracking-wider">Bank & Transaction Details</span>
+                <span className="text-sm text-secondary font-bold tracking-wide">Bank & Transaction Details</span>
               </div>
             </div>
             {showAdvanced ? <ChevronUp className="size-5 text-secondary" /> : <ChevronDown className="size-5 text-secondary" />}
           </button>
-          
+
           <div className={cn(
             "p-6 space-y-6 bg-white border-t border-neutral-border animate-in fade-in duration-300",
             showAdvanced ? "block" : "hidden"
           )}>
             <p className="text-xs font-medium text-secondary/60 leading-relaxed">
-              If the incident involves a bank transfer or if you have specific payment info, please fill these out. 
+              If the incident involves a bank transfer or if you have specific payment info, please fill these out.
               This information is used to improve our global blacklist system.
             </p>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Input 
-                label="Attacker Bank Name" 
-                placeholder="e.g., CIMB NIAGA, OCTO Pay" 
+              <Input
+                label="Attacker Bank Name"
+                placeholder="e.g., CIMB NIAGA, OCTO Pay"
                 error={errors.bankName?.message}
-                {...register("bankName")} 
+                {...register("bankName")}
               />
-              <Input 
-                label="Attacker Account Number" 
-                placeholder="e.g., 706123456789" 
+              <Input
+                label="Attacker Account Number"
+                placeholder="e.g., 706123456789"
                 error={errors.bankAccount?.message}
-                {...register("bankAccount")} 
+                {...register("bankAccount")}
               />
               <div className="md:col-span-2">
-                <Input 
-                  label="Reference / Invoice Number" 
-                  placeholder="e.g., TRX-9921-X99-FAKE" 
+                <Input
+                  label="Reference / Invoice Number"
+                  placeholder="e.g., TRX-9921-X99-FAKE"
                   error={errors.referenceNumber?.message}
-                  {...register("referenceNumber")} 
+                  {...register("referenceNumber")}
                 />
               </div>
             </div>
@@ -144,22 +144,22 @@ export const ReportForm: React.FC<ReportFormProps> = ({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <EvidenceUpload 
-            id="screenshots-upload" 
-            label={dynamic.fileLabel} 
-            files={screenshots} 
-            onFilesChange={(files) => { setScreenshots(files); if (files.length > 0) setScreenshotError(false); }} 
-            error={screenshotError} 
-            errorMessage="Required: Please upload a screenshot if message text is empty." 
-            accept="image/*" 
-            multiple 
+          <EvidenceUpload
+            id="screenshots-upload"
+            label={dynamic.fileLabel}
+            files={screenshots}
+            onFilesChange={(files) => { setScreenshots(files); if (files.length > 0) setScreenshotError(false); }}
+            error={screenshotError}
+            errorMessage="Required: Please upload a screenshot if message text is empty."
+            accept="image/*"
+            multiple
           />
-          <EvidenceUpload 
-            id="attachments-upload" 
-            label="Phishing Attachments" 
-            files={attachments} 
-            onFilesChange={setAttachments} 
-            accept="*" 
+          <EvidenceUpload
+            id="attachments-upload"
+            label="Phishing Attachments"
+            files={attachments}
+            onFilesChange={setAttachments}
+            accept="*"
           />
         </div>
 

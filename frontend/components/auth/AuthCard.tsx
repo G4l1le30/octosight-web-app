@@ -43,7 +43,7 @@ export function AuthCard({
             >
               {icon}
             </div>
-            <h1 className="text-2xl font-black text-secondary">{title}</h1>
+            <h1 className="text-2xl font-bold text-secondary">{title}</h1>
             <p className="text-secondary-light text-sm mt-1">{subtitle}</p>
           </div>
 

@@ -85,7 +85,7 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
                 <td className="px-6 py-5">
                   <span
                     className={cn(
-                      "text-xs font-bold uppercase tracking-wider",
+                      "text-xs font-bold tracking-wide",
                       ticket.priority === "High"
                         ? "text-risk-high"
                         : ticket.priority === "Medium"
@@ -142,7 +142,7 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
                         .map((f, i) => (
                           <span
                             key={i}
-                            className="text-[10px] font-bold border border-neutral-border text-secondary/80 px-2 py-0.5 rounded uppercase"
+                            className="text-xs font-bold border border-neutral-border text-secondary/80 px-2 py-0.5 rounded"
                           >
                             {f.replace(/_/g, " ")}
                           </span>
@@ -151,7 +151,7 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
                       <span className="text-xs text-secondary/80">None</span>
                     )}
                     {ticket.flags && ticket.flags.split(",").length > 2 && (
-                      <span className="text-[10px] font-bold text-secondary/70">
+                      <span className="text-xs font-bold text-secondary/70">
                         +{ticket.flags.split(",").length - 2}
                       </span>
                     )}
@@ -160,7 +160,7 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
                 <td className="px-6 py-5">
                   <span
                     className={cn(
-                      "text-[11px] font-bold px-2.5 py-1 rounded-full whitespace-nowrap border uppercase",
+                      "text-xs font-bold px-2.5 py-1 rounded-full whitespace-nowrap border",
                       ticket.priority === "High"
                         ? "bg-risk-high/10 text-risk-high border-risk-high/20"
                         : ticket.priority === "Medium"

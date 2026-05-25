@@ -53,6 +53,22 @@ class TicketUpdate(BaseModel):
     status: Optional[str] = None
     priority: Optional[str] = None
     investigation_notes: Optional[str] = None
+    action_taken: Optional[str] = None  # Admin-supplied label e.g. "Moved to In Review"
+
+
+class AuditLogResponse(BaseModel):
+    id: int
+    ticket_id: str
+    admin_id: Optional[str] = None
+    action_taken: str
+    old_status: Optional[str] = None
+    new_status: Optional[str] = None
+    notes: Optional[str] = None
+    created_at: str
+
+    class Config:
+        from_attributes = True
+
 
 
 # ── Detection ─────────────────────────────────────────────────────────────────

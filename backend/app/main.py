@@ -17,7 +17,7 @@ from sqlalchemy.exc import OperationalError
 from app.db.session import Base, SessionLocal, engine
 from app.db.migrations import apply_migrations
 from app.db.education_seeding import seed_education_data
-from app.models.models import Ticket, User, BlacklistedURL, BlacklistedAccount, MockBankTransaction, BlacklistedPhone, BlacklistedEmail  # noqa: F401 — ensures table is created
+from app.models.models import Ticket, User, BlacklistedURL, BlacklistedAccount, MockBankTransaction, BlacklistedPhone, BlacklistedEmail, TicketAuditLog  # noqa: F401 — ensures table is created
 from app.core.security import hash_password, limiter
 from slowapi.errors import RateLimitExceeded
 from slowapi import _rate_limit_exceeded_handler

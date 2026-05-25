@@ -131,7 +131,7 @@ export default function BlacklistPage() {
             </svg>
           </button>
           <div>
-            <h1 className="text-3xl font-black text-secondary tracking-tight">Global Blacklist</h1>
+            <h1 className="text-3xl font-bold text-secondary tracking-wide">Global Blacklist</h1>
             <p className="text-secondary font-medium opacity-60">
               Manage verified fraud indicators to protect the OctoSight community.
             </p>
@@ -139,8 +139,8 @@ export default function BlacklistPage() {
         </div>
         <div className="bg-risk-high/10 border border-risk-high/20 rounded-2xl px-6 py-4 flex items-center gap-4">
           <div>
-             <p className="text-2xl font-black text-risk-high leading-none">{entries.length}</p>
-             <p className="text-[10px] text-risk-high uppercase font-black tracking-widest mt-1">Active Blocks</p>
+             <p className="text-2xl font-bold text-risk-high leading-none">{entries.length}</p>
+             <p className="text-[10px] text-risk-high font-bold tracking-wide mt-1">Active Blocks</p>
           </div>
           <ShieldOff className="size-8 text-risk-high opacity-40" />
         </div>
@@ -180,7 +180,7 @@ export default function BlacklistPage() {
             <div className="size-16 bg-neutral-page rounded-2xl flex items-center justify-center mx-auto mb-6">
                <ShieldOff className="size-8 text-secondary/20" />
             </div>
-            <p className="text-secondary font-black text-lg">No {activeTab}s blocked yet</p>
+            <p className="text-secondary font-bold text-lg">No {activeTab}s blocked yet</p>
             <p className="text-secondary/50 text-sm mt-2 font-medium">
               You can add new entries during ticket investigation or through the API.
             </p>
@@ -188,7 +188,7 @@ export default function BlacklistPage() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left">
-              <thead className="bg-neutral-page/50 text-[11px] font-black text-secondary/50 uppercase tracking-widest border-b border-neutral-border">
+              <thead className="bg-neutral-page/50 text-[11px] font-bold text-secondary/50 tracking-wide border-b border-neutral-border">
                 <tr>
                   <th className="px-8 py-5">Blocked {activeTab}</th>
                   <th className="px-8 py-5">Reason / Modus</th>
@@ -205,10 +205,10 @@ export default function BlacklistPage() {
                   >
                     <td className="px-8 py-6">
                       <div className="flex flex-col">
-                        <span className="font-black text-secondary text-sm break-all" title={getEntryValue(entry)}>
+                        <span className="font-bold text-secondary text-sm break-all" title={getEntryValue(entry)}>
                           {getEntryValue(entry)}
                         </span>
-                        {activeTab === "url" && <span className="text-[10px] font-bold text-secondary/40 uppercase mt-1">{entry.domain}</span>}
+                        {activeTab === "url" && <span className="text-[10px] font-bold text-secondary/40 mt-1">{entry.domain}</span>}
                       </div>
                     </td>
                     <td className="px-8 py-6">
@@ -220,7 +220,7 @@ export default function BlacklistPage() {
                       {entry.ticket_id ? (
                         <Link
                           href={`/admin/investigate/${entry.ticket_id}`}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary/5 text-primary text-xs font-black rounded-lg hover:bg-primary hover:text-white transition-all border border-primary/10"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary/5 text-primary text-xs font-bold rounded-lg hover:bg-primary hover:text-white transition-all border border-primary/10"
                         >
                           {entry.ticket_id}
                         </Link>

@@ -18,6 +18,25 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
   emptyMessage = "No matching reports found.",
   className,
 }) => {
+  const getStatusBadgeClass = (status: Ticket["status"]) => {
+    switch (status) {
+      case "Submitted":
+        return "bg-blue-50 text-blue-700 border-blue-200";
+      case "In Review":
+        return "bg-amber-50 text-amber-700 border-amber-200";
+      case "Confirmed":
+        return "bg-red-50 text-red-700 border-red-200";
+      case "False Positive":
+        return "bg-emerald-50 text-emerald-700 border-emerald-200";
+      case "Mitigated":
+        return "bg-cyan-50 text-cyan-700 border-cyan-200";
+      case "Closed":
+        return "bg-slate-100 text-slate-700 border-slate-200";
+      default:
+        return "bg-neutral-page text-secondary border-neutral-border";
+    }
+  };
+
   if (loading) {
     return (
       <div className="py-20 text-center opacity-40 font-bold">
@@ -97,16 +116,10 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
                   </span>
                 </td>
                 <td className="px-6 py-5">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="w-10 h-10 rounded-lg flex items-center justify-center font-bold text-sm"
+                  <div className="flex flex-col items-center gap-2">
+                    <span
+                      className="text-sm font-bold"
                       style={{
-                        backgroundColor:
-                          ticket.risk_score > 70
-                            ? "#e31e2415"
-                            : ticket.risk_score > 30
-                              ? "#f9731615"
-                              : "#00a65115",
                         color:
                           ticket.risk_score > 70
                             ? "#e31e24"
@@ -116,8 +129,8 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
                       }}
                     >
                       {ticket.risk_score}
-                    </div>
-                    <div className="h-1.5 w-16 bg-neutral-border rounded-full overflow-hidden hidden md:block">
+                    </span>
+                    <div className="w-full max-w-[140px] rounded-full bg-neutral-border h-1 overflow-hidden">
                       <div
                         className="h-full rounded-full transition-all duration-1000"
                         style={{
@@ -129,7 +142,7 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
                                 ? "#f97316"
                                 : "#00a651",
                         }}
-                      ></div>
+                      />
                     </div>
                   </div>
                 </td>
@@ -161,14 +174,10 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
                   <span
                     className={cn(
                       "text-xs font-bold px-2.5 py-1 rounded-full whitespace-nowrap border",
-                      ticket.priority === "High"
-                        ? "bg-risk-high/10 text-risk-high border-risk-high/20"
-                        : ticket.priority === "Medium"
-                          ? "bg-risk-medium/10 text-risk-medium border-risk-medium/20"
-                          : "bg-risk-low/10 text-risk-low border-risk-low/20",
+                      getStatusBadgeClass(ticket.status),
                     )}
                   >
-                    {ticket.priority}
+                    {ticket.status}
                   </span>
                 </td>
                 <td className="px-6 py-5 text-right">

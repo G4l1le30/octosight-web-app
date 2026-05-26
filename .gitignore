@@ -42,6 +42,7 @@ Thumbs.db
 data/mysql_data/
 node_cache/
 frontend/node_cache/
+/backend/uploads/
 
 # Markdown
 *.md

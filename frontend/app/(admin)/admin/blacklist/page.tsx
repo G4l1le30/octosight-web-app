@@ -3,7 +3,16 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ShieldOff, CheckCircle2, XCircle, Globe, CreditCard, Phone, Mail, Trash2 } from "lucide-react";
+import {
+  ShieldOff,
+  CheckCircle2,
+  XCircle,
+  Globe,
+  CreditCard,
+  Phone,
+  Mail,
+  Trash2,
+} from "lucide-react";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { formatDateTime } from "@/lib/utils";
 import { cn } from "@/lib/utils";
@@ -30,12 +39,19 @@ export default function BlacklistPage() {
   const [entries, setEntries] = useState<BlacklistEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [removing, setRemoving] = useState<number | null>(null);
-  const [confirmConfig, setConfirmConfig] = useState<{ isOpen: boolean; id: number | null; value: string }>({
+  const [confirmConfig, setConfirmConfig] = useState<{
+    isOpen: boolean;
+    id: number | null;
+    value: string;
+  }>({
     isOpen: false,
     id: null,
     value: "",
   });
-  const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [toast, setToast] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
   const router = useRouter();
 
   const showToast = (type: "success" | "error", message: string) => {
@@ -68,16 +84,18 @@ export default function BlacklistPage() {
 
   const confirmRemove = async () => {
     if (!confirmConfig.id) return;
-    
+
     const id = confirmConfig.id;
     const typeLabel = activeTab.charAt(0).toUpperCase() + activeTab.slice(1);
-    
+
     setRemoving(id);
     setConfirmConfig({ ...confirmConfig, isOpen: false });
-    
+
     try {
       const endpoint = activeTab === "url" ? `/${id}` : `/${activeTab}s/${id}`;
-      const res = await fetch(`/api/v1/admin/blacklist${endpoint}`, { method: "DELETE" });
+      const res = await fetch(`/api/v1/admin/blacklist${endpoint}`, {
+        method: "DELETE",
+      });
       if (!res.ok) throw new Error("Failed");
       showToast("success", `${typeLabel} removed from blacklist.`);
       setEntries((prev) => prev.filter((e) => e.id !== id));
@@ -90,10 +108,14 @@ export default function BlacklistPage() {
 
   const getEntryValue = (entry: BlacklistEntry) => {
     switch (activeTab) {
-      case "url": return entry.url;
-      case "account": return `${entry.bank_name}: ${entry.account_number}`;
-      case "phone": return entry.phone_number;
-      case "email": return entry.email;
+      case "url":
+        return entry.url;
+      case "account":
+        return `${entry.bank_name}: ${entry.account_number}`;
+      case "phone":
+        return entry.phone_number;
+      case "email":
+        return entry.email;
     }
   };
 
@@ -111,10 +133,14 @@ export default function BlacklistPage() {
         <div
           className={cn(
             "fixed top-6 right-6 z-50 flex items-center gap-2 px-6 py-4 rounded-xl shadow-lg font-semibold text-white text-sm transition-all animate-in slide-in-from-right-4",
-            toast.type === "success" ? "bg-green-600" : "bg-red-600"
+            toast.type === "success" ? "bg-green-600" : "bg-red-600",
           )}
         >
-          {toast.type === "success" ? <CheckCircle2 className="w-5 h-5" /> : <XCircle className="w-5 h-5" />}
+          {toast.type === "success" ? (
+            <CheckCircle2 className="w-5 h-5" />
+          ) : (
+            <XCircle className="w-5 h-5" />
+          )}
           <span>{toast.message}</span>
         </div>
       )}
@@ -126,21 +152,39 @@ export default function BlacklistPage() {
             onClick={() => router.back()}
             className="p-2 hover:bg-neutral-border rounded-full transition-all"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6 text-secondary"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M10 19l-7-7m0 0l7-7m-7 7h18"
+              />
             </svg>
           </button>
           <div>
-            <h1 className="text-3xl font-bold text-secondary tracking-wide">Global Blacklist</h1>
+            <h1 className="text-3xl font-bold text-secondary tracking-wide">
+              Global Blacklist
+            </h1>
             <p className="text-secondary font-medium opacity-60">
-              Manage verified fraud indicators to protect the OctoSight community.
+              Manage verified fraud indicators to protect the OctoSight
+              community.
             </p>
           </div>
         </div>
         <div className="bg-risk-high/10 border border-risk-high/20 rounded-2xl px-6 py-4 flex items-center gap-4">
           <div>
-             <p className="text-2xl font-bold text-risk-high leading-none">{entries.length}</p>
-             <p className="text-[10px] text-risk-high font-bold tracking-wide mt-1">Active Blocks</p>
+            <p className="text-2xl font-bold text-risk-high leading-none">
+              {entries.length}
+            </p>
+            <p className="text-xs text-risk-high font-bold tracking-wide mt-1">
+              Active Blocks
+            </p>
           </div>
           <ShieldOff className="size-8 text-risk-high opacity-40" />
         </div>
@@ -158,7 +202,7 @@ export default function BlacklistPage() {
                 "flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm transition-all",
                 activeTab === tab.id
                   ? "bg-secondary text-white shadow-md scale-105"
-                  : "bg-white text-secondary/60 border border-neutral-border hover:border-secondary/40 hover:bg-neutral-page"
+                  : "bg-white text-secondary/60 border border-neutral-border hover:border-secondary/40 hover:bg-neutral-page",
               )}
             >
               <Icon className="size-4" />
@@ -172,29 +216,36 @@ export default function BlacklistPage() {
       <div className="card bg-white border border-neutral-border shadow-sm rounded-3xl overflow-hidden">
         {loading ? (
           <div className="p-20 text-center flex flex-col items-center gap-3">
-             <div className="size-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-             <p className="text-sm font-bold text-secondary/40">Syncing with blacklist database...</p>
+            <div className="size-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+            <p className="text-sm font-bold text-secondary/40">
+              Syncing with blacklist database...
+            </p>
           </div>
         ) : entries.length === 0 ? (
           <div className="p-20 text-center max-w-md mx-auto">
             <div className="size-16 bg-neutral-page rounded-2xl flex items-center justify-center mx-auto mb-6">
-               <ShieldOff className="size-8 text-secondary/20" />
+              <ShieldOff className="size-8 text-secondary/20" />
             </div>
-            <p className="text-secondary font-bold text-lg">No {activeTab}s blocked yet</p>
+            <p className="text-secondary font-bold text-lg">
+              No {activeTab}s blocked yet
+            </p>
             <p className="text-secondary/50 text-sm mt-2 font-medium">
-              You can add new entries during ticket investigation or through the API.
+              You can add new entries during ticket investigation or through the
+              API.
             </p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left">
-              <thead className="bg-neutral-page/50 text-[11px] font-bold text-secondary/50 tracking-wide border-b border-neutral-border">
+              <thead className="bg-neutral-page/50 text-sm font-bold text-secondary/80 tracking-wide border-b border-neutral-border">
                 <tr>
                   <th className="px-8 py-5">Blocked {activeTab}</th>
                   <th className="px-8 py-5">Reason / Modus</th>
                   <th className="px-8 py-5">Source Ticket</th>
                   <th className="px-8 py-5">Date Added</th>
-                  <th className="px-8 py-5 text-right text-secondary/30 font-bold lowercase">Actions</th>
+                  <th className="px-8 py-5 text-right text-secondary/80 font-bold">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-border">
@@ -205,15 +256,26 @@ export default function BlacklistPage() {
                   >
                     <td className="px-8 py-6">
                       <div className="flex flex-col">
-                        <span className="font-bold text-secondary text-sm break-all" title={getEntryValue(entry)}>
+                        <span
+                          className="font-bold text-secondary text-sm break-all"
+                          title={getEntryValue(entry)}
+                        >
                           {getEntryValue(entry)}
                         </span>
-                        {activeTab === "url" && <span className="text-[10px] font-bold text-secondary/40 mt-1">{entry.domain}</span>}
+                        {activeTab === "url" && (
+                          <span className="text-xs font-bold text-secondary/40 mt-1">
+                            {entry.domain}
+                          </span>
+                        )}
                       </div>
                     </td>
                     <td className="px-8 py-6">
                       <p className="text-sm font-bold text-secondary/70 max-w-xs break-words">
-                        {entry.reason || <span className="opacity-30 italic font-medium">No details provided</span>}
+                        {entry.reason || (
+                          <span className="opacity-30 font-medium">
+                            No details provided
+                          </span>
+                        )}
                       </p>
                     </td>
                     <td className="px-8 py-6">
@@ -225,7 +287,9 @@ export default function BlacklistPage() {
                           {entry.ticket_id}
                         </Link>
                       ) : (
-                        <span className="text-xs font-bold text-secondary opacity-30">—</span>
+                        <span className="text-xs font-bold text-secondary opacity-30">
+                          —
+                        </span>
                       )}
                     </td>
                     <td className="px-8 py-6">
@@ -235,7 +299,12 @@ export default function BlacklistPage() {
                     </td>
                     <td className="px-8 py-6 text-right">
                       <button
-                        onClick={() => handleRemoveClick(entry.id, getEntryValue(entry) || "")}
+                        onClick={() =>
+                          handleRemoveClick(
+                            entry.id,
+                            getEntryValue(entry) || "",
+                          )
+                        }
                         disabled={removing === entry.id}
                         className="p-2.5 text-secondary/40 hover:text-risk-high hover:bg-risk-high/5 rounded-xl transition-all disabled:opacity-50"
                         title="Remove from blacklist"

@@ -18,9 +18,12 @@ export const SecurityFlagAnalysis: React.FC<SecurityFlagAnalysisProps> = ({ flag
           (flagsExpanded ? flagDist : flagDist.slice(0, 12)).map((item, idx) => (
             <div
               key={idx}
-              className="bg-neutral-page border border-neutral-border p-4 rounded-xl flex flex-col items-center text-center group hover:border-primary transition-all h-full"
+              className="bg-neutral-page border border-neutral-border p-4 rounded-xl flex flex-col items-center text-center group hover:border-primary transition-all h-full overflow-hidden"
             >
-              <span className="text-sm font-bold text-secondary mb-3 group-hover:text-primary transition-colors">
+              <span
+                title={item.name}
+                className="text-sm font-bold text-secondary mb-3 group-hover:text-primary transition-colors truncate w-full"
+              >
                 {item.name}
               </span>
               <span className="text-2xl font-bold text-secondary mt-auto">

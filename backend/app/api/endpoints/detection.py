@@ -17,6 +17,7 @@ Hybrid scoring formula (OctoSight Aturan #2):
   (effectively 100% rule-based), and a warning flag is appended.
 """
 
+import asyncio
 import hashlib
 import json
 import os
@@ -30,7 +31,7 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, B
 from sqlalchemy.orm import Session
 
 from app.core.security import get_current_user
-from app.db.session import get_db
+from app.db.session import SessionLocal, get_db
 from app.models.models import Ticket, BlacklistedURL, BlacklistedAccount, MockBankTransaction, BlacklistedPhone, BlacklistedEmail
 from app.schemas.schemas import AnalysisRequest, MessageRequest, SpamPredictionResponse
 from app.core.engines import analyze_spam, ocr_engine, rule_engine
@@ -242,6 +243,82 @@ def _save_upload(file: UploadFile, prefix: str, subfolder: str = "") -> str:
     return relative_path
 
 
+def _save_upload_bytes(content: bytes, original_filename: str, prefix: str, subfolder: str = "") -> str:
+    """Save uploaded bytes to UPLOAD_DIR and return the relative path."""
+    target_dir = os.path.join(UPLOAD_DIR, subfolder) if subfolder else UPLOAD_DIR
+    os.makedirs(target_dir, exist_ok=True)
+
+    ext = os.path.splitext(original_filename)[1]
+    salt = uuid.uuid4().hex
+    file_hash = hashlib.sha256(
+        f"{original_filename}{salt}{time.time()}".encode()
+    ).hexdigest()[:20]
+    filename = f"{prefix}_{file_hash}{ext}"
+
+    relative_path = os.path.join(subfolder, filename) if subfolder else filename
+    full_path = os.path.join(UPLOAD_DIR, relative_path)
+
+    with open(full_path, "wb") as buf:
+        buf.write(content)
+
+    return relative_path
+
+
+async def _persist_screenshot_and_extract_text(
+    file: UploadFile, ticket_id: str
+) -> Optional[dict]:
+    """Persist one screenshot and OCR it without blocking the event loop."""
+    if not file.content_type or not file.content_type.startswith("image/"):
+        return None
+
+    content = await file.read()
+    if not content:
+        return None
+
+    relative_path = await asyncio.to_thread(
+        _save_upload_bytes, content, file.filename or "screenshot", "screenshot", ticket_id
+    )
+    text = await asyncio.to_thread(ocr_engine.extract_text_from_bytes, content)
+    indicators = ocr_engine.find_indicators(text)
+
+    return {
+        "path": relative_path,
+        "text": text,
+        "indicators": indicators,
+    }
+
+
+def _generate_education_recommendation_for_ticket(ticket_id: int) -> None:
+    """Generate education recommendation after the main response returns."""
+    db = SessionLocal()
+    try:
+        from app.models.education import EducationModule
+
+        ticket = db.query(Ticket).filter(Ticket.id == ticket_id).first()
+        if not ticket:
+            return
+
+        modules = db.query(EducationModule).order_by(EducationModule.order_index).all()
+        available_modules = [{"id": m.id, "title": m.title} for m in modules]
+
+        recommendation = GeminiEducationService.generate_education_recommendation(
+            ticket_type=ticket.type,
+            url=ticket.url,
+            rule_score=ticket.rule_score or 0,
+            ml_score=ticket.ml_score or 0,
+            ticket_content=ticket.extracted_text[:1000] if ticket.extracted_text else "",
+            ticket_summary=ticket.summary or "",
+            available_modules=available_modules,
+        )
+
+        ticket.education_recommendation = recommendation
+        db.commit()
+    except Exception as e:
+        print(f"Failed to generate education recommendation: {e}")
+    finally:
+        db.close()
+
+
 # ── Endpoints ─────────────────────────────────────────────────────────────────
 
 @router.post("/report", summary="Submit a phishing/fraud report")
@@ -282,21 +359,20 @@ async def create_report(
 
     # 2. Process screenshots via OCR
     if screenshots:
-        # Limit to 10 screenshots
-        for file in screenshots[:10]:
-            if not file.content_type or not file.content_type.startswith("image/"):
+        processed_screenshots = await asyncio.gather(
+            *[
+                _persist_screenshot_and_extract_text(file, ticket_id)
+                for file in screenshots[:10]
+            ]
+        )
+        for processed in processed_screenshots:
+            if not processed:
                 continue
-            filename = _save_upload(file, "screenshot", subfolder=ticket_id)
-            file_path = os.path.join(UPLOAD_DIR, filename)
-            screenshot_list.append(filename)
+            screenshot_list.append(processed["path"])
+            all_extracted_text.append(processed["text"])
 
-            text = ocr_engine.extract_text(file_path)
-            all_extracted_text.append(text)
-
-            # Auto-detect URL from screenshot if reporter didn't supply one
-            indicators = ocr_engine.find_indicators(text)
-            if indicators["urls"] and not url:
-                url = indicators["urls"][0]
+            if processed["indicators"]["urls"] and not url:
+                url = processed["indicators"]["urls"][0]
 
     # 3. Process attachments (evidence files)
     if attachments:
@@ -497,27 +573,9 @@ async def create_report(
     db.commit()
     db.refresh(db_ticket)
 
-    # ADDITION: Generate education recommendation
-    try:
-        from app.models.education import EducationModule
-        modules = db.query(EducationModule).order_by(EducationModule.order_index).all()
-        available_modules = [{"id": m.id, "title": m.title} for m in modules]
-
-        recommendation = GeminiEducationService.generate_education_recommendation(
-            ticket_type=db_ticket.type,
-            url=db_ticket.url,
-            rule_score=db_ticket.rule_score or 0,
-            ml_score=db_ticket.ml_score or 0,
-            ticket_content=db_ticket.extracted_text[:1000] if db_ticket.extracted_text else "",
-            ticket_summary=db_ticket.summary or "",
-            available_modules=available_modules
-        )
-        
-        db_ticket.education_recommendation = recommendation
-        db.commit()
-        db.refresh(db_ticket)
-    except Exception as e:
-        print(f"Failed to generate education recommendation: {e}")
+    background_tasks.add_task(
+        _generate_education_recommendation_for_ticket, db_ticket.id
+    )
 
     if current_user and current_user.email:
         send_email_notification(
@@ -556,15 +614,30 @@ async def analyze_preview(
     # 1. Volatile OCR for preview
     combined_ocr_text = ""
     if screenshots:
+        screenshot_bytes: List[bytes] = []
         for ss in screenshots[:10]:
             try:
                 content = await ss.read()
                 await ss.seek(0)
-                text = ocr_engine.extract_text_from_bytes(content)
-                if text:
-                    combined_ocr_text += f"\n{text}"
+                if content:
+                    screenshot_bytes.append(content)
             except Exception as e:
-                print(f"Preview OCR Error: {e}")
+                print(f"Preview OCR Read Error: {e}")
+
+        if screenshot_bytes:
+            ocr_results = await asyncio.gather(
+                *[
+                    asyncio.to_thread(ocr_engine.extract_text_from_bytes, content)
+                    for content in screenshot_bytes
+                ],
+                return_exceptions=True,
+            )
+            for result in ocr_results:
+                if isinstance(result, Exception):
+                    print(f"Preview OCR Error: {result}")
+                    continue
+                if result:
+                    combined_ocr_text += f"\n{result}"
 
     # --- GLOBAL VALIDATIONS ---
     is_transaction = report_type == "Transaction"

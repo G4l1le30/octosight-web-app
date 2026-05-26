@@ -57,7 +57,7 @@ export const HistoryDetailModal: React.FC<HistoryDetailModalProps> = ({ attempt,
                   Your Answer: {res.selected_answer_text || `Option ${res.selected_answer_index + 1}`}
                 </div>
                 {!res.is_correct && (
-                  <p className="text-xs font-bold text-red-600/60 px-1 mt-2 italic">
+                  <p className="text-xs font-bold text-red-600/60 px-1 mt-2">
                     Note: Correct answer and explanation are hidden for security. Please review the learning materials.
                   </p>
                 )}

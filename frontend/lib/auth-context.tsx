@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import { AuthUser } from "@/types/auth";
 
 interface AuthContextType {
@@ -18,45 +18,164 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const refreshPromiseRef = useRef<Promise<boolean> | null>(null);
 
-  const fetchMe = useCallback(async () => {
+  const getRequestPath = useCallback((input: RequestInfo | URL) => {
+    if (typeof input === "string") {
+      return input;
+    }
+
+    if (input instanceof URL) {
+      return `${input.pathname}${input.search}`;
+    }
+
     try {
-      let response = await fetch("/api/v1/auth/me", {
+      return new URL(input.url).pathname + new URL(input.url).search;
+    } catch {
+      return input.url;
+    }
+  }, []);
+
+  const isManagedApiRequest = useCallback((input: RequestInfo | URL) => {
+    if (typeof window === "undefined") {
+      return false;
+    }
+
+    if (typeof input === "string") {
+      if (input.startsWith("/")) {
+        return input.startsWith("/api/");
+      }
+
+      try {
+        const url = new URL(input, window.location.origin);
+        return (
+          url.origin === window.location.origin && url.pathname.startsWith("/api/")
+        );
+      } catch {
+        return false;
+      }
+    }
+
+    const url =
+      input instanceof URL ? input : new URL(input.url, window.location.origin);
+    return url.origin === window.location.origin && url.pathname.startsWith("/api/");
+  }, []);
+
+  const shouldRetryAfterUnauthorized = useCallback((path: string) => {
+    if (!path.startsWith("/api/v1/")) {
+      return false;
+    }
+
+    return ![
+      "/api/v1/auth/login",
+      "/api/v1/auth/register",
+      "/api/v1/auth/google/login",
+      "/api/v1/auth/google/register",
+      "/api/v1/auth/logout",
+      "/api/v1/auth/refresh",
+    ].includes(path);
+  }, []);
+
+  const refreshSession = useCallback(async () => {
+    if (!refreshPromiseRef.current) {
+      refreshPromiseRef.current = fetch("/api/v1/auth/refresh", {
+        method: "POST",
+        credentials: "include",
+      })
+        .then((response) => response.ok)
+        .catch(() => false)
+        .finally(() => {
+          refreshPromiseRef.current = null;
+        });
+    }
+
+    return refreshPromiseRef.current;
+  }, []);
+
+  const performAuthenticatedFetch = useCallback(
+    async (nativeFetch: typeof window.fetch, input: RequestInfo | URL, init?: RequestInit) => {
+      if (!isManagedApiRequest(input)) {
+        return nativeFetch(input, init);
+      }
+
+      const path = getRequestPath(input);
+      const requestInit: RequestInit = {
+        ...init,
+        credentials: "include",
+      };
+
+      let response = await nativeFetch(input, requestInit);
+      if (response.status !== 401 || !shouldRetryAfterUnauthorized(path)) {
+        return response;
+      }
+
+      const refreshed = await refreshSession();
+      if (!refreshed) {
+        return response;
+      }
+
+      response = await nativeFetch(input, requestInit);
+      return response;
+    },
+    [getRequestPath, isManagedApiRequest, refreshSession, shouldRetryAfterUnauthorized]
+  );
+
+  useEffect(() => {
+    const nativeFetch = window.fetch.bind(window);
+
+    window.fetch = ((input: RequestInfo | URL, init?: RequestInit) =>
+      performAuthenticatedFetch(nativeFetch, input, init)) as typeof window.fetch;
+
+    return () => {
+      window.fetch = nativeFetch;
+    };
+  }, [performAuthenticatedFetch]);
+
+  const fetchMe = useCallback(async (): Promise<AuthUser | null> => {
+    try {
+      const response = await fetch("/api/v1/auth/me", {
+        credentials: "include",
         headers: { "Accept": "application/json" },
       });
-      
-      // If unauthorized, attempt to refresh token
-      if (response.status === 401) {
-        const refreshRes = await fetch("/api/v1/auth/refresh", { method: "POST" });
-        if (refreshRes.ok) {
-          // Retry original request if refresh succeeded
-          response = await fetch("/api/v1/auth/me", {
-            headers: { "Accept": "application/json" },
-          });
-        }
-      }
 
       if (response.ok) {
         const data = await response.json();
         setUser(data);
+        return data;
       } else {
         setUser(null);
       }
     } catch (error) {
       console.error("Failed to fetch current user:", error);
       setUser(null);
-    } finally {
-      setLoading(false);
     }
+    return null;
   }, []);
 
   useEffect(() => {
-    fetchMe();
+    let active = true;
+
+    (async () => {
+      try {
+        const currentUser = await fetchMe();
+        if (!active) return;
+        setUser(currentUser);
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
+      }
+    })();
+
+    return () => {
+      active = false;
+    };
   }, [fetchMe]);
 
   const login = async (email: string, password: string) => {
     const response = await fetch("/api/v1/auth/login", {
       method: "POST",
+      credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
     });
@@ -78,13 +197,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       throw new Error(errorMessage);
     }
 
-    const userData = await response.json();
-    setUser(userData);
+    await response.json();
+
+    const currentUser = await fetchMe();
+    if (!currentUser) {
+      throw new Error("Login succeeded but the session could not be established.");
+    }
   };
 
   const register = async (fullName: string, email: string, password: string) => {
     const response = await fetch("/api/v1/auth/register", {
       method: "POST",
+      credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ full_name: fullName, email, password }),
     });
@@ -106,13 +230,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       throw new Error(errorMessage);
     }
 
-    const userData = await response.json();
-    setUser(userData);
+    await response.json();
+
+    const currentUser = await fetchMe();
+    if (!currentUser) {
+      throw new Error("Registration succeeded but the session could not be established.");
+    }
   };
 
   const loginWithGoogle = async (accessToken: string) => {
     const response = await fetch("/api/v1/auth/google/login", {
       method: "POST",
+      credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ credential: accessToken }),
     });
@@ -126,13 +255,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       throw new Error(errorMessage);
     }
 
-    const userData = await response.json();
-    setUser(userData);
+    await response.json();
+
+    const currentUser = await fetchMe();
+    if (!currentUser) {
+      throw new Error("Google sign-in succeeded but the session could not be established.");
+    }
   };
 
   const registerWithGoogle = async (accessToken: string) => {
     const response = await fetch("/api/v1/auth/google/register", {
       method: "POST",
+      credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ credential: accessToken }),
     });
@@ -149,7 +283,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     try {
-      await fetch("/api/v1/auth/logout", { method: "POST" });
+      await fetch("/api/v1/auth/logout", { method: "POST", credentials: "include" });
     } finally {
       setUser(null);
       window.location.href = "/login";

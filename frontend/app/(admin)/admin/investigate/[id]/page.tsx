@@ -99,7 +99,7 @@ export default function InvestigatePage({
   const openBlacklistModal = (
     type: "url" | "account" | "phone" | "email",
     value: string,
-    metadata?: any
+    metadata?: any,
   ) => {
     setBlacklistConfig({ isOpen: true, type, value, metadata });
   };
@@ -215,7 +215,10 @@ export default function InvestigatePage({
           {/* Action label (optional, gives admins a free-text description for the audit trail) */}
           <div className="card p-5 bg-white border border-neutral-border shadow-sm">
             <label className="block text-xs font-bold text-secondary tracking-wide mb-2">
-              Audit Label <span className="text-secondary/30 font-semibold normal-case">(optional)</span>
+              Audit Label{" "}
+              <span className="text-secondary/40 font-semibold normal-case">
+                (optional)
+              </span>
             </label>
             <input
               id="audit-action-label"
@@ -225,7 +228,7 @@ export default function InvestigatePage({
               placeholder="e.g. Escalated to Tier 2"
               className="w-full text-sm font-medium text-secondary bg-neutral-page border border-neutral-border rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
             />
-            <p className="text-[10px] text-secondary/40 font-medium mt-1.5">
+            <p className="text-xs text-secondary/40 font-medium mt-1.5">
               Custom note shown in the ticket audit trail.
             </p>
           </div>
@@ -253,7 +256,9 @@ export default function InvestigatePage({
                   className="w-full py-3 bg-neutral-page hover:bg-primary/5 text-sm font-bold text-secondary rounded-xl transition-all text-left px-5 flex items-center justify-between group border border-neutral-border"
                 >
                   <span>Block Domain/URL</span>
-                  <span className="opacity-0 group-hover:opacity-100 transition-all translate-x-[-4px] group-hover:translate-x-0">→</span>
+                  <span className="opacity-0 group-hover:opacity-100 transition-all translate-x-[-4px] group-hover:translate-x-0">
+                    →
+                  </span>
                 </button>
               )}
 
@@ -268,7 +273,9 @@ export default function InvestigatePage({
                   className="w-full py-3 bg-neutral-page hover:bg-primary/5 text-sm font-bold text-secondary rounded-xl transition-all text-left px-5 flex items-center justify-between group border border-neutral-border"
                 >
                   <span>Block Bank Account</span>
-                  <span className="opacity-0 group-hover:opacity-100 transition-all translate-x-[-4px] group-hover:translate-x-0">→</span>
+                  <span className="opacity-0 group-hover:opacity-100 transition-all translate-x-[-4px] group-hover:translate-x-0">
+                    →
+                  </span>
                 </button>
               )}
 
@@ -287,13 +294,17 @@ export default function InvestigatePage({
                     Block Sender (
                     {ticket.sender_numbers!.includes("@") ? "Email" : "Phone"})
                   </span>
-                  <span className="opacity-0 group-hover:opacity-100 transition-all translate-x-[-4px] group-hover:translate-x-0">→</span>
+                  <span className="opacity-0 group-hover:opacity-100 transition-all translate-x-[-4px] group-hover:translate-x-0">
+                    →
+                  </span>
                 </button>
               )}
 
               <button className="w-full py-3 bg-neutral-page hover:bg-risk-medium/5 text-sm font-bold text-secondary rounded-xl transition-all text-left px-5 flex items-center justify-between group border border-neutral-border">
                 Generate Warning Template
-                <span className="opacity-0 group-hover:opacity-100 transition-all translate-x-[-4px] group-hover:translate-x-0">→</span>
+                <span className="opacity-0 group-hover:opacity-100 transition-all translate-x-[-4px] group-hover:translate-x-0">
+                  →
+                </span>
               </button>
             </div>
           </div>
@@ -312,7 +323,9 @@ export default function InvestigatePage({
         value={blacklistConfig.value}
         metadata={blacklistConfig.metadata}
         ticketId={ticket.ticket_id}
-        onClose={() => setBlacklistConfig({ ...blacklistConfig, isOpen: false })}
+        onClose={() =>
+          setBlacklistConfig({ ...blacklistConfig, isOpen: false })
+        }
       />
 
       <DownloadModal

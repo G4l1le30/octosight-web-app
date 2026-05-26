@@ -214,20 +214,13 @@ export default function ReportPage() {
   if (isConfirming && confirmedData) return (
     <div className="container mx-auto px-4 py-12 max-w-5xl">
       {error && <div className="bg-risk-high/10 text-risk-high p-4 rounded-lg mb-6 font-bold text-sm text-center border border-risk-high/20">Error: {error}</div>}
-
-      {loading ? (
-        <div className="card p-12 bg-white border border-neutral-border rounded-3xl shadow-sm text-center">
-          <ProcessingAnimation title="Submitting Final Report" />
-        </div>
-      ) : (
-        <ReportConfirmation
-          formData={confirmedData}
-          analysisResult={analysisResult}
-          onBack={() => setIsConfirming(false)}
-          onSubmit={handleFinalSubmit}
-          isSubmitting={loading}
-        />
-      )}
+      <ReportConfirmation
+        formData={confirmedData}
+        analysisResult={analysisResult}
+        onBack={() => setIsConfirming(false)}
+        onSubmit={handleFinalSubmit}
+        isSubmitting={loading}
+      />
     </div>
   );
 

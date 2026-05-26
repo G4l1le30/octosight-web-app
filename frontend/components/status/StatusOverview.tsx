@@ -106,7 +106,7 @@ export const StatusOverview: React.FC<StatusOverviewProps> = ({ result }) => {
         </p>
         <div className="bg-neutral-page/30 p-4 rounded-xl border border-neutral-border/50">
           <p className="text-sm font-semibold text-secondary/80 leading-relaxed whitespace-pre-wrap">
-            "{result.summary || "No summary provided."}"
+            {'"' + (result.summary || "No summary provided.") + '"'}
           </p>
         </div>
       </div>

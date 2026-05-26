@@ -30,47 +30,47 @@ const STATUS_STAGES: {
   bgColor: string;
   borderColor: string;
 }[] = [
-    {
-      key: "Submitted",
-      label: "Submitted",
-      Icon: FileText,
-      color: "text-blue-600",
-      bgColor: "bg-blue-50",
-      borderColor: "border-blue-200",
-    },
-    {
-      key: "In Review",
-      label: "In Review",
-      Icon: Search,
-      color: "text-orange-600",
-      bgColor: "bg-orange-50",
-      borderColor: "border-orange-200",
-    },
-    {
-      key: "Confirmed",
-      label: "Confirmed",
-      Icon: ShieldAlert,
-      color: "text-red-600",
-      bgColor: "bg-red-50",
-      borderColor: "border-red-200",
-    },
-    {
-      key: "Mitigated",
-      label: "Mitigated",
-      Icon: ShieldCheck,
-      color: "text-cyan-600",
-      bgColor: "bg-cyan-50",
-      borderColor: "border-cyan-200",
-    },
-    {
-      key: "Closed",
-      label: "Closed",
-      Icon: CheckCircle2,
-      color: "text-gray-600",
-      bgColor: "bg-gray-100",
-      borderColor: "border-gray-200",
-    },
-  ];
+  {
+    key: "Submitted",
+    label: "Submitted",
+    Icon: FileText,
+    color: "text-blue-600",
+    bgColor: "bg-blue-50",
+    borderColor: "border-blue-200",
+  },
+  {
+    key: "In Review",
+    label: "In Review",
+    Icon: Search,
+    color: "text-orange-600",
+    bgColor: "bg-orange-50",
+    borderColor: "border-orange-200",
+  },
+  {
+    key: "Confirmed",
+    label: "Confirmed",
+    Icon: ShieldAlert,
+    color: "text-red-600",
+    bgColor: "bg-red-50",
+    borderColor: "border-red-200",
+  },
+  {
+    key: "Mitigated",
+    label: "Mitigated",
+    Icon: ShieldCheck,
+    color: "text-cyan-600",
+    bgColor: "bg-cyan-50",
+    borderColor: "border-cyan-200",
+  },
+  {
+    key: "Closed",
+    label: "Closed",
+    Icon: CheckCircle2,
+    color: "text-gray-600",
+    bgColor: "bg-gray-100",
+    borderColor: "border-gray-200",
+  },
+];
 
 const FALSE_POSITIVE_STAGE = {
   key: "False Positive" as TicketStatus,
@@ -142,7 +142,7 @@ export const TicketTimeline: React.FC<TicketTimelineProps> = ({
                       size-12 shrink-0 rounded-full flex items-center justify-center border-2 transition-all duration-300 font-bold text-xs
                       ${isDone ? `${stage.bgColor} ${stage.borderColor} ${stage.color}` : ""}
                       ${isCurrent ? `${stage.bgColor} ${stage.borderColor} ${stage.color} ring-4 ring-offset-2 ring-current/20` : ""}
-                      ${isPending ? "bg-neutral-page border-neutral-border text-secondary/30" : ""}
+                      ${isPending ? "bg-neutral-page border-neutral-border text-secondary/40" : ""}
                     `}
                   >
                     {isDone ? (
@@ -153,15 +153,16 @@ export const TicketTimeline: React.FC<TicketTimelineProps> = ({
                   </div>
                   <span
                     className={`text-xs font-bold text-center max-w-[64px] leading-tight
-                    ${isCurrent ? stage.color : isPending ? "text-secondary/30" : "text-secondary/60"}`}
+                    ${isCurrent ? stage.color : isPending ? "text-secondary/40" : "text-secondary/60"}`}
                   >
                     {stage.label}
                   </span>
                 </div>
                 {index < stages.length - 1 && (
                   <div
-                    className={`h-0.5 flex-1 min-w-[24px] mx-1 rounded transition-all duration-500 ${isDone ? "bg-secondary/30" : "bg-neutral-border"
-                      }`}
+                    className={`h-0.5 flex-1 min-w-[24px] mx-1 rounded transition-all duration-500 ${
+                      isDone ? "bg-secondary/30" : "bg-neutral-border"
+                    }`}
                   />
                 )}
               </React.Fragment>
@@ -187,9 +188,7 @@ export const TicketTimeline: React.FC<TicketTimelineProps> = ({
             )}
           </div>
           <div className="pb-4 min-w-0 flex-1">
-            <p className="text-sm font-bold text-secondary">
-              Report submitted
-            </p>
+            <p className="text-sm font-bold text-secondary">Report submitted</p>
             <p className="text-xs text-secondary/50 font-medium mt-0.5">
               {formatDateTime(submittedAt).full}
             </p>
@@ -202,11 +201,11 @@ export const TicketTimeline: React.FC<TicketTimelineProps> = ({
           const statusMeta = log.new_status
             ? getStatusMeta(log.new_status)
             : {
-              Icon: FileText,
-              color: "text-secondary",
-              bgColor: "bg-neutral-page",
-              borderColor: "border-neutral-border",
-            };
+                Icon: FileText,
+                color: "text-secondary",
+                bgColor: "bg-neutral-page",
+                borderColor: "border-neutral-border",
+              };
 
           return (
             <div key={log.id} className="flex gap-3">
@@ -229,7 +228,7 @@ export const TicketTimeline: React.FC<TicketTimelineProps> = ({
                 </p>
                 {log.notes && (
                   <div className="mt-2 p-2.5 bg-neutral-page/60 rounded-lg border border-neutral-border/60">
-                    <p className="text-xs font-medium text-secondary/70 leading-relaxed italic">
+                    <p className="text-xs font-medium text-secondary/70 leading-relaxed">
                       &quot;{log.notes}&quot;
                     </p>
                   </div>

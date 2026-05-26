@@ -17,6 +17,8 @@ from google.oauth2 import id_token
 from google.auth.transport import requests
 
 from app.core.security import (
+    ACCESS_TOKEN_EXPIRE_MINUTES,
+    REFRESH_TOKEN_EXPIRE_DAYS,
     create_access_token,
     create_refresh_token,
     get_current_user,
@@ -34,7 +36,52 @@ GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 
-_COOKIE_MAX_AGE = 86400  # 24 hours in seconds
+_ACCESS_COOKIE_MAX_AGE = ACCESS_TOKEN_EXPIRE_MINUTES * 60
+_REFRESH_COOKIE_MAX_AGE = REFRESH_TOKEN_EXPIRE_DAYS * 86400
+
+
+def _is_production() -> bool:
+    return os.getenv("ENVIRONMENT") == "production"
+
+
+def _set_auth_cookies(response: Response, access_token: str, refresh_token: str) -> None:
+    is_production = _is_production()
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,
+        secure=is_production,
+        samesite="lax",
+        max_age=_ACCESS_COOKIE_MAX_AGE,
+        path="/",
+    )
+    response.set_cookie(
+        key="refresh_token",
+        value=refresh_token,
+        httponly=True,
+        secure=is_production,
+        samesite="lax",
+        max_age=_REFRESH_COOKIE_MAX_AGE,
+        path="/",
+    )
+
+
+def _clear_auth_cookies(response: Response) -> None:
+    is_production = _is_production()
+    response.delete_cookie(
+        key="access_token",
+        path="/",
+        secure=is_production,
+        httponly=True,
+        samesite="lax",
+    )
+    response.delete_cookie(
+        key="refresh_token",
+        path="/",
+        secure=is_production,
+        httponly=True,
+        samesite="lax",
+    )
 
 
 @router.post("/register", response_model=UserResponse, summary="Register a new user")
@@ -69,33 +116,13 @@ def register(request: Request, data: RegisterRequest, response: Response, backgr
         template_body={"otp_code": "SUCCESS", "user_name": user.full_name}
     )
 
-    is_production = os.getenv("ENVIRONMENT") == "production"
-    
     token = create_access_token(
         {"sub": str(user.id), "email": user.email, "role": user.role}
     )
     refresh_token = create_refresh_token(
         {"sub": str(user.id)}
     )
-
-    response.set_cookie(
-        key="access_token",
-        value=token,
-        httponly=True,
-        secure=is_production,
-        samesite="lax",
-        max_age=_COOKIE_MAX_AGE,
-        path="/",
-    )
-    response.set_cookie(
-        key="refresh_token",
-        value=refresh_token,
-        httponly=True,
-        secure=is_production,
-        samesite="lax",
-        max_age=86400 * 7,
-        path="/",
-    )
+    _set_auth_cookies(response, token, refresh_token)
     return UserResponse(
         id=user.id, full_name=user.full_name, email=user.email, role=user.role
     )
@@ -133,33 +160,13 @@ def login(request: Request, data: LoginRequest, response: Response, db: Session 
     user.locked_until = None
     db.commit()
 
-    is_production = os.getenv("ENVIRONMENT") == "production"
-    
     token = create_access_token(
         {"sub": str(user.id), "email": user.email, "role": user.role}
     )
     refresh_token = create_refresh_token(
         {"sub": str(user.id)}
     )
-
-    response.set_cookie(
-        key="access_token",
-        value=token,
-        httponly=True,
-        secure=is_production,
-        samesite="lax",
-        max_age=_COOKIE_MAX_AGE,
-        path="/",
-    )
-    response.set_cookie(
-        key="refresh_token",
-        value=refresh_token,
-        httponly=True,
-        secure=is_production,
-        samesite="lax",
-        max_age=86400 * 7,
-        path="/",
-    )
+    _set_auth_cookies(response, token, refresh_token)
     return UserResponse(
         id=user.id, full_name=user.full_name, email=user.email, role=user.role
     )
@@ -179,8 +186,7 @@ def get_me(current_user: User = Depends(get_current_user)):
 @router.post("/logout", summary="Clear auth cookie")
 def logout(response: Response):
     """Delete the JWT cookies, effectively logging the user out."""
-    response.delete_cookie(key="access_token", path="/")
-    response.delete_cookie(key="refresh_token", path="/")
+    _clear_auth_cookies(response)
     return {"message": "Logged out successfully"}
 
 
@@ -219,12 +225,9 @@ def google_login(request: Request, data: GoogleLoginRequest, response: Response,
     if not user:
         raise HTTPException(status_code=401, detail="Account not found. Please sign up first.")
         
-    is_production = os.getenv("ENVIRONMENT") == "production"
     token = create_access_token({"sub": str(user.id), "email": user.email, "role": user.role})
     refresh_token = create_refresh_token({"sub": str(user.id)})
-    
-    response.set_cookie(key="access_token", value=token, httponly=True, secure=is_production, samesite="lax", max_age=_COOKIE_MAX_AGE, path="/")
-    response.set_cookie(key="refresh_token", value=refresh_token, httponly=True, secure=is_production, samesite="lax", max_age=86400 * 7, path="/")
+    _set_auth_cookies(response, token, refresh_token)
     
     return UserResponse(id=user.id, full_name=user.full_name, email=user.email, role=user.role)
 
@@ -303,16 +306,15 @@ def refresh_token(request: Request, response: Response, db: Session = Depends(ge
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
 
-    is_production = os.getenv("ENVIRONMENT") == "production"
     new_access_token = create_access_token({"sub": str(user.id), "email": user.email, "role": user.role})
-    
+    is_production = _is_production()
     response.set_cookie(
         key="access_token",
         value=new_access_token,
         httponly=True,
         secure=is_production,
         samesite="lax",
-        max_age=_COOKIE_MAX_AGE,
+        max_age=_ACCESS_COOKIE_MAX_AGE,
         path="/",
     )
     return {"message": "Token refreshed"}

@@ -107,8 +107,8 @@ export const StatusAnalysis: React.FC<StatusAnalysisProps> = ({ result }) => {
 
           {details.transaction_validation && details.transaction_validation !== "N/A" && (
             <div className="bg-white/80 p-4 rounded-xl border border-neutral-border/50">
-              <p className="text-sm font-bold text-secondary/80 leading-relaxed italic">
-                "{details.transaction_validation}"
+              <p className="text-sm font-bold text-secondary/80 leading-relaxed">
+                {'"' + details.transaction_validation + '"'}
               </p>
             </div>
           )}
@@ -188,7 +188,7 @@ export const StatusAnalysis: React.FC<StatusAnalysisProps> = ({ result }) => {
           </h3>
           <div className="max-h-40 overflow-y-auto pr-2 custom-scrollbar">
             <p className="text-sm font-medium text-secondary leading-relaxed">
-              "{result.investigation_notes}"
+              {'"' + result.investigation_notes + '"'}
             </p>
           </div>
         </div>

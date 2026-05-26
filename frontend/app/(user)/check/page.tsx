@@ -118,8 +118,8 @@ export default function FraudCheckPage() {
                   accept="image/*"
                   multiple={false}
                 />
-                <p className="text-xs text-secondary/60 italic">
-                  *Our AI will cross-verify the reference number with the bank's core records.
+                <p className="text-xs text-secondary/60">
+                  *Our AI will cross-verify the reference number with the bank&apos;s core records.
                 </p>
               </div>
 
@@ -253,7 +253,7 @@ export default function FraudCheckPage() {
           <div className="space-y-2">
             <div className="size-10 bg-primary text-white rounded-xl flex items-center justify-center font-bold shadow-md">OS</div>
             <h4 className="font-bold">Reputation Engine</h4>
-            <p className="text-sm text-secondary/70 font-medium">Instantly cross-checks account numbers against OctoSight's global scammer database.</p>
+            <p className="text-sm text-secondary/70 font-medium">Instantly cross-checks account numbers against OctoSight&apos;s global scammer database.</p>
           </div>
           <div className="space-y-2">
             <div className="size-10 bg-primary text-white rounded-xl flex items-center justify-center font-bold shadow-md">OCR</div>

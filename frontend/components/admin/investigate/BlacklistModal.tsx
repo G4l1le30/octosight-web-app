@@ -118,7 +118,7 @@ export function BlacklistModal({
 
         {/* Value preview */}
         <div className="bg-neutral-page rounded-2xl p-4 border border-neutral-border space-y-1">
-          <p className="text-[10px] text-secondary/40 font-bold tracking-wide">
+          <p className="text-xs text-secondary/40 font-bold tracking-wide">
             Indicator to Block
           </p>
           <p className="text-sm text-secondary font-bold break-all">

@@ -23,7 +23,7 @@ import { ReportFormData } from "@/types/ticket";
 
 interface ReportConfirmationProps {
   formData: ReportFormData;
-    analysisResult: {
+  analysisResult: {
     score: number;
     priority: string;
     rule_score?: number;
@@ -252,47 +252,26 @@ export const ReportConfirmation = ({
 
                 {/* Hybrid Score Breakdown */}
                 {analysisResult?.ml_score !== undefined && (
-                    <div className="bg-transparent rounded-2xl p-4 border border-neutral-border">
-                      <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-sm font-bold text-secondary">
-                          {isNoUrlScam ? "Scam Analysis Weights" : "Hybrid Score Breakdown"}
-                        </h3>
-                        {analysisResult?.is_blacklisted && (
-                          <span className="px-2 py-0.5 rounded-md bg-secondary text-white text-xs font-bold tracking-wide">
-                            Blacklist
-                          </span>
-                        )}
-                      </div>
-                      <div className="space-y-4">
-                        {analysisResult.rule_score !== undefined && (
-                          <div>
-                            <div className="flex justify-between text-sm font-semibold mb-1.5">
-                              <span className="text-secondary/70">
-                                Rule-based ({analysisResult.rule_weight ?? 35}%)
-                              </span>
-                              <span className="text-secondary">
-                                {Number(analysisResult.rule_score).toLocaleString(
-                                  "en-US",
-                                  { maximumFractionDigits: 2 },
-                                )}{" "}
-                                / 100
-                              </span>
-                            </div>
-                            <div className="w-full bg-gray-200 rounded-full h-2">
-                              <div
-                                className="bg-secondary h-2 rounded-full"
-                                style={{ width: `${analysisResult.rule_score}%` }}
-                              ></div>
-                            </div>
-                          </div>
-                        )}
+                  <div className="bg-transparent rounded-2xl p-4 border border-neutral-border">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-sm font-bold text-secondary">
+                        {isNoUrlScam ? "Scam Analysis Weights" : "Hybrid Score Breakdown"}
+                      </h3>
+                      {analysisResult?.is_blacklisted && (
+                        <span className="px-2 py-0.5 rounded-md bg-secondary text-white text-xs font-bold tracking-wide">
+                          Blacklist
+                        </span>
+                      )}
+                    </div>
+                    <div className="space-y-4">
+                      {analysisResult.rule_score !== undefined && (
                         <div>
                           <div className="flex justify-between text-sm font-semibold mb-1.5">
                             <span className="text-secondary/70">
-                              ML Engine ({analysisResult.ml_weight ?? 65}%)
+                              Rule-based ({analysisResult.rule_weight ?? 35}%)
                             </span>
                             <span className="text-secondary">
-                              {Number(analysisResult.ml_score).toLocaleString(
+                              {Number(analysisResult.rule_score).toLocaleString(
                                 "en-US",
                                 { maximumFractionDigits: 2 },
                               )}{" "}
@@ -301,31 +280,52 @@ export const ReportConfirmation = ({
                           </div>
                           <div className="w-full bg-gray-200 rounded-full h-2">
                             <div
-                              className="bg-primary h-2 rounded-full"
-                              style={{ width: `${analysisResult.ml_score}%` }}
+                              className="bg-secondary h-2 rounded-full"
+                              style={{ width: `${analysisResult.rule_score}%` }}
                             ></div>
                           </div>
-                          <div className="flex justify-between items-center mt-1.5">
-                            {analysisResult.ml_category && (
-                              <p className="text-xs text-secondary/60 font-medium">
-                                Prediction:{" "}
-                                <span className="text-secondary">
-                                  {analysisResult.ml_category}
-                                </span>
-                              </p>
-                            )}
-                          </div>
                         </div>
-                        {isNoUrlScam && (
-                          <div className="pt-2 mt-2 border-t border-dashed border-neutral-border">
-                            <p className="text-[10px] text-secondary/40 font-medium leading-tight italic">
-                              *Rule-based detection is prioritized (100%) for social engineering scams without URLs. Phishing AI remains as language context.
+                      )}
+                      <div>
+                        <div className="flex justify-between text-sm font-semibold mb-1.5">
+                          <span className="text-secondary/70">
+                            ML Engine ({analysisResult.ml_weight ?? 65}%)
+                          </span>
+                          <span className="text-secondary">
+                            {Number(analysisResult.ml_score).toLocaleString(
+                              "en-US",
+                              { maximumFractionDigits: 2 },
+                            )}{" "}
+                            / 100
+                          </span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div
+                            className="bg-primary h-2 rounded-full"
+                            style={{ width: `${analysisResult.ml_score}%` }}
+                          ></div>
+                        </div>
+                        <div className="flex justify-between items-center mt-1.5">
+                          {analysisResult.ml_category && (
+                            <p className="text-xs text-secondary/60 font-medium">
+                              Prediction:{" "}
+                              <span className="text-secondary">
+                                {analysisResult.ml_category}
+                              </span>
                             </p>
-                          </div>
-                        )}
+                          )}
+                        </div>
                       </div>
+                      {isNoUrlScam && (
+                        <div className="pt-2 mt-2 border-t border-dashed border-neutral-border">
+                          <p className="text-xs text-secondary/40 font-medium leading-tight">
+                            *Rule-based detection is prioritized (100%) for social engineering scams without URLs. Phishing AI remains as language context.
+                          </p>
+                        </div>
+                      )}
                     </div>
-                  )}
+                  </div>
+                )}
 
                 {/* Specific Scam Analysis Result */}
                 {analysisResult?.details?.detected_scam_type && (
@@ -340,7 +340,7 @@ export const ReportConfirmation = ({
                       Detected: <span className="text-primary">{analysisResult.details.detected_scam_type}</span>
                     </p>
                     {analysisResult.details.transaction_validation !== "N/A" && (
-                      <p className="text-xs text-secondary/70 mt-1 italic">
+                      <p className="text-xs text-secondary/70 mt-1">
                         {analysisResult.details.transaction_validation}
                       </p>
                     )}

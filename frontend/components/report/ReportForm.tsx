@@ -103,7 +103,7 @@ export const ReportForm: React.FC<ReportFormProps> = ({
               </div>
               <div>
                 <span className="font-bold text-secondary block leading-tight">Advanced Information (Optional)</span>
-                <span className="text-sm text-secondary font-bold tracking-wide">Bank & Transaction Details</span>
+                <span className="text-sm text-secondary/80 font-bold tracking-wide">Bank & Transaction Details</span>
               </div>
             </div>
             {showAdvanced ? <ChevronUp className="size-5 text-secondary" /> : <ChevronDown className="size-5 text-secondary" />}

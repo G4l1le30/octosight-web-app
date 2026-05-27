@@ -13,7 +13,7 @@ export const StatusAnalysis: React.FC<StatusAnalysisProps> = ({ result }) => {
   let details: any = {
     typosquatting: "Safe",
     keywords: "Clean",
-    attachments: result.attachment_names ? "Detected" : "Clean",
+    attachments: result.attachment_paths ? "Detected" : "Clean",
     ocr: result.extracted_text ? "Complete" : "N/A",
   };
 

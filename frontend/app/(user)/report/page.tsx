@@ -28,7 +28,7 @@ const DYNAMIC_CONTENT = {
     senderPlaceholder: "e.g., +62 812..., 0812...",
     summaryLabel: "Full Message Content (Required if no screenshot)",
     summaryPlaceholder: "Paste the exact SMS text you received here...",
-    fileLabel: "SMS Screenshots (Max 10)",
+    fileLabel: "SMS Screenshots",
   },
   WhatsApp: {
     urlLabel: "Link in WhatsApp (Optional)",
@@ -37,7 +37,7 @@ const DYNAMIC_CONTENT = {
     senderPlaceholder: "e.g., +62 812... or Phishing Group Name",
     summaryLabel: "Full Message Content (Required if no screenshot)",
     summaryPlaceholder: "Paste the exact WhatsApp message here...",
-    fileLabel: "Chat Screenshots (Max 10)",
+    fileLabel: "Chat Screenshots",
   },
   Email: {
     urlLabel: "Link in Email (Optional)",
@@ -46,7 +46,7 @@ const DYNAMIC_CONTENT = {
     senderPlaceholder: "e.g., support@secure-cimb.xyz",
     summaryLabel: "Full Message Content (Required if no screenshot)",
     summaryPlaceholder: "Paste the email body or sub-headers here...",
-    fileLabel: "Email Screenshots (Max 10)",
+    fileLabel: "Email Screenshots",
   },
   Website: {
     urlLabel: "Suspicious URL / Link (Required)",
@@ -55,7 +55,7 @@ const DYNAMIC_CONTENT = {
     senderPlaceholder: "e.g., Found on Facebook ad, pop-up, etc.",
     summaryLabel: "Additional Context (Optional)",
     summaryPlaceholder: "Describe how you found this website...",
-    fileLabel: "Evidence Screenshots (Max 10)",
+    fileLabel: "Evidence Screenshots",
     urlRequired: true,
   },
   Transaction: {
@@ -65,7 +65,7 @@ const DYNAMIC_CONTENT = {
     senderPlaceholder: "e.g., 706123456789",
     summaryLabel: "Transaction Context (Required if no screenshot)",
     summaryPlaceholder: "Describe the transfer context here...",
-    fileLabel: "Evidence / Receipts (Max 10)",
+    fileLabel: "Evidence / Receipts",
   },
 };
 
@@ -80,9 +80,11 @@ export default function ReportPage() {
   const [analysisResult, setAnalysisResult] = useState<any>(null);
 
   const [incidentType, setIncidentType] = useState<IncidentType>("Website");
-  const [screenshots, setScreenshots] = useState<File[]>([]);
+  const [screenshotPath, setScreenshotPath] = useState<string | null>(null);
+  const [screenshotPreviewUrl, setScreenshotPreviewUrl] = useState<string | null>(null);
   const [screenshotError, setScreenshotError] = useState(false);
-  const [attachments, setAttachments] = useState<File[]>([]);
+  const [attachmentPath, setAttachmentPath] = useState<string | null>(null);
+  const [attachmentPreviewUrl, setAttachmentPreviewUrl] = useState<string | null>(null);
 
   const dynamic = DYNAMIC_CONTENT[incidentType];
 
@@ -105,7 +107,7 @@ export default function ReportPage() {
   });
 
   const onSubmit = async (data: ReportFormData) => {
-    if (!data.summary?.trim() && screenshots.length === 0) {
+    if (!data.summary?.trim() && !screenshotPath) {
       form.setError("summary", {
         type: "manual",
         message: "Required: Please provide message text or upload a screenshot."
@@ -126,11 +128,8 @@ export default function ReportPage() {
       payload.append("bank_name", data.bankName || "");
       payload.append("bank_account", data.bankAccount || "");
       payload.append("reference_number", data.referenceNumber || "");
-      payload.append("attachment_names", JSON.stringify(attachments.map((a) => a.name)));
-      // Include screenshots so OCR is factored into the preview score.
-      // Uses /api/analyze (Next.js proxy route) to correctly forward binary files.
-      // Max 10 screenshots
-      screenshots.slice(0, 10).forEach((file) => payload.append("screenshots", file));
+      if (screenshotPath) payload.append("screenshot_path", screenshotPath);
+      if (attachmentPath) payload.append("attachment_path", attachmentPath);
 
       const response = await fetch("/api/analyze", {
         method: "POST",
@@ -165,10 +164,8 @@ export default function ReportPage() {
       payload.append("bank_name", confirmedData.bankName ?? "");
       payload.append("bank_account", confirmedData.bankAccount ?? "");
       payload.append("reference_number", confirmedData.referenceNumber ?? "");
-
-      // Max 10 screenshots
-      screenshots.slice(0, 10).forEach((file) => payload.append("screenshots", file));
-      attachments.forEach((file) => payload.append("attachments", file));
+      if (screenshotPath) payload.append("screenshot_path", screenshotPath);
+      if (attachmentPath) payload.append("attachment_path", attachmentPath);
 
       const response = await fetch("/api/v1/report", {
         method: "POST",
@@ -206,6 +203,10 @@ export default function ReportPage() {
         setTicketData(null);
         setIsConfirming(false);
         setConfirmedData(null);
+        setScreenshotPath(null);
+        setScreenshotPreviewUrl(null);
+        setAttachmentPath(null);
+        setAttachmentPreviewUrl(null);
         form.reset();
       }}
     />
@@ -252,12 +253,16 @@ export default function ReportPage() {
         incidentType={incidentType}
         setIncidentType={setIncidentType}
         dynamic={dynamic}
-        screenshots={screenshots}
-        setScreenshots={setScreenshots}
+        screenshotPath={screenshotPath}
+        setScreenshotPath={setScreenshotPath}
+        screenshotPreviewUrl={screenshotPreviewUrl}
+        setScreenshotPreviewUrl={setScreenshotPreviewUrl}
         screenshotError={screenshotError}
         setScreenshotError={setScreenshotError}
-        attachments={attachments}
-        setAttachments={setAttachments}
+        attachmentPath={attachmentPath}
+        setAttachmentPath={setAttachmentPath}
+        attachmentPreviewUrl={attachmentPreviewUrl}
+        setAttachmentPreviewUrl={setAttachmentPreviewUrl}
         getLocalISOString={getLocalISOString}
       />
     </div>

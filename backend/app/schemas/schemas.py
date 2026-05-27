@@ -7,7 +7,7 @@ All external inputs are validated here before reaching service/repo layers.
 from typing import List, Optional
 import re
 
-from pydantic import BaseModel, EmailStr, Field, field_validator
+from pydantic import BaseModel, Field, field_validator
 
 
 # ── Auth ──────────────────────────────────────────────────────────────────────
@@ -27,7 +27,7 @@ class RegisterRequest(BaseModel):
         if not re.search(r"\d", v):
             raise ValueError("Password must contain at least one number")
         if not re.search(r"[@$!%*?&#^]", v):
-            raise ValueError("Password must contain at least one special character (@$!%*?&#^)")
+            raise ValueError("Password must contain at least one special character")
         return v
 
 
@@ -80,7 +80,8 @@ class AnalysisRequest(BaseModel):
     url: Optional[str] = ""
     summary: Optional[str] = ""
     sender_numbers: Optional[str] = ""
-    attachment_names: Optional[List[str]] = []
+    screenshot_path: Optional[str] = ""
+    attachment_path: Optional[str] = ""
 
 
 class MessageRequest(BaseModel):

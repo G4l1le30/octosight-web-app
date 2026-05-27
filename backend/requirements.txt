@@ -4,6 +4,7 @@ sqlalchemy
 pymysql
 cryptography
 pydantic
+email-validator
 python-dotenv
 python-multipart
 pytesseract
@@ -14,11 +15,13 @@ python-jose[cryptography]
 bcrypt==4.0.1
 joblib
 scikit-learn==1.6.1
-torch
-sentence-transformers
-google-genai
+# Optional heavy ML deps (install separately if you need local model inference):
+# torch
+# sentence-transformers
+# google-genai
 alembic
 google-auth
 slowapi
 fastapi-mail
 jinja2
+supabase==2.30.0

@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { Button } from "@/components/ui/Button";
 import { IncidentTypeCard } from "@/components/report/IncidentTypeCard";
-import { EvidenceUpload } from "@/components/report/EvidenceUpload";
+import { EvidenceUploader } from "@/components/report/EvidenceUploader";
 import { ChevronDown, ChevronUp, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -16,12 +16,16 @@ interface ReportFormProps {
   incidentType: IncidentType;
   setIncidentType: (type: IncidentType) => void;
   dynamic: any;
-  screenshots: File[];
-  setScreenshots: (files: File[]) => void;
+  screenshotPath: string | null;
+  setScreenshotPath: (path: string | null) => void;
+  screenshotPreviewUrl: string | null;
+  setScreenshotPreviewUrl: (url: string | null) => void;
   screenshotError: boolean;
   setScreenshotError: (error: boolean) => void;
-  attachments: File[];
-  setAttachments: (files: File[]) => void;
+  attachmentPath: string | null;
+  setAttachmentPath: (path: string | null) => void;
+  attachmentPreviewUrl: string | null;
+  setAttachmentPreviewUrl: (url: string | null) => void;
   getLocalISOString: () => string;
 }
 
@@ -32,12 +36,16 @@ export const ReportForm: React.FC<ReportFormProps> = ({
   incidentType,
   setIncidentType,
   dynamic,
-  screenshots,
-  setScreenshots,
+  screenshotPath,
+  setScreenshotPath,
+  screenshotPreviewUrl,
+  setScreenshotPreviewUrl,
   screenshotError,
   setScreenshotError,
-  attachments,
-  setAttachments,
+  attachmentPath,
+  setAttachmentPath,
+  attachmentPreviewUrl,
+  setAttachmentPreviewUrl,
   getLocalISOString,
 }) => {
   const {
@@ -144,22 +152,39 @@ export const ReportForm: React.FC<ReportFormProps> = ({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <EvidenceUpload
-            id="screenshots-upload"
+          <EvidenceUploader
             label={dynamic.fileLabel}
-            files={screenshots}
-            onFilesChange={(files) => { setScreenshots(files); if (files.length > 0) setScreenshotError(false); }}
-            error={screenshotError}
-            errorMessage="Required: Please upload a screenshot if message text is empty."
-            accept="image/*"
-            multiple
+            accept=".png,.jpg,.jpeg"
+            onUploadSuccess={(filename, url) => {
+              setScreenshotPath(filename);
+              setScreenshotPreviewUrl(url);
+              if (filename) setScreenshotError(false);
+            }}
+            onUploadError={() => {
+              setScreenshotPath(null);
+              setScreenshotPreviewUrl(null);
+            }}
+            onReset={() => {
+              setScreenshotPath(null);
+              setScreenshotPreviewUrl(null);
+            }}
           />
-          <EvidenceUpload
-            id="attachments-upload"
-            label="Phishing Attachments"
-            files={attachments}
-            onFilesChange={setAttachments}
-            accept="*"
+
+          <EvidenceUploader
+            label="Phishing Attachment"
+            accept=".png,.jpg,.jpeg,.pdf"
+            onUploadSuccess={(filename, url) => {
+              setAttachmentPath(filename);
+              setAttachmentPreviewUrl(url);
+            }}
+            onUploadError={() => {
+              setAttachmentPath(null);
+              setAttachmentPreviewUrl(null);
+            }}
+            onReset={() => {
+              setAttachmentPath(null);
+              setAttachmentPreviewUrl(null);
+            }}
           />
         </div>
 

@@ -53,7 +53,6 @@ class Ticket(Base):
     # Report content
     sender_numbers = Column(Text)
     extracted_text = Column(Text)
-    attachment_names = Column(Text)
     attachment_paths = Column(Text)
     screenshot_paths = Column(Text)
 

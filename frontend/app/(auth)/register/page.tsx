@@ -58,6 +58,15 @@ export default function RegisterPage() {
     } else if (!/[A-Z]/.test(password)) {
       newErrors.password = "Password must contain at least one uppercase letter";
       hasErrors = true;
+    } else if (!/[a-z]/.test(password)) {
+      newErrors.password = "Password must contain at least one lowercase letter";
+      hasErrors = true;
+    } else if (!/\d/.test(password)) {
+      newErrors.password = "Password must contain at least one number";
+      hasErrors = true;
+    } else if (!/[@$!%*?&#^]/.test(password)) {
+      newErrors.password = "Password must contain at least one special character";
+      hasErrors = true;
     }
 
     if (password && confirmPassword && password !== confirmPassword) {

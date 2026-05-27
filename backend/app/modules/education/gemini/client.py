@@ -2,9 +2,15 @@ import os
 import json
 import re
 import time
-from google import genai
-from google.genai import types
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
+
+# Make google.genai optional so the app can run without Gemini SDK installed.
+try:
+    from google import genai  # type: ignore
+    from google.genai import types  # type: ignore
+except Exception:
+    genai = None
+    types = None
 
 class GeminiClient:
     # Circuit breaker — skip Gemini until this epoch timestamp
@@ -22,11 +28,15 @@ class GeminiClient:
         return [k.strip() for k in raw.split(",") if k.strip()]
 
     @staticmethod
-    def get_client() -> Optional[genai.Client]:
+    def get_client() -> Optional[Any]:
         """
         Returns a Gemini client using the next available (non-exhausted) API key.
         Rotates through keys automatically. Returns None if all keys are exhausted.
         """
+        # If genai SDK is not installed, return None so callers fall back.
+        if genai is None:
+            return None
+
         keys = GeminiClient._get_api_keys()
         if not keys:
             return None

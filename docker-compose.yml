@@ -4,11 +4,19 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      target: dev
+      args:
+        INTERNAL_API_URL: http://backend:8000
     ports:
       - "3000:3000"
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=development
+      - INTERNAL_API_URL=http://backend:8000
       - NEXT_PUBLIC_API_URL=http://backend:8000
+      - WATCHPACK_POLLING=true
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
     depends_on:
       - backend
     networks:
@@ -22,22 +30,16 @@ services:
     ports:
       - "8000:8000"
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    env_file:
+      - ./.env
     environment:
       - MYSQL_USER=octouser
       - MYSQL_PASSWORD=octopassword
       - MYSQL_DATABASE=octosight_db
       - MYSQL_HOST=db
       - WHITELIST_PATH=/app/data/whitelist.txt
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
       - ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000,http://frontend:3000
       - ENVIRONMENT=production
-      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
-      - MAIL_USERNAME=${MAIL_USERNAME}
-      - MAIL_PASSWORD=${MAIL_PASSWORD}
-      - MAIL_FROM=${MAIL_FROM}
-      - MAIL_PORT=${MAIL_PORT}
-      - MAIL_SERVER=${MAIL_SERVER}
-      - MAIL_FROM_NAME=${MAIL_FROM_NAME}
     depends_on:
       db:
         condition: service_healthy

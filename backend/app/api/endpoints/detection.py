@@ -38,6 +38,7 @@ from app.core.engines import analyze_spam, ocr_engine, rule_engine
 from app.modules.education.gemini_service import GeminiEducationService
 from app.api.endpoints.blacklist import normalize_url_for_match, _extract_domain
 from app.modules.notifications.service import send_email_notification
+from app.services.supabase_service import get_supabase_service, SupabaseStorageService
 
 router = APIRouter(prefix="/api/v1", tags=["detection"])
 
@@ -264,6 +265,30 @@ def _save_upload_bytes(content: bytes, original_filename: str, prefix: str, subf
     return relative_path
 
 
+async def _download_supabase_screenshot_and_extract_text(
+    path: str, supabase_service: SupabaseStorageService
+) -> Optional[dict]:
+    """Download a screenshot from Supabase and run OCR on its bytes."""
+    if not path:
+        return None
+
+    try:
+        content = await asyncio.to_thread(supabase_service.download_file, path)
+        if not content:
+            return None
+
+        text = await asyncio.to_thread(ocr_engine.extract_text_from_bytes, content)
+        indicators = ocr_engine.find_indicators(text)
+        return {
+            "path": path,
+            "text": text,
+            "indicators": indicators,
+        }
+    except Exception as e:
+        print(f"Supabase download error for {path}: {e}")
+        return None
+
+
 async def _persist_screenshot_and_extract_text(
     file: UploadFile, ticket_id: str
 ) -> Optional[dict]:
@@ -331,9 +356,12 @@ async def create_report(
     bank_name: str = Form(""),
     bank_account: str = Form(""),
     reference_number: str = Form(""),
+    screenshot_path: str = Form(""),
+    attachment_path: str = Form(""),
     screenshots: List[UploadFile] = File(None),
     attachments: List[UploadFile] = File(None),
     db: Session = Depends(get_db),
+    supabase_service: SupabaseStorageService = Depends(get_supabase_service),
     current_user=Depends(get_current_user),
 ):
     """
@@ -343,7 +371,7 @@ async def create_report(
     - Scoring favors ML if URL is missing but Bank Info is present.
     """
     # 0. Validation: Require either summary or screenshots
-    if not summary.strip() and not screenshots:
+    if not summary.strip() and not screenshot_path and not screenshots:
         raise HTTPException(
             status_code=400,
             detail="Either message content (summary) or an evidence screenshot is required."
@@ -373,9 +401,19 @@ async def create_report(
 
             if processed["indicators"]["urls"] and not url:
                 url = processed["indicators"]["urls"][0]
+    elif screenshot_path:
+        processed = await _download_supabase_screenshot_and_extract_text(screenshot_path, supabase_service)
+        if processed:
+            screenshot_list.append(processed["path"])
+            all_extracted_text.append(processed["text"])
+            if processed["indicators"]["urls"] and not url:
+                url = processed["indicators"]["urls"][0]
 
     # 3. Process attachments (evidence files)
-    if attachments:
+    if attachment_path:
+        orig_attachment_names.append(os.path.basename(attachment_path))
+        hashed_attachment_paths.append(attachment_path)
+    elif attachments:
         for file in attachments:
             orig_attachment_names.append(file.filename)
             filename = _save_upload(file, "attachment", subfolder=ticket_id)
@@ -557,7 +595,6 @@ async def create_report(
         bank_account=bank_account,
         reference_number=reference_number,
         extracted_text=combined_text,
-        attachment_names=",".join(orig_attachment_names),
         attachment_paths=",".join(hashed_attachment_paths),
         screenshot_paths=",".join(screenshot_list),
         risk_score=final_score,
@@ -603,9 +640,11 @@ async def analyze_preview(
     bank_name: str = Form(""),
     bank_account: str = Form(""),
     reference_number: str = Form(""),
-    attachment_names: str = Form("[]"),
+    attachment_path: str = Form(""),
+    screenshot_path: str = Form(""),
     screenshots: List[UploadFile] = File([]),
     db: Session = Depends(get_db),
+    supabase_service: SupabaseStorageService = Depends(get_supabase_service),
 ):
     """
     Calculate the hybrid risk score from form data **without** saving a ticket.
@@ -638,6 +677,10 @@ async def analyze_preview(
                     continue
                 if result:
                     combined_ocr_text += f"\n{result}"
+    elif screenshot_path:
+        processed = await _download_supabase_screenshot_and_extract_text(screenshot_path, supabase_service)
+        if processed and processed["text"]:
+            combined_ocr_text += f"\n{processed['text']}"
 
     # --- GLOBAL VALIDATIONS ---
     is_transaction = report_type == "Transaction"
@@ -709,10 +752,9 @@ async def analyze_preview(
     # We combine summary and OCR text for rule engine too in preview
     full_text_context = f"{summary}\n{combined_ocr_text}".strip()
     
-    try:
-        att_list = json.loads(attachment_names) if attachment_names else []
-    except Exception:
-        att_list = []
+    att_list = []
+    if attachment_path:
+        att_list.append(os.path.basename(attachment_path))
 
     rule_analysis = rule_engine.calculate_risk(
         url=url,

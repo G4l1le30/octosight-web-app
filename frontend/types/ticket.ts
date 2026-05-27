@@ -17,7 +17,6 @@ export interface Ticket {
   priority: "High" | "Medium" | "Low";
   status: TicketStatus;
   screenshot_paths: string | null;
-  attachment_names: string | null;
   attachment_paths: string | null;
   extracted_text: string | null;
   flags: string | null;

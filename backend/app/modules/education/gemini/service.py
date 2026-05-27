@@ -1,9 +1,14 @@
 import json
 import re
 from typing import Dict, List, Optional
-from google.genai import types
 
 from .client import GeminiClient
+
+# Make types optional — if the Gemini SDK isn't installed, we'll fallback.
+try:
+    from google.genai import types  # type: ignore
+except Exception:
+    types = None
 from .quiz_fallbacks import QUIZ_FALLBACKS
 
 class GeminiEducationService:
@@ -60,6 +65,15 @@ Hasilkan JSON dalam format berikut:
   ]
 }}
 """
+        # If Gemini SDK or types are not available, skip attempting remote calls
+        # and use the fallback immediately. This avoids hard dependency on
+        # the Google Gemini SDK during image builds.
+        if types is None:
+            print("[Gemini] SDK not installed — using fallback recommendation")
+            fallback = GeminiEducationService._get_default_recommendation(ticket_type, rule_score, available_modules)
+            GeminiEducationService._rec_cache[cache_key] = fallback
+            return fallback
+
         max_attempts = max(1, len(GeminiClient._get_api_keys()))
         for attempt in range(max_attempts):
             client = GeminiClient.get_client()
@@ -67,7 +81,7 @@ Hasilkan JSON dalam format berikut:
                 if GeminiClient.is_circuit_open():
                     print(f"[Circuit Breaker] Skipping Gemini (Rec) — quota cooldown active")
                 break # Fallback below
-            
+
             try:
                 response = client.models.generate_content(
                     model='gemini-2.5-flash',
@@ -138,6 +152,13 @@ Hasilkan JSON dalam format berikut:
         }}
         """
         
+        # If Gemini SDK not available, use fallback instead of remote calls
+        if types is None:
+            print(f"[Gemini] SDK not installed — using fallback quiz for module order {module_order}")
+            fallback = GeminiEducationService._get_default_quiz(module_order)
+            GeminiEducationService._quiz_cache[module_order] = fallback
+            return fallback
+
         max_attempts = max(1, len(GeminiClient._get_api_keys()))
         for attempt in range(max_attempts):
             client = GeminiClient.get_client()
@@ -145,7 +166,7 @@ Hasilkan JSON dalam format berikut:
                 if GeminiClient.is_circuit_open():
                     print(f"[Circuit Breaker] Skipping Gemini (Quiz order {module_order}) — quota cooldown active")
                 break # Fallback below
-            
+
             try:
                 response = client.models.generate_content(
                     model='gemini-2.5-flash',
@@ -160,18 +181,18 @@ Hasilkan JSON dalam format berikut:
                         ]
                     )
                 )
-                
+
                 # Clean response text in case it still includes markdown
                 text = response.text.strip()
                 if text.startswith("```"):
                     text = re.sub(r'^```(?:json)?\n?|\n?```$', '', text, flags=re.MULTILINE)
-                
+
                 result = json.loads(text)
                 if result and "questions" in result and len(result["questions"]) > 0:
                     print(f"[Gemini OK] Quiz cached for module order {module_order}")
                     GeminiEducationService._quiz_cache[module_order] = result
                     return result
-                
+
                 print(f"[Gemini] Invalid structure for Quiz order {module_order}, using fallback")
                 break # Non-exception failure, go to fallback
             except Exception as e:

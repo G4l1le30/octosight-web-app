@@ -18,24 +18,39 @@ from app.db.session import Base, SessionLocal, engine
 from app.db.migrations import apply_migrations
 from app.db.education_seeding import seed_education_data
 from app.models.models import Ticket, User, BlacklistedURL, BlacklistedAccount, MockBankTransaction, BlacklistedPhone, BlacklistedEmail, TicketAuditLog  # noqa: F401 — ensures table is created
+from app.core.email_validation import (
+    EmailValidationError,
+    EmailValidationUnavailableError,
+    normalize_and_validate_real_email,
+)
 from app.core.security import hash_password, limiter
 from slowapi.errors import RateLimitExceeded
-from slowapi import _rate_limit_exceeded_handler
 
 from app.api.endpoints import auth as auth_router
 from app.api.endpoints import tickets as tickets_router
 from app.api.endpoints import detection as detection_router
 from app.api.endpoints import education as education_router
 from app.api.endpoints import blacklist as blacklist_router
+from app.api.endpoints import evidence as evidence_router
 
 # ── Startup Logic ─────────────────────────────────────────────────────────────
 
 def _seed_db(db) -> None:
     """Seed a default admin account and minimal dummy tickets if the DB is empty."""
     # Admin account
-    admin_email = os.getenv("DEFAULT_ADMIN_EMAIL")
+    admin_email = (os.getenv("DEFAULT_ADMIN_EMAIL") or "").strip()
     admin_password = os.getenv("DEFAULT_ADMIN_PASSWORD")
-    
+
+    if admin_email:
+        try:
+            admin_email = normalize_and_validate_real_email(admin_email)
+        except EmailValidationUnavailableError:
+            print("[Seed] Skipping admin user creation because email deliverability validation is temporarily unavailable.")
+            admin_email = ""
+        except EmailValidationError as exc:
+            print(f"[Seed] Skipping admin user creation because DEFAULT_ADMIN_EMAIL is invalid: {exc}")
+            admin_email = ""
+
     if admin_email and admin_password and not db.query(User).filter(User.email == admin_email).first():
         db.add(
             User(
@@ -199,7 +214,14 @@ app = FastAPI(
 )
 
 app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+@app.exception_handler(RateLimitExceeded)
+async def custom_rate_limit_handler(request: Request, exc: RateLimitExceeded):
+    """Custom handler to return clear error message when spamming."""
+    return JSONResponse(
+        status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+        content={"detail": "Too many requests. Please wait a moment before trying again."},
+    )
 
 # ── Middleware ─────────────────────────────────────────────────────────────────
 
@@ -240,16 +262,31 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     Custom handler to prevent 'UnicodeDecodeError' when a validation error 
     occurs on a request containing binary data (like images).
     """
+    errors = []
+    for err in exc.errors():
+        err_dict = dict(err)
+        
+        # Mask sensitive fields like password
+        loc = err_dict.get("loc", [])
+        if any(str(l).lower() in ["password", "credential", "token"] for l in loc):
+            if "input" in err_dict:
+                err_dict["input"] = "***MASKED***"
+                
+        if "ctx" in err_dict and "error" in err_dict["ctx"]:
+            err_dict["ctx"] = dict(err_dict["ctx"])
+            err_dict["ctx"]["error"] = str(err_dict["ctx"]["error"])
+        errors.append(err_dict)
+
     print(f"--- Request Validation Error ---")
     print(f"Path: {request.url.path}")
-    print(f"Errors: {exc.errors()}")
+    print(f"Errors: {errors}")
     print(f"-------------------------------")
     
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
         content={
             "detail": "Invalid input provided. Please check your form data.",
-            "errors": str(exc.errors())
+            "errors": errors
         },
     )
 
@@ -260,6 +297,7 @@ app.include_router(tickets_router.router)
 app.include_router(detection_router.router)
 app.include_router(education_router.router)
 app.include_router(blacklist_router.router)
+app.include_router(evidence_router.router)
 
 # ── Health check ───────────────────────────────────────────────────────────────
 

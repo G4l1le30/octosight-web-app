@@ -7,6 +7,28 @@ interface InvestigateEvidenceProps {
 }
 
 export const InvestigateEvidence: React.FC<InvestigateEvidenceProps> = ({ ticket, onDownloadAttachment }) => {
+  const screenshotPaths = ticket.screenshot_paths?.split(",").filter(Boolean) ?? [];
+  const attachmentPaths = ticket.attachment_paths?.split(",").filter(Boolean) ?? [];
+
+  const openEvidenceFile = async (path: string) => {
+    if (!path) return;
+    if (path.includes("/")) {
+      window.open(`/uploads/${path}`, "_blank");
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/v1/evidence/signed-url?filename=${encodeURIComponent(path)}`);
+      if (!response.ok) {
+        throw new Error("Unable to generate preview URL");
+      }
+      const data = await response.json();
+      window.open(data.preview_url, "_blank");
+    } catch (error) {
+      console.error("Failed to open evidence file:", error);
+    }
+  };
+
   return (
     <div className="card p-8 h-full">
       <h3 className="text-xl font-bold mb-6 text-secondary">
@@ -23,13 +45,13 @@ export const InvestigateEvidence: React.FC<InvestigateEvidenceProps> = ({ ticket
           </div>
         </div>
 
-        {ticket.screenshot_paths && (
+        {screenshotPaths.length > 0 && (
           <div>
             <span className="text-base font-bold block mb-4 text-secondary">
               Evidence Screenshots
             </span>
             <div className="grid grid-cols-1 gap-4">
-              {ticket.screenshot_paths.split(",").map((path, i) => {
+              {screenshotPaths.map((path, i) => {
                 const filename = path.split("/").pop() || path;
                 return (
                   <div
@@ -65,12 +87,9 @@ export const InvestigateEvidence: React.FC<InvestigateEvidenceProps> = ({ ticket
                       </span>
                     </div>
                     <button
-                      onClick={() =>
-                        window.open(`/uploads/${path}`, "_blank")
-                      }
+                      onClick={() => openEvidenceFile(path)}
                       className="px-3 py-1.5 bg-risk-high text-white text-xs font-bold rounded-lg hover:bg-risk-high/90 transition-all"
                     >
-                      {" "}
                       Open
                     </button>
                   </div>
@@ -91,15 +110,14 @@ export const InvestigateEvidence: React.FC<InvestigateEvidenceProps> = ({ ticket
           </div>
         )}
 
-        {ticket.attachment_names && (
+        {attachmentPaths.length > 0 && (
           <div>
             <span className="text-base font-bold block mb-4 text-secondary">
               Attachments
             </span>
             <div className="grid grid-cols-1 gap-4">
-              {ticket.attachment_names.split(",").map((origName, i) => {
-                const hashedPath =
-                  ticket.attachment_paths?.split(",")[i] || origName;
+              {attachmentPaths.map((path, i) => {
+                const filename = path.split("/").pop() || path;
                 return (
                   <div
                     key={i}
@@ -123,14 +141,14 @@ export const InvestigateEvidence: React.FC<InvestigateEvidenceProps> = ({ ticket
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-bold truncate text-secondary opacity-80">
-                        {origName}
+                        {filename}
                       </p>
                       <p className="text-xs font-bold text-risk-high opacity-70">
                         Security Restricted
                       </p>
                     </div>
                     <button
-                      onClick={() => onDownloadAttachment(hashedPath)}
+                      onClick={() => onDownloadAttachment(path)}
                       className="px-3 py-1.5 bg-risk-high text-white text-xs font-bold rounded-lg hover:bg-risk-high/90 transition-all"
                     >
                       Download

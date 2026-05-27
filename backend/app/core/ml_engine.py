@@ -2,11 +2,23 @@ import joblib
 import os
 import sys
 from sklearn.base import BaseEstimator, TransformerMixin
-from sentence_transformers import SentenceTransformer
+
+# Make heavy ML deps optional so backend can build without `torch` or
+# `sentence-transformers` installed. If the runtime model isn't present
+# or deps are missing, `spam_model` will be None and the API falls back.
+try:
+    from sentence_transformers import SentenceTransformer  # type: ignore
+    SENTENCE_TRANSFORMERS_AVAILABLE = True
+except Exception:
+    SentenceTransformer = None
+    SENTENCE_TRANSFORMERS_AVAILABLE = False
+
 
 class SentenceTransformerWrapper(BaseEstimator, TransformerMixin):
     def __init__(self, model_name='paraphrase-multilingual-MiniLM-L12-v2'):
         self.model_name = model_name
+        if not SENTENCE_TRANSFORMERS_AVAILABLE:
+            raise RuntimeError('sentence-transformers is not installed')
         self.model = SentenceTransformer(model_name)
 
     def fit(self, X, y=None):
@@ -15,33 +27,45 @@ class SentenceTransformerWrapper(BaseEstimator, TransformerMixin):
     def transform(self, X):
         return self.model.encode(X)
 
+
 SentenceTransformerWrapper.__module__ = '__main__'
 
-import torch
-from unittest.mock import patch
+# Try to import torch only if available; wrapping load to CPU if present.
+try:
+    import torch
+    from unittest.mock import patch
+    TORCH_AVAILABLE = True
+except Exception:
+    torch = None
+    patch = None
+    TORCH_AVAILABLE = False
 
-# Alias to __main__ so joblib can find the class exactly as it was pickled in the Jupyter Notebook
+# Alias to __main__ so joblib can find the class exactly as it was pickled.
 setattr(sys.modules['__main__'], 'SentenceTransformerWrapper', SentenceTransformerWrapper)
 
 # Resolve the path relative to this file (app/core/) up to backend/models/
 MODEL_PATH = os.path.join(os.path.dirname(__file__), '..', '..', 'models', 'spam_pipeline.pkl')
 
-original_load = torch.load
-def _cpu_load(*args, **kwargs):
-    kwargs['map_location'] = torch.device('cpu')
-    return original_load(*args, **kwargs)
+spam_model = None
+if TORCH_AVAILABLE:
+    original_load = torch.load
+    def _cpu_load(*args, **kwargs):
+        kwargs['map_location'] = torch.device('cpu')
+        return original_load(*args, **kwargs)
 
-# Load the model once at module import time to minimize per-request latency.
-try:
-    with patch('torch.load', _cpu_load):
-        spam_model = joblib.load(MODEL_PATH)
-    print(f"[ML Engine] Model loaded successfully from: {os.path.abspath(MODEL_PATH)}")
-except FileNotFoundError:
-    spam_model = None
-    print(f"[ML Engine] WARNING: Model file not found at {os.path.abspath(MODEL_PATH)}")
-except Exception as e:
-    spam_model = None
-    print(f"[ML Engine] ERROR: Failed to load model — {e}")
+    # Load the model once at module import time to minimize per-request latency.
+    try:
+        with patch('torch.load', _cpu_load):
+            spam_model = joblib.load(MODEL_PATH)
+        print(f"[ML Engine] Model loaded successfully from: {os.path.abspath(MODEL_PATH)}")
+    except FileNotFoundError:
+        spam_model = None
+        print(f"[ML Engine] WARNING: Model file not found at {os.path.abspath(MODEL_PATH)}")
+    except Exception as e:
+        spam_model = None
+        print(f"[ML Engine] ERROR: Failed to load model — {e}")
+else:
+    print('[ML Engine] torch not available — ML model loading skipped (use separate ML image or install optional deps)')
 
 
 def analyze_spam(text: str) -> dict:

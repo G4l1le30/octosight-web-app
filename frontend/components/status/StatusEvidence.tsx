@@ -6,16 +6,38 @@ interface StatusEvidenceProps {
 }
 
 export const StatusEvidence: React.FC<StatusEvidenceProps> = ({ result }) => {
+  const openEvidenceFile = async (path: string) => {
+    if (!path) return;
+    if (path.includes("/")) {
+      window.open(`/uploads/${path}`, "_blank");
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/v1/evidence/signed-url?filename=${encodeURIComponent(path)}`);
+      if (!response.ok) {
+        throw new Error("Unable to generate preview URL");
+      }
+      const data = await response.json();
+      window.open(data.preview_url, "_blank");
+    } catch (error) {
+      console.error("Failed to open evidence file:", error);
+    }
+  };
+
+  const screenshotPaths = result.screenshot_paths?.split(",").filter(Boolean) ?? [];
+  const attachmentPaths = result.attachment_paths?.split(",").filter(Boolean) ?? [];
+
   return (
     <div className="space-y-6">
       {/* Evidence Screenshots */}
-      {result.screenshot_paths && (
+      {screenshotPaths.length > 0 && (
         <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 delay-150">
           <p className="text-sm font-bold text-secondary tracking-wide mb-3">
             Evidence Screenshots
           </p>
           <div className="space-y-3">
-            {result.screenshot_paths.split(",").map((path, i) => {
+            {screenshotPaths.map((path, i) => {
               const filename = path.split("/").pop() || path;
               return (
                 <div
@@ -44,7 +66,7 @@ export const StatusEvidence: React.FC<StatusEvidenceProps> = ({ result }) => {
                     </span>
                   </div>
                   <button
-                    onClick={() => window.open(`/uploads/${path}`, "_blank")}
+                    onClick={() => openEvidenceFile(path)}
                     className="text-xs font-bold text-secondary underline hover:text-secondary/80 transition-colors px-2 py-1"
                   >
                     Open
@@ -57,13 +79,14 @@ export const StatusEvidence: React.FC<StatusEvidenceProps> = ({ result }) => {
       )}
 
       {/* Attachments */}
-      {result.attachment_names && (
+      {attachmentPaths.length > 0 && (
         <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 delay-300">
           <p className="text-sm font-bold text-secondary tracking-wide mb-3">
             Attachments
           </p>
           <div className="space-y-3">
-            {result.attachment_names.split(",").map((f, i) => {
+            {attachmentPaths.map((path, i) => {
+              const filename = path.split("/").pop() || path;
               return (
                 <div
                   key={i}
@@ -86,9 +109,15 @@ export const StatusEvidence: React.FC<StatusEvidenceProps> = ({ result }) => {
                       </svg>
                     </div>
                     <span className="text-sm font-bold text-secondary truncate max-w-[150px] sm:max-w-[200px]">
-                      {f}
+                      {filename}
                     </span>
                   </div>
+                  <button
+                    onClick={() => openEvidenceFile(path)}
+                    className="text-xs font-bold text-secondary underline hover:text-secondary/80 transition-colors px-2 py-1"
+                  >
+                    Open
+                  </button>
                 </div>
               );
             })}

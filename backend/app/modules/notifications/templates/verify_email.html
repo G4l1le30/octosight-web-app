@@ -57,26 +57,22 @@
       .message {
         font-size: 16px;
         color: #4b5563;
-        margin-bottom: 24px;
+        margin-bottom: 32px;
       }
-      .warning-box { 
-        background-color: #fef2f2; 
-        padding: 24px; 
-        border-radius: 8px; 
-        margin: 24px 0; 
-        border: 1px solid #fca5a5; 
+      .btn-container {
+        text-align: left;
+        margin-bottom: 32px;
       }
-      .message-text { 
-        color: #7f1d1d; 
-        font-size: 16px; 
-        line-height: 1.6; 
-      }
-      .ticket-ref { 
-        font-size: 14px; 
-        color: #b91c1c; 
-        margin-top: 16px; 
-        padding-top: 16px;
-        border-top: 1px solid #fca5a5;
+      .button {
+        background-color: #e31e24;
+        color: #ffffff !important;
+        padding: 14px 28px;
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 16px;
+        display: inline-block;
+        transition: background-color 0.2s;
       }
       .footer {
         background-color: #f3f4f6;
@@ -115,25 +111,33 @@
         </div>
 
         <div class="content">
-          <h1 class="title">Security Warning</h1>
+          <h1 class="title">
+            {% if confirmation_url %}Confirm your email address{% else %}Welcome
+            to OctoSight!{% endif %}
+          </h1>
           <p class="message">
-            Hello,<br /><br />
-            An OctoSight security administrator has sent an important warning message regarding your activity or report:
+            Hello <strong>{{ user_name }}</strong>,<br /><br />
+            {% if confirmation_url %} You're almost ready to start using
+            OctoSight. To ensure the security of your account and verify that
+            <strong>{{ user_email }}</strong> belongs to you, please click the
+            button below to confirm your registration. {% else %} Your account
+            has been successfully created using Google. You can now access all
+            features of OctoSight to protect your digital banking experience. {%
+            endif %}
           </p>
-          
-          <div class="warning-box">
-              <div class="message-text">
-                  {{ warning_message | safe | replace('\n', '<br>') }}
-              </div>
-              {% if ticket_id %}
-              <div class="ticket-ref">
-                  Report Reference: <strong>{{ ticket_id }}</strong>
-              </div>
-              {% endif %}
+
+          {% if confirmation_url %}
+          <div class="btn-container">
+            <a href="{{ confirmation_url }}" class="button"
+              >Confirm Email Address</a
+            >
           </div>
-          
+          {% endif %}
+
           <p class="message" style="margin-bottom: 0">
-            Please follow up on this warning immediately to ensure the security of your account and device. Avoid further interaction with suspicious links or parties.
+            If you didn't {% if not confirmation_url %}perform this login{% else
+            %}request this registration{% endif %}, you can safely ignore this
+            email.
           </p>
         </div>
 

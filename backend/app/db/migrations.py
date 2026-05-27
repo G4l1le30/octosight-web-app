@@ -20,7 +20,6 @@ def apply_migrations(db: Session) -> None:
         "tickets": {
             "sender_numbers":     "TEXT",
             "extracted_text":     "TEXT",
-            "attachment_names":   "VARCHAR(500)",
             "attachment_paths":   "VARCHAR(1000)",
             "screenshot_paths":   "VARCHAR(1000)",
             "investigation_notes":"TEXT",

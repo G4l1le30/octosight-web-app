@@ -17,8 +17,8 @@ Usage:
     )
 """
 
-import os
 import logging
+import os
 from pathlib import Path
 from typing import Optional
 
@@ -35,6 +35,25 @@ _MAIL_FROM = os.getenv("MAIL_FROM", "")
 _MAIL_PORT = int(os.getenv("MAIL_PORT", "587"))
 _MAIL_SERVER = os.getenv("MAIL_SERVER", "smtp.gmail.com")
 _MAIL_FROM_NAME = os.getenv("MAIL_FROM_NAME", "OctoSight Security")
+
+
+def _log_mail_startup(enabled: bool) -> None:
+    """Log a sanitized summary of the effective SMTP configuration."""
+    if enabled:
+        logger.info(
+            "[Email] Mail service initialized successfully. server=%s port=%s from=%s username=%s",
+            _MAIL_SERVER,
+            _MAIL_PORT,
+            _MAIL_FROM or _MAIL_USERNAME,
+            _MAIL_USERNAME,
+        )
+        print("[Email] Mail service initialized successfully.")
+        return
+
+    logger.warning(
+        "[Email] Mail service disabled. Missing MAIL_USERNAME or MAIL_PASSWORD."
+    )
+    print("[Email] WARNING: Mail credentials not configured. Emails will be skipped.")
 
 # Only create config if credentials are present
 _mail_enabled = bool(_MAIL_USERNAME and _MAIL_PASSWORD)
@@ -54,10 +73,10 @@ if _mail_enabled:
         TEMPLATE_FOLDER=Path(__file__).parent / "templates",
     )
     fast_mail = FastMail(conf)
-    print("[Email] Mail service initialized successfully.")
 else:
     fast_mail = None
-    print("[Email] WARNING: Mail credentials not configured. Emails will be skipped.")
+
+_log_mail_startup(_mail_enabled)
 
 
 # ── Public API ─────────────────────────────────────────────────────────────────
@@ -111,12 +130,8 @@ async def _send_with_logging(message: MessageSchema, template_name: str):
         except Exception as exc:
             # If authentication fails, disable mail sending for future attempts
             if isinstance(exc, Exception) and 'SMTPAuthenticationError' in str(exc):
-                fast_mail = None
-                _mail_enabled = False
-                logger.error("[Email] Authentication failed. Disabling email service.")
+                print(f"[Email] Critical Error: Authentication failed. Please check MAIL_PASSWORD.")
             else:
-                logger.error(f"[Email] ERROR sending '{message.subject}' to {message.recipients}: {exc}")
-            print(f"[Email] ERROR sending '{message.subject}' to {message.recipients}: {exc}")
-    except Exception as exc:
-        print(f"[Email] ERROR sending '{message.subject}' to {message.recipients}: {exc}")
-        logger.error("Failed to send email: %s", exc, exc_info=True)
+                print(f"[Email] Failed to send email to {message.recipients}: {str(exc)}")
+    except Exception as e:
+        print(f"[Email] Unexpected error in background task: {str(e)}")

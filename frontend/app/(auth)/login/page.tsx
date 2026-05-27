@@ -88,7 +88,7 @@ function LoginForm() {
       subtitle="Sign in to your OctoSight account"
       icon={<Lock className="h-7 w-7" />}
       error={error}
-      success={isRegistered && !error ? "Registration successful! Please sign in." : undefined}
+      success={isRegistered && !error ? "Registration link sent! Please check your email inbox and spam folder to verify your account." : undefined}
       footerText="Don't have an account?"
       footerLinkText="Create Account"
       footerLinkHref="/register"

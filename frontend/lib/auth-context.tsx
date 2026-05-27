@@ -230,7 +230,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       throw new Error(errorMessage);
     }
 
-    await response.json();
+    const data = await response.json();
+
+    if (data.requires_verification) {
+      return;
+    }
 
     const currentUser = await fetchMe();
     if (!currentUser) {

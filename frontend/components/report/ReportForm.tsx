@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { Button } from "@/components/ui/Button";
 import { IncidentTypeCard } from "@/components/report/IncidentTypeCard";
-import { EvidenceUploader } from "@/components/report/EvidenceUploader";
+import { EvidenceUpload } from "@/components/report/EvidenceUpload";
 import { ChevronDown, ChevronUp, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -16,16 +16,12 @@ interface ReportFormProps {
   incidentType: IncidentType;
   setIncidentType: (type: IncidentType) => void;
   dynamic: any;
-  screenshotPath: string | null;
-  setScreenshotPath: (path: string | null) => void;
-  screenshotPreviewUrl: string | null;
-  setScreenshotPreviewUrl: (url: string | null) => void;
+  screenshotFile: File | null;
+  setScreenshotFile: (file: File | null) => void;
   screenshotError: boolean;
   setScreenshotError: (error: boolean) => void;
-  attachmentPath: string | null;
-  setAttachmentPath: (path: string | null) => void;
-  attachmentPreviewUrl: string | null;
-  setAttachmentPreviewUrl: (url: string | null) => void;
+  attachmentFile: File | null;
+  setAttachmentFile: (file: File | null) => void;
   getLocalISOString: () => string;
 }
 
@@ -36,16 +32,12 @@ export const ReportForm: React.FC<ReportFormProps> = ({
   incidentType,
   setIncidentType,
   dynamic,
-  screenshotPath,
-  setScreenshotPath,
-  screenshotPreviewUrl,
-  setScreenshotPreviewUrl,
+  screenshotFile,
+  setScreenshotFile,
   screenshotError,
   setScreenshotError,
-  attachmentPath,
-  setAttachmentPath,
-  attachmentPreviewUrl,
-  setAttachmentPreviewUrl,
+  attachmentFile,
+  setAttachmentFile,
   getLocalISOString,
 }) => {
   const {
@@ -103,15 +95,15 @@ export const ReportForm: React.FC<ReportFormProps> = ({
           <button
             type="button"
             onClick={() => setShowAdvanced(!showAdvanced)}
-            className="w-full flex items-center justify-between p-4 bg-neutral-page hover:bg-neutral-border/20 transition-colors text-left"
+            className="w-full flex items-center justify-between p-4 hover:bg-neutral-border/20 transition-colors text-left"
           >
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary/10 rounded-lg text-primary">
+              <div className="p-2 rounded-lg text-black">
                 <ShieldCheck className="size-5" />
               </div>
               <div>
                 <span className="font-bold text-secondary block leading-tight">Advanced Information (Optional)</span>
-                <span className="text-sm text-secondary/80 font-bold tracking-wide">Bank & Transaction Details</span>
+                <span className="text-sm text-secondary/80 font-medium">Bank &amp; Transaction Details</span>
               </div>
             </div>
             {showAdvanced ? <ChevronUp className="size-5 text-secondary" /> : <ChevronDown className="size-5 text-secondary" />}
@@ -151,44 +143,37 @@ export const ReportForm: React.FC<ReportFormProps> = ({
           </div>
         </div>
 
+        {/* Evidence Upload — files stored locally, uploaded on submit */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <EvidenceUploader
+          <EvidenceUpload
             label={dynamic.fileLabel}
+            id="screenshot-uploader"
+            mode="screenshot"
             accept=".png,.jpg,.jpeg"
-            onUploadSuccess={(filename, url) => {
-              setScreenshotPath(filename);
-              setScreenshotPreviewUrl(url);
-              if (filename) setScreenshotError(false);
+            onFileChange={(file) => {
+              setScreenshotFile(file);
+              if (file) setScreenshotError(false);
             }}
-            onUploadError={() => {
-              setScreenshotPath(null);
-              setScreenshotPreviewUrl(null);
-            }}
-            onReset={() => {
-              setScreenshotPath(null);
-              setScreenshotPreviewUrl(null);
-            }}
+            error={screenshotError}
+            errorMessage="A screenshot is required when no text summary is provided."
+            disabled={loading}
+            otherSelectedFile={attachmentFile}
           />
 
-          <EvidenceUploader
+          <EvidenceUpload
             label="Phishing Attachment"
-            accept=".png,.jpg,.jpeg,.pdf"
-            onUploadSuccess={(filename, url) => {
-              setAttachmentPath(filename);
-              setAttachmentPreviewUrl(url);
-            }}
-            onUploadError={() => {
-              setAttachmentPath(null);
-              setAttachmentPreviewUrl(null);
-            }}
-            onReset={() => {
-              setAttachmentPath(null);
-              setAttachmentPreviewUrl(null);
-            }}
+            id="attachment-uploader"
+            mode="attachment"
+            accept=".pdf,.doc,.docx,.docm,.rtf,.zip,.rar,.7z,.apk,.exe,.scr,.vbs,.html,.htm,.eml"
+            onFileChange={setAttachmentFile}
+            disabled={loading}
+            otherSelectedFile={screenshotFile}
           />
         </div>
 
-        <Button type="submit" loading={loading} size="lg" className="w-full text-lg">Analyze Report</Button>
+        <Button type="submit" loading={loading} size="lg" className="w-full text-lg">
+          Analyze Report
+        </Button>
       </form>
     </div>
   );

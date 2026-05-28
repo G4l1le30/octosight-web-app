@@ -290,9 +290,15 @@ async def _download_supabase_screenshot_and_extract_text(
 
 
 async def _persist_screenshot_and_extract_text(
-    file: UploadFile, ticket_id: str
+    file: UploadFile,
+    ticket_id: str,
+    supabase_service: SupabaseStorageService,
 ) -> Optional[dict]:
-    """Persist one screenshot and OCR it without blocking the event loop."""
+    """
+    Read one screenshot UploadFile, run OCR, then upload it to Supabase Storage.
+    Returns the Supabase filename (UUID-based), the extracted text, and URL indicators.
+    Falls back to local disk if Supabase upload fails.
+    """
     if not file.content_type or not file.content_type.startswith("image/"):
         return None
 
@@ -300,17 +306,71 @@ async def _persist_screenshot_and_extract_text(
     if not content:
         return None
 
-    relative_path = await asyncio.to_thread(
-        _save_upload_bytes, content, file.filename or "screenshot", "screenshot", ticket_id
-    )
+    # OCR is always done from bytes regardless of storage destination
     text = await asyncio.to_thread(ocr_engine.extract_text_from_bytes, content)
     indicators = ocr_engine.find_indicators(text)
 
+    # Try Supabase upload first
+    try:
+        ext = os.path.splitext(file.filename or "screenshot")[1].lstrip(".").lower() or "png"
+        supabase_filename = f"{ticket_id}/screenshot_{uuid.uuid4().hex}.{ext}"
+        content_type_map = {"png": "image/png", "jpg": "image/jpeg", "jpeg": "image/jpeg"}
+        ct = content_type_map.get(ext, "image/png")
+        await asyncio.to_thread(
+            supabase_service.upload_file,
+            content,
+            supabase_filename,
+            ct,
+        )
+        saved_path = supabase_filename
+    except Exception as e:
+        print(f"[screenshot upload] Supabase failed, falling back to disk: {e}")
+        saved_path = await asyncio.to_thread(
+            _save_upload_bytes, content, file.filename or "screenshot", "screenshot", ticket_id
+        )
+
     return {
-        "path": relative_path,
+        "path": saved_path,
         "text": text,
         "indicators": indicators,
     }
+
+
+async def _persist_attachment_to_supabase(
+    file: UploadFile,
+    ticket_id: str,
+    supabase_service: SupabaseStorageService,
+) -> Optional[str]:
+    """
+    Upload one attachment (image or PDF) to Supabase Storage.
+    Returns the Supabase filename, or falls back to a local path on error.
+    """
+    content = await file.read()
+    if not content:
+        return None
+
+    try:
+        ext = os.path.splitext(file.filename or "attachment")[1].lstrip(".").lower() or "bin"
+        supabase_filename = f"{ticket_id}/attachment_{uuid.uuid4().hex}.{ext}"
+        content_type_map = {
+            "png": "image/png",
+            "jpg": "image/jpeg",
+            "jpeg": "image/jpeg",
+            "pdf": "application/pdf",
+        }
+        ct = content_type_map.get(ext, "application/octet-stream")
+        await asyncio.to_thread(
+            supabase_service.upload_file,
+            content,
+            supabase_filename,
+            ct,
+        )
+        return supabase_filename
+    except Exception as e:
+        print(f"[attachment upload] Supabase failed, falling back to disk: {e}")
+        return await asyncio.to_thread(
+            _save_upload_bytes, content, file.filename or "attachment", "attachment", ticket_id
+        )
 
 
 def _generate_education_recommendation_for_ticket(ticket_id: int) -> None:
@@ -356,8 +416,6 @@ async def create_report(
     bank_name: str = Form(""),
     bank_account: str = Form(""),
     reference_number: str = Form(""),
-    screenshot_path: str = Form(""),
-    attachment_path: str = Form(""),
     screenshots: List[UploadFile] = File(None),
     attachments: List[UploadFile] = File(None),
     db: Session = Depends(get_db),
@@ -366,18 +424,18 @@ async def create_report(
 ):
     """
     Submit a new phishing/fraud report.
+    - Files (screenshots & attachments) are uploaded to Supabase Storage atomically here.
     - Up to 10 screenshots allowed.
-    - Files grouped in folder by Ticket ID.
-    - Scoring favors ML if URL is missing but Bank Info is present.
+    - Files grouped in a per-ticket folder by Ticket ID.
     """
-    # 0. Validation: Require either summary or screenshots
-    if not summary.strip() and not screenshot_path and not screenshots:
+    # 0. Validation: Require either summary or at least one screenshot
+    if not summary.strip() and not screenshots:
         raise HTTPException(
             status_code=400,
             detail="Either message content (summary) or an evidence screenshot is required."
         )
 
-    # 1. Pre-generate Ticket ID for folder grouping
+    # 1. Pre-generate Ticket ID for Supabase folder grouping
     ticket_id = f"OCTO-{random.randint(1000, 9999)}-{random.randint(1000, 9999)}-{random.randint(1000, 9999)}"
 
     all_extracted_text: List[str] = []
@@ -385,11 +443,11 @@ async def create_report(
     orig_attachment_names: List[str] = []
     hashed_attachment_paths: List[str] = []
 
-    # 2. Process screenshots via OCR
+    # 2. Process screenshots: OCR + upload to Supabase
     if screenshots:
         processed_screenshots = await asyncio.gather(
             *[
-                _persist_screenshot_and_extract_text(file, ticket_id)
+                _persist_screenshot_and_extract_text(file, ticket_id, supabase_service)
                 for file in screenshots[:10]
             ]
         )
@@ -401,23 +459,14 @@ async def create_report(
 
             if processed["indicators"]["urls"] and not url:
                 url = processed["indicators"]["urls"][0]
-    elif screenshot_path:
-        processed = await _download_supabase_screenshot_and_extract_text(screenshot_path, supabase_service)
-        if processed:
-            screenshot_list.append(processed["path"])
-            all_extracted_text.append(processed["text"])
-            if processed["indicators"]["urls"] and not url:
-                url = processed["indicators"]["urls"][0]
 
-    # 3. Process attachments (evidence files)
-    if attachment_path:
-        orig_attachment_names.append(os.path.basename(attachment_path))
-        hashed_attachment_paths.append(attachment_path)
-    elif attachments:
+    # 3. Process attachments: upload to Supabase
+    if attachments:
         for file in attachments:
-            orig_attachment_names.append(file.filename)
-            filename = _save_upload(file, "attachment", subfolder=ticket_id)
-            hashed_attachment_paths.append(filename)
+            orig_attachment_names.append(file.filename or "attachment")
+            saved = await _persist_attachment_to_supabase(file, ticket_id, supabase_service)
+            if saved:
+                hashed_attachment_paths.append(saved)
 
     # 4. Rule-based analysis
     combined_text = "\n---\n".join(all_extracted_text)

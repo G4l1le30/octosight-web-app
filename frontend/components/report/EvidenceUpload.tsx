@@ -1,156 +1,358 @@
 "use client";
 
-import React from "react";
-import Image from "next/image";
+/**
+ * EvidenceUpload Component
+ *
+ * Stores the selected file locally in browser memory only.
+ * No upload occurs here — upload is deferred to form submission.
+ *
+ * Modes:
+ *  - "screenshot": image files only (PNG, JPG, JPEG). Shows a live preview.
+ *  - "attachment": potentially malicious phishing attachments (no images allowed).
+ */
+
+import React, { useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
+import { Camera, FileCode, AlertTriangle, FileText, Archive, FileImage } from "lucide-react";
+
+// Constants
+
+const ALLOWED_SCREENSHOT_EXTENSIONS = ["png", "jpg", "jpeg"];
+const IMAGE_EXTENSIONS = ["png", "jpg", "jpeg"];
+
+// Phishing attachment types — NO images (images go to screenshot uploader)
+const ALLOWED_ATTACHMENT_EXTENSIONS = [
+  // Documents
+  "pdf", "doc", "docx", "docm", "rtf",
+  // Archives
+  "zip", "rar", "7z",
+  // Executables / APKs
+  "apk", "exe", "scr", "vbs",
+  // Web / Email
+  "html", "htm", "eml",
+];
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+
+// Helpers
+
+function getFileExtension(filename: string): string {
+  return filename.split(".").pop()?.toLowerCase() ?? "";
+}
+
+/** Returns a color-coded badge label for attachment file types */
+function getAttachmentBadge(ext: string): {
+  label: string;
+  color: string;
+  Icon: React.FC<{ className?: string }>;
+} {
+  if (["pdf", "doc", "docx", "docm", "rtf"].includes(ext)) {
+    return { label: "Document", color: "text-blue-600 bg-blue-50 border-blue-200", Icon: FileText };
+  }
+  if (["zip", "rar", "7z"].includes(ext)) {
+    return { label: "Archive", color: "text-yellow-700 bg-yellow-50 border-yellow-200", Icon: Archive };
+  }
+  if (["apk", "exe", "scr", "vbs"].includes(ext)) {
+    return { label: "Executable", color: "text-risk-high bg-risk-high/10 border-risk-high/30", Icon: FileCode };
+  }
+  if (["html", "htm", "svg"].includes(ext)) {
+    return { label: "Web File", color: "text-purple-600 bg-purple-50 border-purple-200", Icon: FileCode };
+  }
+  if (["eml"].includes(ext)) {
+    return { label: "Email File", color: "text-orange-600 bg-orange-50 border-orange-200", Icon: FileText };
+  }
+  if (IMAGE_EXTENSIONS.includes(ext)) {
+    return { label: "Image", color: "text-green-700 bg-green-50 border-green-200", Icon: FileImage };
+  }
+  return { label: ext.toUpperCase(), color: "text-secondary bg-neutral-border border-neutral-border", Icon: FileCode };
+}
+
+// Props
 
 interface EvidenceUploadProps {
   label: string;
-  files: File[];
-  onFilesChange: (files: File[]) => void;
+  id?: string;
+  accept?: string;
+  mode: "screenshot" | "attachment";
+  /** Called with the selected File object (or null on reset). No upload happens here. */
+  onFileChange: (file: File | null) => void;
   error?: boolean;
   errorMessage?: string;
-  id: string;
-  accept?: string;
-  multiple?: boolean;
+  disabled?: boolean;
+  otherSelectedFile?: File | null;
 }
+
+// Component
 
 export const EvidenceUpload = ({
   label,
-  files,
-  onFilesChange,
+  id = "evidence-upload",
+  accept,
+  mode,
+  onFileChange,
   error,
   errorMessage,
-  id,
-  accept,
-  multiple,
+  disabled = false,
+  otherSelectedFile,
 }: EvidenceUploadProps) => {
-  const [isDragging, setIsDragging] = React.useState(false);
+  const isScreenshotMode = mode === "screenshot";
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
+  const allowedExtensions = isScreenshotMode
+    ? ALLOWED_SCREENSHOT_EXTENSIONS
+    : ALLOWED_ATTACHMENT_EXTENSIONS;
+
+  const resolvedAccept =
+    accept ||
+    (isScreenshotMode
+      ? ".png,.jpg,.jpeg"
+      : ".pdf,.doc,.docx,.docm,.rtf,.zip,.rar,.7z,.apk,.exe,.scr,.vbs,.html,.htm,.eml");
+
+  // State
+  const [file, setFile] = React.useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
+  const [validationError, setValidationError] = React.useState<string | null>(null);
+  const [isDragging, setIsDragging] = React.useState(false);
+  const [imageDimensions, setImageDimensions] = React.useState<{
+    width: number;
+    height: number;
+  } | null>(null);
+
+  // Validation
+  const validate = useCallback(
+    (f: File): string | null => {
+      const ext = getFileExtension(f.name);
+      if (!ext || !allowedExtensions.includes(ext)) {
+        return `File type not allowed. Supported formats: ${allowedExtensions.join(", ")}`;
+      }
+      if (f.size > MAX_FILE_SIZE) {
+        return `File size exceeds the ${MAX_FILE_SIZE / (1024 * 1024)} MB limit.`;
+      }
+      if (
+        otherSelectedFile &&
+        f.name === otherSelectedFile.name &&
+        f.size === otherSelectedFile.size
+      ) {
+        return "This file is already selected in the other upload field.";
+      }
+      return null;
+    },
+    [allowedExtensions, otherSelectedFile]
+  );
+
+  // Apply selected file
+  const applyFile = useCallback(
+    (f: File) => {
+      const err = validate(f);
+      if (err) {
+        setValidationError(err);
+        return;
+      }
+      setValidationError(null);
+      setFile(f);
+
+      // Revoke previous blob URL to prevent memory leaks
+      setPreviewUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return null;
+      });
+
+      const ext = getFileExtension(f.name);
+      const isPreviewable = IMAGE_EXTENSIONS.includes(ext);
+
+      if (isPreviewable) {
+        const localUrl = URL.createObjectURL(f);
+        setPreviewUrl(localUrl);
+
+        // Detect portrait vs landscape safely
+        const img = new window.Image();
+        img.onload = () => {
+          setImageDimensions({ width: img.naturalWidth, height: img.naturalHeight });
+        };
+        img.onerror = () => {
+          setImageDimensions(null);
+        };
+        img.src = localUrl;
+      } else {
+        setPreviewUrl(null);
+        setImageDimensions(null);
+      }
+
+      onFileChange(f);
+    },
+    [validate, onFileChange]
+  );
+
+  // Reset
+  const handleReset = (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+    setPreviewUrl((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
+    setFile(null);
+    setImageDimensions(null);
+    setValidationError(null);
+    onFileChange(null);
   };
 
-  const handleDragLeave = () => {
+  // Drag events
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!disabled) setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
     setIsDragging(false);
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     setIsDragging(false);
-    
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      const droppedFiles = Array.from(e.dataTransfer.files);
-      // Filter by accept type if provided
-      const filteredFiles = accept 
-        ? droppedFiles.filter(file => {
-            const fileType = file.type;
-            const acceptBase = accept.replace("*", "");
-            return fileType.startsWith(acceptBase);
-          })
-        : droppedFiles;
-
-      if (filteredFiles.length > 0) {
-        onFilesChange(multiple ? filteredFiles : [filteredFiles[0]]);
-      }
-    }
+    if (disabled) return;
+    const dropped = e.dataTransfer.files[0];
+    if (dropped) applyFile(dropped);
   };
 
+  // Derived values
+  const ext = file ? getFileExtension(file.name) : "";
+  const isImageFile = IMAGE_EXTENSIONS.includes(ext);
+  const displayError = validationError || (error ? errorMessage : null);
+  const isPortrait =
+    imageDimensions && imageDimensions.height > imageDimensions.width;
+  const badge = file && !isScreenshotMode ? getAttachmentBadge(ext) : null;
+  const fileSizeString = file
+    ? file.size >= 1024 * 1024
+      ? `${(file.size / (1024 * 1024)).toFixed(1)} MB`
+      : `${(file.size / 1024).toFixed(1)} KB`
+    : "";
+
+  // Render
   return (
     <div className="space-y-3">
       <label className="text-base font-bold text-secondary">{label}</label>
-      <div 
+      <div
         className="relative"
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
       >
+        {/* Hidden native file input */}
         <input
           type="file"
           id={id}
-          multiple={multiple}
-          accept={accept}
+          accept={resolvedAccept}
           className="hidden"
+          disabled={disabled}
           onChange={(e) => {
-            const newFiles = e.target.files ? Array.from(e.target.files) : [];
-            onFilesChange(newFiles);
+            const f = e.target.files?.[0];
+            if (f) applyFile(f);
+            e.target.value = ""; // allow re-selecting the same file
           }}
         />
-        <label
-          htmlFor={id}
-          className={cn(
-            "flex flex-col items-center justify-center w-full h-36 border-2 border-dashed rounded-xl cursor-pointer hover:bg-primary/5 transition-all group overflow-hidden p-2",
-            error
-              ? "border-risk-high bg-risk-high/5"
-              : isDragging 
-                ? "border-primary bg-primary/10 scale-[1.02]"
-                : "border-neutral-border hover:border-primary",
-          )}
-        >
-          {files.length > 0 ? (
-            <div className="relative w-full h-full">
-              {files[0].type.startsWith("image/") ? (
-                <Image
-                  src={URL.createObjectURL(files[0])}
-                  className="w-full h-full object-cover rounded-lg"
+
+        {file ? (
+          <div
+            className={cn(
+              "flex flex-row items-center w-full h-48 border-2 rounded-xl p-4 gap-4 bg-white transition-all",
+              error
+                ? "border-risk-high bg-risk-high/5"
+                : "border-neutral-border"
+            )}
+          >
+            {/* Left Side: Square Preview Container */}
+            <div className="h-full aspect-square rounded-lg overflow-hidden border border-neutral-border bg-neutral-page flex items-center justify-center shrink-0 relative">
+              {isImageFile && previewUrl ? (
+                <img
+                  src={previewUrl}
+                  className="w-full h-full object-cover"
                   alt="preview"
-                  fill
-                  unoptimized
                 />
               ) : (
-                <div className="w-full h-full bg-gray-50 flex items-center justify-center rounded-lg">
-                  <span className="text-secondary font-bold text-xs truncate p-4">
-                    {files[0].name}
-                  </span>
+                <div className="flex flex-col items-center justify-center">
+                  {badge ? (
+                    <badge.Icon className="size-12 text-secondary/40" />
+                  ) : (
+                    <FileCode className="size-12 text-secondary/40" />
+                  )}
                 </div>
               )}
-              <div className="absolute inset-0 bg-secondary/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-4 rounded-lg">
-                <span className="text-white font-bold text-sm truncate w-full text-center">
-                  {files[0].name}
-                </span>
-                {files.length > 1 && (
-                  <span className="text-white/80 text-xs font-medium mt-1">
-                    +{files.length - 1} more files
-                  </span>
-                )}
+            </div>
+
+            {/* Right Side: Details & Actions */}
+            <div className="flex flex-col justify-center h-full flex-1 min-w-0 py-1">
+              <div className="space-y-1.5 min-w-0">
+                <h4
+                  className="text-sm md:text-base font-bold text-secondary truncate"
+                  title={file.name}
+                >
+                  {file.name}
+                </h4>
+                <p className="text-xs font-semibold text-secondary/60">
+                  {fileSizeString}
+                </p>
+
+                {/* Badges container */}
+                <div className="flex flex-col gap-1">
+                  {badge && (
+                    <span className="text-xs font-medium text-secondary/60">
+                      {badge.label}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className="pt-2">
                 <Button
                   variant="danger"
                   size="sm"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    onFilesChange([]);
-                  }}
-                  className="mt-3 px-4"
+                  onClick={handleReset}
+                  className="px-4 font-bold text-xs"
                 >
-                  Clear
+                  Remove
                 </Button>
               </div>
             </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center text-center">
-              <svg
-                className="w-8 h-8 mb-3 text-secondary/60 group-hover:text-primary transition-colors"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                />
-              </svg>
+          </div>
+        ) : (
+          <label
+            htmlFor={id}
+            className={cn(
+              "flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-xl cursor-pointer hover:bg-primary/5 transition-all group overflow-hidden p-4",
+              error || validationError
+                ? "border-risk-high bg-risk-high/5"
+                : isDragging
+                  ? "border-primary bg-primary/10 scale-[1.02]"
+                  : "border-neutral-border hover:border-primary",
+              disabled && "opacity-60 cursor-not-allowed pointer-events-none"
+            )}
+          >
+            <div className="flex flex-col items-center justify-center text-center p-2 gap-2">
+              {isScreenshotMode ? (
+                <Camera className="w-8 h-8 text-secondary/60 group-hover:text-primary transition-colors" />
+              ) : (
+                <FileCode className="w-8 h-8 text-secondary/60 group-hover:text-primary transition-colors" />
+              )}
+
               <p className="text-sm font-bold text-secondary">Upload {label}</p>
+
+              <p className="text-[10px] text-secondary/60 max-w-[200px] leading-normal font-semibold">
+                {isScreenshotMode
+                  ? "PNG, JPG, JPEG (max 10 MB)"
+                  : "PDF, DOC, ZIP, APK, & more (max 10 MB)"}
+              </p>
             </div>
-          )}
-        </label>
-        {error && errorMessage && (
+          </label>
+        )}
+
+        {/* Validation / error message */}
+        {displayError && (
           <p className="text-xs font-semibold text-risk-high mt-1.5">
-            {errorMessage}
+            {displayError}
           </p>
         )}
       </div>

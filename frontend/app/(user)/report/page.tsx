@@ -11,8 +11,6 @@ import { useAuth } from "@/lib/auth-context";
 import { AuthRequired } from "@/components/auth/AuthRequired";
 import { ReportForm } from "@/components/report/ReportForm";
 import { ProcessingAnimation } from "@/components/ui/ProcessingAnimation";
-import { ShieldCheck } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 const getLocalISOString = () => {
   const now = new Date();
@@ -80,11 +78,11 @@ export default function ReportPage() {
   const [analysisResult, setAnalysisResult] = useState<any>(null);
 
   const [incidentType, setIncidentType] = useState<IncidentType>("Website");
-  const [screenshotPath, setScreenshotPath] = useState<string | null>(null);
-  const [screenshotPreviewUrl, setScreenshotPreviewUrl] = useState<string | null>(null);
+
+  // Store raw File objects — no upload until final submit
+  const [screenshotFile, setScreenshotFile] = useState<File | null>(null);
+  const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
   const [screenshotError, setScreenshotError] = useState(false);
-  const [attachmentPath, setAttachmentPath] = useState<string | null>(null);
-  const [attachmentPreviewUrl, setAttachmentPreviewUrl] = useState<string | null>(null);
 
   const dynamic = DYNAMIC_CONTENT[incidentType];
 
@@ -106,11 +104,15 @@ export default function ReportPage() {
     } as any,
   });
 
+  /**
+   * Step 1 — Pre-analysis (no DB write).
+   * Sends files directly as multipart so the backend can OCR them.
+   */
   const onSubmit = async (data: ReportFormData) => {
-    if (!data.summary?.trim() && !screenshotPath) {
+    if (!data.summary?.trim() && !screenshotFile) {
       form.setError("summary", {
         type: "manual",
-        message: "Required: Please provide message text or upload a screenshot."
+        message: "Required: Please provide message text or upload a screenshot.",
       });
       setScreenshotError(true);
       return;
@@ -119,6 +121,7 @@ export default function ReportPage() {
     setScreenshotError(false);
     setLoading(true);
     setError("");
+
     try {
       const payload = new FormData();
       payload.append("report_type", incidentType);
@@ -128,8 +131,10 @@ export default function ReportPage() {
       payload.append("bank_name", data.bankName || "");
       payload.append("bank_account", data.bankAccount || "");
       payload.append("reference_number", data.referenceNumber || "");
-      if (screenshotPath) payload.append("screenshot_path", screenshotPath);
-      if (attachmentPath) payload.append("attachment_path", attachmentPath);
+
+      // Attach raw files — backend receives them as UploadFile (no Supabase yet)
+      if (screenshotFile) payload.append("screenshots", screenshotFile, screenshotFile.name);
+      if (attachmentFile) payload.append("attachments", attachmentFile, attachmentFile.name);
 
       const response = await fetch("/api/analyze", {
         method: "POST",
@@ -149,6 +154,10 @@ export default function ReportPage() {
     }
   };
 
+  /**
+   * Step 2 — Final submit (writes to DB + uploads files to Supabase on backend).
+   * Files are sent as raw multipart; backend handles Supabase upload atomically.
+   */
   const handleFinalSubmit = async () => {
     if (!confirmedData) return;
     setLoading(true);
@@ -164,8 +173,10 @@ export default function ReportPage() {
       payload.append("bank_name", confirmedData.bankName ?? "");
       payload.append("bank_account", confirmedData.bankAccount ?? "");
       payload.append("reference_number", confirmedData.referenceNumber ?? "");
-      if (screenshotPath) payload.append("screenshot_path", screenshotPath);
-      if (attachmentPath) payload.append("attachment_path", attachmentPath);
+
+      // Attach raw files — backend uploads to Supabase then saves paths to DB
+      if (screenshotFile) payload.append("screenshots", screenshotFile, screenshotFile.name);
+      if (attachmentFile) payload.append("attachments", attachmentFile, attachmentFile.name);
 
       const response = await fetch("/api/v1/report", {
         method: "POST",
@@ -184,6 +195,17 @@ export default function ReportPage() {
     }
   };
 
+  const handleReset = () => {
+    setSubmitted(false);
+    setTicketData(null);
+    setIsConfirming(false);
+    setConfirmedData(null);
+    setScreenshotFile(null);
+    setAttachmentFile(null);
+    setScreenshotError(false);
+    form.reset();
+  };
+
   if (authLoading) return (
     <div className="container mx-auto px-4 py-32 text-center">
       <div className="size-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
@@ -196,20 +218,7 @@ export default function ReportPage() {
   );
 
   if (submitted && ticketData) return (
-    <ReportSuccess
-      ticketData={ticketData}
-      onReset={() => {
-        setSubmitted(false);
-        setTicketData(null);
-        setIsConfirming(false);
-        setConfirmedData(null);
-        setScreenshotPath(null);
-        setScreenshotPreviewUrl(null);
-        setAttachmentPath(null);
-        setAttachmentPreviewUrl(null);
-        form.reset();
-      }}
-    />
+    <ReportSuccess ticketData={ticketData} onReset={handleReset} />
   );
 
   if (isConfirming && confirmedData) return (
@@ -240,7 +249,6 @@ export default function ReportPage() {
         <h1 className="text-4xl font-bold text-secondary mb-3 flex items-center justify-center gap-3 tracking-tight">
           Report Phishing Incident
         </h1>
-
         <p className="text-secondary opacity-70 font-medium">Help us protect the community by reporting suspicious activities.</p>
       </div>
 
@@ -253,16 +261,12 @@ export default function ReportPage() {
         incidentType={incidentType}
         setIncidentType={setIncidentType}
         dynamic={dynamic}
-        screenshotPath={screenshotPath}
-        setScreenshotPath={setScreenshotPath}
-        screenshotPreviewUrl={screenshotPreviewUrl}
-        setScreenshotPreviewUrl={setScreenshotPreviewUrl}
+        screenshotFile={screenshotFile}
+        setScreenshotFile={setScreenshotFile}
         screenshotError={screenshotError}
         setScreenshotError={setScreenshotError}
-        attachmentPath={attachmentPath}
-        setAttachmentPath={setAttachmentPath}
-        attachmentPreviewUrl={attachmentPreviewUrl}
-        setAttachmentPreviewUrl={setAttachmentPreviewUrl}
+        attachmentFile={attachmentFile}
+        setAttachmentFile={setAttachmentFile}
         getLocalISOString={getLocalISOString}
       />
     </div>

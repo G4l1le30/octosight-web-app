@@ -8,20 +8,29 @@ interface StatusEvidenceProps {
 export const StatusEvidence: React.FC<StatusEvidenceProps> = ({ result }) => {
   const openEvidenceFile = async (path: string) => {
     if (!path) return;
-    if (path.includes("/")) {
+
+    // Supabase paths contain "/" (e.g. "OCTO-xxx/screenshot_yyy.png").
+    // Always request a signed URL from the backend for these.
+    // Legacy local-only flat filenames (no "/") fall back to /uploads/.
+    if (!path.includes("/")) {
       window.open(`/uploads/${path}`, "_blank");
       return;
     }
 
     try {
-      const response = await fetch(`/api/v1/evidence/signed-url?filename=${encodeURIComponent(path)}`);
+      const response = await fetch(
+        `/api/v1/evidence/signed-url?filename=${encodeURIComponent(path)}`
+      );
       if (!response.ok) {
-        throw new Error("Unable to generate preview URL");
+        // Fallback: try serving from local uploads mount
+        window.open(`/uploads/${path}`, "_blank");
+        return;
       }
       const data = await response.json();
       window.open(data.preview_url, "_blank");
     } catch (error) {
       console.error("Failed to open evidence file:", error);
+      window.open(`/uploads/${path}`, "_blank");
     }
   };
 

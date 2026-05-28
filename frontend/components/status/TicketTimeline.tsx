@@ -10,7 +10,7 @@ import {
   ShieldAlert,
   ShieldCheck,
   XCircle,
-  AlertTriangle,
+  Info,
   FileText,
   type LucideIcon,
 } from "lucide-react";
@@ -28,49 +28,43 @@ const STATUS_STAGES: {
   Icon: LucideIcon;
   color: string;
   bgColor: string;
-  borderColor: string;
 }[] = [
-  {
-    key: "Submitted",
-    label: "Submitted",
-    Icon: FileText,
-    color: "text-blue-600",
-    bgColor: "bg-blue-50",
-    borderColor: "border-blue-200",
-  },
-  {
-    key: "In Review",
-    label: "In Review",
-    Icon: Search,
-    color: "text-orange-600",
-    bgColor: "bg-orange-50",
-    borderColor: "border-orange-200",
-  },
-  {
-    key: "Confirmed",
-    label: "Confirmed",
-    Icon: ShieldAlert,
-    color: "text-red-600",
-    bgColor: "bg-red-50",
-    borderColor: "border-red-200",
-  },
-  {
-    key: "Mitigated",
-    label: "Mitigated",
-    Icon: ShieldCheck,
-    color: "text-cyan-600",
-    bgColor: "bg-cyan-50",
-    borderColor: "border-cyan-200",
-  },
-  {
-    key: "Closed",
-    label: "Closed",
-    Icon: CheckCircle2,
-    color: "text-gray-600",
-    bgColor: "bg-gray-100",
-    borderColor: "border-gray-200",
-  },
-];
+    {
+      key: "Submitted",
+      label: "Submitted",
+      Icon: FileText,
+      color: "text-blue-600",
+      bgColor: "bg-blue-50",
+    },
+    {
+      key: "In Review",
+      label: "In Review",
+      Icon: Search,
+      color: "text-orange-600",
+      bgColor: "bg-orange-50",
+    },
+    {
+      key: "Confirmed",
+      label: "Confirmed",
+      Icon: ShieldAlert,
+      color: "text-red-600",
+      bgColor: "bg-red-50",
+    },
+    {
+      key: "Mitigated",
+      label: "Mitigated",
+      Icon: ShieldCheck,
+      color: "text-cyan-600",
+      bgColor: "bg-cyan-50",
+    },
+    {
+      key: "Closed",
+      label: "Closed",
+      Icon: CheckCircle2,
+      color: "text-gray-600",
+      bgColor: "bg-gray-100",
+    },
+  ];
 
 const FALSE_POSITIVE_STAGE = {
   key: "False Positive" as TicketStatus,
@@ -78,7 +72,6 @@ const FALSE_POSITIVE_STAGE = {
   Icon: XCircle,
   color: "text-green-600",
   bgColor: "bg-green-50",
-  borderColor: "border-green-200",
 };
 
 function getStageIndex(status: TicketStatus): number {
@@ -90,7 +83,6 @@ function getStatusMeta(status: string): {
   Icon: LucideIcon;
   color: string;
   bgColor: string;
-  borderColor: string;
 } {
   const all = [...STATUS_STAGES, FALSE_POSITIVE_STAGE];
   const found = all.find((s) => s.key === status);
@@ -99,14 +91,12 @@ function getStatusMeta(status: string): {
       Icon: found.Icon,
       color: found.color,
       bgColor: found.bgColor,
-      borderColor: found.borderColor,
     };
   }
   return {
     Icon: Clock,
     color: "text-secondary",
     bgColor: "bg-neutral-page",
-    borderColor: "border-neutral-border",
   };
 }
 
@@ -139,10 +129,10 @@ export const TicketTimeline: React.FC<TicketTimelineProps> = ({
                 <div className="flex flex-col items-center gap-2">
                   <div
                     className={`
-                      size-12 shrink-0 rounded-full flex items-center justify-center border-2 transition-all duration-300 font-bold text-xs
-                      ${isDone ? `${stage.bgColor} ${stage.borderColor} ${stage.color}` : ""}
-                      ${isCurrent ? `${stage.bgColor} ${stage.borderColor} ${stage.color} ring-4 ring-offset-2 ring-current/20` : ""}
-                      ${isPending ? "bg-neutral-page border-neutral-border text-secondary/40" : ""}
+                      size-12 shrink-0 rounded-full flex items-center justify-center border-2 border-neutral-border transition-all duration-300 font-bold text-xs
+                      ${isDone ? `${stage.bgColor} ${stage.color}` : ""}
+                      ${isCurrent ? `${stage.bgColor} ${stage.color} ring-4 ring-offset-2` : ""}
+                      ${isPending ? "bg-neutral-page text-secondary/40" : ""}
                     `}
                   >
                     {isDone ? (
@@ -153,16 +143,15 @@ export const TicketTimeline: React.FC<TicketTimelineProps> = ({
                   </div>
                   <span
                     className={`text-xs font-bold text-center max-w-[64px] leading-tight
-                    ${isCurrent ? stage.color : isPending ? "text-secondary/40" : "text-secondary/60"}`}
+                    ${isCurrent ? "text-secondary" : isPending ? "text-secondary/40" : "text-secondary/60"}`}
                   >
                     {stage.label}
                   </span>
                 </div>
                 {index < stages.length - 1 && (
                   <div
-                    className={`h-0.5 flex-1 min-w-[24px] mx-1 rounded transition-all duration-500 ${
-                      isDone ? "bg-secondary/30" : "bg-neutral-border"
-                    }`}
+                    className={`h-0.5 flex-1 min-w-[24px] mx-1 rounded transition-all duration-500 ${isDone ? "bg-secondary/30" : "bg-neutral-border"
+                      }`}
                   />
                 )}
               </React.Fragment>
@@ -201,11 +190,10 @@ export const TicketTimeline: React.FC<TicketTimelineProps> = ({
           const statusMeta = log.new_status
             ? getStatusMeta(log.new_status)
             : {
-                Icon: FileText,
-                color: "text-secondary",
-                bgColor: "bg-neutral-page",
-                borderColor: "border-neutral-border",
-              };
+              Icon: FileText,
+              color: "text-secondary",
+              bgColor: "bg-neutral-page",
+            };
 
           return (
             <div key={log.id} className="flex gap-3">
@@ -239,8 +227,8 @@ export const TicketTimeline: React.FC<TicketTimelineProps> = ({
         })}
 
         {auditLogs.length === 0 && (
-          <div className="flex items-center gap-2 text-xs text-secondary/40 font-medium py-2">
-            <AlertTriangle className="size-3.5" />
+          <div className="flex items-center w-full text-sm text-secondary/80 font-medium">
+            <Info className="size-3.5 mr-1" />
             Your report is awaiting review by our security team.
           </div>
         )}

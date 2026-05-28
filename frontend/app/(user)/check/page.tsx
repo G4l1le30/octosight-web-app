@@ -17,7 +17,7 @@ import { ProcessingAnimation } from "@/components/ui/ProcessingAnimation";
 export default function FraudCheckPage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
-  const [screenshots, setScreenshots] = useState<File[]>([]);
+  const [screenshots, setScreenshots] = useState<File | null>(null);
   const [error, setError] = useState("");
 
   const form = useForm({
@@ -45,7 +45,7 @@ export default function FraudCheckPage() {
       payload.append("summary", data.summary || "");
       payload.append("url", data.url || "");
 
-      screenshots.forEach((file) => payload.append("screenshots", file));
+      if (screenshots) payload.append("screenshots", screenshots, screenshots.name);
 
       const response = await fetch("/api/analyze", {
         method: "POST",
@@ -63,7 +63,7 @@ export default function FraudCheckPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-12 max-w-4xl">
+    <div className="container mx-auto px-4 py-12 max-w-5xl">
       <div className="text-center mb-10">
         <h1 className="text-4xl font-bold text-secondary mb-4 flex items-center justify-center gap-3">
           Fraud & Transaction Check
@@ -113,10 +113,10 @@ export default function FraudCheckPage() {
                 <EvidenceUpload
                   id="receipt-upload"
                   label="Scan receipt for validation"
-                  files={screenshots}
-                  onFilesChange={setScreenshots}
+                  mode="screenshot"
                   accept="image/*"
-                  multiple={false}
+                  onFileChange={setScreenshots}
+                  disabled={loading}
                 />
                 <p className="text-xs text-secondary/60">
                   *Our AI will cross-verify the reference number with the bank&apos;s core records.
@@ -233,7 +233,7 @@ export default function FraudCheckPage() {
                 className="w-full"
                 onClick={() => {
                   setResult(null);
-                  setScreenshots([]);
+                  setScreenshots(null);
                   form.reset();
                 }}
               >

@@ -12,20 +12,29 @@ export const InvestigateEvidence: React.FC<InvestigateEvidenceProps> = ({ ticket
 
   const openEvidenceFile = async (path: string) => {
     if (!path) return;
-    if (path.includes("/")) {
+
+    // Supabase paths contain "/" (e.g. "OCTO-xxx/screenshot_yyy.png").
+    // Always request a signed URL from the backend for these.
+    // Legacy local-only flat filenames (no "/") fall back to /uploads/.
+    if (!path.includes("/")) {
       window.open(`/uploads/${path}`, "_blank");
       return;
     }
 
     try {
-      const response = await fetch(`/api/v1/evidence/signed-url?filename=${encodeURIComponent(path)}`);
+      const response = await fetch(
+        `/api/v1/evidence/signed-url?filename=${encodeURIComponent(path)}`
+      );
       if (!response.ok) {
-        throw new Error("Unable to generate preview URL");
+        // Fallback: try serving from local uploads mount
+        window.open(`/uploads/${path}`, "_blank");
+        return;
       }
       const data = await response.json();
       window.open(data.preview_url, "_blank");
     } catch (error) {
       console.error("Failed to open evidence file:", error);
+      window.open(`/uploads/${path}`, "_blank");
     }
   };
 
@@ -37,7 +46,7 @@ export const InvestigateEvidence: React.FC<InvestigateEvidenceProps> = ({ ticket
 
       <div className="space-y-6">
         <div>
-          <span className="text-base font-bold block mb-3 text-secondary">
+          <span className="text-sm font-bold block mb-3 text-secondary">
             User Summary
           </span>
           <div className="bg-neutral-page/50 p-4 rounded-xl border border-neutral-border text-sm font-medium text-secondary/80 leading-relaxed max-h-40 overflow-y-auto custom-scrollbar">
@@ -47,7 +56,7 @@ export const InvestigateEvidence: React.FC<InvestigateEvidenceProps> = ({ ticket
 
         {screenshotPaths.length > 0 && (
           <div>
-            <span className="text-base font-bold block mb-4 text-secondary">
+            <span className="text-sm font-bold block mb-4 text-secondary">
               Evidence Screenshots
             </span>
             <div className="grid grid-cols-1 gap-4">
@@ -101,7 +110,7 @@ export const InvestigateEvidence: React.FC<InvestigateEvidenceProps> = ({ ticket
 
         {ticket.extracted_text && (
           <div>
-            <span className="text-base font-bold block mb-3 text-secondary">
+            <span className="text-sm font-bold block mb-3 text-secondary">
               Extracted OCR Text
             </span>
             <div className="bg-neutral-page/50 p-4 rounded-xl border border-neutral-border text-sm font-medium text-secondary/80 leading-relaxed whitespace-pre-wrap max-h-40 overflow-y-auto custom-scrollbar">
@@ -112,7 +121,7 @@ export const InvestigateEvidence: React.FC<InvestigateEvidenceProps> = ({ ticket
 
         {attachmentPaths.length > 0 && (
           <div>
-            <span className="text-base font-bold block mb-4 text-secondary">
+            <span className="text-sm font-bold block mb-4 text-secondary">
               Attachments
             </span>
             <div className="grid grid-cols-1 gap-4">

@@ -65,10 +65,10 @@ export const InvestigateEvidence: React.FC<InvestigateEvidenceProps> = ({ ticket
                 return (
                   <div
                     key={i}
-                    className="flex items-center justify-between p-4 bg-risk-high/5 border border-risk-high/20 rounded-xl group transition-all"
+                    className="flex items-center justify-between p-4 bg-neutral-page border border-neutral-border rounded-xl group transition-all"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="p-1.5 bg-risk-high/10 rounded-lg text-risk-high">
+                      <div className="p-1.5 bg-neutral-border/30 rounded-lg text-secondary/60">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           className="size-4"
@@ -91,15 +91,15 @@ export const InvestigateEvidence: React.FC<InvestigateEvidenceProps> = ({ ticket
                           <polyline points="21 15 16 10 5 21" />
                         </svg>
                       </div>
-                      <span className="text-xs font-bold text-secondary opacity-80 truncate max-w-[250px] sm:max-w-none">
+                      <span className="text-xs font-semibold text-secondary truncate max-w-[250px] sm:max-w-none">
                         {filename}
                       </span>
                     </div>
                     <button
                       onClick={() => openEvidenceFile(path)}
-                      className="px-3 py-1.5 bg-risk-high text-white text-xs font-bold rounded-lg hover:bg-risk-high/90 transition-all"
+                      className="px-3 py-1.5 bg-secondary text-white text-xs font-bold rounded-lg hover:bg-secondary/90 transition-all"
                     >
-                      Open
+                      View
                     </button>
                   </div>
                 );
@@ -130,9 +130,9 @@ export const InvestigateEvidence: React.FC<InvestigateEvidenceProps> = ({ ticket
                 return (
                   <div
                     key={i}
-                    className="flex items-center gap-3 p-4 bg-risk-high/5 border border-risk-high/20 rounded-xl"
+                    className="flex items-center gap-3 p-4 bg-neutral-page border border-neutral-border rounded-xl"
                   >
-                    <div className="w-8 h-8 bg-risk-high/10 text-risk-high rounded-full flex items-center justify-center flex-shrink-0">
+                    <div className="w-8 h-8 bg-neutral-border/30 text-secondary/60 rounded-full flex items-center justify-center flex-shrink-0">
                       <svg
                         className="w-4 h-4"
                         fill="none"
@@ -149,16 +149,16 @@ export const InvestigateEvidence: React.FC<InvestigateEvidenceProps> = ({ ticket
                       </svg>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold truncate text-secondary opacity-80">
+                      <p className="text-sm font-bold truncate text-secondary">
                         {filename}
                       </p>
-                      <p className="text-xs font-bold text-risk-high opacity-70">
+                      <p className="text-xs font-bold text-secondary/40 opacity-70">
                         Security Restricted
                       </p>
                     </div>
                     <button
                       onClick={() => onDownloadAttachment(path)}
-                      className="px-3 py-1.5 bg-risk-high text-white text-xs font-bold rounded-lg hover:bg-risk-high/90 transition-all"
+                      className="px-3 py-1.5 bg-secondary text-white text-xs font-bold rounded-lg hover:bg-secondary/90 transition-all"
                     >
                       Download
                     </button>

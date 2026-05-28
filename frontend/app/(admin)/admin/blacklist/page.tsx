@@ -168,10 +168,10 @@ export default function BlacklistPage() {
             </svg>
           </button>
           <div>
-            <h1 className="text-3xl font-bold text-secondary tracking-wide">
+            <h1 className="text-3xl font-bold text-secondary">
               Global Blacklist
             </h1>
-            <p className="text-secondary font-medium opacity-60">
+            <p className="text-secondary font-medium opacity-80">
               Manage verified fraud indicators to protect the OctoSight
               community.
             </p>
@@ -182,7 +182,7 @@ export default function BlacklistPage() {
             <p className="text-2xl font-bold text-risk-high leading-none">
               {entries.length}
             </p>
-            <p className="text-xs text-risk-high font-bold tracking-wide mt-1">
+            <p className="text-xs text-risk-high font-bold mt-1">
               Active Blocks
             </p>
           </div>
@@ -202,7 +202,7 @@ export default function BlacklistPage() {
                 "flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm transition-all",
                 activeTab === tab.id
                   ? "bg-secondary text-white shadow-md scale-105"
-                  : "bg-white text-secondary/60 border border-neutral-border hover:border-secondary/40 hover:bg-neutral-page",
+                  : "bg-white text-secondary/80 border border-neutral-border hover:border-secondary/40 hover:bg-neutral-page",
               )}
             >
               <Icon className="size-4" />
@@ -229,7 +229,7 @@ export default function BlacklistPage() {
             <p className="text-secondary font-bold text-lg">
               No {activeTab}s blocked yet
             </p>
-            <p className="text-secondary/50 text-sm mt-2 font-medium">
+            <p className="text-secondary/60 text-sm mt-2 font-medium">
               You can add new entries during ticket investigation or through the
               API.
             </p>
@@ -237,13 +237,13 @@ export default function BlacklistPage() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left">
-              <thead className="bg-neutral-page/50 text-sm font-bold text-secondary/80 tracking-wide border-b border-neutral-border">
+              <thead className="bg-neutral-page/50 text-sm font-semibold text-secondary border-b border-neutral-border">
                 <tr>
                   <th className="px-8 py-5">Blocked {activeTab}</th>
                   <th className="px-8 py-5">Reason / Modus</th>
-                  <th className="px-8 py-5">Source Ticket</th>
+                  <th className="px-8 py-5 text-center">Source Ticket</th>
                   <th className="px-8 py-5">Date Added</th>
-                  <th className="px-8 py-5 text-right text-secondary/80 font-bold">
+                  <th className="px-8 py-5 text-right text-secondary font-bold">
                     Actions
                   </th>
                 </tr>
@@ -254,23 +254,23 @@ export default function BlacklistPage() {
                     key={entry.id}
                     className="hover:bg-neutral-page/30 transition-colors group"
                   >
-                    <td className="px-8 py-6">
+                    <td className="px-6 py-4">
                       <div className="flex flex-col">
                         <span
-                          className="font-bold text-secondary text-sm break-all"
+                          className="font-semibold text-secondary text-sm break-all"
                           title={getEntryValue(entry)}
                         >
                           {getEntryValue(entry)}
                         </span>
                         {activeTab === "url" && (
-                          <span className="text-xs font-bold text-secondary/40 mt-1">
+                          <span className="text-xs font-semibold text-secondary/40 mt-1">
                             {entry.domain}
                           </span>
                         )}
                       </div>
                     </td>
-                    <td className="px-8 py-6">
-                      <p className="text-sm font-bold text-secondary/70 max-w-xs break-words">
+                    <td className="px-6 py-4">
+                      <p className="text-sm font-semibold text-secondary/80 max-w-xs break-words">
                         {entry.reason || (
                           <span className="opacity-30 font-medium">
                             No details provided
@@ -278,26 +278,26 @@ export default function BlacklistPage() {
                         )}
                       </p>
                     </td>
-                    <td className="px-8 py-6">
+                    <td className="px-6 py-4 text-center">
                       {entry.ticket_id ? (
                         <Link
                           href={`/admin/investigate/${entry.ticket_id}`}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary/5 text-primary text-xs font-bold rounded-lg hover:bg-primary hover:text-white transition-all border border-primary/10"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary/5 text-primary text-xs font-semibold rounded-lg hover:bg-primary hover:text-white transition-all border border-primary/10"
                         >
                           {entry.ticket_id}
                         </Link>
                       ) : (
-                        <span className="text-xs font-bold text-secondary opacity-30">
-                          —
+                        <span className="text-xs font-semibold text-secondary opacity-30">
+                          -
                         </span>
                       )}
                     </td>
-                    <td className="px-8 py-6">
-                      <span className="text-xs font-bold text-secondary/60">
+                    <td className="px-6 py-4">
+                      <span className="text-xs font-semibold text-secondary/80">
                         {formatDateTime(entry.created_at).date}
                       </span>
                     </td>
-                    <td className="px-8 py-6 text-right">
+                    <td className="px-6 py-4 text-right">
                       <button
                         onClick={() =>
                           handleRemoveClick(
@@ -324,7 +324,7 @@ export default function BlacklistPage() {
         isOpen={confirmConfig.isOpen}
         title={`Remove from Blacklist?`}
         message={`Are you sure you want to remove "${confirmConfig.value}" from the global ${activeTab} blacklist? This item will no longer be automatically blocked.`}
-        confirmText="Confirm Removal"
+        confirmText="Confirm"
         type="danger"
         onClose={() => setConfirmConfig({ ...confirmConfig, isOpen: false })}
         onConfirm={confirmRemove}

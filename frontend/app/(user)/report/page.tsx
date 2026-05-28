@@ -11,6 +11,7 @@ import { useAuth } from "@/lib/auth-context";
 import { AuthRequired } from "@/components/auth/AuthRequired";
 import { ReportForm } from "@/components/report/ReportForm";
 import { ProcessingAnimation } from "@/components/ui/ProcessingAnimation";
+import { toast } from "sonner";
 
 const getLocalISOString = () => {
   const now = new Date();
@@ -120,7 +121,6 @@ export default function ReportPage() {
 
     setScreenshotError(false);
     setLoading(true);
-    setError("");
 
     try {
       const payload = new FormData();
@@ -148,7 +148,7 @@ export default function ReportPage() {
       setConfirmedData(data);
       setIsConfirming(true);
     } catch (err: any) {
-      setError(err.message);
+      toast.error(err.message);
     } finally {
       setLoading(false);
     }
@@ -161,7 +161,6 @@ export default function ReportPage() {
   const handleFinalSubmit = async () => {
     if (!confirmedData) return;
     setLoading(true);
-    setError("");
 
     try {
       const payload = new FormData();
@@ -189,7 +188,7 @@ export default function ReportPage() {
       setTicketData(result);
       setSubmitted(true);
     } catch (err: any) {
-      setError(err.message);
+      toast.error(err.message);
     } finally {
       setLoading(false);
     }
@@ -223,7 +222,6 @@ export default function ReportPage() {
 
   if (isConfirming && confirmedData) return (
     <div className="container mx-auto px-4 py-12 max-w-5xl">
-      {error && <div className="bg-risk-high/10 text-risk-high p-4 rounded-lg mb-6 font-bold text-sm text-center border border-risk-high/20">Error: {error}</div>}
       <ReportConfirmation
         formData={confirmedData}
         analysisResult={analysisResult}
@@ -251,8 +249,6 @@ export default function ReportPage() {
         </h1>
         <p className="text-secondary opacity-70 font-medium">Help us protect the community by reporting suspicious activities.</p>
       </div>
-
-      {error && <div className="bg-risk-high/10 text-risk-high p-4 rounded-lg mb-6 font-bold text-sm text-center border border-risk-high/20">Error: {error}. Is the backend running?</div>}
 
       <ReportForm
         form={form}

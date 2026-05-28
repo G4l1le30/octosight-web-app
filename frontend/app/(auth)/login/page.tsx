@@ -9,27 +9,27 @@ import { AuthCard } from "@/components/auth/AuthCard";
 import { AuthInput } from "@/components/auth/AuthInput";
 import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
 import { Lock } from "lucide-react";
+import { toast } from "sonner";
 
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isRegistered = searchParams.get("registered") === "true";
   const { login, loginWithGoogle: authenticateWithGoogle } = useAuth();
-  
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  
+
   const [fieldErrors, setFieldErrors] = useState({
     email: "",
     password: ""
   });
-  
+
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
     setFieldErrors({ email: "", password: "" });
 
     let hasErrors = false;
@@ -58,7 +58,7 @@ function LoginForm() {
       await login(email, password);
       router.push("/");
     } catch (err: any) {
-      setError(err.message || "Login failed");
+      toast.error(err.message || "Login failed");
     } finally {
       setLoading(false);
     }
@@ -71,7 +71,7 @@ function LoginForm() {
       await authenticateWithGoogle(tokenResponse.access_token);
       router.push("/");
     } catch (err: any) {
-      setError(err.message || "Google Sign-In failed");
+      toast.error(err.message || "Google Sign-In failed");
     } finally {
       setLoading(false);
     }
@@ -79,7 +79,7 @@ function LoginForm() {
 
   const loginWithGoogleAction = useGoogleLogin({
     onSuccess: handleGoogleSuccess,
-    onError: () => setError("Google Authentication failed"),
+    onError: () => toast.error("Google Authentication failed"),
   });
 
   return (
@@ -87,8 +87,7 @@ function LoginForm() {
       title="Welcome Back"
       subtitle="Sign in to your OctoSight account"
       icon={<Lock className="h-7 w-7" />}
-      error={error}
-      success={isRegistered && !error ? "Registration link sent! Please check your email inbox and spam folder to verify your account." : undefined}
+      success={isRegistered ? "Registration link sent! Please check your email inbox and spam folder to verify your account." : undefined}
       footerText="Don't have an account?"
       footerLinkText="Create Account"
       footerLinkHref="/register"

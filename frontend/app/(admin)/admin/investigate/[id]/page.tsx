@@ -11,7 +11,9 @@ import { InvestigateTargetInfo } from "@/components/admin/investigate/Investigat
 import { InvestigateNotes } from "@/components/admin/investigate/InvestigateNotes";
 import { DownloadModal } from "@/components/admin/investigate/DownloadModal";
 import { InvestigateEvidence } from "@/components/admin/investigate/InvestigateEvidence";
+import { MitigationActions } from "@/components/admin/investigate/MitigationActions";
 import { AuditTrail } from "@/components/admin/investigate/AuditTrail";
+import { toast } from "sonner";
 
 export default function InvestigatePage({
   params,
@@ -23,7 +25,9 @@ export default function InvestigatePage({
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [notes, setNotes] = useState("");
+  const [initialNotes, setInitialNotes] = useState("");
   const [status, setStatus] = useState("");
+  const [initialStatus, setInitialStatus] = useState("");
   const [actionLabel, setActionLabel] = useState("");
 
   const [auditLogs, setAuditLogs] = useState<TicketAuditLog[]>([]);
@@ -61,7 +65,9 @@ export default function InvestigatePage({
       const data = await res.json();
       setTicket(data);
       setNotes(data.investigation_notes || "");
+      setInitialNotes(data.investigation_notes || "");
       setStatus(data.status);
+      setInitialStatus(data.status);
     } catch (err) {
       console.error(err);
     } finally {
@@ -134,7 +140,14 @@ export default function InvestigatePage({
     }
   };
 
+  const hasChanges = notes !== initialNotes || status !== initialStatus || !!actionLabel;
+
   const handleUpdate = async () => {
+    if (!hasChanges) {
+      toast.error("No changes detected. Please modify the data before saving.");
+      return;
+    }
+
     setSaving(true);
     try {
       const res = await fetch(`/api/v1/tickets/${ticketId}`, {
@@ -150,13 +163,10 @@ export default function InvestigatePage({
       if (res.ok) {
         // Refresh audit log to show the new entry
         await fetchAuditLogs();
+        setInitialNotes(notes);
+        setInitialStatus(status);
         setActionLabel("");
-        setModalConfig({
-          isOpen: true,
-          type: "success",
-          title: "Update Successful",
-          message: `Ticket ${ticketId} has been updated successfully.`,
-        });
+        toast.success(`Ticket ${ticketId} has been updated successfully.`);
       } else {
         setModalConfig({
           isOpen: true,
@@ -165,13 +175,8 @@ export default function InvestigatePage({
           message: "Could not update the ticket. Please try again later.",
         });
       }
-    } catch {
-      setModalConfig({
-        isOpen: true,
-        type: "error",
-        title: "Connection Error",
-        message: "An error occurred while connecting to the server.",
-      });
+    } catch (err: any) {
+      toast.error(err.message || "An error occurred while connecting to the server.");
     } finally {
       setSaving(false);
     }
@@ -196,6 +201,7 @@ export default function InvestigatePage({
         ticketId={ticket.ticket_id}
         onSave={handleUpdate}
         saving={saving}
+        disabled={!hasChanges}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -209,29 +215,8 @@ export default function InvestigatePage({
         </div>
 
         {/* Notes + optional action label */}
-        <div className="lg:col-span-1 space-y-4">
+        <div className="lg:col-span-1 h-full">
           <InvestigateNotes notes={notes} setNotes={setNotes} />
-
-          {/* Action label (optional, gives admins a free-text description for the audit trail) */}
-          <div className="card p-5 bg-white border border-neutral-border shadow-sm">
-            <label className="block text-xs font-bold text-secondary tracking-wide mb-2">
-              Audit Label{" "}
-              <span className="text-secondary/40 font-semibold normal-case">
-                (optional)
-              </span>
-            </label>
-            <input
-              id="audit-action-label"
-              type="text"
-              value={actionLabel}
-              onChange={(e) => setActionLabel(e.target.value)}
-              placeholder="e.g. Escalated to Tier 2"
-              className="w-full text-sm font-medium text-secondary bg-neutral-page border border-neutral-border rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
-            />
-            <p className="text-xs text-secondary/40 font-medium mt-1.5">
-              Custom note shown in the ticket audit trail.
-            </p>
-          </div>
         </div>
 
         {/* Evidence */}
@@ -244,70 +229,10 @@ export default function InvestigatePage({
 
         {/* Mitigation Actions */}
         <div className="lg:col-span-1">
-          <div className="card p-8 bg-white border border-neutral-border shadow-sm h-full">
-            <h3 className="text-xl font-bold text-secondary mb-6">
-              Mitigation Actions
-            </h3>
-            <div className="space-y-3">
-              {ticket.url && (
-                <button
-                  id="btn-add-blacklist-url"
-                  onClick={() => openBlacklistModal("url", ticket.url!)}
-                  className="w-full py-3 bg-neutral-page hover:bg-primary/5 text-sm font-bold text-secondary rounded-xl transition-all text-left px-5 flex items-center justify-between group border border-neutral-border"
-                >
-                  <span>Block Domain/URL</span>
-                  <span className="opacity-0 group-hover:opacity-100 transition-all translate-x-[-4px] group-hover:translate-x-0">
-                    →
-                  </span>
-                </button>
-              )}
-
-              {ticket.bank_account && (
-                <button
-                  id="btn-add-blacklist-account"
-                  onClick={() =>
-                    openBlacklistModal("account", ticket.bank_account!, {
-                      bank_name: ticket.bank_name,
-                    })
-                  }
-                  className="w-full py-3 bg-neutral-page hover:bg-primary/5 text-sm font-bold text-secondary rounded-xl transition-all text-left px-5 flex items-center justify-between group border border-neutral-border"
-                >
-                  <span>Block Bank Account</span>
-                  <span className="opacity-0 group-hover:opacity-100 transition-all translate-x-[-4px] group-hover:translate-x-0">
-                    →
-                  </span>
-                </button>
-              )}
-
-              {ticket.sender_numbers && (
-                <button
-                  id="btn-add-blacklist-sender"
-                  onClick={() => {
-                    const type = ticket.sender_numbers!.includes("@")
-                      ? "email"
-                      : "phone";
-                    openBlacklistModal(type, ticket.sender_numbers!);
-                  }}
-                  className="w-full py-3 bg-neutral-page hover:bg-primary/5 text-sm font-bold text-secondary rounded-xl transition-all text-left px-5 flex items-center justify-between group border border-neutral-border"
-                >
-                  <span>
-                    Block Sender (
-                    {ticket.sender_numbers!.includes("@") ? "Email" : "Phone"})
-                  </span>
-                  <span className="opacity-0 group-hover:opacity-100 transition-all translate-x-[-4px] group-hover:translate-x-0">
-                    →
-                  </span>
-                </button>
-              )}
-
-              <button className="w-full py-3 bg-neutral-page hover:bg-risk-medium/5 text-sm font-bold text-secondary rounded-xl transition-all text-left px-5 flex items-center justify-between group border border-neutral-border">
-                Generate Warning Template
-                <span className="opacity-0 group-hover:opacity-100 transition-all translate-x-[-4px] group-hover:translate-x-0">
-                  →
-                </span>
-              </button>
-            </div>
-          </div>
+          <MitigationActions
+            ticket={ticket}
+            openBlacklistModal={openBlacklistModal}
+          />
         </div>
 
         {/* Audit Trail — full width */}

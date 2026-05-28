@@ -9,6 +9,7 @@ import { AuthCard } from "@/components/auth/AuthCard";
 import { AuthInput } from "@/components/auth/AuthInput";
 import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
 import { UserPlus } from "lucide-react";
+import { toast } from "sonner";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -30,7 +31,6 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
     setFieldErrors({ fullName: "", email: "", password: "", confirmPassword: "" });
 
     let hasErrors = false;
@@ -84,7 +84,7 @@ export default function RegisterPage() {
       await registerAccount(fullName, email, password);
       router.push("/login?registered=true");
     } catch (err: any) {
-      setError(err.message || "Registration failed");
+      toast.error(err.message || "Registration failed");
     } finally {
       setLoading(false);
     }
@@ -97,7 +97,7 @@ export default function RegisterPage() {
       await registerWithGoogle(tokenResponse.access_token);
       router.push("/login?registered=true");
     } catch (err: any) {
-      setError(err.message || "Google Sign-Up failed");
+      toast.error(err.message || "Google Sign-Up failed");
     } finally {
       setLoading(false);
     }
@@ -105,7 +105,7 @@ export default function RegisterPage() {
 
   const loginWithGoogleAction = useGoogleLogin({
     onSuccess: handleGoogleSuccess,
-    onError: () => setError("Google Authentication failed"),
+    onError: () => toast.error("Google Authentication failed"),
   });
 
   return (
@@ -114,7 +114,6 @@ export default function RegisterPage() {
       subtitle="Join OctoSight to report phishing incidents"
       icon={<UserPlus className="h-7 w-7" />}
       iconBgClass="bg-risk-low/10 text-risk-low"
-      error={error}
       footerText="Already have an account?"
       footerLinkText="Sign In"
       footerLinkHref="/login"

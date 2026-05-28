@@ -13,6 +13,7 @@ import { RiskScoreCard } from "@/components/report/RiskScoreCard";
 import { AlertTriangle, CheckCircle, ShieldCheck, CreditCard, Search, MessageSquare, Landmark } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ProcessingAnimation } from "@/components/ui/ProcessingAnimation";
+import { toast } from "sonner";
 
 export default function FraudCheckPage() {
   const [loading, setLoading] = useState(false);
@@ -34,7 +35,6 @@ export default function FraudCheckPage() {
 
   const onCheck = async (data: any) => {
     setLoading(true);
-    setError("");
     setResult(null);
 
     try {
@@ -56,7 +56,7 @@ export default function FraudCheckPage() {
       const analysis = await response.json();
       setResult(analysis);
     } catch (err: any) {
-      setError(err.message);
+      toast.error(err.message);
     } finally {
       setLoading(false);
     }
@@ -133,13 +133,6 @@ export default function FraudCheckPage() {
               </Button>
             </form>
           </div>
-
-          {error && (
-            <div className="p-4 bg-risk-high/10 border border-risk-high/20 text-risk-high rounded-xl font-bold flex items-center gap-3">
-              <AlertTriangle className="size-5 shrink-0" />
-              {error}
-            </div>
-          )}
         </div>
 
         {/* Right Side: Results */}

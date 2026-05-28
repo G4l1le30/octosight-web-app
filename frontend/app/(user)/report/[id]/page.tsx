@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import StatusResult from "@/components/status/StatusResult";
 import { Ticket } from "@/types/ticket";
+import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
 import { ChevronLeft, Loader2, AlertTriangle, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/Button";
@@ -16,11 +17,9 @@ export default function DetailedReportPage() {
   const { user, loading: authLoading } = useAuth();
   const [result, setResult] = useState<Ticket | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
 
   const fetchTicket = useCallback(async () => {
     setLoading(true);
-    setError("");
     try {
       const response = await fetch(`/api/v1/tickets/${ticketId}`);
       if (!response.ok) {
@@ -30,7 +29,7 @@ export default function DetailedReportPage() {
       const data = await response.json();
       setResult(data);
     } catch (err: any) {
-      setError(err.message);
+      toast.error(err.message);
     } finally {
       setLoading(false);
     }
@@ -66,15 +65,14 @@ export default function DetailedReportPage() {
     );
   }
 
-  if (error || !result) {
+  if (!result) {
     return (
       <div className="container mx-auto px-4 py-32 text-center max-w-md">
         <div className="bg-risk-high/10 text-risk-high p-6 rounded-2xl border border-risk-high/20 mb-6">
           <AlertTriangle className="size-12 mx-auto mb-4" />
           <h2 className="text-xl font-bold mb-2">Report Not Found</h2>
           <p className="text-sm font-medium opacity-80">
-            {error ||
-              "The ticket ID you provided does not exist in our system."}
+            The ticket ID you provided does not exist in our system.
           </p>
         </div>
         <Button

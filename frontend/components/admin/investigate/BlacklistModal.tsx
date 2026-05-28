@@ -84,10 +84,10 @@ export function BlacklistModal({
 
   const getIcon = () => {
     switch (type) {
-      case "url": return <Globe className="w-8 h-8 text-red-600" />;
-      case "phone": return <Phone className="w-8 h-8 text-red-600" />;
-      case "email": return <Mail className="w-8 h-8 text-red-600" />;
-      case "account": return <CreditCard className="w-8 h-8 text-red-600" />;
+      case "url": return <Globe className="w-8 h-8 text-secondary" />;
+      case "phone": return <Phone className="w-8 h-8 text-secondary" />;
+      case "email": return <Mail className="w-8 h-8 text-secondary" />;
+      case "account": return <CreditCard className="w-8 h-8 text-secondary" />;
     }
   };
 
@@ -105,7 +105,7 @@ export function BlacklistModal({
       <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 space-y-6 animate-in zoom-in-95 duration-200">
         {/* Header */}
         <div className="flex flex-col items-center text-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-red-50 flex items-center justify-center flex-shrink-0 border border-red-100">
+          <div className="w-16 h-16 rounded-2xl bg-neutral-page flex items-center justify-center flex-shrink-0 border border-neutral-border">
             {getIcon()}
           </div>
           <div>
@@ -118,10 +118,10 @@ export function BlacklistModal({
 
         {/* Value preview */}
         <div className="bg-neutral-page rounded-2xl p-4 border border-neutral-border space-y-1">
-          <p className="text-xs text-secondary/40 font-bold tracking-wide">
+          <p className="text-sm text-secondary font-bold tracking-wide">
             Indicator to Block
           </p>
-          <p className="text-sm text-secondary font-bold break-all">
+          <p className="text-sm text-secondary font-medium break-all">
             {type === "account" && metadata?.bank_name ? `${metadata.bank_name}: ` : ""}{value}
           </p>
         </div>
@@ -129,7 +129,7 @@ export function BlacklistModal({
         {/* Reason input — only shown before submission */}
         {!isResolved && (
           <div>
-            <label className="block text-xs font-bold text-secondary/40 tracking-wide mb-2 ml-1">
+            <label className="block text-sm font-bold text-secondary tracking-wide mb-2 ml-1">
               Blacklist Reason
             </label>
             <textarea
@@ -138,7 +138,7 @@ export function BlacklistModal({
               onChange={(e) => setReason(e.target.value)}
               placeholder={`Why is this ${type} being blacklisted?`}
               rows={3}
-              className="w-full border border-neutral-border rounded-2xl px-4 py-3 text-sm text-secondary font-bold focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all resize-none"
+              className="w-full border border-neutral-border rounded-2xl px-4 py-3 text-sm text-secondary focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all resize-none"
             />
           </div>
         )}

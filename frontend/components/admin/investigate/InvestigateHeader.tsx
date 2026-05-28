@@ -6,12 +6,14 @@ interface InvestigateHeaderProps {
   ticketId: string;
   onSave: () => void;
   saving: boolean;
+  disabled?: boolean;
 }
 
 export const InvestigateHeader: React.FC<InvestigateHeaderProps> = ({
   ticketId,
   onSave,
   saving,
+  disabled,
 }) => {
   return (
     <div className="flex items-center justify-between mb-8">
@@ -43,6 +45,7 @@ export const InvestigateHeader: React.FC<InvestigateHeaderProps> = ({
         <Button
           onClick={onSave}
           loading={saving}
+          disabled={disabled}
           className="px-8"
         >
           Save Changes

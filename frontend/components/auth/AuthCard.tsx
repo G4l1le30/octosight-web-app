@@ -9,7 +9,6 @@ interface AuthCardProps {
   subtitle: string;
   icon: React.ReactNode;
   iconBgClass?: string;
-  error?: string;
   success?: string;
   children: React.ReactNode;
   footerText: string;
@@ -22,7 +21,6 @@ export function AuthCard({
   subtitle,
   icon,
   iconBgClass = "bg-primary/10 text-primary",
-  error,
   success,
   children,
   footerText,
@@ -46,13 +44,6 @@ export function AuthCard({
             <h1 className="text-2xl font-bold text-secondary">{title}</h1>
             <p className="text-secondary-light text-sm mt-1">{subtitle}</p>
           </div>
-
-          {/* Error Banner */}
-          {error && (
-            <div className="bg-risk-high/10 text-risk-high p-3 rounded-lg text-xs font-bold text-center mb-6 border border-risk-high/20 animate-in fade-in slide-in-from-top-1 duration-200">
-              {error}
-            </div>
-          )}
 
           {/* Success Banner */}
           {success && (

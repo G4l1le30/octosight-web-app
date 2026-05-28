@@ -4,7 +4,8 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { EducationModuleWithProgress, QuizAttempt } from "@/types/education";
 import { useAuth } from "@/lib/auth-context";
-import { Loader2, ArrowLeft, AlertCircle } from "lucide-react";
+import { Loader2, ArrowLeft, AlertCircle, AlertTriangle } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/Button";
 import { AuthRequired } from "@/components/auth/AuthRequired";
 
@@ -22,7 +23,6 @@ export default function ModuleDetailPage() {
   
   const [mod, setMod] = useState<EducationModuleWithProgress | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   
   // Quiz Resume state
   const [savedQuiz, setSavedQuiz] = useState<{
@@ -51,7 +51,7 @@ export default function ModuleDetailPage() {
         if (next) setNextModuleId(next.id);
       }
     } catch (err: any) {
-      setError(err.message);
+      toast.error(err.message);
     } finally {
       setLoading(false);
     }
@@ -168,12 +168,14 @@ export default function ModuleDetailPage() {
     </div>
   );
 
-  if (error || !mod) return (
+  if (!mod) return (
     <div className="container mx-auto px-4 py-32 text-center max-w-md">
       <div className="bg-risk-high/10 text-risk-high p-6 rounded-2xl border border-risk-high/20 mb-6">
-        <AlertCircle className="size-12 mx-auto mb-4" />
-        <h2 className="text-xl font-bold mb-2">Access Denied</h2>
-        <p className="text-sm font-medium opacity-80">{error}</p>
+        <AlertTriangle className="size-12 mx-auto mb-4" />
+        <h2 className="text-xl font-bold mb-2">Content Not Found</h2>
+        <p className="text-sm font-medium opacity-80">
+          The educational content you requested could not be found.
+        </p>
       </div>
       <Button onClick={() => router.push("/edu")} variant="outline" className="gap-2">
         <ArrowLeft className="size-4" /> Back to E-Learning

@@ -5,7 +5,7 @@ const internalApiUrl =
   "http://backend:8000";
 
 const nextConfig = {
-  output: 'standalone',
+  ...(process.env.NODE_ENV === 'production' ? { output: 'standalone' } : {}),
   // Allow external images from Supabase Storage
   images: {
     remotePatterns: [

@@ -105,3 +105,27 @@ def require_admin(current_user: User = Depends(get_current_user)) -> User:
     if current_user.role != "admin":
         raise HTTPException(status_code=403, detail="Admin access required")
     return current_user
+
+
+def get_optional_user(request: Request, db: Session = Depends(get_db)) -> User | None:
+    """
+    Like get_current_user but returns None instead of raising 401.
+    Used for public endpoints that optionally include user-specific data
+    (e.g. education modules with progress).
+    """
+    token = request.cookies.get("access_token")
+    if not token:
+        return None
+
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        if payload.get("type") != "access":
+            return None
+        user_id: str = payload.get("sub")
+        if user_id is None:
+            return None
+    except JWTError:
+        return None
+
+    user = db.query(User).filter(User.id == user_id).first()
+    return user

@@ -14,6 +14,7 @@ import { AlertTriangle, CheckCircle, ShieldCheck, CreditCard, Search, MessageSqu
 import { cn } from "@/lib/utils";
 import { ProcessingAnimation } from "@/components/ui/ProcessingAnimation";
 import { toast } from "sonner";
+import { sanitizeText } from "@/lib/sanitize";
 
 export default function FraudCheckPage() {
   const [loading, setLoading] = useState(false);
@@ -40,10 +41,10 @@ export default function FraudCheckPage() {
     try {
       const payload = new FormData();
       payload.append("report_type", "Transaction");
-      payload.append("bank_name", data.bankName || "");
-      payload.append("sender_numbers", data.senderNumbers || "");
-      payload.append("summary", data.summary || "");
-      payload.append("url", data.url || "");
+      payload.append("bank_name", sanitizeText(data.bankName || ""));
+      payload.append("sender_numbers", sanitizeText(data.senderNumbers || ""));
+      payload.append("summary", sanitizeText(data.summary || ""));
+      payload.append("url", sanitizeText(data.url || ""));
 
       if (screenshots) payload.append("screenshots", screenshots, screenshots.name);
 

@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { IncidentType } from "@/types/ticket";
 
 // --- Validation Schemas ---
 
@@ -12,9 +11,41 @@ const commonFields = {
   incidentDate: z
     .string()
     .min(1, "Required: Please select the time of occurrence"),
-  bankName: z.string().optional().or(z.literal("")),
-  bankAccount: z.string().optional().or(z.literal("")),
-  referenceNumber: z.string().optional().or(z.literal("")),
+  bankName: z
+    .string()
+    .optional()
+    .transform((v) => v?.trim() || "")
+    .pipe(z.string().max(100, "Bank name too long"))
+    .pipe(
+      z
+        .string()
+        .regex(
+          /^[a-zA-Z\s&.,'-]*$/,
+          "Only letters, spaces & basic punctuation allowed",
+        ),
+    )
+    .or(z.literal("")),
+  bankAccount: z
+    .string()
+    .optional()
+    .transform((v) => v?.trim() || "")
+    .pipe(z.string().max(50, "Account number too long"))
+    .pipe(z.string().regex(/^\d*$/, "Must contain only numbers (0-9)"))
+    .or(z.literal("")),
+  referenceNumber: z
+    .string()
+    .optional()
+    .transform((v) => v?.trim() || "")
+    .pipe(z.string().max(100, "Reference number too long"))
+    .pipe(
+      z
+        .string()
+        .regex(
+          /^[a-zA-Z0-9\s\-/.]*$/,
+          "Only letters, numbers, hyphens, slashes & dots allowed",
+        ),
+    )
+    .or(z.literal("")),
 };
 
 export const IncidentSchemas = {

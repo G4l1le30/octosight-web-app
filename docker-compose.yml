@@ -17,6 +17,8 @@ services:
     volumes:
       - ./frontend:/app
       - /app/node_modules
+      - type: tmpfs
+        target: /app/.next
     depends_on:
       - backend
     networks:

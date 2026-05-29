@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { EducationModuleWithProgress } from "@/types/education";
 import { useAuth } from "@/lib/auth-context";
 import { Loader2, Lock, CheckCircle2, BookOpen } from "lucide-react";
-import { AuthRequired } from "@/components/auth/AuthRequired";
 import { Button } from "@/components/ui/Button";
 
 export default function EducationPage() {
@@ -15,10 +14,8 @@ export default function EducationPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (user) {
-      fetchModules();
-    }
-  }, [user]);
+    fetchModules();
+  }, []);
 
   const fetchModules = async () => {
     try {
@@ -42,21 +39,19 @@ export default function EducationPage() {
     );
   }
 
-  if (!user) {
-    return <AuthRequired description="Please log in to access the security microlearning modules." />;
-  }
-
   let totalPercentage = 0;
 
-  modules.forEach((mod) => {
-    const moduleTotal = (mod.articles?.length || 0) + 1;
-    let moduleCompleted = mod.articles?.filter((a) => a.is_read).length || 0;
-    const moduleIsPassed = mod.status === "COMPLETED" || (mod.quiz_score !== null && mod.quiz_score !== undefined && mod.quiz_score >= 70);
-    if (moduleIsPassed) {
-      moduleCompleted += 1;
-    }
-    totalPercentage += (moduleCompleted / moduleTotal);
-  });
+  if (user) {
+    modules.forEach((mod) => {
+      const moduleTotal = (mod.articles?.length || 0) + 1;
+      let moduleCompleted = mod.articles?.filter((a) => a.is_read).length || 0;
+      const moduleIsPassed = mod.status === "COMPLETED" || (mod.quiz_score !== null && mod.quiz_score !== undefined && mod.quiz_score >= 70);
+      if (moduleIsPassed) {
+        moduleCompleted += 1;
+      }
+      totalPercentage += (moduleCompleted / moduleTotal);
+    });
+  }
 
   const progressPercent = Math.round((totalPercentage / 8) * 100);
   const completedModulesCount = modules.filter((m) => m.status === "COMPLETED").length;
@@ -72,21 +67,23 @@ export default function EducationPage() {
             designed to prevent fraud and phishing.
           </p>
         </div>
-        <div className="bg-primary/5 p-4 rounded-xl border border-primary/10 flex items-center gap-4">
-          <div className="text-right">
-            <p className="text-sm font-bold text-secondary">Learning Progress</p>
-            <p className="text-xl font-bold text-primary">
-              {completedModulesCount} / {totalModulesCount} Modules
-            </p>
+        {user && (
+          <div className="bg-primary/5 p-4 rounded-xl border border-primary/10 flex items-center gap-4">
+            <div className="text-right">
+              <p className="text-sm font-bold text-secondary">Learning Progress</p>
+              <p className="text-xl font-bold text-primary">
+                {completedModulesCount} / {totalModulesCount} Modules
+              </p>
+            </div>
+            <div className="w-14 h-14 rounded-full border-4 border-primary/20 flex items-center justify-center text-lg font-bold text-primary relative overflow-hidden bg-white">
+              <div 
+                className="absolute bottom-0 left-0 right-0 bg-primary/20" 
+                style={{ height: `${progressPercent}%` }}
+              />
+              <span className="relative z-10">{progressPercent}%</span>
+            </div>
           </div>
-          <div className="w-14 h-14 rounded-full border-4 border-primary/20 flex items-center justify-center text-lg font-bold text-primary relative overflow-hidden bg-white">
-            <div 
-              className="absolute bottom-0 left-0 right-0 bg-primary/20" 
-              style={{ height: `${progressPercent}%` }}
-            />
-            <span className="relative z-10">{progressPercent}%</span>
-          </div>
-        </div>
+        )}
       </div>
 
       <div className="max-w-6xl mx-auto mt-16">

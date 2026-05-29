@@ -7,8 +7,6 @@ import { useAuth } from "@/lib/auth-context";
 import { Loader2, ArrowLeft, AlertCircle, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/Button";
-import { AuthRequired } from "@/components/auth/AuthRequired";
-
 // Modular Components
 import { ModuleHeader } from "@/components/education/ModuleHeader";
 import { MaterialList } from "@/components/education/MaterialList";
@@ -58,37 +56,39 @@ export default function ModuleDetailPage() {
   }, [moduleId]);
 
   useEffect(() => {
-    if (user && moduleId) {
-      fetchModule();
+    fetchModule();
+  }, [moduleId, fetchModule]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const checkSavedProgress = () => {
+      const savedAnswers = localStorage.getItem(`octo_quiz_${moduleId}_answers`);
+      const savedEndTime = localStorage.getItem(`octo_quiz_${moduleId}_end_time`);
       
-      const checkSavedProgress = () => {
-        const savedAnswers = localStorage.getItem(`octo_quiz_${moduleId}_answers`);
-        const savedEndTime = localStorage.getItem(`octo_quiz_${moduleId}_end_time`);
+      if (savedAnswers) {
+        const answers = JSON.parse(savedAnswers) as number[];
+        const answeredCount = answers.filter(a => a !== -1).length;
         
-        if (savedAnswers) {
-          const answers = JSON.parse(savedAnswers) as number[];
-          const answeredCount = answers.filter(a => a !== -1).length;
-          
-          let timeLeft = 0;
-          if (savedEndTime) {
-            timeLeft = Math.max(0, Math.floor((parseInt(savedEndTime) - Date.now()) / 1000));
-          }
-
-          setSavedQuiz({
-            answers,
-            timeLeft,
-            answeredCount
-          });
-        } else {
-          setSavedQuiz(null);
+        let timeLeft = 0;
+        if (savedEndTime) {
+          timeLeft = Math.max(0, Math.floor((parseInt(savedEndTime) - Date.now()) / 1000));
         }
-      };
 
-      checkSavedProgress();
-      const interval = setInterval(checkSavedProgress, 1000);
-      return () => clearInterval(interval);
-    }
-  }, [user, moduleId, fetchModule]);
+        setSavedQuiz({
+          answers,
+          timeLeft,
+          answeredCount
+        });
+      } else {
+        setSavedQuiz(null);
+      }
+    };
+
+    checkSavedProgress();
+    const interval = setInterval(checkSavedProgress, 1000);
+    return () => clearInterval(interval);
+  }, [user, moduleId]);
 
   const [readingArticleId, setReadingArticleId] = useState<string | null>(null);
   const [readingTimeLeft, setReadingTimeLeft] = useState<number>(0);
@@ -159,8 +159,6 @@ export default function ModuleDetailPage() {
     </div>
   );
 
-  if (!user) return <AuthRequired description="Please log in to access the module." />;
-
   if (loading) return (
     <div className="container mx-auto px-4 py-32 text-center">
       <Loader2 className="animate-spin size-12 text-primary mx-auto mb-4" />
@@ -224,7 +222,10 @@ export default function ModuleDetailPage() {
         savedQuiz={savedQuiz}
         hasAttempted={hasAttempted}
         onStartQuiz={() => {
-          // If not continuing a saved quiz, clear any old persistence to ensure a fresh start
+          if (!user) {
+            router.push(`/login?redirect=/edu/${mod.id}`);
+            return;
+          }
           if (!savedQuiz) {
             localStorage.removeItem(`octo_quiz_${mod.id}_answers`);
             localStorage.removeItem(`octo_quiz_${mod.id}_step`);
@@ -233,6 +234,10 @@ export default function ModuleDetailPage() {
           router.push(`/edu/${mod.id}/quiz`);
         }}
         onResetQuiz={() => {
+          if (!user) {
+            router.push(`/login?redirect=/edu/${mod.id}`);
+            return;
+          }
           if (confirm("Are you sure you want to discard your current progress and start fresh?")) {
             localStorage.removeItem(`octo_quiz_${mod.id}_answers`);
             localStorage.removeItem(`octo_quiz_${mod.id}_step`);

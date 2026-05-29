@@ -3,7 +3,7 @@ routers/tickets.py — Ticket management endpoints.
 
 Routes:
   GET   /api/v1/tickets                          List all tickets (admin only)
-  GET   /api/v1/tickets/{ticket_id}              Get single ticket by ID (public)
+  GET   /api/v1/tickets/{ticket_id}              Get single ticket by ID (auth + ownership)
   PATCH /api/v1/tickets/{ticket_id}              Update ticket (admin only)
   GET   /api/v1/tickets/{ticket_id}/audit-logs  Get audit trail (owner or admin)
   GET   /api/v1/user/tickets                     List current user's tickets
@@ -54,15 +54,23 @@ def get_tickets(
     return db.query(Ticket).order_by(Ticket.risk_score.desc()).all()
 
 
-@router.get("/tickets/{ticket_id}", summary="Get ticket by ID (public)")
-def get_ticket(ticket_id: str, db: Session = Depends(get_db)):
+@router.get("/tickets/{ticket_id}", summary="Get ticket by ID (authenticated, own ticket)")
+def get_ticket(
+    ticket_id: str,
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user),
+):
     """
-    Public endpoint for users to track their own ticket status using the
-    ticket ID they received at submission.
+    Retrieve a ticket by its public ID.
+    - Admins can view any ticket.
+    - Regular users can only view their own tickets.
+    - Unauthenticated requests are rejected (401).
     """
     ticket = db.query(Ticket).filter(Ticket.ticket_id == ticket_id).first()
     if not ticket:
         raise HTTPException(status_code=404, detail="Ticket not found")
+    if current_user.role != "admin" and ticket.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Access denied")
     return ticket
 
 

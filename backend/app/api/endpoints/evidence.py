@@ -9,6 +9,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from app.services.supabase_service import get_supabase_service
+from app.core.security import get_current_user, require_admin
 
 router = APIRouter(prefix="/api/v1/evidence", tags=["evidence"])
 
@@ -34,6 +35,7 @@ def get_file_extension(filename: str) -> str:
 async def upload_evidence(
     file: UploadFile = File(...),
     supabase_service=Depends(get_supabase_service),
+    current_user=Depends(get_current_user),
 ) -> EvidenceUploadResponse:
     """
     Upload evidence file to Supabase Storage.
@@ -108,6 +110,7 @@ async def upload_evidence(
 async def get_evidence_signed_url(
     filename: str,
     supabase_service=Depends(get_supabase_service),
+    current_user=Depends(get_current_user),
 ):
     """Generate a temporary signed URL for an existing Supabase-stored evidence file."""
     preview_url = supabase_service.get_signed_url(filename=filename)
@@ -118,20 +121,10 @@ async def get_evidence_signed_url(
 async def delete_evidence(
     filename: str,
     supabase_service=Depends(get_supabase_service),
+    admin=Depends(require_admin),
 ):
     """
-    Delete evidence file from Supabase Storage.
-
-    Args:
-        filename: Name of the file to delete.
-        supabase_service: Supabase Storage service instance.
-
-    Returns:
-        JSONResponse: Success message.
-
-    Raises:
-        HTTPException: If deletion fails.
-    """
+    Delete evidence file from Supabase Storage. Admin only."""
     try:
         supabase_service.delete_file(filename=filename)
         return JSONResponse(

@@ -45,6 +45,77 @@ from app.services.supabase_service import get_supabase_service, SupabaseStorageS
 router = APIRouter(prefix="/api/v1", tags=["detection"])
 
 
+# ── Input Sanitization & Validation ───────────────────────────────────────────
+
+import re as _re
+
+_HTML_TAG_RE = _re.compile(r"<[^>]*>")
+_SCRIPT_RE = _re.compile(r"javascript\s*:", _re.IGNORECASE)
+_EVENT_HANDLER_RE = _re.compile(r"\bon\w+\s*=", _re.IGNORECASE)
+
+
+def _sanitize_text(value: str) -> str:
+    """Strip HTML tags, script protocols, and event handlers from user input."""
+    return _HTML_TAG_RE.sub(
+        "", _SCRIPT_RE.sub("blocked:", _EVENT_HANDLER_RE.sub("disabled=", value))
+    ).strip()
+
+
+def _validate_report_inputs(
+    url: str,
+    report_type: str,
+    summary: str,
+    sender_numbers: str,
+    bank_name: str,
+    bank_account: str,
+    reference_number: str,
+):
+    """Validate and sanitize all text inputs for report/analyze endpoints."""
+    errors = []
+
+    # report_type
+    allowed_types = {"Website", "SMS", "WhatsApp", "Email", "Transaction"}
+    if report_type not in allowed_types:
+        errors.append(f"Invalid report_type. Must be one of: {', '.join(sorted(allowed_types))}")
+
+    # url
+    if url and len(url) > 2048:
+        errors.append("URL must not exceed 2048 characters")
+
+    # summary
+    if summary and len(summary) > 2000:
+        errors.append("Summary must not exceed 2000 characters")
+
+    # sender_numbers
+    if sender_numbers and len(sender_numbers) > 500:
+        errors.append("Sender numbers must not exceed 500 characters")
+
+    # bank_name
+    if bank_name:
+        if len(bank_name) > 100:
+            errors.append("Bank name must not exceed 100 characters")
+        elif not _re.match(r"^[a-zA-Z\s&.\',-]*$", bank_name):
+            errors.append("Bank name contains invalid characters")
+
+    # bank_account
+    if bank_account:
+        if len(bank_account) > 50:
+            errors.append("Account number must not exceed 50 characters")
+        elif not _re.match(r"^\d*$", bank_account):
+            errors.append("Account number must contain only digits (0-9)")
+
+    # reference_number
+    if reference_number:
+        if len(reference_number) > 100:
+            errors.append("Reference number must not exceed 100 characters")
+        elif not _re.match(r"^[a-zA-Z0-9\s\-/.]*$", reference_number):
+            errors.append("Reference number contains invalid characters")
+
+    if errors:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=422, detail=errors)
+
+
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
 def _check_blacklist(db: Session, url: str) -> Optional[BlacklistedURL]:
@@ -457,7 +528,17 @@ async def create_report(
     - Up to 10 screenshots allowed.
     - Files grouped in a per-ticket folder by Ticket ID.
     """
-    # 0. Validation: Require either summary or at least one screenshot
+    # 0. Sanitize all text inputs
+    url = _sanitize_text(url)
+    report_type = _sanitize_text(report_type)
+    summary = _sanitize_text(summary)
+    sender_numbers = _sanitize_text(sender_numbers)
+    bank_name = _sanitize_text(bank_name)
+    bank_account = _sanitize_text(bank_account)
+    reference_number = _sanitize_text(reference_number)
+    _validate_report_inputs(url, report_type, summary, sender_numbers, bank_name, bank_account, reference_number)
+
+    # 0b. Validation: Require either summary or at least one screenshot
     if not summary.strip() and not screenshots:
         raise HTTPException(
             status_code=400,
@@ -719,6 +800,16 @@ async def analyze_preview(
     Calculate the hybrid risk score from form data **without** saving a ticket.
     Includes OCR analysis for a more accurate preview if screenshots are provided.
     """
+    # 0. Sanitize all text inputs
+    report_type = _sanitize_text(report_type)
+    url = _sanitize_text(url)
+    summary = _sanitize_text(summary)
+    sender_numbers = _sanitize_text(sender_numbers)
+    bank_name = _sanitize_text(bank_name)
+    bank_account = _sanitize_text(bank_account)
+    reference_number = _sanitize_text(reference_number)
+    _validate_report_inputs(url, report_type, summary, sender_numbers, bank_name, bank_account, reference_number)
+
     # 1. Volatile OCR for preview
     combined_ocr_text = ""
     if screenshots:

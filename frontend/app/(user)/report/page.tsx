@@ -8,10 +8,11 @@ import { ReportConfirmation } from "@/components/report/ReportConfirmation";
 import { Ticket, ReportFormData, IncidentType } from "@/types/ticket";
 import { IncidentSchemas } from "@/modules/report/schemas";
 import { useAuth } from "@/lib/auth-context";
-import { AuthRequired } from "@/components/auth/AuthRequired";
 import { ReportForm } from "@/components/report/ReportForm";
 import { ProcessingAnimation } from "@/components/ui/ProcessingAnimation";
 import { toast } from "sonner";
+import { sanitizeText } from "@/lib/sanitize";
+import { useRouter } from "next/navigation";
 
 const getLocalISOString = () => {
   const now = new Date();
@@ -69,6 +70,7 @@ const DYNAMIC_CONTENT = {
 };
 
 export default function ReportPage() {
+  const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -112,6 +114,10 @@ export default function ReportPage() {
    * Sends files directly as multipart so the backend can OCR them.
    */
   const onSubmit = async (data: ReportFormData) => {
+    if (!user) {
+      router.push("/login?redirect=/report");
+      return;
+    }
     if (!data.summary?.trim() && !screenshotFile) {
       form.setError("summary", {
         type: "manual",
@@ -127,13 +133,13 @@ export default function ReportPage() {
 
     try {
       const payload = new FormData();
-      payload.append("report_type", incidentType);
-      payload.append("url", data.url || "");
-      payload.append("summary", data.summary || "");
-      payload.append("sender_numbers", data.senderNumbers || "");
-      payload.append("bank_name", data.bankName || "");
-      payload.append("bank_account", data.bankAccount || "");
-      payload.append("reference_number", data.referenceNumber || "");
+      payload.append("report_type", sanitizeText(incidentType));
+      payload.append("url", sanitizeText(data.url || ""));
+      payload.append("summary", sanitizeText(data.summary || ""));
+      payload.append("sender_numbers", sanitizeText(data.senderNumbers || ""));
+      payload.append("bank_name", sanitizeText(data.bankName || ""));
+      payload.append("bank_account", sanitizeText(data.bankAccount || ""));
+      payload.append("reference_number", sanitizeText(data.referenceNumber || ""));
 
       // Attach raw files — backend receives them as UploadFile (no Supabase yet)
       if (screenshotFile)
@@ -169,14 +175,14 @@ export default function ReportPage() {
 
     try {
       const payload = new FormData();
-      payload.append("report_type", incidentType);
-      payload.append("url", confirmedData.url ?? "");
-      payload.append("summary", confirmedData.summary ?? "");
-      payload.append("sender_numbers", confirmedData.senderNumbers ?? "");
-      payload.append("incident_date", confirmedData.incidentDate);
-      payload.append("bank_name", confirmedData.bankName ?? "");
-      payload.append("bank_account", confirmedData.bankAccount ?? "");
-      payload.append("reference_number", confirmedData.referenceNumber ?? "");
+      payload.append("report_type", sanitizeText(incidentType));
+      payload.append("url", sanitizeText(confirmedData.url ?? ""));
+      payload.append("summary", sanitizeText(confirmedData.summary ?? ""));
+      payload.append("sender_numbers", sanitizeText(confirmedData.senderNumbers ?? ""));
+      payload.append("incident_date", sanitizeText(confirmedData.incidentDate));
+      payload.append("bank_name", sanitizeText(confirmedData.bankName ?? ""));
+      payload.append("bank_account", sanitizeText(confirmedData.bankAccount ?? ""));
+      payload.append("reference_number", sanitizeText(confirmedData.referenceNumber ?? ""));
 
       // Attach raw files — backend uploads to Supabase then saves paths to DB
       if (screenshotFile)
@@ -218,11 +224,6 @@ export default function ReportPage() {
         <div className="size-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
         <p className="text-secondary font-medium">Loading...</p>
       </div>
-    );
-
-  if (!user)
-    return (
-      <AuthRequired description="Please log in to your account to submit a phishing report and track its progress." />
     );
 
   if (submitted && ticketData)

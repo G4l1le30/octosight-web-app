@@ -24,6 +24,10 @@ export default function DetailedReportPage() {
       const response = await fetch(`/api/v1/tickets/${ticketId}`);
       if (!response.ok) {
         if (response.status === 404) throw new Error("Ticket not found.");
+        if (response.status === 403) {
+          router.push("/access-denied?reason=ownership");
+          return;
+        }
         throw new Error("Failed to fetch ticket status.");
       }
       const data = await response.json();
@@ -33,7 +37,7 @@ export default function DetailedReportPage() {
     } finally {
       setLoading(false);
     }
-  }, [ticketId]);
+  }, [ticketId, router]);
 
   useEffect(() => {
     if (user && ticketId) {

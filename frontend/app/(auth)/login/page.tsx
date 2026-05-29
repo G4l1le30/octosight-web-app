@@ -15,6 +15,7 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isRegistered = searchParams.get("registered") === "true";
+  const redirectTo = searchParams.get("redirect") || "/";
   const { login, loginWithGoogle: authenticateWithGoogle } = useAuth();
 
   const [email, setEmail] = useState("");
@@ -56,7 +57,7 @@ function LoginForm() {
     setLoading(true);
     try {
       await login(email, password);
-      router.push("/");
+      router.push(redirectTo);
     } catch (err: any) {
       toast.error(err.message || "Login failed");
     } finally {
@@ -69,7 +70,7 @@ function LoginForm() {
     setLoading(true);
     try {
       await authenticateWithGoogle(tokenResponse.access_token);
-      router.push("/");
+      router.push(redirectTo);
     } catch (err: any) {
       toast.error(err.message || "Google Sign-In failed");
     } finally {

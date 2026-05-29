@@ -355,7 +355,7 @@ def google_register(
 
     send_email_notification(
         background_tasks=background_tasks,
-        subject="Welcome to OctoSight Security",
+        subject="Welcome to OctoSight",
         email_to=user.email,
         template_name="verify_email.html",
         template_body={"user_name": user.full_name, "user_email": user.email}

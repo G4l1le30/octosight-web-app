@@ -11,7 +11,7 @@ Routes:
 """
 
 import os
-from datetime import timezone
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from fastapi.responses import FileResponse
@@ -45,13 +45,24 @@ STATUS_ORDER: dict[str, int] = {
 }
 
 
+def _check_sla_breach(ticket: Ticket) -> None:
+    """Mark ticket as SLA-breached if deadline has passed and status is still pending."""
+    if ticket.sla_deadline and not ticket.sla_breached:
+        if datetime.now(timezone.utc) > ticket.sla_deadline and ticket.status in ("Submitted", "In Review"):
+            ticket.sla_breached = True
+
+
 @router.get("/tickets", summary="List all tickets (admin only)")
 def get_tickets(
     db: Session = Depends(get_db),
     _admin=Depends(require_admin),
 ):
     """Return all tickets ordered by risk score descending. Admin only."""
-    return db.query(Ticket).order_by(Ticket.risk_score.desc()).all()
+    tickets = db.query(Ticket).order_by(Ticket.risk_score.desc()).all()
+    for t in tickets:
+        _check_sla_breach(t)
+    db.commit()
+    return tickets
 
 
 @router.get("/tickets/{ticket_id}", summary="Get ticket by ID (authenticated, own ticket)")
@@ -71,6 +82,8 @@ def get_ticket(
         raise HTTPException(status_code=404, detail="Ticket not found")
     if current_user.role != "admin" and ticket.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Access denied")
+    _check_sla_breach(ticket)
+    db.commit()
     return ticket
 
 

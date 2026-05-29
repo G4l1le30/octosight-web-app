@@ -62,6 +62,10 @@ class Ticket(Base):
     # Education recommendations
     education_recommendation = Column(JSON, nullable=True)
 
+    # SLA management
+    sla_deadline = Column(DateTime, nullable=True)
+    sla_breached = Column(Boolean, default=False)
+
     # Relationships
     user_id = Column(
         String(36), ForeignKey("users.id", ondelete="SET NULL"), nullable=True

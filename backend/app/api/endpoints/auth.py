@@ -50,17 +50,12 @@ _ACCESS_COOKIE_MAX_AGE = ACCESS_TOKEN_EXPIRE_MINUTES * 60
 _REFRESH_COOKIE_MAX_AGE = REFRESH_TOKEN_EXPIRE_DAYS * 86400
 
 
-def _is_production() -> bool:
-    return os.getenv("ENVIRONMENT") == "production"
-
-
 def _set_auth_cookies(response: Response, access_token: str, refresh_token: str) -> None:
-    is_production = _is_production()
     response.set_cookie(
         key="access_token",
         value=access_token,
         httponly=True,
-        secure=is_production,
+        secure=True,
         samesite="lax",
         max_age=_ACCESS_COOKIE_MAX_AGE,
         path="/",
@@ -69,7 +64,7 @@ def _set_auth_cookies(response: Response, access_token: str, refresh_token: str)
         key="refresh_token",
         value=refresh_token,
         httponly=True,
-        secure=is_production,
+        secure=True,
         samesite="lax",
         max_age=_REFRESH_COOKIE_MAX_AGE,
         path="/",
@@ -77,18 +72,17 @@ def _set_auth_cookies(response: Response, access_token: str, refresh_token: str)
 
 
 def _clear_auth_cookies(response: Response) -> None:
-    is_production = _is_production()
     response.delete_cookie(
         key="access_token",
         path="/",
-        secure=is_production,
+        secure=True,
         httponly=True,
         samesite="lax",
     )
     response.delete_cookie(
         key="refresh_token",
         path="/",
-        secure=is_production,
+        secure=True,
         httponly=True,
         samesite="lax",
     )
@@ -390,12 +384,11 @@ def refresh_token(request: Request, response: Response, db: Session = Depends(ge
         raise HTTPException(status_code=401, detail="User not found")
 
     new_access_token = create_access_token({"sub": str(user.id), "email": user.email, "role": user.role})
-    is_production = _is_production()
     response.set_cookie(
         key="access_token",
         value=new_access_token,
         httponly=True,
-        secure=is_production,
+        secure=True,
         samesite="lax",
         max_age=_ACCESS_COOKIE_MAX_AGE,
         path="/",

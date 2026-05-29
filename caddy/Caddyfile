@@ -1,0 +1,26 @@
+https://localhost {
+    tls internal
+
+    # Security headers
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "DENY"
+        X-XSS-Protection "1; mode=block"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        Permissions-Policy "camera=(), microphone=(), geolocation=(), browsing-topics=()"
+    }
+
+    # Proxy all requests to Next.js frontend
+    reverse_proxy frontend:3000 {
+        # Pass the real client IP
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+        header_up X-Real-IP {remote_host}
+    }
+}
+
+# Redirect HTTP to HTTPS
+http://localhost {
+    redir https://localhost{uri}
+}

@@ -7,6 +7,7 @@ import time
 import uuid
 from contextlib import asynccontextmanager
 
+import traceback
 from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -253,6 +254,24 @@ async def add_security_headers(request: Request, call_next):
 UPLOAD_DIR = os.getenv("UPLOAD_DIR", "uploads")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
+
+# ── Global 500 Handler ────────────────────────────────────────────────────────
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    """Catch any unhandled exception, log it, return structured 500."""
+    print("=== Unhandled Exception ===")
+    print(f"Path: {request.url.path}")
+    print(f"Method: {request.method}")
+    traceback.print_exc()
+    print("===========================")
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={
+            "detail": "An internal server error occurred. Please try again later.",
+            "error_type": type(exc).__name__,
+        },
+    )
 
 # ── Exception Handlers ────────────────────────────────────────────────────────
 

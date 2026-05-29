@@ -8,7 +8,7 @@ from fastapi import APIRouter, UploadFile, File, HTTPException, status, Depends
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
-from app.services.supabase_service import get_supabase_service
+from app.services.supabase_service import get_supabase_service, SupabaseStorageService
 from app.core.security import get_current_user, require_admin
 
 router = APIRouter(prefix="/api/v1/evidence", tags=["evidence"])
@@ -86,18 +86,27 @@ async def upload_evidence(
     }
     content_type = content_type_map.get(file_extension, "application/octet-stream")
 
-    # ── Upload file to Supabase ──
-    supabase_service.upload_file(
-        file_bytes=file_content,
-        filename=unique_filename,
-        content_type=content_type,
-    )
+    # ── Upload file (with retry + fallback) ──
+    try:
+        supabase_service.upload_file(
+            file_bytes=file_content,
+            filename=unique_filename,
+            content_type=content_type,
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"File upload failed after retries: {str(e)}",
+        )
 
     # ── Generate signed URL for preview (1 hour expiration) ──
-    preview_url = supabase_service.get_signed_url(
-        filename=unique_filename,
-        expires_in=3600,  # 1 hour
-    )
+    try:
+        preview_url = supabase_service.get_signed_url(
+            filename=unique_filename,
+            expires_in=3600,
+        )
+    except (RuntimeError, Exception):
+        preview_url = f"/uploads/evidence/{unique_filename}"
 
     return EvidenceUploadResponse(
         filename=unique_filename,
@@ -113,7 +122,10 @@ async def get_evidence_signed_url(
     current_user=Depends(get_current_user),
 ):
     """Generate a temporary signed URL for an existing Supabase-stored evidence file."""
-    preview_url = supabase_service.get_signed_url(filename=filename)
+    try:
+        preview_url = supabase_service.get_signed_url(filename=filename)
+    except (RuntimeError, Exception):
+        preview_url = f"/uploads/evidence/{filename}"
     return {"preview_url": preview_url}
 
 

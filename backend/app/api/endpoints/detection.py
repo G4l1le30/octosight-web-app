@@ -26,6 +26,7 @@ import shutil
 import time
 import uuid
 from typing import List, Optional
+from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, BackgroundTasks
 from sqlalchemy.orm import Session
@@ -763,6 +764,7 @@ async def create_report(
         flags=",".join(flags),
         analysis_results=json.dumps(details),
         status="Submitted",
+        sla_deadline=datetime.now(timezone.utc) + timedelta(hours=1),
         user_id=current_user.id,
     )
     db.add(db_ticket)

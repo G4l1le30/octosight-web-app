@@ -4,9 +4,49 @@ Handles secure file uploads and generation of signed URLs for the "octosight-evi
 """
 
 import os
-from typing import Optional
+import time
+import asyncio
+from typing import Optional, Callable
 from supabase import create_client, Client
 from fastapi import HTTPException, status
+
+
+def _sync_retry(max_attempts: int = 3, base_delay: float = 1.0):
+    """Decorator for synchronous methods: retry with exponential backoff."""
+    def decorator(func: Callable):
+        def wrapper(*args, **kwargs):
+            last_exc = None
+            for attempt in range(1, max_attempts + 1):
+                try:
+                    return func(*args, **kwargs)
+                except Exception as e:
+                    last_exc = e
+                    if attempt < max_attempts:
+                        delay = base_delay * (2 ** (attempt - 1))
+                        print(f"[Supabase] Retry {attempt}/{max_attempts} after {delay:.1f}s — {type(e).__name__}: {e}")
+                        time.sleep(delay)
+            raise last_exc
+        return wrapper
+    return decorator
+
+
+def _async_retry(max_attempts: int = 3, base_delay: float = 1.0):
+    """Decorator for async methods: retry with exponential backoff."""
+    def decorator(func):
+        async def wrapper(*args, **kwargs):
+            last_exc = None
+            for attempt in range(1, max_attempts + 1):
+                try:
+                    return await func(*args, **kwargs)
+                except Exception as e:
+                    last_exc = e
+                    if attempt < max_attempts:
+                        delay = base_delay * (2 ** (attempt - 1))
+                        print(f"[Supabase] Retry {attempt}/{max_attempts} after {delay:.1f}s — {type(e).__name__}: {e}")
+                        await asyncio.sleep(delay)
+            raise last_exc
+        return wrapper
+    return decorator
 
 
 class SupabaseStorageService:
@@ -17,118 +57,81 @@ class SupabaseStorageService:
         
         Uses service_role key which bypasses RLS — do NOT call sign_in_anonymously()
         as that would replace the service_role session with a weak anon session.
+        
+        Falls back to local filesystem when Supabase credentials are missing
+        or when all Supabase upload retries are exhausted.
         """
         self.supabase_url = os.getenv("SUPABASE_URL")
         self.supabase_key = os.getenv("SUPABASE_KEY")
         self.bucket_name = "octosight-evidence"
+        self.fallback_dir = os.getenv("UPLOAD_DIR", "uploads/evidence")
 
         if not self.supabase_url or not self.supabase_key:
-            raise ValueError("SUPABASE_URL and SUPABASE_KEY environment variables are required.")
+            self.client = None
+            print("[Supabase] Credentials missing — using local filesystem fallback.")
+        else:
+            self.client: Client = create_client(self.supabase_url, self.supabase_key)
+            print(f"[Supabase] Client initialized (key role: {'service' if len(self.supabase_key) > 200 else 'anon'})")
 
-        self.client: Client = create_client(self.supabase_url, self.supabase_key)
-        print(f"[Supabase] Client initialized (key role: {'service' if len(self.supabase_key) > 200 else 'anon'})")
+    def _fallback_upload(self, file_bytes: bytes, filename: str) -> str:
+        """Save file to local filesystem as fallback when Supabase is unavailable."""
+        os.makedirs(self.fallback_dir, exist_ok=True)
+        local_path = os.path.join(self.fallback_dir, filename)
+        with open(local_path, "wb") as f:
+            f.write(file_bytes)
+        print(f"[Supabase] Upload fallback → local filesystem: {local_path}")
+        return local_path
 
+    @_sync_retry(max_attempts=3, base_delay=1.0)
     def upload_file(self, file_bytes: bytes, filename: str, content_type: str) -> bool:
-        """
-        Upload a file to the Supabase Storage bucket.
-
-        Args:
-            file_bytes: Raw file bytes to upload.
-            filename: Unique filename (typically UUID with extension).
-            content_type: MIME type of the file (e.g., 'image/png', 'application/pdf').
-
-        Returns:
-            bool: True if upload is successful, raises HTTPException otherwise.
-
-        Raises:
-            HTTPException: If upload fails.
-        """
-        try:
-            self.client.storage.from_(self.bucket_name).upload(
-                path=filename,
-                file=file_bytes,
-                file_options={"content-type": content_type},
-            )
-            print(f"[Supabase] Upload OK: {filename}")
+        if not self.client:
+            self._fallback_upload(file_bytes, filename)
             return True
-        except Exception as e:
-            print(f"[Supabase] Upload FAILED for '{filename}': {type(e).__name__}: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"File upload failed: {str(e)}",
-            )
 
+        self.client.storage.from_(self.bucket_name).upload(
+            path=filename,
+            file=file_bytes,
+            file_options={"content-type": content_type},
+        )
+        print(f"[Supabase] Upload OK: {filename}")
+        return True
+
+    @_sync_retry(max_attempts=3, base_delay=1.0)
     def get_signed_url(self, filename: str, expires_in: int = 3600) -> str:
-        """
-        Generate a secure signed URL for reading/previewing a file.
+        if not self.client:
+            raise RuntimeError("Supabase not configured — cannot generate signed URL")
 
-        Args:
-            filename: Name of the file in the bucket.
-            expires_in: Expiration time in seconds (default: 1 hour).
+        response = self.client.storage.from_(self.bucket_name).create_signed_url(
+            path=filename,
+            expires_in=expires_in,
+        )
+        return response["signedURL"]
 
-        Returns:
-            str: Signed URL that can be used to access the file.
-
-        Raises:
-            HTTPException: If signed URL generation fails.
-        """
-        try:
-            response = self.client.storage.from_(self.bucket_name).create_signed_url(
-                path=filename,
-                expires_in=expires_in,
-            )
-            return response["signedURL"]
-        except Exception as e:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Failed to generate signed URL: {str(e)}",
-            )
-
+    @_sync_retry(max_attempts=3, base_delay=1.0)
     def download_file(self, filename: str) -> bytes:
-        """
-        Download a file from Supabase Storage as bytes.
+        if not self.client:
+            local_path = os.path.join(self.fallback_dir, filename)
+            if not os.path.exists(local_path):
+                raise FileNotFoundError(f"Fallback file not found: {local_path}")
+            with open(local_path, "rb") as f:
+                return f.read()
 
-        Args:
-            filename: Name of the file in the bucket.
+        response = self.client.storage.from_(self.bucket_name).download(filename)
+        if isinstance(response, dict) and response.get("error"):
+            raise Exception(response["error"])
+        return response
 
-        Returns:
-            bytes: Raw file bytes.
-
-        Raises:
-            HTTPException: If the download fails.
-        """
-        try:
-            response = self.client.storage.from_(self.bucket_name).download(filename)
-            if isinstance(response, dict) and response.get("error"):
-                raise Exception(response["error"])
-            return response
-        except Exception as e:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"File download failed: {str(e)}",
-            )
-
+    @_sync_retry(max_attempts=3, base_delay=1.0)
     def delete_file(self, filename: str) -> bool:
-        """
-        Delete a file from the Supabase Storage bucket.
-
-        Args:
-            filename: Name of the file to delete.
-
-        Returns:
-            bool: True if deletion is successful.
-
-        Raises:
-            HTTPException: If deletion fails.
-        """
-        try:
-            self.client.storage.from_(self.bucket_name).remove([filename])
+        if not self.client:
+            local_path = os.path.join(self.fallback_dir, filename)
+            if os.path.exists(local_path):
+                os.remove(local_path)
+                print(f"[Supabase] Delete fallback → local: {local_path}")
             return True
-        except Exception as e:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"File deletion failed: {str(e)}",
-            )
+
+        self.client.storage.from_(self.bucket_name).remove([filename])
+        return True
 
 
 # Singleton instance

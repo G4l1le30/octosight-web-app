@@ -33,11 +33,13 @@ from sqlalchemy.orm import Session
 from app.core.security import get_current_user
 from app.db.session import SessionLocal, get_db
 from app.models.models import Ticket, BlacklistedURL, BlacklistedAccount, MockBankTransaction, BlacklistedPhone, BlacklistedEmail
+from pydantic import BaseModel
 from app.schemas.schemas import AnalysisRequest, MessageRequest, SpamPredictionResponse
 from app.core.engines import analyze_spam, ocr_engine, rule_engine
 from app.modules.education.gemini_service import GeminiEducationService
+from app.modules.education.gemini.client import GeminiClient
 from app.api.endpoints.blacklist import normalize_url_for_match, _extract_domain
-from app.modules.notifications.service import send_email_notification
+from app.modules.notifications.service import send_email_notification, send_email_async
 from app.services.supabase_service import get_supabase_service, SupabaseStorageService
 
 router = APIRouter(prefix="/api/v1", tags=["detection"])
@@ -373,8 +375,8 @@ async def _persist_attachment_to_supabase(
         )
 
 
-def _generate_education_recommendation_for_ticket(ticket_id: int) -> None:
-    """Generate education recommendation after the main response returns."""
+async def _generate_education_recommendation_for_ticket(ticket_id: int, user_email: Optional[str] = None) -> None:
+    """Generate education recommendation after the main response returns and optionally send email."""
     db = SessionLocal()
     try:
         from app.models.education import EducationModule
@@ -398,6 +400,33 @@ def _generate_education_recommendation_for_ticket(ticket_id: int) -> None:
 
         ticket.education_recommendation = recommendation
         db.commit()
+
+        if user_email:
+            # All tickets receive an education notification. Gemini AI generates
+            # recommendations tailored to the actual risk score, so content is
+            # already risk-aware (lighter for Low, stronger for High).
+            template_body = {
+                "ticket_id": ticket.ticket_id,
+                "type": ticket.type or "N/A",
+                "url": ticket.url or "N/A",
+                "sender_numbers": ticket.sender_numbers or "N/A",
+                "summary": (ticket.summary or "")[:300],
+                "risk_score": ticket.risk_score,
+                "priority": ticket.priority,
+                "bank_name": ticket.bank_name or "",
+                "bank_account": ticket.bank_account or "",
+                "reference_number": ticket.reference_number or "",
+                "gemini_warnings": recommendation.get("warnings", []),
+                "gemini_actions": recommendation.get("suggested_actions", []),
+                "gemini_tips": recommendation.get("tips", []),
+            }
+            await send_email_async(
+                subject=f"OctoSight - Report Submitted [{ticket.ticket_id}]",
+                email_to=user_email,
+                template_name="form_submit.html",
+                template_body=template_body
+            )
+            
     except Exception as e:
         print(f"Failed to generate education recommendation: {e}")
     finally:
@@ -659,22 +688,13 @@ async def create_report(
     db.commit()
     db.refresh(db_ticket)
 
-    background_tasks.add_task(
-        _generate_education_recommendation_for_ticket, db_ticket.id
-    )
-
     if current_user and current_user.email:
-        send_email_notification(
-            background_tasks=background_tasks,
-            subject=f"OctoSight - Report Received [{db_ticket.ticket_id}]",
-            email_to=current_user.email,
-            template_name="form_submit.html",
-            template_body={
-                "ticket_id": db_ticket.ticket_id,
-                "url": db_ticket.url or "N/A",
-                "risk_score": db_ticket.risk_score,
-                "priority": db_ticket.priority
-            }
+        background_tasks.add_task(
+            _generate_education_recommendation_for_ticket, db_ticket.id, current_user.email
+        )
+    else:
+        background_tasks.add_task(
+            _generate_education_recommendation_for_ticket, db_ticket.id, None
         )
 
     return db_ticket
@@ -900,3 +920,77 @@ def predict_spam(
     """
     result = analyze_spam(request.text)
     return SpamPredictionResponse(message=request.text, data=result)
+
+
+class ExplainRequest(BaseModel):
+    report_type: str = ""
+    url: str = ""
+    summary: str = ""
+    score: float = 0
+    priority: str = "Low"
+    ml_category: str = ""
+    flags: list[str] = []
+    detected_scam_type: str = ""
+
+
+@router.post(
+    "/analyze/explain",
+    summary="Generate a brief AI explanation for the analysis result (UI only, not stored)",
+)
+def analyze_explain(request: ExplainRequest):
+    """
+    Call Gemini AI to produce a concise 1-2 sentence explanation of why the
+    system classified the user's input the way it did. This is purely for
+    UI display on the Report Confirmation page — the result is never stored.
+    Falls back to a deterministic template if Gemini is unavailable.
+    """
+    flags_str = ", ".join(request.flags) if request.flags else "none"
+    prompt = f"""You are a cybersecurity assistant for a bank's anti-phishing system.
+Generate a VERY BRIEF explanation (1-2 short sentences, max 40 words total) for a bank customer.
+Explain what the user submitted and why the system gave the result it did.
+Use clear, simple English. Do NOT use markdown. Do NOT use first-person voice.
+
+USER INPUT:
+- Type: {request.report_type}
+- URL/Indicator: {request.url or 'N/A'}
+- Summary: {(request.summary or '')[:300]}
+
+SYSTEM RESULT:
+- Risk Score: {request.score}/100 ({request.priority})
+- ML Prediction: {request.ml_category or 'N/A'}
+- Flags: {flags_str}
+- Detected Scenario: {request.detected_scam_type or 'N/A'}
+
+Generate the explanation now:"""
+
+    try:
+        client = GeminiClient.get_client()
+        if client and not GeminiClient.is_circuit_open():
+            from google.genai import types as gtypes
+            response = client.models.generate_content(
+                model='gemini-2.5-flash',
+                contents=prompt,
+                config=gtypes.GenerateContentConfig(
+                    safety_settings=[
+                        gtypes.SafetySetting(category='HARM_CATEGORY_DANGEROUS_CONTENT', threshold='BLOCK_NONE'),
+                    ]
+                )
+            )
+            explanation = response.text.strip()
+            if explanation:
+                return {"explanation": explanation}
+    except Exception as e:
+        err = str(e)
+        if "429" in err or "RESOURCE_EXHAUSTED" in err:
+            GeminiClient.rotate_key_on_exhaustion(GeminiClient.extract_retry_delay(Exception(err)))
+        print(f"[Gemini Explain] Error: {err}")
+
+    risk = "high risk" if request.score >= 70 else "medium risk" if request.score >= 40 else "low risk"
+    fallback = (
+        f"The {request.report_type.lower() or 'reported content'} "
+        f"{f'({request.url}) ' if request.url else ''}"
+        f"was flagged as {risk} (score: {request.score:.0f}/100). "
+        f"System detected the following indicators: {flags_str}. "
+        f"Please review the details above and contact your bank if you shared any personal information."
+    )
+    return {"explanation": fallback}

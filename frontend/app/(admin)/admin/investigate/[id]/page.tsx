@@ -4,6 +4,7 @@ import { useState, useEffect, use, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Ticket, TicketAuditLog } from "@/types/ticket";
 import { StatusModal } from "@/components/ui/StatusModal";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { BlacklistModal } from "@/components/admin/investigate/BlacklistModal";
 
 import { InvestigateHeader } from "@/components/admin/investigate/InvestigateHeader";
@@ -30,6 +31,7 @@ export default function InvestigatePage({
   const [initialStatus, setInitialStatus] = useState("");
   const [actionLabel, setActionLabel] = useState("");
 
+  const [showSaveConfirm, setShowSaveConfirm] = useState(false);
   const [auditLogs, setAuditLogs] = useState<TicketAuditLog[]>([]);
   const [auditLoading, setAuditLoading] = useState(true);
 
@@ -143,11 +145,7 @@ export default function InvestigatePage({
   const hasChanges = notes !== initialNotes || status !== initialStatus || !!actionLabel;
 
   const handleUpdate = async () => {
-    if (!hasChanges) {
-      toast.error("No changes detected. Please modify the data before saving.");
-      return;
-    }
-
+    setShowSaveConfirm(false);
     setSaving(true);
     try {
       const res = await fetch(`/api/v1/tickets/${ticketId}`, {
@@ -166,17 +164,37 @@ export default function InvestigatePage({
         setInitialNotes(notes);
         setInitialStatus(status);
         setActionLabel("");
-        toast.success(`Ticket ${ticketId} has been updated successfully.`);
+        setModalConfig({
+          isOpen: true,
+          type: "success",
+          title: "Changes Saved",
+          message: `Ticket ${ticketId} has been updated. The reporter will be notified of any status changes.`,
+        });
       } else {
+        let errorMsg = "Could not update the ticket. Please try again later.";
+        try {
+          const errorData = await res.json();
+          if (errorData.detail) {
+            errorMsg = errorData.detail;
+          }
+        } catch (e) {
+          // Fallback to default message
+        }
+
         setModalConfig({
           isOpen: true,
           type: "error",
           title: "Update Failed",
-          message: "Could not update the ticket. Please try again later.",
+          message: errorMsg,
         });
       }
     } catch (err: any) {
-      toast.error(err.message || "An error occurred while connecting to the server.");
+      setModalConfig({
+        isOpen: true,
+        type: "error",
+        title: "Connection Error",
+        message: err.message || "An error occurred while connecting to the server.",
+      });
     } finally {
       setSaving(false);
     }
@@ -199,7 +217,13 @@ export default function InvestigatePage({
     <div className="container mx-auto px-4 py-8 max-w-6xl">
       <InvestigateHeader
         ticketId={ticket.ticket_id}
-        onSave={handleUpdate}
+        onSave={() => {
+          if (!hasChanges) {
+            toast.error("No changes detected. Please modify the data before saving.");
+            return;
+          }
+          setShowSaveConfirm(true);
+        }}
         saving={saving}
         disabled={!hasChanges}
       />
@@ -216,7 +240,7 @@ export default function InvestigatePage({
 
         {/* Notes + optional action label */}
         <div className="lg:col-span-1 h-full">
-          <InvestigateNotes notes={notes} setNotes={setNotes} />
+          <InvestigateNotes ticket={ticket} notes={notes} setNotes={setNotes} />
         </div>
 
         {/* Evidence */}
@@ -241,6 +265,17 @@ export default function InvestigatePage({
         </div>
       </div>
 
+      {/* Save Confirmation Modal */}
+      <ConfirmModal
+        isOpen={showSaveConfirm}
+        title="Save Investigation Changes?"
+        message="Are you sure you want to update this ticket? The reporter will be notified of any status changes."
+        confirmText="Confirm Save"
+        onConfirm={handleUpdate}
+        onClose={() => setShowSaveConfirm(false)}
+        isLoading={saving}
+      />
+
       {/* Blacklist Modal */}
       <BlacklistModal
         isOpen={blacklistConfig.isOpen}
@@ -264,10 +299,14 @@ export default function InvestigatePage({
 
       <StatusModal
         {...modalConfig}
+        buttonText={modalConfig.type === "success" ? "Back to Triage" : "Dismiss"}
         onClose={() => {
-          setModalConfig({ ...modalConfig, isOpen: false });
           if (modalConfig.type === "success") {
-            router.push("/admin/triage");
+            toast.success(`Ticket ${ticketId} has been updated successfully.`);
+            router.back();
+          } else {
+            // Errors just close the dialog, stay on page
+            setModalConfig({ ...modalConfig, isOpen: false });
           }
         }}
       />

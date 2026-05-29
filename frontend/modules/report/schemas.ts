@@ -8,12 +8,10 @@ export const ReportTypeSchema = z.object({
 });
 
 const commonFields = {
-  summary: z
+  summary: z.string().max(2000).optional().or(z.literal("")),
+  incidentDate: z
     .string()
-    .max(2000)
-    .optional()
-    .or(z.literal("")),
-  incidentDate: z.string().min(1, "Required: Please select the time of occurrence"),
+    .min(1, "Required: Please select the time of occurrence"),
   bankName: z.string().optional().or(z.literal("")),
   bankAccount: z.string().optional().or(z.literal("")),
   referenceNumber: z.string().optional().or(z.literal("")),
@@ -26,13 +24,23 @@ export const IncidentSchemas = {
     url: z
       .string()
       .optional()
-      .refine((val) => !val || /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/[^\s]*)?$/i.test(val), {
-        message: "Invalid format. Example: example.com",
-      }),
+      .refine(
+        (val) =>
+          !val ||
+          /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/[^\s]*)?$/i.test(
+            val,
+          ),
+        {
+          message: "Invalid format. Example: website-url.com",
+        },
+      ),
     senderNumbers: z
       .string()
       .min(1, "Required: Enter sender number")
-      .regex(/^[0-9+,\s]+$/, "Invalid format. Use numbers or +62. Separate with commas.")
+      .regex(
+        /^[0-9+,\s]+$/,
+        "Invalid format. Use numbers or +62. Separate with commas.",
+      )
       .min(10, "Phone number minimum 10 digits"),
   }),
   WhatsApp: z.object({
@@ -41,13 +49,23 @@ export const IncidentSchemas = {
     url: z
       .string()
       .optional()
-      .refine((val) => !val || /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/[^\s]*)?$/i.test(val), {
-        message: "Invalid format. Example: example.com",
-      }),
+      .refine(
+        (val) =>
+          !val ||
+          /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/[^\s]*)?$/i.test(
+            val,
+          ),
+        {
+          message: "Invalid format. Example: website-url.com",
+        },
+      ),
     senderNumbers: z
       .string()
       .min(1, "Required: Enter WhatsApp number")
-      .regex(/^[0-9+,\s]+$/, "Invalid format. Use numbers or +62. Separate with commas.")
+      .regex(
+        /^[0-9+,\s]+$/,
+        "Invalid format. Use numbers or +62. Separate with commas.",
+      )
       .min(10, "Phone number minimum 10 digits"),
   }),
   Email: z.object({
@@ -56,9 +74,16 @@ export const IncidentSchemas = {
     url: z
       .string()
       .optional()
-      .refine((val: string | undefined) => !val || /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/[^\s]*)?$/i.test(val), {
-        message: "Invalid format. Example: example.com",
-      }),
+      .refine(
+        (val: string | undefined) =>
+          !val ||
+          /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/[^\s]*)?$/i.test(
+            val,
+          ),
+        {
+          message: "Invalid format. Example: website-url.com",
+        },
+      ),
     senderNumbers: z
       .string()
       .min(1, "Required: Enter sender email")
@@ -70,7 +95,10 @@ export const IncidentSchemas = {
     url: z
       .string()
       .min(1, "Required: Enter the fake website URL")
-      .regex(/^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/[^\s]*)?$/i, "Invalid format. Example: example.com"),
+      .regex(
+        /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/[^\s]*)?$/i,
+        "Invalid format. Example: website-url.com",
+      ),
     senderNumbers: z.string().optional(), // Make optional to match ReportFormData
   }),
   Transaction: z.object({
@@ -79,13 +107,23 @@ export const IncidentSchemas = {
     url: z
       .string()
       .optional()
-      .refine((val) => !val || /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/[^\s]*)?$/i.test(val), {
-        message: "Invalid format. Example: example.com",
-      }),
+      .refine(
+        (val) =>
+          !val ||
+          /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/[^\s]*)?$/i.test(
+            val,
+          ),
+        {
+          message: "Invalid format. Example: website-url.com",
+        },
+      ),
     senderNumbers: z
       .string()
       .min(1, "Required: Enter scammer bank account / number")
-      .regex(/^[0-9+,\sA-Z-]+$/, "Invalid format. Use numbers, letters or hyphens.")
+      .regex(
+        /^[0-9+,\sA-Z-]+$/,
+        "Invalid format. Use numbers, letters or hyphens.",
+      )
       .min(5, "Account number minimum 5 digits/chars"),
   }),
 };

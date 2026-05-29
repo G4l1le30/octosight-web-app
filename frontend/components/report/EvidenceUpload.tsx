@@ -12,6 +12,7 @@
  */
 
 import React, { useCallback } from "react";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
 import { Camera, FileCode, AlertTriangle, FileText, Archive, FileImage } from "lucide-react";
@@ -267,9 +268,11 @@ export const EvidenceUpload = ({
             {/* Left Side: Square Preview Container */}
             <div className="h-full aspect-square rounded-lg overflow-hidden border border-neutral-border bg-neutral-page flex items-center justify-center shrink-0 relative">
               {isImageFile && previewUrl ? (
-                <img
+                <Image
                   src={previewUrl}
-                  className="w-full h-full object-cover"
+                  fill
+                  sizes="192px"
+                  className="object-cover"
                   alt="preview"
                 />
               ) : (

@@ -31,6 +31,19 @@ router = APIRouter(prefix="/api/v1", tags=["tickets"])
 
 UPLOAD_DIR = os.getenv("UPLOAD_DIR", "uploads")
 
+# ── Status progression order (no rollback allowed) ────────────────────────────
+# Higher number = later stage. Transitions must never decrease the order index.
+# "False Positive" and "Mitigated" share the same level so admins can switch
+# between them (both are resolution outcomes from Confirmed).
+STATUS_ORDER: dict[str, int] = {
+    "Submitted":     0,
+    "In Review":     1,
+    "Confirmed":     2,
+    "False Positive": 3,
+    "Mitigated":     3,
+    "Closed":        4,
+}
+
 
 @router.get("/tickets", summary="List all tickets (admin only)")
 def get_tickets(
@@ -64,6 +77,7 @@ def update_ticket(
     """
     Update ticket status, priority, or investigation notes.
     Writes a TicketAuditLog entry on every change.
+    Status transitions must be forward-only (no rollback to previous states).
     Admin only.
     """
     ticket = db.query(Ticket).filter(Ticket.ticket_id == ticket_id).first()
@@ -72,6 +86,19 @@ def update_ticket(
 
     old_status = ticket.status
     status_changed = update.status is not None and update.status != old_status
+
+    # ── Linear status guard ───────────────────────────────────────────────────
+    if status_changed and update.status is not None:
+        old_order = STATUS_ORDER.get(old_status, -1)
+        new_order = STATUS_ORDER.get(update.status, -1)
+        if new_order == -1:
+            raise HTTPException(status_code=400, detail=f"Invalid status: '{update.status}'")
+        if new_order < old_order:
+            raise HTTPException(
+                status_code=422,
+                detail=f"Cannot revert status from '{old_status}' back to '{update.status}'. Status progress must move forward.",
+            )
+    # ─────────────────────────────────────────────────────────────────────────
 
     if update.status is not None:
         ticket.status = update.status
@@ -113,6 +140,15 @@ def update_ticket(
                 template_name="status_change.html",
                 template_body={
                     "ticket_id": ticket.ticket_id,
+                    "type": ticket.type or "N/A",
+                    "url": ticket.url or "N/A",
+                    "sender_numbers": ticket.sender_numbers or "N/A",
+                    "summary": (ticket.summary or "")[:300],
+                    "risk_score": ticket.risk_score,
+                    "priority": ticket.priority,
+                    "bank_name": ticket.bank_name or "",
+                    "bank_account": ticket.bank_account or "",
+                    "reference_number": ticket.reference_number or "",
                     "old_status": old_status,
                     "new_status": update.status,
                     "notes": update.investigation_notes or "",
@@ -120,6 +156,100 @@ def update_ticket(
             )
 
     return ticket
+
+
+@router.post("/tickets/{ticket_id}/generate-notes", summary="Generate AI investigation notes (admin only)")
+def generate_notes(
+    ticket_id: str,
+    db: Session = Depends(get_db),
+    _admin=Depends(require_admin),
+):
+    """
+    Call Gemini AI to generate a suggested investigation note for this ticket,
+    using the full ticket context (type, risk scores, flags, summary, extracted text).
+    Admin only.
+    """
+    import json as _json
+    from app.modules.education.gemini.client import GeminiClient
+    from app.modules.education.gemini.service import GeminiEducationService
+
+    ticket = db.query(Ticket).filter(Ticket.ticket_id == ticket_id).first()
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+
+    # Build rich context string for the prompt
+    flags_list = (ticket.flags or "").replace(",", ", ")
+    analysis = {}
+    try:
+        analysis = _json.loads(ticket.analysis_results or "{}")
+    except Exception:
+        pass
+    hybrid = analysis.get("hybrid_scoring", {})
+
+    prompt = f"""You are an expert cybersecurity analyst writing investigation notes on behalf of a bank's anti-phishing team.
+        Generate a concise, professional note (3-4 short sentences) to be shown to the user who submitted this report.
+        The note should:
+        1. Confirm what was found and the risk level.
+        2. Explain the nature of the threat (e.g. phishing, brand impersonation, scam).
+        3. Give clear, actionable advice for the USER to protect themselves (e.g. do not interact, do not share credentials, contact the bank directly).
+        DO NOT recommend internal admin actions (no takedown, no blocklist, no escalation).
+        DO NOT use first-person voice (no "I", "my", "we").
+        DO NOT use markdown. Write plain text only.
+
+        TICKET CONTEXT:
+        - Ticket ID      : {ticket.ticket_id}
+        - Report Type    : {ticket.type}
+        - URL/Indicator  : {ticket.url or 'N/A'}
+        - Sender         : {ticket.sender_numbers or 'N/A'}
+        - Bank / Account : {ticket.bank_name or 'N/A'} / {ticket.bank_account or 'N/A'}
+        - Final Risk Score: {ticket.risk_score}% (Priority: {ticket.priority})
+        - Rule Score     : {hybrid.get('rule_score', ticket.rule_score or 'N/A')}%
+        - ML Score       : {hybrid.get('ml_score', ticket.ml_score or 'N/A')}% ({hybrid.get('ml_category', 'N/A')})
+        - Active Flags   : {flags_list or 'None'}
+        - User Summary   : {ticket.summary or 'N/A'}
+        - OCR Extracted  : {(ticket.extracted_text or '')[:600] or 'N/A'}
+        - Current Status : {ticket.status}
+
+        Generate the investigation note now:"""
+
+    # Try Gemini, fall back to a template note
+    try:
+        client = GeminiClient.get_client()
+        if client and not GeminiClient.is_circuit_open():
+            from google.genai import types as gtypes  # type: ignore
+            response = client.models.generate_content(
+                model='gemini-2.5-flash',
+                contents=prompt,
+                config=gtypes.GenerateContentConfig(
+                    safety_settings=[
+                        gtypes.SafetySetting(category='HARM_CATEGORY_DANGEROUS_CONTENT', threshold='BLOCK_NONE'),
+                    ]
+                )
+            )
+            suggestion = response.text.strip()
+            if suggestion:
+                return {"suggestion": suggestion}
+    except Exception as e:
+        err = str(e)
+        if "429" in err or "RESOURCE_EXHAUSTED" in err:
+            GeminiClient.rotate_key_on_exhaustion(GeminiClient.extract_retry_delay(Exception(err)))
+        print(f"[Gemini Notes] Error: {err}")
+
+    # Fallback: deterministic template (user-facing)
+    risk_word = "high" if ticket.risk_score >= 70 else "moderate" if ticket.risk_score >= 35 else "low"
+    action_advice = (
+        "Do not interact with the reported content, avoid clicking any links, and do not share any personal or banking credentials."
+        if ticket.risk_score >= 70
+        else "Exercise caution and avoid interacting with the reported content until the investigation is complete."
+    )
+    fallback = (
+        f"The reported {ticket.type.lower()} ({ticket.url or ticket.sender_numbers or 'indicator'}) "
+        f"has been assessed as a {risk_word}-risk threat with a risk score of {ticket.risk_score}%. "
+        f"Active threat indicators: {flags_list or 'none'}. "
+        f"{action_advice} "
+        f"If any personal or financial information has already been shared, please contact your bank immediately and change your credentials."
+    )
+    return {"suggestion": fallback}
 
 
 @router.get("/tickets/{ticket_id}/audit-logs", summary="Get audit trail for a ticket")
@@ -230,7 +360,7 @@ def notify_user(
     return {"message": "Notification queued"}
 
 
-@router.get("/admin/download/{filename}", summary="Download evidence file (admin only)")
+@router.get("/admin/download/{filename:path}", summary="Download evidence file (admin only)")
 def download_file(filename: str, _admin=Depends(require_admin)):
     """
     Stream an evidence file (screenshot or attachment) to the admin.

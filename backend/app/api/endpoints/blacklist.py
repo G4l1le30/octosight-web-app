@@ -266,6 +266,25 @@ def add_account_to_blacklist(
     return entry
 
 
+@router.get("/accounts/check", summary="Check if an account is blacklisted")
+def check_account(
+    account_number: str,
+    db: Session = Depends(get_db),
+    _admin=Depends(require_admin),
+):
+    clean_acc = account_number.strip().replace(" ", "").replace("-", "")
+    entry = db.query(BlacklistedAccount).filter(
+        BlacklistedAccount.account_number == clean_acc,
+        BlacklistedAccount.is_active == True
+    ).first()
+    return {
+        "account_number": account_number,
+        "is_blacklisted": entry is not None,
+        "entry_id": entry.id if entry else None,
+        "reason": entry.reason if entry else None,
+    }
+
+
 @router.get("/accounts", response_model=list[AccountBlacklistResponse], summary="List blacklisted accounts")
 def list_account_blacklist(db: Session = Depends(get_db), _admin=Depends(require_admin)):
     return db.query(BlacklistedAccount).order_by(BlacklistedAccount.created_at.desc()).all()
@@ -311,6 +330,25 @@ def add_phone_to_blacklist(
     return entry
 
 
+@router.get("/phones/check", summary="Check if a phone number is blacklisted")
+def check_phone(
+    phone_number: str,
+    db: Session = Depends(get_db),
+    _admin=Depends(require_admin),
+):
+    clean_phone = phone_number.strip().replace(" ", "").replace("-", "").replace("+", "")
+    entry = db.query(BlacklistedPhone).filter(
+        BlacklistedPhone.phone_number == clean_phone,
+        BlacklistedPhone.is_active == True
+    ).first()
+    return {
+        "phone_number": phone_number,
+        "is_blacklisted": entry is not None,
+        "entry_id": entry.id if entry else None,
+        "reason": entry.reason if entry else None,
+    }
+
+
 @router.get("/phones", response_model=list[PhoneBlacklistResponse], summary="List blacklisted phones")
 def list_phone_blacklist(db: Session = Depends(get_db), _admin=Depends(require_admin)):
     return db.query(BlacklistedPhone).order_by(BlacklistedPhone.created_at.desc()).all()
@@ -354,6 +392,25 @@ def add_email_to_blacklist(
     db.commit()
     db.refresh(entry)
     return entry
+
+
+@router.get("/emails/check", summary="Check if an email is blacklisted")
+def check_email(
+    email: str,
+    db: Session = Depends(get_db),
+    _admin=Depends(require_admin),
+):
+    clean_email = email.strip().lower()
+    entry = db.query(BlacklistedEmail).filter(
+        BlacklistedEmail.email == clean_email,
+        BlacklistedEmail.is_active == True
+    ).first()
+    return {
+        "email": email,
+        "is_blacklisted": entry is not None,
+        "entry_id": entry.id if entry else None,
+        "reason": entry.reason if entry else None,
+    }
 
 
 @router.get("/emails", response_model=list[EmailBlacklistResponse], summary="List blacklisted emails")

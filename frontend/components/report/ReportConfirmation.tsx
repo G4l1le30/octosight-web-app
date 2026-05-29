@@ -17,6 +17,8 @@ import {
   CreditCard,
   Hash,
   ShieldCheck,
+  Flag,
+  Brain,
 } from "lucide-react";
 import { RiskScoreCard } from "./RiskScoreCard";
 import { ReportFormData } from "@/types/ticket";
@@ -31,6 +33,7 @@ interface ReportConfirmationProps {
     rule_weight?: number;
     ml_weight?: number;
     ml_category?: string;
+    flags?: string[];
     extracted_ocr_text?: string;
     is_blacklisted?: boolean;
     details?: {
@@ -74,6 +77,41 @@ export const ReportConfirmation = ({
   onSubmit,
   isSubmitting,
 }: ReportConfirmationProps) => {
+  const [aiExplanation, setAiExplanation] = React.useState<string | null>(null);
+  const [explanationLoading, setExplanationLoading] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!analysisResult) return;
+    const fetchExplanation = async () => {
+      setExplanationLoading(true);
+      try {
+        const res = await fetch("/api/analyze/explain", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            report_type: formData.type,
+            url: formData.url || "",
+            summary: formData.summary || "",
+            score: analysisResult.score,
+            priority: analysisResult.priority,
+            ml_category: analysisResult.ml_category,
+            flags: analysisResult.flags ?? [],
+            detected_scam_type: analysisResult.details?.detected_scam_type,
+          }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setAiExplanation(data.explanation);
+        }
+      } catch {
+        // Non-critical — explanation is purely cosmetic
+      } finally {
+        setExplanationLoading(false);
+      }
+    };
+    fetchExplanation();
+  }, [analysisResult, formData.type, formData.url, formData.summary]);
+
   const initialRiskScore = analysisResult?.score || 0;
   const initialRiskStatus = analysisResult?.priority
     ? `${analysisResult.priority} Risk`
@@ -100,8 +138,12 @@ export const ReportConfirmation = ({
     }
   };
 
-  const isScamScenario = analysisResult?.details?.detected_scam_type && analysisResult.details.detected_scam_type !== "General Phishing";
+  const isScamScenario =
+    analysisResult?.details?.detected_scam_type &&
+    analysisResult.details.detected_scam_type !== "General Phishing";
   const isNoUrlScam = !formData.url?.trim() && isScamScenario;
+
+  const flags = analysisResult?.flags ?? [];
 
   const typeConfig = REPORT_TYPE_LABELS[formData.type] || {
     label: formData.type || "Laporan",
@@ -233,6 +275,35 @@ export const ReportConfirmation = ({
                   </p>
                 </div>
               </div>
+
+              {/* Detection Engine Flags */}
+              {flags.length > 0 && (
+                <div className="flex items-start gap-5">
+                  <div className="p-3.5 rounded-2xl bg-primary/5 text-primary shrink-0">
+                    <Flag className="size-6" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-secondary/60 mb-2">
+                      Detection Engine Flags
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {flags.slice(0, 3).map((flag, i) => (
+                        <span
+                          key={i}
+                          className="bg-secondary text-white text-xs font-bold px-3 py-1.5 rounded-full"
+                        >
+                          {flag.toLowerCase().replace(/_/g, " ")}
+                        </span>
+                      ))}
+                      {flags.length > 3 && (
+                        <span className="bg-secondary text-white text-xs font-bold px-3 py-1.5 rounded-full">
+                          +{flags.length - 3} more
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Right Side: Risk Score Card */}
@@ -255,7 +326,9 @@ export const ReportConfirmation = ({
                   <div className="bg-transparent rounded-2xl p-4 border border-neutral-border">
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="text-sm font-bold text-secondary">
-                        {isNoUrlScam ? "Scam Analysis Weights" : "Hybrid Score Breakdown"}
+                        {isNoUrlScam
+                          ? "Scam Analysis Weights"
+                          : "Hybrid Score Breakdown"}
                       </h3>
                       {analysisResult?.is_blacklisted && (
                         <span className="px-2 py-0.5 rounded-md bg-secondary text-white text-xs font-bold tracking-wide">
@@ -319,7 +392,9 @@ export const ReportConfirmation = ({
                       {isNoUrlScam && (
                         <div className="pt-2 mt-2 border-t border-dashed border-neutral-border">
                           <p className="text-xs text-secondary/40 font-medium leading-tight">
-                            *Rule-based detection is prioritized (100%) for social engineering scams without URLs. Phishing AI remains as language context.
+                            *Rule-based detection is prioritized (100%) for
+                            social engineering scams without URLs. Phishing AI
+                            remains as language context.
                           </p>
                         </div>
                       )}
@@ -329,17 +404,21 @@ export const ReportConfirmation = ({
 
                 {/* Specific Scam Analysis Result */}
                 {analysisResult?.details?.detected_scam_type && (
-                  <div className="bg-primary/5 rounded-2xl p-4 border border-primary/20">
+                  <div className="bg-transparent rounded-2xl p-4 border border-neutral-border">
                     <div className="flex items-center gap-2 mb-2">
-                      <ShieldCheck className="size-4 text-primary" />
-                      <h3 className="text-xs font-bold text-secondary tracking-wide">
+                      <ShieldCheck className="size-4 text-secondary" />
+                      <h3 className="text-sm font-bold text-secondary tracking-wide">
                         Scenario Analysis
                       </h3>
                     </div>
-                    <p className="text-sm font-bold text-secondary">
-                      Detected: <span className="text-primary">{analysisResult.details.detected_scam_type}</span>
+                    <p className="text-sm font-semibold text-secondary">
+                      Detected:{" "}
+                      <span className="text-secondary">
+                        {analysisResult.details.detected_scam_type}
+                      </span>
                     </p>
-                    {analysisResult.details.transaction_validation !== "N/A" && (
+                    {analysisResult.details.transaction_validation !==
+                      "N/A" && (
                       <p className="text-xs text-secondary/70 mt-1">
                         {analysisResult.details.transaction_validation}
                       </p>
@@ -349,6 +428,28 @@ export const ReportConfirmation = ({
               </div>
             )}
           </div>
+
+          {/* AI Analysis — full width */}
+          {(aiExplanation || explanationLoading) && (
+            <div className="mt-4 rounded-2xl p-6 border-2 border-neutral-border">
+              <div className="flex items-center gap-2 mb-3">
+                <Brain className="size-5 text-secondary" />
+                <h3 className="text-sm font-bold text-secondary tracking-wide">
+                  AI Analysis
+                </h3>
+              </div>
+              {explanationLoading ? (
+                <div className="flex items-center gap-2 text-sm text-secondary/60">
+                  <Loader2 className="size-4 animate-spin" />
+                  Generating explanation...
+                </div>
+              ) : (
+                <p className="text-sm font-medium text-secondary leading-relaxed">
+                  {aiExplanation}
+                </p>
+              )}
+            </div>
+          )}
 
           {/* Divider */}
           <div className="my-10 h-px bg-neutral-border" />

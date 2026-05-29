@@ -76,7 +76,7 @@ export const StatusEvidence: React.FC<StatusEvidenceProps> = ({ result }) => {
                   </div>
                   <button
                     onClick={() => openEvidenceFile(path)}
-                    className="text-xs font-bold text-secondary underline hover:text-secondary/80 transition-colors px-2 py-1"
+                    className="text-xs font-bold text-secondary hover:underline hover:text-secondary/80 transition-colors px-2 py-1"
                   >
                     Open
                   </button>
@@ -123,7 +123,7 @@ export const StatusEvidence: React.FC<StatusEvidenceProps> = ({ result }) => {
                   </div>
                   <button
                     onClick={() => openEvidenceFile(path)}
-                    className="text-xs font-bold text-secondary underline hover:text-secondary/80 transition-colors px-2 py-1"
+                    className="text-xs font-bold text-secondary hover:underline hover:text-secondary/80 transition-colors px-2 py-1"
                   >
                     Open
                   </button>

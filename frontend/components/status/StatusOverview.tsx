@@ -1,12 +1,17 @@
 import React from "react";
 import { Ticket } from "@/types/ticket";
-import { CreditCard, Hash } from "lucide-react";
+import { CreditCard, Hash, Flag } from "lucide-react";
 
 interface StatusOverviewProps {
   result: Ticket;
 }
 
 export const StatusOverview: React.FC<StatusOverviewProps> = ({ result }) => {
+  const flags: string[] = React.useMemo(() => {
+    if (!result.flags) return [];
+    return result.flags.split(",").map((f) => f.trim());
+  }, [result.flags]);
+
   return (
     <div className="space-y-8">
       {/* Risk Score */}
@@ -18,7 +23,8 @@ export const StatusOverview: React.FC<StatusOverviewProps> = ({ result }) => {
           <span
             className={`text-4xl font-bold ${result.risk_score >= 70 ? "text-risk-high" : result.risk_score >= 40 ? "text-risk-medium" : "text-risk-low"}`}
           >
-            {Number(result.risk_score)}<span className="text-2xl text-secondary/40">/100</span>
+            {Number(result.risk_score)}
+            <span className="text-2xl text-secondary/40">/100</span>
           </span>
           <div className="flex-1 h-3 bg-neutral-border/60 rounded-full overflow-hidden">
             <div
@@ -47,7 +53,9 @@ export const StatusOverview: React.FC<StatusOverviewProps> = ({ result }) => {
         </div>
         {result.url && (
           <div>
-            <p className="text-sm font-bold text-secondary tracking-wide">Target URL</p>
+            <p className="text-sm font-bold text-secondary tracking-wide">
+              Target URL
+            </p>
             <p className="text-base font-bold break-all opacity-90">
               {result.url}
             </p>
@@ -121,6 +129,25 @@ export const StatusOverview: React.FC<StatusOverviewProps> = ({ result }) => {
             <p className="text-sm font-semibold text-secondary/80 leading-relaxed whitespace-pre-wrap">
               {result.extracted_text}
             </p>
+          </div>
+        </div>
+      )}
+
+      {/* Detection Engine Flags */}
+      {flags.length > 0 && (
+        <div>
+          <p className="text-sm font-bold text-secondary mb-2 flex items-center gap-1.5">
+            Detection Engine Flags
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {flags.map((flag, i) => (
+              <span
+                key={i}
+                className="bg-secondary text-white text-xs font-bold px-3 py-1.5 rounded-full"
+              >
+                {flag.replace(/_/g, " ")}
+              </span>
+            ))}
           </div>
         </div>
       )}

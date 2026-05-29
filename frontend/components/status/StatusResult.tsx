@@ -22,7 +22,9 @@ const StatusResult: React.FC<StatusResultProps> = ({ result }) => {
     const fetchAuditLogs = async () => {
       setLogsLoading(true);
       try {
-        const res = await fetch(`/api/v1/tickets/${result.ticket_id}/audit-logs`);
+        const res = await fetch(
+          `/api/v1/tickets/${result.ticket_id}/audit-logs`,
+        );
         if (res.ok) {
           const data = await res.json();
           setAuditLogs(data);
@@ -58,10 +60,18 @@ const StatusResult: React.FC<StatusResultProps> = ({ result }) => {
 
           <div className="pt-6 border-t border-neutral-border flex flex-col sm:flex-row sm:items-center justify-end gap-4">
             <div className="flex gap-3 w-full sm:w-auto">
-              <Button variant="outline" size="md" className="flex-1 sm:flex-none">
+              <Button
+                variant="outline"
+                size="md"
+                className="flex-1 sm:flex-none"
+              >
                 Report Accuracy Issue
               </Button>
-              <Button variant="secondary" size="md" className="flex-1 sm:flex-none">
+              <Button
+                variant="secondary"
+                size="md"
+                className="flex-1 sm:flex-none"
+              >
                 Notify Support
               </Button>
             </div>
@@ -69,13 +79,32 @@ const StatusResult: React.FC<StatusResultProps> = ({ result }) => {
         </div>
       </div>
 
+      {result.education_recommendation && (
+        <div className="bg-white rounded-3xl border border-neutral-border shadow-sm overflow-hidden">
+          <div
+            className={`h-1.5 ${result.risk_score >= 70 ? "bg-risk-high" : result.risk_score >= 40 ? "bg-risk-medium" : "bg-risk-low"}`}
+          ></div>
+          <div className="p-8">
+            <RiskEducationPanel
+              recommendation={result.education_recommendation}
+            />
+          </div>
+        </div>
+      )}
+
       {/* Report Timeline */}
       <div className="bg-white rounded-3xl border border-neutral-border shadow-sm overflow-hidden">
-        <div className={`h-1.5 ${result.risk_score >= 70 ? "bg-risk-high" : result.risk_score >= 40 ? "bg-risk-medium" : "bg-risk-low"}`} />
+        <div
+          className={`h-1.5 ${result.risk_score >= 70 ? "bg-risk-high" : result.risk_score >= 40 ? "bg-risk-medium" : "bg-risk-low"}`}
+        />
         <div className="p-8">
           <div className="mb-6 space-y-1">
-            <h3 className="text-xl font-bold text-secondary">Report Timeline</h3>
-            <p className="text-sm text-secondary/60 font-medium">Live status updates and investigator actions</p>
+            <h3 className="text-xl font-bold text-secondary">
+              Report Timeline
+            </h3>
+            <p className="text-sm text-secondary/60 font-medium">
+              Live status updates and investigator actions
+            </p>
           </div>
           {logsLoading ? (
             <div className="flex items-center gap-3 text-sm text-secondary/60 font-medium py-6">
@@ -93,17 +122,6 @@ const StatusResult: React.FC<StatusResultProps> = ({ result }) => {
           )}
         </div>
       </div>
-
-      {result.education_recommendation && (
-        <div className="bg-white rounded-3xl border border-neutral-border shadow-sm overflow-hidden">
-          <div
-            className={`h-1.5 ${result.risk_score >= 70 ? "bg-risk-high" : result.risk_score >= 40 ? "bg-risk-medium" : "bg-risk-low"}`}
-          ></div>
-          <div className="p-8">
-            <RiskEducationPanel recommendation={result.education_recommendation} />
-          </div>
-        </div>
-      )}
     </div>
   );
 };

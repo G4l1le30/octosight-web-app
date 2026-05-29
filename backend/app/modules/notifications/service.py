@@ -119,6 +119,29 @@ def send_email_notification(
     logger.info("Email queued: subject=%s, to=%s", subject, email_to)
     return True
 
+async def send_email_async(
+    subject: str,
+    email_to: str,
+    template_name: str,
+    template_body: dict,
+) -> bool:
+    """Send an email asynchronously without needing BackgroundTasks."""
+    if not _mail_enabled or fast_mail is None:
+        logger.warning(
+            "Email skipped (mail not configured): subject=%s, to=%s",
+            subject, email_to,
+        )
+        return False
+
+    message = MessageSchema(
+        subject=subject,
+        recipients=[email_to],
+        template_body=template_body,
+        subtype=MessageType.html,
+    )
+
+    await _send_with_logging(message, template_name)
+    return True
 
 async def _send_with_logging(message: MessageSchema, template_name: str):
     """Internal wrapper that catches and logs send errors."""

@@ -32,8 +32,8 @@ const DYNAMIC_CONTENT = {
   WhatsApp: {
     urlLabel: "Link in WhatsApp (Optional)",
     urlPlaceholder: "https://wa.me/message/...",
-    senderLabel: "WhatsApp Number / Group (Required)",
-    senderPlaceholder: "e.g., +62 812... or Phishing Group Name",
+    senderLabel: "WhatsApp Number (Required)",
+    senderPlaceholder: "e.g., +62 812...",
     summaryLabel: "Full Message Content (Required if no screenshot)",
     summaryPlaceholder: "Paste the exact WhatsApp message here...",
     fileLabel: "Chat Screenshots",
@@ -75,7 +75,9 @@ export default function ReportPage() {
   const [error, setError] = useState("");
   const [ticketData, setTicketData] = useState<Ticket | null>(null);
   const [isConfirming, setIsConfirming] = useState(false);
-  const [confirmedData, setConfirmedData] = useState<ReportFormData | null>(null);
+  const [confirmedData, setConfirmedData] = useState<ReportFormData | null>(
+    null,
+  );
   const [analysisResult, setAnalysisResult] = useState<any>(null);
 
   const [incidentType, setIncidentType] = useState<IncidentType>("Website");
@@ -113,7 +115,8 @@ export default function ReportPage() {
     if (!data.summary?.trim() && !screenshotFile) {
       form.setError("summary", {
         type: "manual",
-        message: "Required: Please provide message text or upload a screenshot.",
+        message:
+          "Required: Please provide message text or upload a screenshot.",
       });
       setScreenshotError(true);
       return;
@@ -133,8 +136,10 @@ export default function ReportPage() {
       payload.append("reference_number", data.referenceNumber || "");
 
       // Attach raw files — backend receives them as UploadFile (no Supabase yet)
-      if (screenshotFile) payload.append("screenshots", screenshotFile, screenshotFile.name);
-      if (attachmentFile) payload.append("attachments", attachmentFile, attachmentFile.name);
+      if (screenshotFile)
+        payload.append("screenshots", screenshotFile, screenshotFile.name);
+      if (attachmentFile)
+        payload.append("attachments", attachmentFile, attachmentFile.name);
 
       const response = await fetch("/api/analyze", {
         method: "POST",
@@ -174,8 +179,10 @@ export default function ReportPage() {
       payload.append("reference_number", confirmedData.referenceNumber ?? "");
 
       // Attach raw files — backend uploads to Supabase then saves paths to DB
-      if (screenshotFile) payload.append("screenshots", screenshotFile, screenshotFile.name);
-      if (attachmentFile) payload.append("attachments", attachmentFile, attachmentFile.name);
+      if (screenshotFile)
+        payload.append("screenshots", screenshotFile, screenshotFile.name);
+      if (attachmentFile)
+        payload.append("attachments", attachmentFile, attachmentFile.name);
 
       const response = await fetch("/api/v1/report", {
         method: "POST",
@@ -205,32 +212,34 @@ export default function ReportPage() {
     form.reset();
   };
 
-  if (authLoading) return (
-    <div className="container mx-auto px-4 py-32 text-center">
-      <div className="size-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-      <p className="text-secondary font-medium">Loading...</p>
-    </div>
-  );
+  if (authLoading)
+    return (
+      <div className="container mx-auto px-4 py-32 text-center">
+        <div className="size-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+        <p className="text-secondary font-medium">Loading...</p>
+      </div>
+    );
 
-  if (!user) return (
-    <AuthRequired description="Please log in to your account to submit a phishing report and track its progress." />
-  );
+  if (!user)
+    return (
+      <AuthRequired description="Please log in to your account to submit a phishing report and track its progress." />
+    );
 
-  if (submitted && ticketData) return (
-    <ReportSuccess ticketData={ticketData} onReset={handleReset} />
-  );
+  if (submitted && ticketData)
+    return <ReportSuccess ticketData={ticketData} onReset={handleReset} />;
 
-  if (isConfirming && confirmedData) return (
-    <div className="container mx-auto px-4 py-12 max-w-5xl">
-      <ReportConfirmation
-        formData={confirmedData}
-        analysisResult={analysisResult}
-        onBack={() => setIsConfirming(false)}
-        onSubmit={handleFinalSubmit}
-        isSubmitting={loading}
-      />
-    </div>
-  );
+  if (isConfirming && confirmedData)
+    return (
+      <div className="container mx-auto px-4 py-12 max-w-5xl">
+        <ReportConfirmation
+          formData={confirmedData}
+          analysisResult={analysisResult}
+          onBack={() => setIsConfirming(false)}
+          onSubmit={handleFinalSubmit}
+          isSubmitting={loading}
+        />
+      </div>
+    );
 
   return (
     <div className="container mx-auto px-4 py-12 max-w-5xl">
@@ -247,7 +256,9 @@ export default function ReportPage() {
         <h1 className="text-4xl font-bold text-secondary mb-3 flex items-center justify-center gap-3 tracking-tight">
           Report Phishing Incident
         </h1>
-        <p className="text-secondary opacity-70 font-medium">Help us protect the community by reporting suspicious activities.</p>
+        <p className="text-secondary opacity-70 font-medium">
+          Help us protect the community by reporting suspicious activities.
+        </p>
       </div>
 
       <ReportForm

@@ -152,7 +152,7 @@ export const InvestigateEvidence: React.FC<InvestigateEvidenceProps> = ({ ticket
                       <p className="text-sm font-bold truncate text-secondary">
                         {filename}
                       </p>
-                      <p className="text-xs font-bold text-secondary/40 opacity-70">
+                      <p className="text-xs font-medium text-secondary/60 opacity-70">
                         Security Restricted
                       </p>
                     </div>

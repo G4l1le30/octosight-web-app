@@ -38,30 +38,30 @@ class GeminiEducationService:
             modules_context = "AVAILABLE MODULES:\n" + "\n".join([f"- ID {m['id']}: {m['title']}" for m in available_modules])
 
         prompt = f"""
-Sangat Penting: Gunakan Bahasa Indonesia yang jelas dan SANGAT sederhana yang cocok untuk audiens non-teknis (orang awam).
-Analisis laporan keamanan berikut dan berikan rekomendasi edukasi yang spesifik dan mudah dipahami.
+Very Important: Use clear and VERY simple English suitable for a non-technical audience (laypeople).
+Analyze the following security report and provide specific and easy-to-understand educational recommendations.
 
-ATURAN FORMAT:
-1. JANGAN gunakan simbol Markdown seperti tanda bintang (**) atau backticks (`).
-2. Tulis hanya dalam Teks Polos.
-3. Hindari penggunaan huruf kapital yang berlebihan.
-4. Batasi setiap daftar (warnings, suggested_actions, tips) menjadi MAKSIMAL 3 poin ringkas.
+FORMAT RULES:
+1. DO NOT use Markdown symbols like asterisks (**) or backticks (`).
+2. Write ONLY in Plain Text.
+3. Avoid excessive use of capital letters.
+4. Limit each list (warnings, suggested_actions, tips) to a MAXIMUM of 3 concise points.
 
-INFORMASI LAPORAN:
-- Tipe: {ticket_type}
+REPORT INFORMATION:
+- Type: {ticket_type}
 - URL: {url}
 - Risk Score: {rule_score}
-- Analisis Konten: {ticket_summary}
+- Content Analysis: {ticket_summary}
 
 {modules_context}
 
-Hasilkan JSON dalam format berikut:
+Generate JSON in the following format:
 {{
-  "warnings": ["maksimal 3 kalimat peringatan sederhana"],
-  "suggested_actions": ["maksimal 3 tindakan sederhana"],
-  "tips": ["maksimal 3 tips sederhana"],
+  "warnings": ["maximum 3 simple warning sentences"],
+  "suggested_actions": ["maximum 3 simple actions"],
+  "tips": ["maximum 3 simple tips"],
   "relevant_modules": [
-    {{"id": "module_id", "title": "Judul Modul"}}
+    {{"id": "module_id", "title": "Module Title"}}
   ]
 }}
 """
@@ -124,29 +124,29 @@ Hasilkan JSON dalam format berikut:
 
         articles_text = ", ".join(article_titles)
         prompt = f"""
-        Buatlah 10 pertanyaan kuis pilihan ganda yang SANGAT SEDERHANA dalam Bahasa Indonesia untuk modul E-Learning.
+        Create 10 VERY SIMPLE multiple-choice quiz questions in English for an E-Learning module.
         
-        KONTEKS MODUL:
-        - Judul: {module_title}
-        - Topik yang harus dicakup: {articles_text}
-        - Target Audiens: Pengguna umum dengan pengetahuan keamanan dasar.
+        MODULE CONTEXT:
+        - Title: {module_title}
+        - Topics to cover: {articles_text}
+        - Target Audience: General users with basic security knowledge.
         
-        PERSYARATAN:
-        1. Target Audiens: Orang awam non-teknis (pemula).
-        2. Kompleksitas: Sangat Sederhana. Hindari jargon teknis atau konsep keamanan yang rumit.
-        3. Nada: Ramah dan menyemangati. Gunakan analogi sehari-hari jika memungkinkan.
-        4. Pertanyaan: Hasilkan tepat 10 pertanyaan dengan masing-masing 4 pilihan jawaban yang jelas.
-        5. Penjelasan: Berikan penjelasan yang sangat sederhana mengapa jawaban tersebut benar.
-        6. Format: Hasilkan HANYA objek JSON yang valid. Tanpa markdown.
+        REQUIREMENTS:
+        1. Target Audience: Non-technical laypeople (beginners).
+        2. Complexity: Very Simple. Avoid technical jargon or complex security concepts.
+        3. Tone: Friendly and encouraging. Use everyday analogies if possible.
+        4. Questions: Generate exactly 10 questions with 4 clear answer choices each.
+        5. Explanation: Provide a very simple explanation of why the answer is correct.
+        6. Format: Generate ONLY a valid JSON object. No markdown.
         
-        STRUKTUR JSON YANG KETAT:
+        STRICT JSON STRUCTURE:
         {{
           "questions": [
             {{
-              "question": "Teks pertanyaan",
-              "options": ["Pilihan A", "Pilihan B", "Pilihan C", "Pilihan D"],
+              "question": "Question text",
+              "options": ["Option A", "Option B", "Option C", "Option D"],
               "correct_answer_index": 0,
-              "explanation": "Penjelasan sederhana"
+              "explanation": "Simple explanation"
             }}
           ]
         }}
@@ -215,24 +215,24 @@ Hasilkan JSON dalam format berikut:
         def get_mod(idx):
             if available_modules and len(available_modules) >= idx:
                 return available_modules[idx-1]
-            return {"id": "1", "title": "Dasar-dasar Phishing"}
+            return {"id": "1", "title": "Phishing Basics"}
 
         if score < 20:
             return {
-                "warnings": ["Tidak ditemukan indikasi bahaya yang jelas pada laporan ini.", "Sistem menganggap link/pesan ini relatif aman."],
-                "suggested_actions": ["Pastikan Anda mengakses situs dari sumber resmi.", "Jangan klik link jika dikirim oleh orang yang tidak dikenal."],
-                "tips": ["Gunakan fitur Bookmark untuk menyimpan alamat bank resmi.", "Selalu cek ulang pengirim pesan."],
+                "warnings": ["No clear indication of danger found in this report.", "The system considers this link/message to be relatively safe."],
+                "suggested_actions": ["Ensure you access sites from official sources.", "Do not click links if sent by unknown persons."],
+                "tips": ["Use the Bookmark feature to save official bank addresses.", "Always double-check the sender of the message."],
                 "relevant_modules": [get_mod(1)]
             }
         return {
-            "warnings": ["Terdeteksi indikasi penipuan Phishing.", "Halaman ini mungkin mencoba mencuri data pribadi Anda."],
-            "suggested_actions": ["Segera tutup halaman ini.", "Jangan masukkan kata sandi atau data bank Anda.", "Laporkan nomor pengirim jika ini melalui pesan."],
-            "tips": ["Bank tidak pernah meminta data pribadi melalui link tidak resmi.", "Gunakan aplikasi OctoSight untuk memverifikasi link di masa depan."],
+            "warnings": ["Detected indications of Phishing fraud.", "This page might be trying to steal your personal data."],
+            "suggested_actions": ["Close this page immediately.", "Do not enter your password or bank data.", "Report the sender's number if this is via a message."],
+            "tips": ["The bank never asks for personal data via unofficial links.", "Use the OctoSight app to verify links in the future."],
             "relevant_modules": [get_mod(1), get_mod(2), get_mod(3)]
         }
     
     @staticmethod
     def _get_default_quiz(module_order: int) -> Dict:
-        # Ambil soal berdasarkan module_order, fallback ke modul 1 jika tidak ada
+        # Get questions based on module_order, fallback to module 1 if not found
         selected_questions = QUIZ_FALLBACKS.get(module_order, QUIZ_FALLBACKS[1])
         return {"questions": selected_questions}

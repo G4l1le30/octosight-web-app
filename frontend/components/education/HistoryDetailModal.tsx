@@ -16,9 +16,9 @@ export const HistoryDetailModal: React.FC<HistoryDetailModalProps> = ({ attempt,
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-secondary/20 backdrop-blur-sm animate-in fade-in duration-300">
       <div className="bg-white rounded-3xl border border-neutral-border shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col overflow-hidden">
-        <div className="p-6 border-b border-neutral-border flex items-center justify-between">
+        <div className="p-4 md:p-6 border-b border-neutral-border flex items-center justify-between">
           <div>
-            <h3 className="text-xl font-bold text-secondary">Attempt #{attempt.attempt_number} Detail</h3>
+            <h3 className="text-lg md:text-xl font-bold text-secondary">Attempt #{attempt.attempt_number} Detail</h3>
             <p className="text-sm font-medium text-secondary/60">
               Score: {(attempt.score / 10).toFixed(1)} / 10.0 • {attempt.passed ? "Passed" : "Failed"}
             </p>
@@ -31,10 +31,10 @@ export const HistoryDetailModal: React.FC<HistoryDetailModalProps> = ({ attempt,
           </button>
         </div>
         
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
           {results.map((res: any, idx: number) => (
-            <div key={idx} className={`p-5 rounded-2xl border-2 ${res.is_correct ? "bg-green-50/30 border-green-100" : "bg-red-50/30 border-red-100"}`}>
-              <div className="flex items-start justify-between gap-4">
+            <div key={idx} className={`p-4 md:p-5 rounded-2xl border-2 ${res.is_correct ? "bg-green-50/30 border-green-100" : "bg-red-50/30 border-red-100"}`}>
+              <div className="flex items-start justify-between gap-3 md:gap-4">
                 <div className="font-bold text-secondary text-lg">
                   <span className={`mr-2 ${res.is_correct ? "text-green-600" : "text-red-600"}`}>
                     {idx + 1}.
@@ -66,8 +66,8 @@ export const HistoryDetailModal: React.FC<HistoryDetailModalProps> = ({ attempt,
           ))}
         </div>
         
-        <div className="p-6 bg-neutral-page border-t border-neutral-border text-center">
-          <Button onClick={onClose} className="w-full py-6 text-lg font-bold">
+        <div className="p-4 md:p-6 bg-neutral-page border-t border-neutral-border text-center">
+          <Button onClick={onClose} className="w-full py-4 md:py-6 text-lg font-bold">
             Close History
           </Button>
         </div>

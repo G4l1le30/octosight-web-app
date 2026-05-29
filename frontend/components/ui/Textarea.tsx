@@ -23,7 +23,7 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
             error
               ? "border-risk-high focus:border-risk-high focus:ring-risk-high/5"
               : "border-neutral-border",
-            "p-4 min-h-[120px] resize-none",
+            "p-3 md:p-4 min-h-[90px] md:min-h-[120px] resize-none",
             className,
           )}
           {...props}

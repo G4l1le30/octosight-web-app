@@ -259,7 +259,7 @@ export const EvidenceUpload = ({
         {file ? (
           <div
             className={cn(
-              "flex flex-row items-center w-full h-48 border-2 rounded-xl p-4 gap-4 bg-white transition-all",
+              "flex flex-row items-center w-full h-36 md:h-48 border-2 rounded-xl p-3 md:p-4 gap-3 md:gap-4 bg-white transition-all",
               error
                 ? "border-risk-high bg-risk-high/5"
                 : "border-neutral-border"
@@ -325,7 +325,7 @@ export const EvidenceUpload = ({
           <label
             htmlFor={id}
             className={cn(
-              "flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-xl cursor-pointer hover:bg-primary/5 transition-all group overflow-hidden p-4",
+              "flex flex-col items-center justify-center w-full h-36 md:h-48 border-2 border-dashed rounded-xl cursor-pointer hover:bg-primary/5 transition-all group overflow-hidden p-3 md:p-4",
               error || validationError
                 ? "border-risk-high bg-risk-high/5"
                 : isDragging

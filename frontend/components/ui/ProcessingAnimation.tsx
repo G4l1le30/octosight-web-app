@@ -30,7 +30,7 @@ export const ProcessingAnimation: React.FC<{ title?: string }> = ({ title = "Pro
       </div>
 
       <div className="space-y-2">
-        <h2 className="text-xl font-bold text-secondary tracking-tight">{title}</h2>
+        <h2 className="text-lg md:text-xl font-bold text-secondary tracking-tight">{title}</h2>
         <p className="text-sm text-secondary/60 font-medium tracking-wide">
           {processingSteps[step]}
         </p>

@@ -25,8 +25,8 @@ export const MaterialList: React.FC<MaterialListProps> = ({
 }) => {
   return (
     <>
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-secondary">
+      <div className="flex items-center justify-between mb-4 md:mb-6">
+        <h2 className="text-xl md:text-2xl font-bold text-secondary">
           Learning Materials
         </h2>
         <div className="w-48">
@@ -45,7 +45,7 @@ export const MaterialList: React.FC<MaterialListProps> = ({
         </div>
       </div>
 
-      <div className="space-y-4 mb-12">
+      <div className="space-y-4 mb-8 md:mb-12">
         {articles.map((article, idx) => {
           // Article is locked if the module is locked, OR if it's not the first article and the previous one isn't read yet
           const isArticleLocked =
@@ -56,7 +56,7 @@ export const MaterialList: React.FC<MaterialListProps> = ({
             <div
               className={`flex items-start justify-between ${isArticleLocked ? "opacity-60" : ""}`}
             >
-              <div className="flex gap-4">
+              <div className="flex gap-3 md:gap-4">
                 <div
                   className={`mt-1 shrink-0 size-6 rounded-full flex items-center justify-center border-2 ${
                     article.is_read
@@ -72,14 +72,14 @@ export const MaterialList: React.FC<MaterialListProps> = ({
                 </div>
                 <div>
                   <h3
-                    className={`text-lg font-bold mb-1 ${isArticleLocked ? "text-secondary" : "text-secondary group-hover:text-primary transition-colors"}`}
+                    className={`text-base md:text-lg font-bold mb-1 ${isArticleLocked ? "text-secondary" : "text-secondary group-hover:text-primary transition-colors"}`}
                   >
                     {article.title}
                   </h3>
                   <p className="text-sm text-secondary-light font-medium mb-3 line-clamp-2">
                     {article.description}
                   </p>
-                  <div className="flex items-center gap-4 text-xs font-bold text-secondary/60">
+                  <div className="flex items-center gap-3 md:gap-4 text-xs font-bold text-secondary/60">
                     <span>By: {article.author}</span>
                     <span>•</span>
                     <span>{article.duration_mins} Mins read</span>
@@ -105,7 +105,7 @@ export const MaterialList: React.FC<MaterialListProps> = ({
             return (
               <div
                 key={article.id}
-                className="block bg-neutral-page border border-neutral-border rounded-xl p-6 cursor-not-allowed"
+                className="block bg-neutral-page border border-neutral-border rounded-xl p-4 md:p-6 cursor-not-allowed"
               >
                 {content}
               </div>
@@ -116,7 +116,7 @@ export const MaterialList: React.FC<MaterialListProps> = ({
             <button
               key={article.id}
               onClick={() => onArticleClick(article.id, article.url)}
-              className={`w-full text-left block bg-white border ${isReadingThis ? "border-primary ring-1 ring-primary/20" : "border-neutral-border hover:border-primary hover:shadow-md"} rounded-xl p-6 transition-all group`}
+              className={`w-full text-left block bg-white border ${isReadingThis ? "border-primary ring-1 ring-primary/20" : "border-neutral-border hover:border-primary hover:shadow-md"} rounded-xl p-4 md:p-6 transition-all group`}
             >
               {content}
             </button>

@@ -13,16 +13,16 @@ const Stats: React.FC = () => {
         <h2 className="text-3xl md:text-4xl font-bold text-center mb-20 text-secondary">
           Platform Impact & Metrics
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 text-center">
           {statsData.map((stat, index) => (
             <div
               key={index}
-              className="card p-8 border border-neutral-border bg-white transition-all hover:border-primary/30 hover:shadow-md group"
+              className="card p-6 md:p-8 border border-neutral-border bg-white transition-all hover:border-primary/30 hover:shadow-md group"
             >
               <p className="text-primary text-4xl font-bold mb-4 group-hover:scale-110 transition-transform">
                 {stat.value}
               </p>
-              <p className="text-lg font-bold text-secondary/80 tracking-wide">
+              <p className="text-base md:text-lg font-bold text-secondary/80 tracking-wide">
                 {stat.label}
               </p>
             </div>

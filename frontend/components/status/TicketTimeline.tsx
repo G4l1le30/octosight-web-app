@@ -132,7 +132,7 @@ export const TicketTimeline: React.FC<TicketTimelineProps> = ({
     <div className="space-y-6">
       {/* Status Progress Bar */}
       <div className="overflow-x-auto pb-4 pt-2 px-2">
-        <div className="relative flex items-start justify-between min-w-[600px] w-full px-8">
+        <div className="relative flex items-start justify-between min-w-[600px] w-full px-6 md:px-8">
           {/* Connector Line behind circles */}
           <div className="absolute top-6 left-14 right-14 h-0.5 bg-neutral-border z-0">
             {/* Active/Completed Line part */}

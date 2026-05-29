@@ -95,9 +95,9 @@ export default function QuizResultPage() {
 
   if (!quiz || !result) return (
     <div className="container mx-auto px-4 py-32 text-center max-w-md">
-      <div className="bg-risk-high/10 text-risk-high p-6 rounded-2xl border border-risk-high/20 mb-6">
+      <div className="bg-risk-high/10 text-risk-high p-6 rounded-2xl border border-risk-high/20 mb-4 md:mb-6">
         <AlertCircle className="size-12 mx-auto mb-4" />
-        <h2 className="text-xl font-bold mb-2">Failed to Load Result</h2>
+        <h2 className="text-lg md:text-xl font-bold mb-2">Failed to Load Result</h2>
         <p className="text-sm font-medium opacity-80">Result not found</p>
       </div>
       <Button onClick={() => router.push(`/edu/${moduleId}`)} variant="outline" className="gap-2">
@@ -107,9 +107,9 @@ export default function QuizResultPage() {
   );
 
   return (
-    <div className="container mx-auto px-4 py-12 max-w-5xl">
+    <div className="container mx-auto px-4 py-8 md:py-12 max-w-5xl">
       <div className="mb-8 flex items-center justify-between">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 md:gap-4">
           <button
             onClick={() => router.push(`/edu/${moduleId}`)}
             className="p-2 rounded-xl border border-neutral-border hover:bg-neutral-page transition-all text-secondary/60 hover:text-primary group shadow-sm"
@@ -117,13 +117,13 @@ export default function QuizResultPage() {
             <ArrowLeft className="size-6 group-hover:-translate-x-0.5 transition-transform" />
           </button>
           <div>
-            <h1 className="text-3xl font-bold text-secondary">Evaluation Result</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-secondary">Evaluation Result</h1>
           </div>
         </div>
       </div>
 
       <div className="animate-in fade-in zoom-in duration-500">
-        <div className={`mb-10 p-8 rounded-2xl border text-center ${result.passed ? "bg-green-50 border-green-200 shadow-sm" : "bg-red-50 border-red-200 shadow-sm"
+        <div className={`mb-8 md:mb-10 p-6 md:p-8 rounded-2xl border text-center ${result.passed ? "bg-green-50 border-green-200 shadow-sm" : "bg-red-50 border-red-200 shadow-sm"
           }`}>
           {result.passed ? (
             <CheckCircle2 className="size-16 text-green-500 mx-auto mb-4" />
@@ -133,18 +133,18 @@ export default function QuizResultPage() {
           <h2 className="text-5xl font-bold mb-2 text-secondary">
             {Math.round(result.score / 10)}
           </h2>
-          <p className={`font-bold mb-6 ${result.passed ? "text-green-700" : "text-red-700"}`}>
+          <p className={`font-bold mb-4 md:mb-6 ${result.passed ? "text-green-700" : "text-red-700"}`}>
             {result.passed
               ? "Excellent! You passed the evaluation."
               : "You didn't reach the 70% passing score."}
           </p>
-          <div className="flex gap-4 justify-center">
+          <div className="flex gap-3 md:gap-4 justify-center">
             {result.passed ? (
-              <div className="flex flex-wrap justify-center gap-4">
+              <div className="flex flex-wrap justify-center gap-3 md:gap-4">
                 {nextModuleId && (
                   <Button
                     onClick={() => router.push(`/edu/${nextModuleId}`)}
-                    className="bg-green-600 hover:bg-green-700 text-white gap-2 px-8 py-5 text-lg shadow-sm"
+                    className="bg-green-600 hover:bg-green-700 text-white gap-2 px-6 md:px-8 py-4 md:py-5 text-lg shadow-sm"
                   >
                     Next Module <ArrowRight className="size-5" />
                   </Button>
@@ -152,7 +152,7 @@ export default function QuizResultPage() {
                 <Button
                   onClick={() => router.push("/edu")}
                   variant="outline"
-                  className="bg-white border-neutral-border text-secondary hover:border-green-500 gap-2 px-8 py-5 text-lg shadow-sm transition-colors"
+                  className="bg-white border-neutral-border text-secondary hover:border-green-500 gap-2 px-6 md:px-8 py-4 md:py-5 text-lg shadow-sm transition-colors"
                 >
                   Back to Modules
                 </Button>
@@ -173,7 +173,7 @@ export default function QuizResultPage() {
           </div>
         </div>
 
-        <h3 className="text-xl font-bold text-secondary mb-6">Review Your Answers</h3>
+        <h3 className="text-lg md:text-xl font-bold text-secondary mb-4 md:mb-6">Review Your Answers</h3>
         <div className="space-y-6">
           {quiz.questions.map((q, idx) => {
             const res = result.questions_with_explanations[idx];
@@ -191,7 +191,7 @@ export default function QuizResultPage() {
                     return (
                       <div
                         key={oIdx}
-                        className={`p-4 rounded-xl border-2 text-sm font-medium flex items-center justify-between ${res.is_correct
+                        className={`p-3 md:p-4 rounded-xl border-2 text-sm font-medium flex items-center justify-between ${res.is_correct
                             ? "bg-green-100 border-green-200 text-green-800"
                             : "bg-red-100 border-red-200 text-red-800"
                           }`}

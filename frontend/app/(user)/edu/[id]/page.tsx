@@ -168,9 +168,9 @@ export default function ModuleDetailPage() {
 
   if (!mod) return (
     <div className="container mx-auto px-4 py-32 text-center max-w-md">
-      <div className="bg-risk-high/10 text-risk-high p-6 rounded-2xl border border-risk-high/20 mb-6">
+      <div className="bg-risk-high/10 text-risk-high p-4 md:p-6 rounded-2xl border border-risk-high/20 mb-6">
         <AlertTriangle className="size-12 mx-auto mb-4" />
-        <h2 className="text-xl font-bold mb-2">Content Not Found</h2>
+        <h2 className="text-lg md:text-xl font-bold mb-2">Content Not Found</h2>
         <p className="text-sm font-medium opacity-80">
           The educational content you requested could not be found.
         </p>
@@ -189,15 +189,15 @@ export default function ModuleDetailPage() {
   const hasAttempted = (mod.quiz_attempts_history || []).length > 0;
 
   return (
-    <div className="container mx-auto px-4 py-12 max-w-6xl">
-      <div className="mb-8 flex items-center gap-4">
+    <div className="container mx-auto px-4 py-8 md:py-12 max-w-6xl">
+      <div className="mb-6 md:mb-8 flex items-center gap-3 md:gap-4">
         <button
           onClick={() => router.push("/edu")}
           className="p-2 rounded-xl border border-neutral-border hover:bg-neutral-page transition-all text-secondary/60 hover:text-primary group shadow-sm"
         >
           <ArrowLeft className="size-6 group-hover:-translate-x-0.5 transition-transform" />
         </button>
-        <h1 className="text-3xl font-bold text-secondary">{mod.title}</h1>
+        <h1 className="text-2xl md:text-3xl font-bold text-secondary">{mod.title}</h1>
       </div>
 
       <ModuleHeader module={mod} />

@@ -159,8 +159,8 @@ export const ReportConfirmation = ({
 
   return (
     <div className="mx-auto max-w-4xl">
-      <div className="mb-10 text-center">
-        <h1 className="text-4xl font-bold mb-4 text-secondary">
+      <div className="mb-8 md:mb-10 text-center">
+        <h1 className="text-3xl md:text-4xl font-bold mb-4 text-secondary">
           Report Phishing Incident
         </h1>
         <p className="text-secondary opacity-70 font-medium">
@@ -177,7 +177,7 @@ export const ReportConfirmation = ({
                 Review Your Report
               </h2>
               {/* Report Type */}
-              <div className="flex items-center gap-5">
+              <div className="flex items-center gap-4 md:gap-5">
                 <div className="p-3.5 rounded-2xl bg-primary/5 text-primary">
                   <TypeIcon className="size-6" />
                 </div>
@@ -185,7 +185,7 @@ export const ReportConfirmation = ({
                   <p className="text-sm font-semibold text-secondary/60 mb-1">
                     Report Type
                   </p>
-                  <p className="text-lg font-semibold text-secondary">
+                  <p className="text-base md:text-lg font-semibold text-secondary">
                     {typeConfig.label}
                   </p>
                 </div>
@@ -193,7 +193,7 @@ export const ReportConfirmation = ({
 
               {/* Sender Info */}
               {formData.senderNumbers && (
-                <div className="flex items-center gap-5">
+                <div className="flex items-center gap-4 md:gap-5">
                   <div className="p-3.5 rounded-2xl bg-primary/5 text-primary">
                     <User className="size-6" />
                   </div>
@@ -203,7 +203,7 @@ export const ReportConfirmation = ({
                         ? "Sender Email"
                         : "Sender Number"}
                     </p>
-                    <p className="text-lg font-semibold text-secondary truncate">
+                    <p className="text-base md:text-lg font-semibold text-secondary truncate">
                       {formData.senderNumbers}
                     </p>
                   </div>
@@ -212,7 +212,7 @@ export const ReportConfirmation = ({
 
               {/* URL */}
               {formData.url && (
-                <div className="flex items-center gap-5">
+                <div className="flex items-center gap-4 md:gap-5">
                   <div className="p-3.5 rounded-2xl bg-primary/5 text-primary">
                     <LinkIcon className="size-6" />
                   </div>
@@ -220,7 +220,7 @@ export const ReportConfirmation = ({
                     <p className="text-sm font-semibold text-secondary/60 mb-1">
                       Suspicious URL
                     </p>
-                    <p className="text-lg font-semibold text-secondary truncate">
+                    <p className="text-base md:text-lg font-semibold text-secondary truncate">
                       {formData.url}
                     </p>
                   </div>
@@ -229,7 +229,7 @@ export const ReportConfirmation = ({
 
               {/* Bank Info (If present) */}
               {formData.bankAccount && (
-                <div className="flex items-center gap-5">
+                <div className="flex items-center gap-4 md:gap-5">
                   <div className="p-3.5 rounded-2xl bg-primary/5 text-primary">
                     <CreditCard className="size-6" />
                   </div>
@@ -237,7 +237,7 @@ export const ReportConfirmation = ({
                     <p className="text-sm font-semibold text-secondary/60 mb-1">
                       {formData.bankName || "Reported Bank Account"}
                     </p>
-                    <p className="text-lg font-semibold text-secondary truncate">
+                    <p className="text-base md:text-lg font-semibold text-secondary truncate">
                       {formData.bankAccount}
                     </p>
                   </div>
@@ -246,7 +246,7 @@ export const ReportConfirmation = ({
 
               {/* Reference Number (If present) */}
               {formData.referenceNumber && (
-                <div className="flex items-center gap-5">
+                <div className="flex items-center gap-4 md:gap-5">
                   <div className="p-3.5 rounded-2xl bg-primary/5 text-primary">
                     <Hash className="size-6" />
                   </div>
@@ -254,7 +254,7 @@ export const ReportConfirmation = ({
                     <p className="text-sm font-semibold text-secondary/60 mb-1">
                       Reference Number
                     </p>
-                    <p className="text-lg font-semibold text-secondary truncate">
+                    <p className="text-base md:text-lg font-semibold text-secondary truncate">
                       {formData.referenceNumber}
                     </p>
                   </div>
@@ -262,7 +262,7 @@ export const ReportConfirmation = ({
               )}
 
               {/* Incident Time */}
-              <div className="flex items-center gap-5">
+              <div className="flex items-center gap-4 md:gap-5">
                 <div className="p-3.5 rounded-2xl bg-primary/5 text-primary">
                   <Calendar className="size-6" />
                 </div>
@@ -270,7 +270,7 @@ export const ReportConfirmation = ({
                   <p className="text-sm font-semibold text-secondary/60 mb-1">
                     Incident Time
                   </p>
-                  <p className="text-lg font-semibold text-secondary">
+                  <p className="text-base md:text-lg font-semibold text-secondary">
                     {formatDate(formData.incidentDate)}
                   </p>
                 </div>
@@ -278,7 +278,7 @@ export const ReportConfirmation = ({
 
               {/* Detection Engine Flags */}
               {flags.length > 0 && (
-                <div className="flex items-start gap-5">
+                <div className="flex items-start gap-4 md:gap-5">
                   <div className="p-3.5 rounded-2xl bg-primary/5 text-primary shrink-0">
                     <Flag className="size-6" />
                   </div>
@@ -308,7 +308,7 @@ export const ReportConfirmation = ({
 
             {/* Right Side: Risk Score Card */}
             {isScanning ? (
-              <div className="bg-neutral-page rounded-3xl p-8 border-2 border-dashed border-neutral-border flex flex-col items-center justify-center text-center h-full min-h-[260px] gap-4">
+              <div className="bg-neutral-page rounded-3xl p-8 border-2 border-dashed border-neutral-border flex flex-col items-center justify-center text-center h-full min-h-[200px] md:min-h-[260px] gap-4">
                 <Loader2 className="size-12 animate-spin text-primary" />
                 <p className="text-sm font-semibold text-secondary/60 animate-pulse">
                   Analyzing potential risks...
@@ -431,7 +431,7 @@ export const ReportConfirmation = ({
 
           {/* AI Analysis — full width */}
           {(aiExplanation || explanationLoading) && (
-            <div className="mt-4 rounded-2xl p-6 border-2 border-neutral-border">
+            <div className="mt-4 rounded-2xl p-4 md:p-6 border-2 border-neutral-border">
               <div className="flex items-center gap-2 mb-3">
                 <Brain className="size-5 text-secondary" />
                 <h3 className="text-sm font-bold text-secondary tracking-wide">
@@ -452,10 +452,10 @@ export const ReportConfirmation = ({
           )}
 
           {/* Divider */}
-          <div className="my-10 h-px bg-neutral-border" />
+          <div className="my-8 md:my-10 h-px bg-neutral-border" />
 
           {/* Disclaimer Section */}
-          <div className="flex items-start gap-4 px-2 mb-12">
+          <div className="flex items-start gap-4 px-2 mb-8 md:mb-12">
             <div className="shrink-0 mt-0.5">
               <Info className="size-5 text-primary" />
             </div>
@@ -471,14 +471,14 @@ export const ReportConfirmation = ({
             <Button
               variant="outline"
               size="lg"
-              className="w-full text-lg"
+              className="w-full text-base md:text-lg"
               onClick={onBack}
             >
               Back to Previous Step
             </Button>
             <Button
               size="lg"
-              className="w-full text-lg"
+              className="w-full text-base md:text-lg"
               onClick={onSubmit}
               loading={isSubmitting}
               disabled={isScanning}

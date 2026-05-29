@@ -57,8 +57,8 @@ export const AuditTrail: React.FC<AuditTrailProps> = ({
   if (loading) {
     if (variant === "card") {
       return (
-        <div className="card p-6 bg-white border border-neutral-border shadow-sm">
-          <h3 className="text-lg font-bold text-secondary mb-4 flex items-center gap-2">
+        <div className="card p-4 md:p-6 bg-white border border-neutral-border shadow-sm">
+          <h3 className="text-base md:text-lg font-bold text-secondary mb-4 flex items-center gap-2">
             Audit Trail
           </h3>
           <div className="space-y-3">
@@ -104,7 +104,7 @@ export const AuditTrail: React.FC<AuditTrailProps> = ({
               <div className="w-0.5 grow bg-neutral-border/60" />
             )}
           </div>
-          <div className="pb-6 min-w-0 flex-1 pt-1.5 flex justify-between items-start gap-4">
+          <div className="pb-6 min-w-0 flex-1 pt-1.5 flex justify-between items-start gap-3 md:gap-4">
             <div>
               <p className="text-sm font-bold text-secondary leading-snug">Report submitted</p>
               <p className="text-xs text-secondary/50 font-medium mt-0.5">
@@ -132,7 +132,7 @@ export const AuditTrail: React.FC<AuditTrailProps> = ({
                 <div className="w-0.5 grow bg-neutral-border/60" />
               )}
             </div>
-            <div className="pb-6 min-w-0 flex-1 pt-1.5 flex justify-between items-start gap-4">
+            <div className="pb-6 min-w-0 flex-1 pt-1.5 flex justify-between items-start gap-3 md:gap-4">
               <div>
                 <p className="text-sm font-bold text-secondary leading-snug">
                   {log.action_taken}
@@ -169,9 +169,9 @@ export const AuditTrail: React.FC<AuditTrailProps> = ({
 
   if (variant === "card") {
     return (
-      <div className="card p-6 bg-white border border-neutral-border shadow-sm">
+      <div className="card p-4 md:p-6 bg-white border border-neutral-border shadow-sm">
         <div className="flex items-center justify-between mb-5">
-          <h3 className="text-lg font-bold text-secondary flex items-center gap-2">
+          <h3 className="text-base md:text-lg font-bold text-secondary flex items-center gap-2">
             Audit Trail
           </h3>
           <span className="text-xs font-bold text-secondary/40 bg-neutral-page px-2 py-1 rounded-full border border-neutral-border">

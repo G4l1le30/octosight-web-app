@@ -14,27 +14,27 @@ export const InvestigateTargetInfo: React.FC<InvestigateTargetInfoProps> = ({
   setStatus,
 }) => {
   return (
-    <div className="card p-8 h-full flex flex-col">
-      <div className="flex justify-between items-start mb-8">
+    <div className="card p-6 md:p-8 h-full flex flex-col">
+      <div className="flex justify-between items-start mb-6 md:mb-8">
         <div className="space-y-2">
-          <h3 className="text-xl font-bold text-secondary">
+          <h3 className="text-lg md:text-xl font-bold text-secondary">
             Target Indicator
           </h3>
-          <p className="text-xl font-medium text-primary break-all">
+          <p className="text-lg md:text-xl font-medium text-primary break-all">
             {ticket.url || "N/A"}
           </p>
         </div>
         <div className="text-right">
           <h3 className="text-lg font-bold text-secondary">Risk Score</h3>
           <p
-            className={`text-4xl font-bold ${ticket.risk_score >= 80 ? "text-risk-high" : ticket.risk_score >= 50 ? "text-risk-medium" : "text-risk-low"}`}
+            className={`text-3xl md:text-4xl font-bold ${ticket.risk_score >= 80 ? "text-risk-high" : ticket.risk_score >= 50 ? "text-risk-medium" : "text-risk-low"}`}
           >
             {ticket.risk_score.toFixed(0)}
           </p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-8 py-8 border-y border-neutral-border">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-8 py-6 md:py-8 border-y border-neutral-border">
         {/* Left Column: Metadata */}
         <div className="space-y-8">
           <div className="space-y-1">

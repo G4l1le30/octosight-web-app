@@ -15,8 +15,8 @@ export const MitigationActions: React.FC<MitigationActionsProps> = ({
   openBlacklistModal,
 }) => {
   return (
-    <div className="card p-8 h-full flex flex-col">
-      <h3 className="text-xl font-bold text-secondary mb-6">
+    <div className="card p-6 md:p-8 h-full flex flex-col">
+      <h3 className="text-lg md:text-xl font-bold text-secondary mb-4 md:mb-6">
         Mitigation Actions
       </h3>
       <div className="space-y-3">

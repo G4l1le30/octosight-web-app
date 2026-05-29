@@ -39,8 +39,8 @@ export const InvestigateEvidence: React.FC<InvestigateEvidenceProps> = ({ ticket
   };
 
   return (
-    <div className="card p-8 h-full">
-      <h3 className="text-xl font-bold mb-6 text-secondary">
+    <div className="card p-6 md:p-8 h-full">
+      <h3 className="text-lg md:text-xl font-bold mb-4 md:mb-6 text-secondary">
         Incident Evidence
       </h3>
 
@@ -49,7 +49,7 @@ export const InvestigateEvidence: React.FC<InvestigateEvidenceProps> = ({ ticket
           <span className="text-sm font-bold block mb-3 text-secondary">
             User Summary
           </span>
-          <div className="bg-neutral-page/50 p-4 rounded-xl border border-neutral-border text-sm font-medium text-secondary/80 leading-relaxed max-h-40 overflow-y-auto custom-scrollbar">
+          <div className="bg-neutral-page/50 p-3 md:p-4 rounded-xl border border-neutral-border text-sm font-medium text-secondary/80 leading-relaxed max-h-40 overflow-y-auto custom-scrollbar">
             &quot;{ticket.summary || "No summary provided."}&quot;
           </div>
         </div>
@@ -59,13 +59,13 @@ export const InvestigateEvidence: React.FC<InvestigateEvidenceProps> = ({ ticket
             <span className="text-sm font-bold block mb-4 text-secondary">
               Evidence Screenshots
             </span>
-            <div className="grid grid-cols-1 gap-4">
+            <div className="grid grid-cols-1 gap-3 md:gap-4">
               {screenshotPaths.map((path, i) => {
                 const filename = path.split("/").pop() || path;
                 return (
                   <div
                     key={i}
-                    className="flex items-center justify-between p-4 bg-neutral-page border border-neutral-border rounded-xl group transition-all"
+                    className="flex items-center justify-between p-3 md:p-4 bg-neutral-page border border-neutral-border rounded-xl group transition-all"
                   >
                     <div className="flex items-center gap-3">
                       <div className="p-1.5 bg-neutral-border/30 rounded-lg text-secondary/60">
@@ -113,7 +113,7 @@ export const InvestigateEvidence: React.FC<InvestigateEvidenceProps> = ({ ticket
             <span className="text-sm font-bold block mb-3 text-secondary">
               Extracted OCR Text
             </span>
-            <div className="bg-neutral-page/50 p-4 rounded-xl border border-neutral-border text-sm font-medium text-secondary/80 leading-relaxed whitespace-pre-wrap max-h-40 overflow-y-auto custom-scrollbar">
+            <div className="bg-neutral-page/50 p-3 md:p-4 rounded-xl border border-neutral-border text-sm font-medium text-secondary/80 leading-relaxed whitespace-pre-wrap max-h-40 overflow-y-auto custom-scrollbar">
               {ticket.extracted_text}
             </div>
           </div>
@@ -124,13 +124,13 @@ export const InvestigateEvidence: React.FC<InvestigateEvidenceProps> = ({ ticket
             <span className="text-sm font-bold block mb-4 text-secondary">
               Attachments
             </span>
-            <div className="grid grid-cols-1 gap-4">
+            <div className="grid grid-cols-1 gap-3 md:gap-4">
               {attachmentPaths.map((path, i) => {
                 const filename = path.split("/").pop() || path;
                 return (
                   <div
                     key={i}
-                    className="flex items-center gap-3 p-4 bg-neutral-page border border-neutral-border rounded-xl"
+                    className="flex items-center gap-3 p-3 md:p-4 bg-neutral-page border border-neutral-border rounded-xl"
                   >
                     <div className="w-8 h-8 bg-neutral-border/30 text-secondary/60 rounded-full flex items-center justify-center flex-shrink-0">
                       <svg

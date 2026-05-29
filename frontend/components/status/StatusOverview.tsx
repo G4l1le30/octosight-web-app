@@ -19,12 +19,12 @@ export const StatusOverview: React.FC<StatusOverviewProps> = ({ result }) => {
         <p className="text-sm font-bold text-secondary tracking-wide">
           Automated Risk Score
         </p>
-        <div className="flex items-center gap-4 mt-2">
+        <div className="flex items-center gap-3 md:gap-4 mt-2">
           <span
-            className={`text-4xl font-bold ${result.risk_score >= 70 ? "text-risk-high" : result.risk_score >= 40 ? "text-risk-medium" : "text-risk-low"}`}
+            className={`text-3xl md:text-4xl font-bold ${result.risk_score >= 70 ? "text-risk-high" : result.risk_score >= 40 ? "text-risk-medium" : "text-risk-low"}`}
           >
             {Number(result.risk_score)}
-            <span className="text-2xl text-secondary/40">/100</span>
+            <span className="text-xl md:text-2xl text-secondary/40">/100</span>
           </span>
           <div className="flex-1 h-3 bg-neutral-border/60 rounded-full overflow-hidden">
             <div
@@ -49,7 +49,7 @@ export const StatusOverview: React.FC<StatusOverviewProps> = ({ result }) => {
           <p className="text-sm font-bold text-secondary tracking-wide">
             Incident Type
           </p>
-          <p className="text-lg font-bold">{result.type}</p>
+          <p className="text-base md:text-lg font-bold">{result.type}</p>
         </div>
         {result.url && (
           <div>
@@ -75,7 +75,7 @@ export const StatusOverview: React.FC<StatusOverviewProps> = ({ result }) => {
 
       {/* Advanced Bank Details */}
       {result.bank_account && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-5 bg-neutral-page/50 rounded-2xl border border-neutral-border/50">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 p-4 md:p-5 bg-neutral-page/50 rounded-2xl border border-neutral-border/50">
           <div className="min-w-0">
             <p className="text-xs font-bold text-secondary tracking-wide mb-1 flex items-center gap-1">
               <CreditCard className="size-4" />

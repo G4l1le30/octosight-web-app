@@ -169,8 +169,8 @@ export default function QuizPage() {
 
   return (
     <div className="container mx-auto px-4 py-16 max-w-5xl">
-      <div className="mb-8 flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      <div className="mb-6 md:mb-8 flex items-center justify-between">
+        <div className="flex items-center gap-3 md:gap-4">
           <button
             onClick={() => router.push(`/edu/${moduleId}`)}
             className="p-2 rounded-xl border border-neutral-border hover:bg-neutral-page transition-all text-secondary/60 hover:text-primary group shadow-sm"
@@ -178,7 +178,7 @@ export default function QuizPage() {
             <ArrowLeft className="size-6 group-hover:-translate-x-0.5 transition-transform" />
           </button>
           <div>
-            <h1 className="text-3xl font-bold text-secondary">Module Evaluation</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-secondary">Module Evaluation</h1>
             <p className="text-sm font-bold text-secondary mt-1">
               Question {currentStep + 1} of {totalQuestions}
             </p>

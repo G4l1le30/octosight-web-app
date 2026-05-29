@@ -45,7 +45,7 @@ export const StatusAnalysis: React.FC<StatusAnalysisProps> = ({ result }) => {
             </span>
           )}
         </div>
-        <div className="grid grid-cols-1 gap-4">
+        <div className="grid grid-cols-1 gap-3 md:gap-4">
           <div className="bg-neutral-page/50 p-4 rounded-xl border border-neutral-border/50">
             <div className="flex justify-between text-sm font-bold text-secondary mb-2">
               <span>Rule-based ({ruleWeight}%)</span>
@@ -90,8 +90,8 @@ export const StatusAnalysis: React.FC<StatusAnalysisProps> = ({ result }) => {
 
       {/* Scenario Analysis Result */}
       {details.detected_scam_type && details.detected_scam_type !== "General Phishing" && (
-        <div className="bg-neutral-page/30 rounded-2xl p-6 border border-neutral-border animate-in fade-in zoom-in-95 duration-500">
-          <div className="flex items-center gap-4">
+        <div className="bg-neutral-page/30 rounded-2xl p-4 md:p-6 border border-neutral-border animate-in fade-in zoom-in-95 duration-500">
+          <div className="flex items-center gap-3 md:gap-4">
             <div className="p-3 bg-white rounded-xl shadow-sm text-secondary">
               <ShieldCheck className="size-6" />
             </div>
@@ -116,7 +116,7 @@ export const StatusAnalysis: React.FC<StatusAnalysisProps> = ({ result }) => {
       )}
 
       {/* Analysis Detail */}
-      <div className="bg-neutral-page/30 p-6 rounded-xl border border-neutral-border shadow-sm">
+      <div className="bg-neutral-page/30 p-4 md:p-6 rounded-xl border border-neutral-border shadow-sm">
         <h3 className="text-base font-bold text-secondary mb-5 flex items-center gap-2">
           <Info className="size-5 text-secondary" />
           Analysis Detail
@@ -169,7 +169,7 @@ export const StatusAnalysis: React.FC<StatusAnalysisProps> = ({ result }) => {
       </div>
 
       {result.investigation_notes && (
-        <div className="bg-neutral-page/30 p-6 rounded-xl border border-neutral-border shadow-sm">
+        <div className="bg-neutral-page/30 p-4 md:p-6 rounded-xl border border-neutral-border shadow-sm">
           <h3 className="text-sm font-bold text-secondary mb-3 flex items-center gap-2">
             <svg
               xmlns="http://www.w3.org/2000/svg"

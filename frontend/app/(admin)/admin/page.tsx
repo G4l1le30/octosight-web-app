@@ -114,10 +114,10 @@ export default function AdminDashboard() {
 
   return (
     <div className="bg-neutral-page min-h-screen">
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+      <div className="container mx-auto px-4 py-6 md:py-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4 mb-6 md:mb-8">
           <div>
-            <h1 className="text-3xl font-bold mb-2">
+            <h1 className="text-2xl md:text-3xl font-bold mb-2">
               Threat Intelligence Dashboard
             </h1>
             <p className="text-secondary-light">
@@ -149,19 +149,19 @@ export default function AdminDashboard() {
 
         <DashboardStatsCards stats={stats} />
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 mb-6 md:mb-8">
           <IncidentTrendChart trendData={stats.trendData} />
           <ThreatChannelChart typeDist={stats.typeDist} />
         </div>
 
-        <div className="grid grid-cols-1 gap-8 mb-8">
+        <div className="grid grid-cols-1 gap-6 md:gap-8 mb-6 md:mb-8">
           <SecurityFlagAnalysis flagDist={stats.flagDist} />
         </div>
 
         {/* Recent Alerts Table Preview */}
-        <div className="mb-8 card overflow-hidden">
-          <div className="px-8 py-5 border-b border-neutral-border flex items-center justify-between bg-white">
-            <h3 className="font-bold text-xl text-secondary">
+        <div className="mb-6 md:mb-8 card overflow-hidden">
+          <div className="px-6 md:px-8 py-4 md:py-5 border-b border-neutral-border flex items-center justify-between bg-white">
+            <h3 className="font-bold text-lg md:text-xl text-secondary">
               Live Threat Feed
             </h3>
             <Link

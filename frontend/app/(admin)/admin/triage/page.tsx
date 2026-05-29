@@ -30,9 +30,9 @@ export default function TriagePage() {
   } = useTriageTickets();
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-4">
+    <div className="container mx-auto px-4 py-6 md:py-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 md:mb-8">
+        <div className="flex items-center gap-3 md:gap-4">
           <Link
             href="/admin"
             className="p-2 hover:bg-neutral-border rounded-full transition-all"
@@ -53,7 +53,7 @@ export default function TriagePage() {
             </svg>
           </Link>
           <div>
-            <h1 className="text-3xl font-bold text-secondary">
+            <h1 className="text-2xl md:text-3xl font-bold text-secondary">
               Triage Management
             </h1>
             <p className="text-secondary font-normal mt-2">
@@ -61,7 +61,7 @@ export default function TriagePage() {
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 md:gap-4">
           <Button
             variant="outline"
             size="sm"
@@ -74,7 +74,7 @@ export default function TriagePage() {
       </div>
 
       {error && (
-        <div className="bg-risk-high/10 text-risk-high p-4 rounded-xl mb-6 font-bold text-sm text-center border border-risk-high/20">
+        <div className="bg-risk-high/10 text-risk-high p-3 md:p-4 rounded-xl mb-6 font-bold text-sm text-center border border-risk-high/20">
           Error: {error}
         </div>
       )}
@@ -88,7 +88,7 @@ export default function TriagePage() {
         onReset={resetFilters}
       />
 
-      <div className="mb-8">
+      <div className="mb-6 md:mb-8">
         <SearchBar
           value={searchTerm}
           onChange={setSearchTerm}
@@ -99,7 +99,7 @@ export default function TriagePage() {
         />
       </div>
 
-      <div className="mb-8 card shadow-md overflow-hidden border border-neutral-border">
+      <div className="mb-6 md:mb-8 card shadow-md overflow-hidden border border-neutral-border">
         <ThreatTable
           tickets={paginatedTickets}
           loading={loading}

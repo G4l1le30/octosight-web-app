@@ -56,10 +56,10 @@ export const InvestigateNotes: React.FC<InvestigateNotesProps> = ({
   const aiActive = prevNotes !== null;
 
   return (
-    <div className="card p-8 h-full flex flex-col gap-4">
+    <div className="card p-6 md:p-8 h-full flex flex-col gap-3 md:gap-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h3 className="text-xl font-bold text-secondary">
+        <h3 className="text-lg md:text-xl font-bold text-secondary">
           Investigation Notes
         </h3>
 
@@ -87,7 +87,7 @@ export const InvestigateNotes: React.FC<InvestigateNotesProps> = ({
           if (aiActive) setPrevNotes(null);
         }}
         placeholder="Record investigation findings, domain whois info, or escalation notes here..."
-        className={`flex-1 min-h-[200px] w-full p-4 text-sm bg-neutral-page border rounded-xl focus:border-primary outline-none transition-all font-normal text-black leading-relaxed resize-none ${aiActive ? "border-primary/50 ring-1 ring-primary/20" : "border-neutral-border"
+        className={`flex-1 min-h-[150px] md:min-h-[200px] w-full p-3 md:p-4 text-sm bg-neutral-page border rounded-xl focus:border-primary outline-none transition-all font-normal text-black leading-relaxed resize-none ${aiActive ? "border-primary/50 ring-1 ring-primary/20" : "border-neutral-border"
           }`}
       />
 

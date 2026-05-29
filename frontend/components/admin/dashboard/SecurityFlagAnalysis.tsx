@@ -9,16 +9,16 @@ export const SecurityFlagAnalysis: React.FC<SecurityFlagAnalysisProps> = ({ flag
   const [flagsExpanded, setFlagsExpanded] = useState(false);
 
   return (
-    <div className="card p-8">
-      <h3 className="font-bold mb-6 text-xl text-secondary">
+    <div className="card p-6 md:p-8">
+      <h3 className="font-bold mb-4 md:mb-6 text-xl text-secondary">
         Security Flag Analysis (Sub-Categories)
       </h3>
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-4">
         {flagDist.length > 0 ? (
           (flagsExpanded ? flagDist : flagDist.slice(0, 12)).map((item, idx) => (
             <div
               key={idx}
-              className="bg-neutral-page border border-neutral-border p-4 rounded-xl flex flex-col items-center text-center group hover:border-primary transition-all h-full overflow-hidden"
+              className="bg-neutral-page border border-neutral-border p-3 md:p-4 rounded-xl flex flex-col items-center text-center group hover:border-primary transition-all h-full overflow-hidden"
             >
               <span
                 title={item.name}
@@ -26,13 +26,13 @@ export const SecurityFlagAnalysis: React.FC<SecurityFlagAnalysisProps> = ({ flag
               >
                 {item.name}
               </span>
-              <span className="text-2xl font-bold text-secondary mt-auto">
+              <span className="text-xl md:text-2xl font-bold text-secondary mt-auto">
                 {item.value}
               </span>
             </div>
           ))
         ) : (
-          <p className="col-span-full py-10 text-center opacity-40 font-bold">
+          <p className="col-span-full py-8 md:py-10 text-center opacity-40 font-bold">
             No detection flags triggered yet.
           </p>
         )}
@@ -42,7 +42,7 @@ export const SecurityFlagAnalysis: React.FC<SecurityFlagAnalysisProps> = ({ flag
         <div className="mt-6 flex justify-center border-t border-neutral-border pt-4">
           <button 
             onClick={() => setFlagsExpanded(!flagsExpanded)}
-            className="flex items-center gap-2 text-sm font-bold text-primary hover:bg-primary/5 px-6 py-2 rounded-lg transition-all"
+            className="flex items-center gap-2 text-sm font-bold text-primary hover:bg-primary/5 px-4 md:px-6 py-2 rounded-lg transition-all"
           >
             {flagsExpanded ? (
               <>

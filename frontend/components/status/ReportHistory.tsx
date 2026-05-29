@@ -76,13 +76,13 @@ export function ReportHistory({
   };
 
   return (
-    <div className="card p-8 border-neutral-border shadow-xl">
-      <div className="flex items-center justify-between mb-8">
+    <div className="card p-6 md:p-8 border-neutral-border shadow-xl">
+      <div className="flex items-center justify-between mb-6 md:mb-8">
         <div className="flex items-center gap-3">
           <div className="p-2 rounded-lg bg-primary/5 text-primary">
             <History className="size-6" />
           </div>
-          <h2 className="text-xl font-bold text-secondary">
+          <h2 className="text-lg md:text-xl font-bold text-secondary">
             Submission History
           </h2>
         </div>
@@ -92,7 +92,7 @@ export function ReportHistory({
       </div>
 
       {loading ? (
-        <div className="py-12 text-center">
+        <div className="py-8 md:py-12 text-center">
           <Loader2 className="animate-spin size-8 text-primary mx-auto mb-4" />
           <p className="text-secondary/80 font-medium">Loading history...</p>
         </div>
@@ -102,7 +102,7 @@ export function ReportHistory({
             <button
               key={ticket.id}
               onClick={() => onSelect(ticket)}
-              className={`w-full grid grid-cols-1 sm:grid-cols-12 items-center gap-4 p-4 rounded-xl border transition-all text-left group ${
+              className={`w-full grid grid-cols-1 sm:grid-cols-12 items-center gap-3 md:gap-4 p-3 md:p-4 rounded-xl border transition-all text-left group ${
                 selectedId === ticket.id
                   ? "border-primary bg-primary/5 shadow-sm"
                   : "border-neutral-border hover:border-primary/30 hover:bg-neutral-page"
@@ -158,7 +158,7 @@ export function ReportHistory({
                 variant="outline"
                 size="sm"
                 onClick={() => setVisibleCount((prev) => prev + 10)}
-                className="px-8"
+                className="px-6 md:px-8"
               >
                 Show More Reports
               </Button>
@@ -166,7 +166,7 @@ export function ReportHistory({
           )}
         </div>
       ) : (
-        <div className="py-12 text-center bg-neutral-page rounded-xl border-2 border-dashed border-neutral-border">
+        <div className="py-8 md:py-12 text-center bg-neutral-page rounded-xl border-2 border-dashed border-neutral-border">
           <p className="text-secondary/80 font-medium text-sm">
             You haven&apos;t submitted any reports yet.
           </p>

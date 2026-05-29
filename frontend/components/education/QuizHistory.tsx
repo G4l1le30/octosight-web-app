@@ -12,13 +12,13 @@ export const QuizHistory: React.FC<QuizHistoryProps> = ({ history, onViewAttempt
 
   return (
     <div className="mt-12 bg-white border border-neutral-border rounded-2xl overflow-hidden">
-      <div className="bg-neutral-page px-6 py-4 border-b border-neutral-border">
+      <div className="bg-neutral-page px-4 md:px-6 py-4 border-b border-neutral-border">
         <h3 className="font-bold text-secondary">Quiz History Summary</h3>
       </div>
       <div className="divide-y divide-neutral-border">
         {history.map((attempt) => (
-          <div key={attempt.id} className="flex items-center justify-between px-6 py-4">
-            <div className="flex items-center gap-6 text-sm">
+          <div key={attempt.id} className="flex items-center justify-between px-4 md:px-6 py-4">
+            <div className="flex items-center gap-4 md:gap-6 text-sm">
               <div className="font-bold text-secondary">
                 Attempt #{attempt.attempt_number}
               </div>

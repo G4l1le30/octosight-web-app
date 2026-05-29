@@ -4,10 +4,10 @@ import { Mail, Instagram, Twitter } from "lucide-react";
 
 const Footer: React.FC = () => {
   return (
-    <footer className="relative bg-gradient-to-br from-primary via-primary-dark to-primary-light text-white pt-24 pb-16 px-6 mt-auto overflow-hidden">
+    <footer className="relative bg-gradient-to-br from-primary via-primary-dark to-primary-light text-white pt-24 pb-16 px-4 md:px-6 mt-auto overflow-hidden">
       {/* Decorative Background Elements */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
-      <div className="absolute bottom-0 left-0 w-96 h-96 bg-black/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/3 pointer-events-none"></div>
+      <div className="absolute top-0 right-0 w-72 md:w-96 h-72 md:h-96 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
+      <div className="absolute bottom-0 left-0 w-72 md:w-96 h-72 md:h-96 bg-black/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/3 pointer-events-none"></div>
 
       <div className="container mx-auto max-w-6xl relative z-10">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-10 md:gap-12">
@@ -15,11 +15,11 @@ const Footer: React.FC = () => {
           <div className="col-span-1 sm:col-span-2 text-center sm:text-left">
             <Link
               href="/"
-              className="text-3xl font-black text-white tracking-wide hover:opacity-80 transition-opacity mb-4 block"
+              className="text-2xl md:text-3xl font-black text-white tracking-wide hover:opacity-80 transition-opacity mb-4 block"
             >
               OCTOSIGHT
             </Link>
-            <p className="text-white/80 text-sm leading-relaxed mb-8 max-w-sm mx-auto sm:mx-0 font-medium">
+            <p className="text-white/80 text-sm leading-relaxed mb-6 md:mb-8 max-w-sm mx-auto sm:mx-0 font-medium">
               Empowering users to detect and rep
               ort phishing threats with
               advanced AI-driven analysis and real-time security intelligence.
@@ -116,10 +116,10 @@ const Footer: React.FC = () => {
             <h4 className="text-white font-bold mb-6 text-sm tracking-wide">
               Contact
             </h4>
-            <div className="flex flex-col items-center sm:items-start gap-5">
+            <div className="flex flex-col items-center sm:items-start gap-4 md:gap-5">
               <a
                 href="mailto:support@octosight.id"
-                className="flex items-center gap-3 text-white hover:opacity-80 text-sm transition-colors font-medium"
+                className="flex items-center gap-2 md:gap-3 text-white hover:opacity-80 text-sm transition-colors font-medium"
               >
                 <div className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center border border-white/20">
                   <Mail className="h-4 w-4" />
@@ -130,7 +130,7 @@ const Footer: React.FC = () => {
                 href="#"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-3 text-white hover:opacity-80 text-sm transition-colors font-medium"
+                className="flex items-center gap-2 md:gap-3 text-white hover:opacity-80 text-sm transition-colors font-medium"
               >
                 <div className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center border border-white/20">
                   <Instagram className="h-4 w-4" />
@@ -141,7 +141,7 @@ const Footer: React.FC = () => {
                 href="#"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-3 text-white hover:opacity-80 text-sm transition-colors font-medium"
+                className="flex items-center gap-2 md:gap-3 text-white hover:opacity-80 text-sm transition-colors font-medium"
               >
                 <div className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center border border-white/20">
                   <Twitter className="h-4 w-4" />

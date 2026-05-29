@@ -26,7 +26,7 @@ const Navbar: React.FC = () => {
     <header className="sticky top-0 z-50 bg-white border-b border-neutral-border shadow-sm">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between max-w-7xl">
         <Link href="/" className="flex items-center gap-2">
-          <span className="text-primary text-2xl font-black tracking-wide">
+          <span className="text-primary text-xl md:text-2xl font-black tracking-wide">
             OCTOSIGHT
           </span>
           {isAdminRoute && (
@@ -36,7 +36,7 @@ const Navbar: React.FC = () => {
           )}
         </Link>
 
-        <nav className="hidden lg:flex items-stretch gap-6 h-full">
+        <nav className="hidden lg:flex items-stretch gap-4 md:gap-6 h-full">
           {isAdminRoute ? (
             <>
               <Link href="/" className={getLinkClass("/")}>
@@ -205,7 +205,7 @@ const Navbar: React.FC = () => {
           <div className="border-t border-neutral-border pt-3 mt-3">
             {user ? (
               <>
-                <div className="flex items-center gap-3 mb-3">
+                <div className="flex items-center gap-2 md:gap-3 mb-3">
                   <div className="w-8 h-8 bg-primary/10 text-primary rounded-full flex items-center justify-center text-xs font-bold">
                     {user.full_name.charAt(0).toUpperCase()}
                   </div>

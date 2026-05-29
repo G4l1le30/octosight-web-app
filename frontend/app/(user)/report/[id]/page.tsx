@@ -72,9 +72,9 @@ export default function DetailedReportPage() {
   if (!result) {
     return (
       <div className="container mx-auto px-4 py-32 text-center max-w-md">
-        <div className="bg-risk-high/10 text-risk-high p-6 rounded-2xl border border-risk-high/20 mb-6">
+        <div className="bg-risk-high/10 text-risk-high p-4 md:p-6 rounded-2xl border border-risk-high/20 mb-4 md:mb-6">
           <AlertTriangle className="size-12 mx-auto mb-4" />
-          <h2 className="text-xl font-bold mb-2">Report Not Found</h2>
+          <h2 className="text-lg md:text-xl font-bold mb-2">Report Not Found</h2>
           <p className="text-sm font-medium opacity-80">
             The ticket ID you provided does not exist in our system.
           </p>
@@ -91,8 +91,8 @@ export default function DetailedReportPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-12 max-w-5xl">
-      <div className="mb-10 flex items-center gap-4 animate-in fade-in slide-in-from-left-4 duration-500">
+    <div className="container mx-auto px-4 py-8 md:py-12 max-w-5xl">
+      <div className="mb-8 md:mb-10 flex items-center gap-3 md:gap-4 animate-in fade-in slide-in-from-left-4 duration-500">
         <button
           onClick={() => router.push("/status")}
           className="p-2 rounded-xl border border-neutral-border hover:bg-neutral-page transition-all text-secondary/60 hover:text-primary group shadow-sm"
@@ -101,7 +101,7 @@ export default function DetailedReportPage() {
           <ChevronLeft className="size-6 group-hover:-translate-x-0.5 transition-transform" />
         </button>
         <div>
-          <h1 className="text-3xl font-bold text-secondary">
+          <h1 className="text-2xl md:text-3xl font-bold text-secondary">
             Analysis Report
           </h1>
           <p className="text-sm font-bold text-secondary/60 mt-2">

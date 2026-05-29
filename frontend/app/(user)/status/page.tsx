@@ -82,17 +82,17 @@ export default function StatusPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-12 max-w-6xl">
-      <div className="mb-12 text-center">
-        <h1 className="text-4xl font-bold mb-4 text-secondary">Track Your Reports</h1>
+    <div className="container mx-auto px-4 py-8 md:py-12 max-w-6xl">
+      <div className="mb-8 md:mb-12 text-center">
+        <h1 className="text-3xl md:text-4xl font-bold mb-4 text-secondary">Track Your Reports</h1>
         <p className="text-secondary opacity-70 font-medium max-w-xl mx-auto">
           Enter a Ticket ID manually or select from your recent submission history below.
         </p>
       </div>
 
-      <div className="grid gap-8">
+      <div className="grid gap-6 md:gap-8">
         {/* Search Section */}
-        <div className="card p-5 shadow-xl border-neutral-border">
+        <div className="card p-4 md:p-5 shadow-xl border-neutral-border">
           <SearchBar
             value={ticketId}
             onChange={setTicketId}

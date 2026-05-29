@@ -50,11 +50,11 @@ export const ReportForm: React.FC<ReportFormProps> = ({
   const [showAdvanced, setShowAdvanced] = React.useState(false);
 
   return (
-    <div className="card p-8 mb-8 bg-white border border-neutral-border overflow-visible">
+    <div className="card p-6 md:p-8 mb-6 md:mb-8 bg-white border border-neutral-border overflow-visible">
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
         <div className="space-y-4">
           <label className="text-base font-bold text-secondary">Incident Type</label>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
             {(["Website", "SMS", "WhatsApp", "Email"] as IncidentType[]).map((type) => (
               <IncidentTypeCard
                 key={type}
@@ -69,7 +69,7 @@ export const ReportForm: React.FC<ReportFormProps> = ({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
           <div className={incidentType === "Website" ? "md:col-span-2" : ""}>
             <Input
               label={dynamic.urlLabel}
@@ -88,16 +88,16 @@ export const ReportForm: React.FC<ReportFormProps> = ({
           )}
         </div>
 
-        <Textarea label={dynamic.summaryLabel} placeholder={dynamic.summaryPlaceholder} error={errors.summary?.message} {...register("summary")} className="min-h-[150px]" />
+        <Textarea label={dynamic.summaryLabel} placeholder={dynamic.summaryPlaceholder} error={errors.summary?.message} {...register("summary")} className="min-h-[110px] md:min-h-[150px]" />
 
         {/* Advanced Information Section */}
         <div className="border border-neutral-border rounded-xl overflow-hidden shadow-sm">
           <button
             type="button"
             onClick={() => setShowAdvanced(!showAdvanced)}
-            className="w-full flex items-center justify-between p-4 hover:bg-neutral-border/20 transition-colors text-left"
+            className="w-full flex items-center justify-between p-3 md:p-4 hover:bg-neutral-border/20 transition-colors text-left"
           >
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 md:gap-3">
               <div className="p-2 rounded-lg text-black">
                 <ShieldCheck className="size-5" />
               </div>
@@ -118,7 +118,7 @@ export const ReportForm: React.FC<ReportFormProps> = ({
               This information is used to improve our global blacklist system.
             </p>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               <Input
                 label="Attacker Bank Name"
                 placeholder="e.g., CIMB NIAGA, OCTO Pay"
@@ -144,7 +144,7 @@ export const ReportForm: React.FC<ReportFormProps> = ({
         </div>
 
         {/* Evidence Upload — files stored locally, uploaded on submit */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
           <EvidenceUpload
             label={dynamic.fileLabel}
             id="screenshot-uploader"
@@ -171,7 +171,7 @@ export const ReportForm: React.FC<ReportFormProps> = ({
           />
         </div>
 
-        <Button type="submit" loading={loading} size="lg" className="w-full text-lg">
+        <Button type="submit" loading={loading} size="lg" className="w-full text-base md:text-lg">
           Analyze Report
         </Button>
       </form>

@@ -51,9 +51,9 @@ export const StatusEvidence: React.FC<StatusEvidenceProps> = ({ result }) => {
               return (
                 <div
                   key={i}
-                  className="flex items-center justify-between p-4 bg-neutral-page/50 border border-neutral-border/50 rounded-xl group transition-all"
+                  className="flex items-center justify-between p-3 md:p-4 bg-neutral-page/50 border border-neutral-border/50 rounded-xl group transition-all"
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 md:gap-3">
                     <div className="p-2 bg-white rounded-lg border border-neutral-border text-secondary">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -99,9 +99,9 @@ export const StatusEvidence: React.FC<StatusEvidenceProps> = ({ result }) => {
               return (
                 <div
                   key={i}
-                  className="flex items-center justify-between p-4 bg-neutral-page/50 border border-neutral-border/50 rounded-xl group transition-all"
+                  className="flex items-center justify-between p-3 md:p-4 bg-neutral-page/50 border border-neutral-border/50 rounded-xl group transition-all"
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 md:gap-3">
                     <div className="p-2 bg-white rounded-lg border border-neutral-border text-secondary">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"

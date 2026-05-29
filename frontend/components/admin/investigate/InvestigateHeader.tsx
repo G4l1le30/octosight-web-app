@@ -16,8 +16,8 @@ export const InvestigateHeader: React.FC<InvestigateHeaderProps> = ({
   disabled,
 }) => {
   return (
-    <div className="flex items-center justify-between mb-8">
-      <div className="flex items-center gap-4">
+    <div className="flex items-center justify-between mb-6 md:mb-8">
+      <div className="flex items-center gap-3 md:gap-4">
         <Link
           href="/admin/triage"
           className="p-2 hover:bg-neutral-border rounded-full transition-all"
@@ -37,7 +37,7 @@ export const InvestigateHeader: React.FC<InvestigateHeaderProps> = ({
             />
           </svg>
         </Link>
-        <h1 className="text-3xl font-bold text-secondary">
+        <h1 className="text-2xl md:text-3xl font-bold text-secondary">
           Investigate {ticketId}
         </h1>
       </div>
@@ -46,7 +46,7 @@ export const InvestigateHeader: React.FC<InvestigateHeaderProps> = ({
           onClick={onSave}
           loading={saving}
           disabled={disabled}
-          className="px-8"
+          className="px-6 md:px-8"
         >
           Save Changes
         </Button>

@@ -44,10 +44,10 @@ const StatusResult: React.FC<StatusResultProps> = ({ result }) => {
         <div
           className={`h-1.5 ${result.risk_score >= 70 ? "bg-risk-high" : result.risk_score >= 40 ? "bg-risk-medium" : "bg-risk-low"}`}
         ></div>
-        <div className="p-8">
+        <div className="p-6 md:p-8">
           <StatusHeader result={result} />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-8 md:mb-10">
             {/* Left Column */}
             <StatusOverview result={result} />
 
@@ -58,7 +58,7 @@ const StatusResult: React.FC<StatusResultProps> = ({ result }) => {
             </div>
           </div>
 
-          <div className="pt-6 border-t border-neutral-border flex flex-col sm:flex-row sm:items-center justify-end gap-4">
+          <div className="pt-6 border-t border-neutral-border flex flex-col sm:flex-row sm:items-center justify-end gap-3 md:gap-4">
             <div className="flex gap-3 w-full sm:w-auto">
               <Button
                 variant="outline"
@@ -84,7 +84,7 @@ const StatusResult: React.FC<StatusResultProps> = ({ result }) => {
           <div
             className={`h-1.5 ${result.risk_score >= 70 ? "bg-risk-high" : result.risk_score >= 40 ? "bg-risk-medium" : "bg-risk-low"}`}
           ></div>
-          <div className="p-8">
+          <div className="p-6 md:p-8">
             <RiskEducationPanel
               recommendation={result.education_recommendation}
             />
@@ -97,9 +97,9 @@ const StatusResult: React.FC<StatusResultProps> = ({ result }) => {
         <div
           className={`h-1.5 ${result.risk_score >= 70 ? "bg-risk-high" : result.risk_score >= 40 ? "bg-risk-medium" : "bg-risk-low"}`}
         />
-        <div className="p-8">
-          <div className="mb-6 space-y-1">
-            <h3 className="text-xl font-bold text-secondary">
+        <div className="p-6 md:p-8">
+          <div className="mb-4 md:mb-6 space-y-1">
+            <h3 className="text-lg md:text-xl font-bold text-secondary">
               Report Timeline
             </h3>
             <p className="text-sm text-secondary/60 font-medium">
@@ -107,7 +107,7 @@ const StatusResult: React.FC<StatusResultProps> = ({ result }) => {
             </p>
           </div>
           {logsLoading ? (
-            <div className="flex items-center gap-3 text-sm text-secondary/60 font-medium py-6">
+            <div className="flex items-center gap-3 text-sm text-secondary/60 font-medium py-4 md:py-6">
               <div className="size-5 border-2 border-secondary/20 border-t-secondary/60 rounded-full animate-spin" />
               Loading timeline...
             </div>

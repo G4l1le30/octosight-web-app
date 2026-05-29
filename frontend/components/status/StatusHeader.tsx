@@ -9,12 +9,12 @@ interface StatusHeaderProps {
 
 export const StatusHeader: React.FC<StatusHeaderProps> = ({ result }) => {
   return (
-    <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-10">
+    <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:gap-6 mb-8 md:mb-10">
       <div>
         <span className="text-sm font-bold text-secondary tracking-wide">
           Ticket ID
         </span>
-        <h2 className="text-3xl font-bold mt-1">{result.ticket_id}</h2>
+        <h2 className="text-2xl md:text-3xl font-bold mt-1">{result.ticket_id}</h2>
         <p className="text-sm font-bold text-secondary/60 mt-2">
           Submitted on {formatDateTime(result.created_at).full}
         </p>

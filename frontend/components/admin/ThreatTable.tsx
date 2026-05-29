@@ -50,19 +50,19 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
       <table className="w-full text-left">
         <thead className="bg-neutral-page text-sm font-bold text-secondary border-b border-neutral-border">
           <tr>
-            <th className="px-6 py-4 w-[20%]">Ticket</th>
-            <th className="px-6 py-4 w-[20%]">Indicator / Target</th>
-            <th className="px-6 py-4">Priority</th>
-            <th className="px-6 py-4">Risk Score</th>
-            <th className="px-6 py-4">Key Findings</th>
-            <th className="px-6 py-4">Status</th>
-            <th className="px-6 py-4 text-right">Actions</th>
+            <th className="px-4 md:px-6 py-4 w-[20%]">Ticket</th>
+            <th className="px-4 md:px-6 py-4 w-[20%]">Indicator / Target</th>
+            <th className="px-4 md:px-6 py-4">Priority</th>
+            <th className="px-4 md:px-6 py-4">Risk Score</th>
+            <th className="px-4 md:px-6 py-4">Key Findings</th>
+            <th className="px-4 md:px-6 py-4">Status</th>
+            <th className="px-4 md:px-6 py-4 text-right">Actions</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-neutral-border">
           {tickets.length === 0 ? (
             <tr>
-              <td colSpan={7} className="px-6 py-10 text-center opacity-40">
+              <td colSpan={7} className="px-4 md:px-6 py-8 md:py-10 text-center opacity-40">
                 {emptyMessage}
               </td>
             </tr>
@@ -72,7 +72,7 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
                 key={ticket.id}
                 className="hover:bg-neutral-page/50 transition-colors group"
               >
-                <td className="px-6 py-5">
+                <td className="px-4 md:px-6 py-4 md:py-5">
                   <div className="flex flex-col">
                     <span className="font-bold text-base text-black">
                       {ticket.ticket_id}
@@ -82,7 +82,7 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
                     </span>
                   </div>
                 </td>
-                <td className="px-6 py-5">
+                <td className="px-4 md:px-6 py-4 md:py-5">
                   <div className="flex flex-col">
                     <span className="text-xs font-bold text-secondary mb-1">
                       {ticket.type}
@@ -101,7 +101,7 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
                     </span>
                   </div>
                 </td>
-                <td className="px-6 py-5">
+                <td className="px-4 md:px-6 py-4 md:py-5">
                   <span
                     className={cn(
                       "text-xs font-bold tracking-wide",
@@ -115,7 +115,7 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
                     {ticket.priority}
                   </span>
                 </td>
-                <td className="px-6 py-5">
+                <td className="px-4 md:px-6 py-4 md:py-5">
                   <div className="flex flex-col items-center gap-2">
                     <span
                       className="text-sm font-bold"
@@ -146,7 +146,7 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
                     </div>
                   </div>
                 </td>
-                <td className="px-6 py-5">
+                <td className="px-4 md:px-6 py-4 md:py-5">
                   <div className="flex flex-wrap gap-1">
                     {ticket.flags ? (
                       ticket.flags
@@ -170,7 +170,7 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
                     )}
                   </div>
                 </td>
-                <td className="px-6 py-5">
+                <td className="px-4 md:px-6 py-4 md:py-5">
                   <span
                     className={cn(
                       "text-xs font-bold px-2.5 py-1 rounded-full whitespace-nowrap border",
@@ -180,7 +180,7 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
                     {ticket.status}
                   </span>
                 </td>
-                <td className="px-6 py-5 text-right">
+                <td className="px-4 md:px-6 py-4 md:py-5 text-right">
                   <Link
                     href={`/admin/investigate/${ticket.ticket_id}`}
                     className="text-xs font-bold text-secondary hover:text-primary transition-colors bg-white border border-neutral-border px-4 py-2 rounded-xl shadow-sm inline-block"

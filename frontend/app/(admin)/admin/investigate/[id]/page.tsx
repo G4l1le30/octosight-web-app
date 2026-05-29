@@ -208,13 +208,13 @@ export default function InvestigatePage({
     );
   if (!ticket)
     return (
-      <div className="p-20 text-center font-bold text-risk-high text-xl">
+      <div className="p-20 text-center font-bold text-risk-high text-lg md:text-xl">
         Ticket # {ticketId} Not Found
       </div>
     );
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-6xl">
+    <div className="container mx-auto px-4 py-6 md:py-8 max-w-6xl">
       <InvestigateHeader
         ticketId={ticket.ticket_id}
         onSave={() => {
@@ -228,7 +228,7 @@ export default function InvestigatePage({
         disabled={!hasChanges}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
         {/* Target Info */}
         <div className="lg:col-span-2">
           <InvestigateTargetInfo

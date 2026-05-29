@@ -129,7 +129,7 @@ export default function BlacklistPage() {
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-6 md:py-8">
       {/* Toast */}
       {toast && (
         <div
@@ -148,8 +148,8 @@ export default function BlacklistPage() {
       )}
 
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 md:mb-8 gap-3 md:gap-4">
+        <div className="flex items-center gap-3 md:gap-4">
           <button
             onClick={() => router.back()}
             className="p-2 hover:bg-neutral-border rounded-full transition-all"
@@ -170,7 +170,7 @@ export default function BlacklistPage() {
             </svg>
           </button>
           <div>
-            <h1 className="text-3xl font-bold text-secondary">
+            <h1 className="text-2xl md:text-3xl font-bold text-secondary">
               Global Blacklist
             </h1>
             <p className="text-secondary font-medium opacity-80">
@@ -179,7 +179,7 @@ export default function BlacklistPage() {
             </p>
           </div>
         </div>
-        <div className="bg-risk-high/10 border border-risk-high/20 rounded-2xl px-6 py-4 flex items-center gap-4">
+        <div className="bg-risk-high/10 border border-risk-high/20 rounded-2xl px-6 py-4 flex items-center gap-3 md:gap-4">
           <div>
             <p className="text-2xl font-bold text-risk-high leading-none">
               {entries.length}
@@ -228,7 +228,7 @@ export default function BlacklistPage() {
             <div className="size-16 bg-neutral-page rounded-2xl flex items-center justify-center mx-auto mb-6">
               <ShieldOff className="size-8 text-secondary/20" />
             </div>
-            <p className="text-secondary font-bold text-lg">
+            <p className="text-secondary font-bold text-base md:text-lg">
               No {activeTab}s blocked yet
             </p>
             <p className="text-secondary/60 text-sm mt-2 font-medium">
@@ -241,11 +241,11 @@ export default function BlacklistPage() {
             <table className="w-full text-left">
               <thead className="bg-neutral-page/50 text-sm font-semibold text-secondary border-b border-neutral-border">
                 <tr>
-                  <th className="px-8 py-5">Blocked {activeTab}</th>
-                  <th className="px-8 py-5">Reason / Modus</th>
-                  <th className="px-8 py-5 text-center">Source Ticket</th>
-                  <th className="px-8 py-5">Date Added</th>
-                  <th className="px-8 py-5 text-right text-secondary font-bold">
+                  <th className="px-6 md:px-8 py-4 md:py-5">Blocked {activeTab}</th>
+                  <th className="px-6 md:px-8 py-4 md:py-5">Reason / Modus</th>
+                  <th className="px-6 md:px-8 py-4 md:py-5 text-center">Source Ticket</th>
+                  <th className="px-6 md:px-8 py-4 md:py-5">Date Added</th>
+                  <th className="px-6 md:px-8 py-4 md:py-5 text-right text-secondary font-bold">
                     Actions
                   </th>
                 </tr>

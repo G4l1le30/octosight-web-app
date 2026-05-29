@@ -142,15 +142,15 @@ export function BlacklistModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 backdrop-blur-sm">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md flex flex-col h-[440px] p-8 animate-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-3 md:p-4 backdrop-blur-sm">
+      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md flex flex-col h-[440px] p-6 md:p-8 animate-in zoom-in-95 duration-200">
         {/* Header — fixed at top */}
-        <div className="flex flex-col items-center text-center gap-3 shrink-0">
-          <div className="w-14 h-14 rounded-2xl bg-neutral-page flex items-center justify-center border border-neutral-border">
+        <div className="flex flex-col items-center text-center gap-2 md:gap-3 shrink-0">
+          <div className="w-10 h-10 md:w-14 md:h-14 rounded-2xl bg-neutral-page flex items-center justify-center border border-neutral-border">
             {getIcon()}
           </div>
           <div>
-            <h2 className="text-xl font-bold text-secondary tracking-tight">Blacklist {getLabel()}</h2>
+            <h2 className="text-lg md:text-xl font-bold text-secondary tracking-tight">Blacklist {getLabel()}</h2>
             {status !== null && (
               <p className="text-xs text-secondary/60 font-medium mt-1 px-2">
                 Adding this will automatically block future reports containing this indicator.
@@ -162,7 +162,7 @@ export function BlacklistModal({
         {/* Content — flex-1, centered */}
         <div className="flex-1 flex flex-col items-center justify-center">
           {status === null && (
-            <div className="flex items-center justify-center gap-3 py-8">
+            <div className="flex items-center justify-center gap-2 md:gap-3 py-6 md:py-8">
               <Loader2 className="size-5 animate-spin text-secondary" />
               <span className="text-sm font-semibold text-secondary/70">Checking blacklist...</span>
             </div>
@@ -170,7 +170,7 @@ export function BlacklistModal({
 
           {status === "form" && (
             <div className="w-full space-y-4">
-              <div className="bg-neutral-page rounded-2xl p-4 border border-neutral-border space-y-1 text-left">
+              <div className="bg-neutral-page rounded-2xl p-3 md:p-4 border border-neutral-border space-y-1 text-left">
                 <p className="text-sm text-secondary font-bold tracking-wide">Indicator to Block</p>
                 <p className="text-sm text-secondary font-medium break-all">
                   {type === "account" && metadata?.bank_name ? `${metadata.bank_name}: ` : ""}{value}
@@ -193,19 +193,19 @@ export function BlacklistModal({
           )}
 
           {status === "success" && (
-            <div className="bg-green-50 border border-green-200 rounded-2xl p-4 text-sm text-green-700 font-bold flex items-start gap-3 w-full text-left">
+            <div className="bg-green-50 border border-green-200 rounded-2xl p-3 md:p-4 text-sm text-green-700 font-bold flex items-start gap-2 md:gap-3 w-full text-left">
               <CheckCircle2 className="w-5 h-5 flex-shrink-0 mt-0.5" />
               <span>Successfully added to global blacklist.</span>
             </div>
           )}
           {status === "already" && (
-            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-sm text-amber-700 font-bold flex items-center gap-3 w-full">
+            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3 md:p-4 text-sm text-amber-700 font-bold flex items-center gap-2 md:gap-3 w-full">
               <AlertTriangle className="w-5 h-5 flex-shrink-0" />
               <span>Already on the blacklist.</span>
             </div>
           )}
           {status === "error" && (
-            <div className="bg-red-50 border border-red-200 rounded-2xl p-4 text-sm text-red-700 font-bold flex items-center gap-3 w-full">
+            <div className="bg-red-50 border border-red-200 rounded-2xl p-3 md:p-4 text-sm text-red-700 font-bold flex items-center gap-2 md:gap-3 w-full">
               <XCircle className="w-5 h-5 flex-shrink-0" />
               <span>Failed to process. Try again.</span>
             </div>
@@ -213,7 +213,7 @@ export function BlacklistModal({
         </div>
 
         {/* Actions — fixed at bottom */}
-        <div className="flex gap-3 shrink-0 pt-4">
+        <div className="flex gap-2 md:gap-3 shrink-0 pt-4">
           {status === null ? null : status === "form" ? (
             <>
               <Button

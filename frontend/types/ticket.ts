@@ -29,6 +29,8 @@ export interface Ticket {
   reference_number: string | null;
   created_at: string;
   updated_at: string;
+  sla_deadline: string | null;
+  sla_breached: boolean;
 }
 
 export interface TicketAuditLog {

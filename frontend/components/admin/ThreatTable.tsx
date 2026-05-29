@@ -74,9 +74,19 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
               >
                 <td className="px-4 md:px-6 py-4 md:py-5">
                   <div className="flex flex-col">
-                    <span className="font-bold text-base text-black">
-                      {ticket.ticket_id}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-base text-black">
+                        {ticket.ticket_id}
+                      </span>
+                      {ticket.sla_breached && (
+                        <span className="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200 whitespace-nowrap">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="size-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          SLA Breach
+                        </span>
+                      )}
+                    </div>
                     <span className="text-xs font-medium text-secondary">
                       {formatDateTime(ticket.created_at).full}
                     </span>

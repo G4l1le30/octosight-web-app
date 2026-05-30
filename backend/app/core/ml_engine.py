@@ -1,6 +1,7 @@
 import joblib
 import os
 import sys
+import threading
 from sklearn.base import BaseEstimator, TransformerMixin
 
 # Make heavy ML deps optional so backend can build without `torch` or
@@ -46,47 +47,49 @@ setattr(sys.modules['__main__'], 'SentenceTransformerWrapper', SentenceTransform
 # Resolve the path relative to this file (app/core/) up to backend/models/
 MODEL_PATH = os.path.join(os.path.dirname(__file__), '..', '..', 'models', 'spam_pipeline.pkl')
 
-spam_model = None
-if TORCH_AVAILABLE:
-    original_load = torch.load
-    def _cpu_load(*args, **kwargs):
-        kwargs['map_location'] = torch.device('cpu')
-        return original_load(*args, **kwargs)
+_spam_model = None
+_spam_model_lock = threading.Lock()
 
-    # Load the model once at module import time to minimize per-request latency.
-    try:
-        with patch('torch.load', _cpu_load):
-            spam_model = joblib.load(MODEL_PATH)
-        print(f"[ML Engine] Model loaded successfully from: {os.path.abspath(MODEL_PATH)}")
-    except FileNotFoundError:
-        spam_model = None
-        print(f"[ML Engine] WARNING: Model file not found at {os.path.abspath(MODEL_PATH)}")
-    except Exception as e:
-        spam_model = None
-        print(f"[ML Engine] ERROR: Failed to load model — {e}")
-else:
-    print('[ML Engine] torch not available — ML model loading skipped (use separate ML image or install optional deps)')
+
+def _load_model():
+    """Load the ML model on first inference request (lazy loading)."""
+    global _spam_model
+    if _spam_model is not None:
+        return
+
+    with _spam_model_lock:
+        if _spam_model is not None:
+            return
+        if not TORCH_AVAILABLE:
+            print('[ML Engine] torch not available — ML model loading skipped')
+            return
+
+        original_load = torch.load
+
+        def _cpu_load(*args, **kwargs):
+            kwargs['map_location'] = torch.device('cpu')
+            return original_load(*args, **kwargs)
+
+        try:
+            with patch('torch.load', _cpu_load):
+                _spam_model = joblib.load(MODEL_PATH)
+            print(f"[ML Engine] Model loaded successfully from: {os.path.abspath(MODEL_PATH)}")
+        except FileNotFoundError:
+            print(f"[ML Engine] WARNING: Model file not found at {os.path.abspath(MODEL_PATH)}")
+        except Exception as e:
+            print(f"[ML Engine] ERROR: Failed to load model — {e}")
 
 
 def analyze_spam(text: str) -> dict:
-    """
-    Predict whether the given text is spam/phishing using a pre-trained
-    scikit-learn pipeline (TF-IDF + Logistic Regression).
+    _load_model()
 
-    Args:
-        text: The message string to analyze.
-
-    Returns:
-        A dict with 'category' (predicted label) and 'confidence' (percentage).
-        Returns a dict with 'error' key if the model is unavailable.
-    """
-    if spam_model is None:
+    if _spam_model is None:
         return {
             "error": "ML model is not available. Make sure spam_pipeline.pkl exists in backend/models/."
         }
 
-    prediction = spam_model.predict([text])[0]
-    probabilities = spam_model.predict_proba([text])[0]
+    prediction = _spam_model.predict([text])[0]
+    probabilities = _spam_model.predict_proba([text])[0]
     confidence = float(max(probabilities)) * 100
 
     return {

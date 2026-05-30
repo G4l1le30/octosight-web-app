@@ -205,7 +205,7 @@ def login(request: Request, data: LoginRequest, response: Response, db: Session 
     if not user:
         raise HTTPException(
             status_code=401,
-            detail="No account found for this email. Please register first using the same real email address.",
+            detail="No account found for this email. Please register first.",
         )
 
     if not verify_password(data.password, user.hashed_password):

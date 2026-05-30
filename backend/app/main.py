@@ -16,7 +16,7 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy.exc import OperationalError
 
 from app.db.session import Base, SessionLocal, engine
-from app.db.migrations import apply_migrations
+from app.db.migrations import apply_migrations, run_alembic_migrations
 from app.db.education_seeding import seed_education_data
 from app.models.models import Ticket, User, BlacklistedURL, BlacklistedAccount, MockBankTransaction, BlacklistedPhone, BlacklistedEmail, TicketAuditLog  # noqa: F401 — ensures table is created
 from app.core.email_validation import (
@@ -182,6 +182,7 @@ async def lifespan(app: FastAPI):
     while retries > 0:
         try:
             Base.metadata.create_all(bind=engine)
+            run_alembic_migrations()
             db = SessionLocal()
             try:
                 apply_migrations(db)

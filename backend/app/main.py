@@ -1,5 +1,11 @@
 """
 main.py — OctoSight FastAPI application entry point.
+
+Uses the refactored architecture:
+- config.py for all env vars
+- core/error_handlers.py for exception registration
+- api/v1/ for new versioned endpoints
+- Existing api/endpoints/ for backward compat (migration in progress)
 """
 
 import os
@@ -7,26 +13,35 @@ import time
 import uuid
 from contextlib import asynccontextmanager
 
-import traceback
-from fastapi import FastAPI, Request, status
-from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.exc import OperationalError
 
-from app.db.session import Base, SessionLocal, engine
+from app.config import settings
+from app.db.base import Base
+from app.db.session import engine, SessionLocal
 from app.db.migrations import apply_migrations, run_alembic_migrations
 from app.db.education_seeding import seed_education_data
-from app.models.models import Ticket, User, BlacklistedURL, BlacklistedAccount, MockBankTransaction, BlacklistedPhone, BlacklistedEmail, TicketAuditLog  # noqa: F401 — ensures table is created
+from app.models import (
+    Ticket,
+    User,
+    BlacklistedURL,
+    BlacklistedAccount,
+    MockBankTransaction,
+    BlacklistedPhone,
+    BlacklistedEmail,
+    TicketAuditLog,
+)
 from app.core.email_validation import (
     EmailValidationError,
     EmailValidationUnavailableError,
     normalize_and_validate_real_email,
 )
 from app.core.security import hash_password, limiter
-from slowapi.errors import RateLimitExceeded
+from app.core.error_handlers import register_error_handlers
 
+# Backward-compat routers (migrating to api/v1/)
 from app.api.endpoints import auth as auth_router
 from app.api.endpoints import tickets as tickets_router
 from app.api.endpoints import detection as detection_router
@@ -34,22 +49,25 @@ from app.api.endpoints import education as education_router
 from app.api.endpoints import blacklist as blacklist_router
 from app.api.endpoints import evidence as evidence_router
 
+# New v1 router
+from app.api.v1 import v1_router
+
+
 # ── Startup Logic ─────────────────────────────────────────────────────────────
 
 def _seed_db(db) -> None:
-    """Seed a default admin account and minimal dummy tickets if the DB is empty."""
-    # Admin account
-    admin_email = (os.getenv("DEFAULT_ADMIN_EMAIL") or "").strip()
-    admin_password = os.getenv("DEFAULT_ADMIN_PASSWORD")
+    """Seed default admin account, dummy tickets, mock bank data, and blacklists."""
+    admin_email = (settings.default_admin_email or "").strip()
+    admin_password = settings.default_admin_password
 
     if admin_email:
         try:
             admin_email = normalize_and_validate_real_email(admin_email)
         except EmailValidationUnavailableError:
-            print("[Seed] Skipping admin user creation because email deliverability validation is temporarily unavailable.")
+            print("[Seed] Skipping admin user creation — email deliverability validation unavailable.")
             admin_email = ""
         except EmailValidationError as exc:
-            print(f"[Seed] Skipping admin user creation because DEFAULT_ADMIN_EMAIL is invalid: {exc}")
+            print(f"[Seed] Skipping admin user — DEFAULT_ADMIN_EMAIL invalid: {exc}")
             admin_email = ""
 
     if admin_email and admin_password and not db.query(User).filter(User.email == admin_email).first():
@@ -65,40 +83,31 @@ def _seed_db(db) -> None:
         db.commit()
         print(f"[Seed] Admin user created: {admin_email}")
 
-    # Dummy tickets (only if table is completely empty)
+    # Dummy tickets
     if db.query(Ticket).count() == 0:
         dummy = [
             Ticket(
                 ticket_id="OCTO-8825",
                 url="https://clmbniaga-bonus.tk/claim",
                 type="Website",
-                risk_score=95,
-                rule_score=80,
-                ml_score=100,
-                priority="High",
-                status="Submitted",
+                risk_score=95, rule_score=80, ml_score=100,
+                priority="High", status="Submitted",
                 flags="punycode_detected,suspicious_tld,ml_prediction:phishing",
             ),
             Ticket(
                 ticket_id="OCTO-8821",
                 url="https://cimb-niaga-verif.net/login",
                 type="Website",
-                risk_score=92,
-                rule_score=75,
-                ml_score=100,
-                priority="High",
-                status="In Review",
+                risk_score=92, rule_score=75, ml_score=100,
+                priority="High", status="In Review",
                 flags="brand_impersonation,ml_prediction:phishing",
             ),
             Ticket(
                 ticket_id="OCTO-8822",
                 url="https://security-cimb.xyz/blocked",
                 type="Website",
-                risk_score=88,
-                rule_score=70,
-                ml_score=98,
-                priority="High",
-                status="Submitted",
+                risk_score=88, rule_score=70, ml_score=98,
+                priority="High", status="Submitted",
                 flags="suspicious_tld,ml_prediction:phishing",
             ),
         ]
@@ -106,74 +115,62 @@ def _seed_db(db) -> None:
         db.commit()
         print(f"[Seed] {len(dummy)} dummy tickets created")
 
-    # Mock Bank Transactions (simulated valid CIMB transactions)
-    # Check if OCTO-REF-001 exists, if not, re-seed the core CIMB data
+    # Mock bank transactions
     if db.query(MockBankTransaction).filter(MockBankTransaction.reference_number == "OCTO-REF-001").count() == 0:
-        # Clear old/partial mock data to prevent conflicts
         db.query(MockBankTransaction).delete()
         mock_txs = [
             MockBankTransaction(
-                reference_number="OCTO-REF-001", 
-                sender_name="Budi CIMB User", 
-                sender_account="706123456789", 
-                sender_bank="CIMB NIAGA",
-                receiver_account="704987654321",
-                receiver_bank="CIMB NIAGA",
-                amount=500000.0
+                reference_number="OCTO-REF-001", sender_name="Budi CIMB User",
+                sender_account="706123456789", sender_bank="CIMB NIAGA",
+                receiver_account="704987654321", receiver_bank="CIMB NIAGA",
+                amount=500000.0,
             ),
             MockBankTransaction(
-                reference_number="OCTO-REF-002", 
-                sender_name="Siti Niaga", 
-                sender_account="701234555111", 
-                sender_bank="CIMB NIAGA",
-                receiver_account="704987654321",
-                receiver_bank="CIMB NIAGA",
-                amount=1250000.0
+                reference_number="OCTO-REF-002", sender_name="Siti Niaga",
+                sender_account="701234555111", sender_bank="CIMB NIAGA",
+                receiver_account="704987654321", receiver_bank="CIMB NIAGA",
+                amount=1250000.0,
             ),
             MockBankTransaction(
-                reference_number="OCTO-REF-003", 
-                sender_name="Dedi Oktoman", 
-                sender_account="705556667770", 
-                sender_bank="CIMB NIAGA",
-                receiver_account="704987654321",
-                receiver_bank="CIMB NIAGA",
-                amount=200000.0
+                reference_number="OCTO-REF-003", sender_name="Dedi Oktoman",
+                sender_account="705556667770", sender_bank="CIMB NIAGA",
+                receiver_account="704987654321", receiver_bank="CIMB NIAGA",
+                amount=200000.0,
             ),
         ]
         db.add_all(mock_txs)
         db.commit()
         print(f"[Seed] {len(mock_txs)} mock CIMB transactions created/updated")
 
-    # Blacklisted Accounts (known scammers)
+    # Blacklisted accounts
     if db.query(BlacklistedAccount).count() == 0:
-        bad_accounts = [
+        db.add_all([
             BlacklistedAccount(account_number="1234567890", bank_name="OCTO Virtual", reason="Penipuan modus salah kirim"),
             BlacklistedAccount(account_number="081234567890", bank_name="E-Wallet Scam", reason="Dompet digital penipu barang fiktif"),
-        ]
-        db.add_all(bad_accounts)
+        ])
         db.commit()
-        print(f"[Seed] {len(bad_accounts)} blacklisted accounts created")
+        print("[Seed] blacklisted accounts created")
 
-    # Blacklisted Phones
+    # Blacklisted phones
     if db.query(BlacklistedPhone).count() == 0:
-        bad_phones = [
+        db.add_all([
             BlacklistedPhone(phone_number="08968554576", reason="Spam penipuan anak kecelakaan"),
             BlacklistedPhone(phone_number="08123456789", reason="SMS phishing hadiah palsu"),
-        ]
-        db.add_all(bad_phones)
+        ])
         db.commit()
-        print(f"[Seed] {len(bad_phones)} blacklisted phones created")
+        print("[Seed] blacklisted phones created")
 
-    # Blacklisted Emails
+    # Blacklisted emails
     if db.query(BlacklistedEmail).count() == 0:
-        bad_emails = [
+        db.add_all([
             BlacklistedEmail(email="scammer@urgent-cimb.com", reason="Email impersonasi CIMB NIAGA"),
             BlacklistedEmail(email="admin@secure-payment.xyz", reason="Email phishing payment gateway"),
-        ]
-        db.add_all(bad_emails)
+        ])
         db.commit()
-        print(f"[Seed] {len(bad_emails)} blacklisted emails created")
+        print("[Seed] blacklisted emails created")
 
+
+# ── Lifespan ────────────────────────────────────────────────────────────────
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -196,13 +193,14 @@ async def lifespan(app: FastAPI):
             retries -= 1
             print(f"[Startup] DB not ready, retrying... ({retries} left) — {exc}")
             time.sleep(5)
-    
+
     if retries == 0:
         print("[Startup] ERROR: Could not connect to database after 10 retries.")
-    
+
     yield
 
-# ── App ───────────────────────────────────────────────────────────────────────
+
+# ── App Factory ──────────────────────────────────────────────────────────────
 
 app = FastAPI(
     title="OctoSight API",
@@ -211,38 +209,25 @@ app = FastAPI(
         "Risk scores are computed using a hybrid Rule Engine (35%) + "
         "ML Engine (65%) pipeline."
     ),
-    version="1.0.0",
+    version="1.2.0",
     lifespan=lifespan,
 )
 
 app.state.limiter = limiter
 
-@app.exception_handler(RateLimitExceeded)
-async def custom_rate_limit_handler(request: Request, exc: RateLimitExceeded):
-    """Custom handler to return clear error message when spamming."""
-    return JSONResponse(
-        status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-        content={"detail": "Too many requests. Please wait a moment before trying again."},
-    )
-
-# ── Middleware ─────────────────────────────────────────────────────────────────
-
-allowed_origins = os.getenv(
-    "ALLOWED_ORIGINS", 
-    "http://localhost:3000,http://127.0.0.1:3000"
-).split(",")
+# ── Middleware ────────────────────────────────────────────────────────────────
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins,
+    allow_origins=settings.allowed_origins_list,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+
 @app.middleware("http")
-async def add_security_headers(request: Request, call_next):
-    """Add standard security headers to all responses."""
+async def add_security_headers(request, call_next):
     response = await call_next(request)
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "DENY"
@@ -250,68 +235,20 @@ async def add_security_headers(request: Request, call_next):
     response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
     return response
 
-# ── Static file serving ────────────────────────────────────────────────────────
 
-UPLOAD_DIR = os.getenv("UPLOAD_DIR", "uploads")
+# ── Static file serving ──────────────────────────────────────────────────────
+
+UPLOAD_DIR = settings.upload_dir
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
-# ── Global 500 Handler ────────────────────────────────────────────────────────
+# ── Error handlers ───────────────────────────────────────────────────────────
 
-@app.exception_handler(Exception)
-async def global_exception_handler(request: Request, exc: Exception):
-    """Catch any unhandled exception, log it, return structured 500."""
-    print("=== Unhandled Exception ===")
-    print(f"Path: {request.url.path}")
-    print(f"Method: {request.method}")
-    traceback.print_exc()
-    print("===========================")
-    return JSONResponse(
-        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        content={
-            "detail": "An internal server error occurred. Please try again later.",
-            "error_type": type(exc).__name__,
-        },
-    )
+register_error_handlers(app)
 
-# ── Exception Handlers ────────────────────────────────────────────────────────
+# ── Routes ───────────────────────────────────────────────────────────────────
 
-@app.exception_handler(RequestValidationError)
-async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    """
-    Custom handler to prevent 'UnicodeDecodeError' when a validation error 
-    occurs on a request containing binary data (like images).
-    """
-    errors = []
-    for err in exc.errors():
-        err_dict = dict(err)
-        
-        # Mask sensitive fields like password
-        loc = err_dict.get("loc", [])
-        if any(str(l).lower() in ["password", "credential", "token"] for l in loc):
-            if "input" in err_dict:
-                err_dict["input"] = "***MASKED***"
-                
-        if "ctx" in err_dict and "error" in err_dict["ctx"]:
-            err_dict["ctx"] = dict(err_dict["ctx"])
-            err_dict["ctx"]["error"] = str(err_dict["ctx"]["error"])
-        errors.append(err_dict)
-
-    print(f"--- Request Validation Error ---")
-    print(f"Path: {request.url.path}")
-    print(f"Errors: {errors}")
-    print(f"-------------------------------")
-    
-    return JSONResponse(
-        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-        content={
-            "detail": "Invalid input provided. Please check your form data.",
-            "errors": errors
-        },
-    )
-
-# ── Routes ────────────────────────────────────────────────────────────────────
-
+# Backward-compat old route paths
 app.include_router(auth_router.router)
 app.include_router(tickets_router.router)
 app.include_router(detection_router.router)
@@ -319,8 +256,5 @@ app.include_router(education_router.router)
 app.include_router(blacklist_router.router)
 app.include_router(evidence_router.router)
 
-# ── Health check ───────────────────────────────────────────────────────────────
-
-@app.get("/", tags=["health"])
-def health_check():
-    return {"status": "OctoSight API Active", "version": "1.0.0"}
+# New v1 router (additional endpoints under /api/v1/)
+app.include_router(v1_router)

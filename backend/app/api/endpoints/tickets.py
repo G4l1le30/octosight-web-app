@@ -21,6 +21,7 @@ from app.core.security import get_current_user, require_admin
 from app.db.session import get_db
 from app.models.models import Ticket, User, TicketAuditLog
 from app.schemas.schemas import TicketUpdate
+from app.schemas.ticket import TicketResponse
 from app.modules.notifications.service import send_email_notification
 from pydantic import BaseModel
 
@@ -48,11 +49,11 @@ STATUS_ORDER: dict[str, int] = {
 def _check_sla_breach(ticket: Ticket) -> None:
     """Mark ticket as SLA-breached if deadline has passed and status is still pending."""
     if ticket.sla_deadline and not ticket.sla_breached:
-        if datetime.now(timezone.utc) > ticket.sla_deadline and ticket.status in ("Submitted", "In Review"):
+        if datetime.now(timezone.utc).replace(tzinfo=None) > ticket.sla_deadline and ticket.status in ("Submitted", "In Review"):
             ticket.sla_breached = True
 
 
-@router.get("/tickets", summary="List all tickets (admin only)")
+@router.get("/tickets", response_model=list[TicketResponse], summary="List all tickets (admin only)")
 def get_tickets(
     db: Session = Depends(get_db),
     _admin=Depends(require_admin),
@@ -65,7 +66,7 @@ def get_tickets(
     return tickets
 
 
-@router.get("/tickets/{ticket_id}", summary="Get ticket by ID (authenticated, own ticket)")
+@router.get("/tickets/{ticket_id}", response_model=TicketResponse, summary="Get ticket by ID (authenticated, own ticket)")
 def get_ticket(
     ticket_id: str,
     db: Session = Depends(get_db),
@@ -326,7 +327,7 @@ def get_audit_logs(
     return result
 
 
-@router.get("/user/tickets", summary="List current user's tickets")
+@router.get("/user/tickets", response_model=list[TicketResponse], summary="List current user's tickets")
 def get_user_tickets(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user),

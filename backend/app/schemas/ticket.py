@@ -1,5 +1,6 @@
 """ticket.py — Pydantic schemas for tickets and audit logs."""
 
+from datetime import datetime
 from typing import Any, Optional
 
 from pydantic import BaseModel
@@ -27,13 +28,13 @@ class TicketResponse(BaseModel):
     screenshot_paths: Optional[str] = None
     analysis_results: Any = None
     education_recommendation: Any = None
-    sla_deadline: Optional[str] = None
+    sla_deadline: Optional[datetime] = None
     sla_breached: bool = False
     user_id: Optional[str] = None
     assigned_to: Optional[str] = None
-    assigned_at: Optional[str] = None
-    created_at: Optional[str] = None
-    updated_at: Optional[str] = None
+    assigned_at: Optional[datetime] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True
@@ -65,7 +66,7 @@ class AuditLogResponse(BaseModel):
     old_status: Optional[str] = None
     new_status: Optional[str] = None
     notes: Optional[str] = None
-    created_at: str
+    created_at: datetime
 
     class Config:
         from_attributes = True

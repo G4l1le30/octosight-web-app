@@ -1,17 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, Download } from "lucide-react";
 import { SearchBar } from "@/components/ui/SearchBar";
 import { ThreatTable } from "@/components/admin/ThreatTable";
 import { Pagination } from "@/components/ui/Pagination";
 import { TriageFilters } from "@/components/admin/triage/TriageFilters";
 import { useTriageTickets } from "@/modules/admin/hooks/useTriageTickets";
 import { Button } from "@/components/ui/Button";
+import { useState } from "react";
+import { toast } from "sonner";
+
+const STATUS_OPTIONS = ["Submitted", "In Review", "Confirmed", "False Positive", "Mitigated", "Closed"] as const;
+const PRIORITY_OPTIONS = ["High", "Medium", "Low"] as const;
 
 export default function TriagePage() {
   const {
     tickets,
+    paginatedData,
     loading,
     error,
     filters,
@@ -27,7 +33,46 @@ export default function TriagePage() {
     paginatedTickets,
     resetFilters,
     fetchTickets,
+    assignTicket,
   } = useTriageTickets();
+
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [bulkStatus, setBulkStatus] = useState("");
+  const [bulkPriority, setBulkPriority] = useState("");
+  const [bulkAssignTo, setBulkAssignTo] = useState("");
+  const [bulkApplying, setBulkApplying] = useState(false);
+
+  const handleBulkCancel = () => {
+    setSelectedIds([]);
+    setBulkStatus("");
+    setBulkPriority("");
+    setBulkAssignTo("");
+  };
+
+  const handleBulkApply = async () => {
+    if (selectedIds.length === 0) return;
+    setBulkApplying(true);
+    try {
+      const body: Record<string, unknown> = { ticket_ids: selectedIds };
+      if (bulkStatus) body.status = bulkStatus;
+      if (bulkPriority) body.priority = bulkPriority;
+      if (bulkAssignTo.trim()) body.assigned_to = bulkAssignTo.trim();
+
+      const res = await fetch("/api/v1/tickets/bulk", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) throw new Error("Bulk operation failed");
+      toast.success(`Updated ${selectedIds.length} ticket(s) successfully`);
+      handleBulkCancel();
+      fetchTickets();
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Bulk operation failed");
+    } finally {
+      setBulkApplying(false);
+    }
+  };
 
   return (
     <div className="container mx-auto px-4 py-6 md:py-8">
@@ -65,6 +110,19 @@ export default function TriagePage() {
           <Button
             variant="outline"
             size="sm"
+            onClick={() => {
+              const params = new URLSearchParams();
+              if (filters.status !== "All") params.set("status", filters.status);
+              if (filters.priority !== "All") params.set("priority", filters.priority);
+              window.open(`/api/v1/tickets/export?${params.toString()}`, "_blank");
+            }}
+            leftIcon={<Download className="h-4 w-4" />}
+          >
+            Download CSV
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
             onClick={fetchTickets}
             leftIcon={<RefreshCw className="h-4 w-4" />}
           >
@@ -84,7 +142,7 @@ export default function TriagePage() {
         setFilters={setFilters}
         availableFlags={availableFlags}
         filteredCount={filteredTickets.length}
-        totalCount={tickets.length}
+        totalCount={paginatedData?.total ?? 0}
         onReset={resetFilters}
       />
 
@@ -99,15 +157,59 @@ export default function TriagePage() {
         />
       </div>
 
+      {selectedIds.length > 0 && (
+        <div className="flex items-center gap-3 p-3 mb-4 bg-primary/5 border border-primary/20 rounded-lg flex-wrap">
+          <span className="text-sm font-bold text-secondary whitespace-nowrap">
+            {selectedIds.length} selected
+          </span>
+          <select
+            value={bulkStatus}
+            onChange={(e) => setBulkStatus(e.target.value)}
+            className="text-xs border border-neutral-border rounded-lg px-2 py-1.5 outline-none focus:border-primary bg-white"
+          >
+            <option value="">Status...</option>
+            {STATUS_OPTIONS.map((s) => (
+              <option key={s} value={s}>{s}</option>
+            ))}
+          </select>
+          <select
+            value={bulkPriority}
+            onChange={(e) => setBulkPriority(e.target.value)}
+            className="text-xs border border-neutral-border rounded-lg px-2 py-1.5 outline-none focus:border-primary bg-white"
+          >
+            <option value="">Priority...</option>
+            {PRIORITY_OPTIONS.map((p) => (
+              <option key={p} value={p}>{p}</option>
+            ))}
+          </select>
+          <input
+            type="text"
+            value={bulkAssignTo}
+            onChange={(e) => setBulkAssignTo(e.target.value)}
+            placeholder="Assign to..."
+            className="text-xs border border-neutral-border rounded-lg px-2 py-1.5 w-36 outline-none focus:border-primary"
+          />
+          <Button size="sm" onClick={handleBulkApply} loading={bulkApplying}>
+            Apply
+          </Button>
+          <Button size="sm" variant="outline" onClick={handleBulkCancel}>
+            Cancel
+          </Button>
+        </div>
+      )}
+
       <div className="mb-6 md:mb-8 card shadow-md overflow-hidden border border-neutral-border">
         <ThreatTable
           tickets={paginatedTickets}
           loading={loading}
           emptyMessage="No reports match your filters and search term."
+          onAssign={assignTicket}
+          selectedIds={selectedIds}
+          onSelectionChange={setSelectedIds}
         />
         <Pagination
           currentPage={currentPage}
-          totalItems={filteredTickets.length}
+          totalItems={paginatedData?.total ?? 0}
           itemsPerPage={itemsPerPage}
           onPageChange={setCurrentPage}
           onItemsPerPageChange={(val) => {

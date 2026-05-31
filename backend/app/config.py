@@ -60,6 +60,9 @@ class Settings(BaseSettings):
     default_admin_email: Optional[str] = None
     default_admin_password: Optional[str] = None
 
+    # Redis
+    redis_url: str = ""
+
     @property
     def allowed_origins_list(self) -> List[str]:
         return [o.strip() for o in self.allowed_origins.split(",") if o.strip()]

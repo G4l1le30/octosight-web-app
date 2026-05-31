@@ -1,3 +1,4 @@
+import math
 import os
 import unicodedata
 from urllib.parse import urlparse
@@ -55,6 +56,7 @@ class RuleEngine:
         }
         self.shorteners = ["bit.ly", "s.id", "tinyurl.com", "t.co", "goo.gl"]
         self.suspicious_tlds = [".top", ".xyz", ".link", ".info", ".online", ".site"]
+        self.brand_terms = ["cimb", "niaga", "octo", "niag"]
         self.malicious_extensions = [".apk", ".exe", ".scr", ".bat", ".com"]
         self.suspicious_attachments = [".pdf", ".doc", ".docx", ".zip", ".rar"]
 
@@ -93,6 +95,114 @@ class RuleEngine:
             except:
                 pass
         return len(scripts) > 1
+
+    def load_from_db(self, db_rules: dict) -> None:
+        """
+        Override hardcoded defaults with rules loaded from the database.
+
+        Expected keys: keywords, scam_scenarios, tlds, shorteners, brand_terms.
+        Each key maps to a list. scam_scenarios is a dict of group -> [keywords].
+        """
+        if db_rules.get("keywords"):
+            self.suspicious_keywords = db_rules["keywords"]
+        if db_rules.get("scam_scenarios"):
+            self.scam_scenarios = db_rules["scam_scenarios"]
+        if db_rules.get("tlds"):
+            self.suspicious_tlds = db_rules["tlds"]
+        if db_rules.get("shorteners"):
+            self.shorteners = db_rules["shorteners"]
+        if db_rules.get("brand_terms"):
+            self.brand_terms = db_rules["brand_terms"]
+
+    def _is_gibberish_text(self, text: str) -> tuple[bool, int, str]:
+        """
+        Detect placeholder/gibberish/meaningless text that is neither real phishing nor real ham.
+        Returns (is_gibberish, score_boost, flag_reason).
+        """
+        if not text or len(text.strip()) < 8:
+            return False, 0, ""
+
+        t = text.strip().lower()
+
+        # 1. Lorem ipsum or common placeholder text
+        placeholder_patterns = [
+            "lorem ipsum", "dolor sit amet", "consectetur",
+            "sample text", "test message", "testing testing",
+        ]
+        if any(p in t for p in placeholder_patterns):
+            return True, 40, "GIBBERISH_TEXT:placeholder"
+
+        # 2. Keyboard smash — consecutive row chars (qwerty, asdf, zxcv, etc.)
+        keyboard_rows = ["qwertyuiop", "asdfghjkl", "zxcvbnm"]
+        for row in keyboard_rows:
+            for i in range(len(row) - 2):
+                seq = row[i:i+3]
+                if seq in t and seq not in t.split():
+                    return True, 35, "GIBBERISH_TEXT:keyboard_smash"
+
+        # 3. Short < 30 chars — pure alpha with no spaces = likely keyboard smash
+        if len(t) < 30 and t.isalpha() and " " not in t:
+            max_freq = max(t.count(ch) for ch in set(t))
+            if max_freq <= len(t) * 0.6:
+                return True, 30, "GIBBERISH_TEXT:short_random"
+
+        # 4. Single character dominant (e.g. "aaaaaa")
+        if len(t) >= 8:
+            for ch in set(t):
+                if t.count(ch) / len(t) > 0.45:
+                    return True, 35, "GIBBERISH_TEXT:repetitive_char"
+
+        # 5. Cyclic repeat (e.g. "ababababab")
+        if len(t) >= 12:
+            for cycle_len in range(1, min(6, len(t) // 3)):
+                cycle = t[:cycle_len]
+                repeats = len(t) // cycle_len
+                if cycle * repeats in t and repeats >= 4:
+                    return True, 30, "GIBBERISH_TEXT:cyclic_repeat"
+
+        # 6. Excessive non-alphabetic characters (machine-generated noise)
+        if len(t) >= 20:
+            alpha = sum(c.isalpha() for c in t)
+            non_alpha_ratio = 1 - (alpha / len(t))
+            if non_alpha_ratio > 0.50:
+                return True, 35, "GIBBERISH_TEXT:excessive_symbols"
+
+        # 7. Very low word variety
+        words = [w for w in t.split() if len(w) > 1]
+        if len(words) >= 5:
+            unique_ratio = len(set(words)) / len(words)
+            if unique_ratio < 0.20:
+                return True, 35, "GIBBERISH_TEXT:low_variety"
+
+        # 8. High character entropy — random-looking text
+        if len(t) >= 20:
+            freq = {}
+            for ch in t:
+                freq[ch] = freq.get(ch, 0) + 1
+            entropy = -sum((c / len(t)) * math.log2(c / len(t)) for c in freq.values())
+            # Lower threshold for shorter text
+            threshold = 3.8 if len(t) < 40 else 4.2
+            if entropy > threshold:
+                return True, 30, "GIBBERISH_TEXT:high_entropy"
+
+        # 9. Very low stopword ratio — nonsense text typically lacks function words
+        stopwords = {"dan", "di", "ke", "dari", "yang", "ini", "itu", "dengan",
+                     "untuk", "tidak", "akan", "saya", "anda", "kami", "pada",
+                     "adalah", "the", "a", "an", "in", "on", "at", "to", "for",
+                     "of", "and", "is", "it", "that", "this", "with", "your",
+                     "please", "has", "have", "been", "was", "were", "are"}
+        if len(words) >= 8:
+            stopword_count = sum(1 for w in words if w in stopwords)
+            if stopword_count / len(words) < 0.05:
+                return True, 25, "GIBBERISH_TEXT:no_stopwords"
+
+        # 10. Short text (10-50 chars) with no scam keywords — unlikely to be a real phishing report
+        if len(t) < 50 and not any(kw in t for kw in self.suspicious_keywords):
+            short_words = [w for w in t.split() if len(w) > 1]
+            if 1 <= len(short_words) <= 3 and all(w.isalpha() for w in short_words):
+                return True, 20, "GIBBERISH_TEXT:too_short"
+
+        return False, 0, ""
 
     def calculate_risk(self, url, attachments=None, sender_numbers=None, extracted_text="", 
                        is_transaction=False, ref_found=False, ref_valid=False, account_blacklisted=False,
@@ -173,8 +283,7 @@ class RuleEngine:
                 flags.append("mixed_scripts_detected")
                 url_risk = True
 
-            brand_terms = ["cimb", "niaga", "octo", "niag"]
-            if any(term in domain for term in brand_terms):
+            if any(term in domain for term in self.brand_terms):
                 score += 40
                 flags.append("brand_impersonation")
                 details["typosquatting"] = "Highly Suspicious"
@@ -231,6 +340,13 @@ class RuleEngine:
                 # Boost based on number of matching keywords within the scenario
                 score += min(len(matches) * 5, 20)
         
+        # 5a. Gibberish / placeholder text detection (only user's text, not URL path)
+        gibberish, gibberish_boost, gibberish_reason = self._is_gibberish_text(extracted_text)
+        if gibberish:
+            score += gibberish_boost
+            flags.append(gibberish_reason)
+            details["keywords"] = "Suspicious (Gibberish Content)"
+
         # FINAL SCORING ADJUSTMENTS
         if is_verified_bank:
             # If the bank verified the transaction, we ignore all accumulated suspicion

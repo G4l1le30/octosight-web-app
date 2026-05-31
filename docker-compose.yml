@@ -38,14 +38,12 @@ services:
       - NODE_ENV=development
       - INTERNAL_API_URL=http://backend:8000
       - NEXT_PUBLIC_API_URL=http://backend:8000
-      - WATCHPACK_POLLING=true
     volumes:
-      - ./frontend:/app
-      - /app/node_modules
-      - type: tmpfs
-        target: /app/.next
+      - ./frontend:/app:delegated
+      - next-cache:/app/.next:delegated
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     networks:
       - octo-network
     healthcheck:
@@ -59,10 +57,10 @@ services:
       resources:
         limits:
           cpus: "0.5"
-          memory: "512M"
+          memory: "1G"
         reservations:
-          cpus: "0.25"
-          memory: "256M"
+          cpus: "0.5"
+          memory: "512M"
 
   # FastAPI Backend
   backend:
@@ -82,9 +80,16 @@ services:
       - WHITELIST_PATH=/app/data/whitelist.txt
       - ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000,http://frontend:3000,https://localhost,http://localhost
       - ENVIRONMENT=production
+      - REDIS_URL=redis://redis:6379/0
     depends_on:
       db:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import socket; s=socket.socket(); s.settimeout(2); s.connect(('localhost',8000)); s.close()\" || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
     volumes:
       - ./backend:/app
     networks:
@@ -130,6 +135,24 @@ services:
           cpus: "0.5"
           memory: "512M"
 
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - octo-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: "128M"
+
   # phpMyAdmin
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
@@ -163,3 +186,4 @@ volumes:
   octo-db-data:
   caddy-data:
   caddy-config:
+  next-cache:

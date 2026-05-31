@@ -144,7 +144,7 @@ export default function QuizResultPage() {
                 {nextModuleId && (
                   <Button
                     onClick={() => router.push(`/edu/${nextModuleId}`)}
-                    className="bg-green-600 hover:bg-green-700 text-white gap-2 px-6 md:px-8 py-4 md:py-5 text-lg shadow-sm"
+                    className="bg-green-600 hover:bg-green-700 text-white gap-2 px-6 md:px-8text-lg shadow-sm"
                   >
                     Next Module <ArrowRight className="size-5" />
                   </Button>
@@ -152,7 +152,7 @@ export default function QuizResultPage() {
                 <Button
                   onClick={() => router.push("/edu")}
                   variant="outline"
-                  className="bg-white border-neutral-border text-secondary hover:border-green-500 gap-2 px-6 md:px-8 py-4 md:py-5 text-lg shadow-sm transition-colors"
+                  className="bg-white border-neutral-border text-secondary hover:border-green-500 gap-2 px-6 md:px-8text-lg shadow-sm transition-colors"
                 >
                   Back to Modules
                 </Button>

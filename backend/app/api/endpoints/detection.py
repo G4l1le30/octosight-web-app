@@ -31,7 +31,7 @@ from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, BackgroundTasks
 from sqlalchemy.orm import Session
 
-from app.core.security import get_current_user
+from app.core.security import get_current_user, get_optional_user
 from app.db.session import SessionLocal, get_db
 from app.models.models import Ticket, BlacklistedURL, BlacklistedAccount, MockBankTransaction, BlacklistedPhone, BlacklistedEmail
 from pydantic import BaseModel
@@ -39,6 +39,10 @@ from app.schemas.schemas import AnalysisRequest, MessageRequest, SpamPredictionR
 from app.core.engines import analyze_spam, ocr_engine, rule_engine
 from app.modules.education.gemini_service import GeminiEducationService
 from app.modules.education.gemini.client import GeminiClient
+try:
+    from app.core.cache import explain_cache
+except ImportError:
+    explain_cache = None
 from app.api.endpoints.blacklist import normalize_url_for_match, _extract_domain
 from app.modules.notifications.service import send_email_notification, send_email_async
 from app.services.supabase_service import get_supabase_service, SupabaseStorageService
@@ -255,15 +259,23 @@ def _compute_hybrid_score(rule_score: float, combined_text: str, only_ml: bool =
         ml_available = True
 
     # OctoSight Aturan #2: rule 35% + ML 65%
-    # But if only_ml is True, we use 100% ML
+    # Weight selection based on context
+    text_len = len(combined_text.strip())
+
     if only_ml and ml_available:
         final_score = ml_score
-        formula = "final = ml×1.00 (URL missing)"
+        formula = "final = ml\xd71.00 (URL missing)"
         rule_weight = 0
         ml_weight = 100
+    elif text_len < 50 and ml_available:
+        # Text too short for reliable ML analysis — rule engine dominates
+        final_score = round((rule_score * 0.80) + (ml_score * 0.20), 2)
+        formula = "final = rule\xd70.80 + ml\xd70.20 (insufficient text)"
+        rule_weight = 80
+        ml_weight = 20
     else:
         final_score = round((rule_score * 0.35) + (ml_score * 0.65), 2)
-        formula = "final = rule×0.35 + ml×0.65"
+        formula = "final = rule\xd70.35 + ml\xd70.65"
         rule_weight = 35
         ml_weight = 65
     
@@ -704,7 +716,21 @@ async def create_report(
     is_scam_scenario = any("scam_scenario:" in f for f in flags)
     is_valid_ref = "VERIFIED_BY_BANK" in flags
     is_any_blacklisted = blacklisted_entry or account_blacklisted
-    
+    is_gibberish = any("GIBBERISH_TEXT:" in f for f in flags)
+
+    # Gibberish override — ML confidently says "not phishing" but the rule engine
+    # found the text is meaningless/junk. Bump score so gibberish isn't hidden
+    # by the ML's 65% weight.
+    if is_gibberish and not is_any_blacklisted:
+        # Rule engine already applied a boost; ensure it isn't washed out by ML
+        boosted = round((rule_score * 0.70) + (hybrid["ml_score"] * 0.30), 2)
+        if boosted > final_score:
+            final_score = boosted
+            hybrid["rule_weight"] = 70
+            hybrid["ml_weight"] = 30
+            hybrid["formula"] = "final = rule×0.70 + ml×0.30 (Gibberish Override)"
+            print(f"[Override] Gibberish override triggered (70/30). Final score: {final_score}")
+
     if not url.strip() and (is_scam_scenario or is_valid_ref) and not is_any_blacklisted:
         # If it's a scam scenario without a link, Rule Engine is prioritized
         # User Requirement: ML still gets 20% contribution
@@ -1002,11 +1028,12 @@ async def analyze_preview(
 )
 def predict_spam(
     request: MessageRequest,
-    current_user=Depends(get_current_user),
+    current_user=Depends(get_optional_user),
 ):
     """
     Run the ML pipeline on a free-text message and return the predicted
     label ('phishing' / 'not phishing') and confidence percentage.
+    Public — no login required.
 
     This endpoint is ML-only (no rule engine). Use /analyze for the full
     hybrid score.
@@ -1037,6 +1064,11 @@ def analyze_explain(request: ExplainRequest):
     UI display on the Report Confirmation page — the result is never stored.
     Falls back to a deterministic template if Gemini is unavailable.
     """
+    return _get_explanation(request)
+
+
+def _build_explain_prompt(request: ExplainRequest) -> tuple[str, str]:
+    """Build the Gemini prompt and return (prompt, flags_str)."""
     flags_str = ", ".join(request.flags) if request.flags else "none"
     prompt = f"""You are a cybersecurity assistant for a bank's anti-phishing system.
 Generate a VERY BRIEF explanation (1-2 short sentences, max 40 words total) for a bank customer.
@@ -1055,35 +1087,65 @@ SYSTEM RESULT:
 - Detected Scenario: {request.detected_scam_type or 'N/A'}
 
 Generate the explanation now:"""
+    return prompt, flags_str
 
-    try:
-        client = GeminiClient.get_client()
-        if client and not GeminiClient.is_circuit_open():
-            from google.genai import types as gtypes
-            response = client.models.generate_content(
-                model='gemini-2.5-flash',
-                contents=prompt,
-                config=gtypes.GenerateContentConfig(
-                    safety_settings=[
-                        gtypes.SafetySetting(category='HARM_CATEGORY_DANGEROUS_CONTENT', threshold='BLOCK_NONE'),
-                    ]
-                )
-            )
-            explanation = response.text.strip()
-            if explanation:
-                return {"explanation": explanation}
-    except Exception as e:
-        err = str(e)
-        if "429" in err or "RESOURCE_EXHAUSTED" in err:
-            GeminiClient.rotate_key_on_exhaustion(GeminiClient.extract_retry_delay(Exception(err)))
-        print(f"[Gemini Explain] Error: {err}")
 
+def _call_gemini_explain(request: ExplainRequest) -> str:
+    """Call Gemini for an explanation. Raises on failure so the cache never stores empty."""
+    prompt, _ = _build_explain_prompt(request)
+    client = GeminiClient.get_client()
+    if not client or GeminiClient.is_circuit_open():
+        raise RuntimeError("Gemini unavailable (client or circuit open)")
+    from google.genai import types as gtypes
+    response = client.models.generate_content(
+        model='gemini-2.5-flash',
+        contents=prompt,
+        config=gtypes.GenerateContentConfig(
+            safety_settings=[
+                gtypes.SafetySetting(category='HARM_CATEGORY_DANGEROUS_CONTENT', threshold='BLOCK_NONE'),
+            ]
+        )
+    )
+    explanation = response.text.strip()
+    if not explanation:
+        raise RuntimeError("Gemini returned empty explanation")
+    return explanation
+
+
+def _fallback_explain(request: ExplainRequest) -> str:
+    """Deterministic fallback explanation when Gemini is unavailable."""
+    _, flags_str = _build_explain_prompt(request)
     risk = "high risk" if request.score >= 70 else "medium risk" if request.score >= 40 else "low risk"
-    fallback = (
+    return (
         f"The {request.report_type.lower() or 'reported content'} "
         f"{f'({request.url}) ' if request.url else ''}"
         f"was flagged as {risk} (score: {request.score:.0f}/100). "
         f"System detected the following indicators: {flags_str}. "
         f"Please review the details above and contact your bank if you shared any personal information."
     )
-    return {"explanation": fallback}
+
+
+def _get_explanation(request: ExplainRequest) -> dict:
+    """Generate explanation with server-side caching to reduce Gemini quota usage."""
+    if explain_cache is not None:
+        try:
+            result = explain_cache.get_or_compute(_call_gemini_explain, request)
+            return {"explanation": result}
+        except Exception as e:
+            _handle_gemini_error(e)
+    else:
+        try:
+            result = _call_gemini_explain(request)
+            return {"explanation": result}
+        except Exception as e:
+            _handle_gemini_error(e)
+    return {"explanation": _fallback_explain(request)}
+
+
+def _handle_gemini_error(e: Exception) -> None:
+    err = str(e)
+    if "429" in err or "RESOURCE_EXHAUSTED" in err:
+        delay = GeminiClient.extract_retry_delay(e)
+        if delay is not None:
+            GeminiClient.rotate_key_on_exhaustion(delay)
+    print(f"[Gemini Explain] Error: {err}")

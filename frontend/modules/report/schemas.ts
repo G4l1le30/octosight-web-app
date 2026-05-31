@@ -152,10 +152,10 @@ export const IncidentSchemas = {
       .string()
       .min(1, "Required: Enter scammer bank account / number")
       .regex(
-        /^[0-9+,\sA-Z-]+$/,
-        "Invalid format. Use numbers, letters or hyphens.",
+        /^\d+$/,
+        "Account number must contain only digits (0-9).",
       )
-      .min(5, "Account number minimum 5 digits/chars"),
+      .min(5, "Account number minimum 5 digits"),
   }),
 };
 

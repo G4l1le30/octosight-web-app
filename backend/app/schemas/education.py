@@ -54,7 +54,7 @@ class QuizAttemptRead(BaseModel):
 
 
 class EducationModuleWithProgress(EducationModuleRead):
-    status: str
+    status: Optional[str] = None
     quiz_score: Optional[float] = None
     completed_at: Optional[datetime] = None
     quiz_attempts_history: list[QuizAttemptRead] = []

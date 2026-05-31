@@ -79,9 +79,11 @@ export const ReportConfirmation = ({
 }: ReportConfirmationProps) => {
   const [aiExplanation, setAiExplanation] = React.useState<string | null>(null);
   const [explanationLoading, setExplanationLoading] = React.useState(false);
+  const explanationFetchedRef = React.useRef(false);
 
   React.useEffect(() => {
-    if (!analysisResult) return;
+    if (!analysisResult || explanationFetchedRef.current) return;
+    explanationFetchedRef.current = true;
     const fetchExplanation = async () => {
       setExplanationLoading(true);
       try {
@@ -433,7 +435,7 @@ export const ReportConfirmation = ({
           {(aiExplanation || explanationLoading) && (
             <div className="mt-4 rounded-2xl p-4 md:p-6 border-2 border-neutral-border">
               <div className="flex items-center gap-2 mb-3">
-                <Brain className="size-5 text-secondary" />
+                <Brain className="size-4 text-secondary" />
                 <h3 className="text-sm font-bold text-secondary tracking-wide">
                   AI Analysis
                 </h3>

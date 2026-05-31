@@ -3,6 +3,7 @@ import { Metadata } from "next";
 import { GeistSans } from 'geist/font/sans';
 import { AuthProvider } from "@/lib/auth-context";
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import SessionExpiredModal from "@/components/SessionExpiredModal";
 import { Toaster } from "@/components/ui/Toaster";
 
 export const metadata: Metadata = {
@@ -26,6 +27,7 @@ export default function RootLayout({
             <main>
               {children}
             </main>
+            <SessionExpiredModal />
             <Toaster />
           </AuthProvider>
         </GoogleOAuthProvider>

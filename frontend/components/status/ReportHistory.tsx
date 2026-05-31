@@ -127,19 +127,19 @@ export function ReportHistory({
                 </p>
               </div>
 
-              <div className="col-span-2 flex justify-center">
-                <span
-                  className={`text-sm font-bold ${
-                    ticket.risk_score > 70
-                      ? "text-risk-high"
-                      : ticket.risk_score > 30
-                        ? "text-risk-medium"
-                        : "text-green-600"
-                  }`}
-                >
-                  {ticket.risk_score}
-                </span>
-              </div>
+               <div className="col-span-2 flex justify-center">
+                 <span
+                   className={`text-sm font-bold ${
+                     ticket.risk_score >= 75
+                       ? "text-risk-high"
+                       : ticket.risk_score >= 35
+                         ? "text-risk-medium"
+                         : "text-green-600"
+                   }`}
+                 >
+                   {ticket.risk_score}
+                 </span>
+               </div>
 
               <div className="col-span-2 flex justify-end items-center gap-2">
                 <span

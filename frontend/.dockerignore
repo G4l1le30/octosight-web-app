@@ -1,7 +1,7 @@
 node_modules
 .next
 .git
-.DS_Store
 *.md
-docker-compose.yml
-Dockerfile
+.gitignore
+.env.local
+.env

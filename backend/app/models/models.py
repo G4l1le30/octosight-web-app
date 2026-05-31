@@ -1,9 +1,4 @@
-"""
-models.py — Backward-compatible re-exports.
-
-All models have migrated to app/models/<domain>.py.
-This file remains for import compatibility during refactoring.
-"""
+"""models.py — Backward-compatible re-exports."""
 
 from app.models.user import User
 from app.models.ticket import Ticket, TicketAuditLog
@@ -11,6 +6,10 @@ from app.models.blacklist import BlacklistedURL, BlacklistedAccount, Blacklisted
 from app.models.education import EducationModule, EducationArticle, UserLearningProgress, UserArticleProgress, UserQuizAttempt
 from app.models.mock_bank import MockBankTransaction
 from app.models.feedback import MLFeedback
+from app.models.rule_config import RuleConfig
+from app.models.notification import Notification
+from app.models.activity import ActivityLog
+from app.models.pending_registration import PendingRegistration
 
 __all__ = [
     "User",
@@ -27,4 +26,8 @@ __all__ = [
     "UserQuizAttempt",
     "MockBankTransaction",
     "MLFeedback",
+    "RuleConfig",
+    "Notification",
+    "ActivityLog",
+    "PendingRegistration",
 ]

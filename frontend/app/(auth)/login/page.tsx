@@ -107,6 +107,7 @@ function LoginForm() {
           autoComplete="email"
           hasError={!!fieldErrors.email}
           errorText={fieldErrors.email || undefined}
+          disabled={loading}
         />
 
         <AuthInput
@@ -122,6 +123,7 @@ function LoginForm() {
           autoComplete="current-password"
           hasError={!!fieldErrors.password}
           errorText={fieldErrors.password || undefined}
+          disabled={loading}
         />
 
         <Button type="submit" loading={loading} className="w-full">

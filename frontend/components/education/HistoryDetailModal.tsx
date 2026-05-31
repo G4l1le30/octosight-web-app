@@ -67,7 +67,7 @@ export const HistoryDetailModal: React.FC<HistoryDetailModalProps> = ({ attempt,
         </div>
         
         <div className="p-4 md:p-6 bg-neutral-page border-t border-neutral-border text-center">
-          <Button onClick={onClose} className="w-full py-4 md:py-6 text-lg font-bold">
+          <Button onClick={onClose} className="w-full text-lg font-bold">
             Close History
           </Button>
         </div>

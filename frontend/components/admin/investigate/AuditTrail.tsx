@@ -57,11 +57,11 @@ export const AuditTrail: React.FC<AuditTrailProps> = ({
   if (loading) {
     if (variant === "card") {
       return (
-        <div className="card p-4 md:p-6 bg-white border border-neutral-border shadow-sm">
-          <h3 className="text-base md:text-lg font-bold text-secondary mb-4 flex items-center gap-2">
+        <div className="card p-6 md:p-8 h-full flex flex-col">
+          <h3 className="text-lg md:text-xl font-bold text-secondary mb-4 md:mb-6 flex items-center gap-2">
             Audit Trail
           </h3>
-          <div className="space-y-3">
+          <div className="space-y-3 flex-1">
             {[...Array(3)].map((_, i) => (
               <div key={i} className="flex gap-3 animate-pulse">
                 <div className="size-8 rounded-full bg-neutral-border flex-shrink-0" />
@@ -169,16 +169,18 @@ export const AuditTrail: React.FC<AuditTrailProps> = ({
 
   if (variant === "card") {
     return (
-      <div className="card p-4 md:p-6 bg-white border border-neutral-border shadow-sm">
+      <div className="card p-6 md:p-8 h-full flex flex-col">
         <div className="flex items-center justify-between mb-5">
-          <h3 className="text-base md:text-lg font-bold text-secondary flex items-center gap-2">
+          <h3 className="text-lg md:text-xl font-bold text-secondary flex items-center gap-2">
             Audit Trail
           </h3>
           <span className="text-xs font-bold text-secondary/40 bg-neutral-page px-2 py-1 rounded-full border border-neutral-border">
             {logs.length + (submittedAt ? 1 : 0)} {(logs.length + (submittedAt ? 1 : 0)) === 1 ? "entry" : "entries"}
           </span>
         </div>
-        {content}
+        <div className="flex-1">
+          {content}
+        </div>
       </div>
     );
   }

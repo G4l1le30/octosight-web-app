@@ -1,9 +1,12 @@
 """
 auth.py — JWT token generation, password hashing, and FastAPI dependencies.
 
-get_current_user : resolves authenticated user from httpOnly cookie
-require_admin    : extends get_current_user, enforces admin role
+get_current_user  : resolves authenticated user from httpOnly cookie
+require_admin     : extends get_current_user, enforces admin role
+require_moderator : extends get_current_user, enforces role >= moderator
 """
+
+from enum import IntEnum
 
 import os
 
@@ -32,6 +35,19 @@ REFRESH_TOKEN_EXPIRE_DAYS = int(
 )
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+# Role hierarchy (higher number = more privilege)
+class Role(IntEnum):
+    USER = 0
+    MODERATOR = 5
+    ADMIN = 10
+
+
+ROLE_HIERARCHY: dict[str, int] = {
+    "user": Role.USER,
+    "moderator": Role.MODERATOR,
+    "admin": Role.ADMIN,
+}
 
 # Rate Limiter Configuration
 limiter = Limiter(key_func=get_remote_address)
@@ -104,6 +120,19 @@ def require_admin(current_user: User = Depends(get_current_user)) -> User:
     """
     if current_user.role != "admin":
         raise HTTPException(status_code=403, detail="Admin access required")
+    return current_user
+
+
+def require_moderator(current_user: User = Depends(get_current_user)) -> User:
+    """
+    Extend get_current_user to enforce role >= moderator.
+
+    Allows users with role 'moderator' or 'admin'.
+    Raises 403 for regular 'user' role.
+    """
+    user_level = ROLE_HIERARCHY.get(current_user.role, 0)
+    if user_level < Role.MODERATOR:
+        raise HTTPException(status_code=403, detail="Moderator or admin access required")
     return current_user
 
 

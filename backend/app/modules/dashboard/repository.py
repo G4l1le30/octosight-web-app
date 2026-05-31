@@ -14,8 +14,23 @@ class DashboardRepository:
     """Aggregation queries for dashboard analytics."""
 
     @staticmethod
-    def summary(db: Session) -> dict[str, Any]:
-        tickets = db.query(Ticket).all()
+    def summary(
+        db: Session,
+        status: str = None,
+        priority: str = None,
+        date_from: str = None,
+        date_to: str = None,
+    ) -> dict[str, Any]:
+        query = db.query(Ticket)
+        if status and status != "All":
+            query = query.filter(Ticket.status == status)
+        if priority and priority != "All":
+            query = query.filter(Ticket.priority == priority)
+        if date_from:
+            query = query.filter(Ticket.created_at >= datetime.fromisoformat(date_from))
+        if date_to:
+            query = query.filter(Ticket.created_at <= datetime.fromisoformat(date_to))
+        tickets = query.all()
         total = len(tickets)
 
         if total == 0:

@@ -1,6 +1,6 @@
 export type IncidentType = "Website" | "SMS" | "WhatsApp" | "Email" | "Transaction";
 
-export type TicketStatus = "Submitted" | "In Review" | "Confirmed" | "False Positive" | "Mitigated" | "Closed";
+export type TicketStatus = "Submitted" | "In Review" | "Need More Info" | "Confirmed" | "False Positive" | "Mitigated" | "Closed";
 
 import { EducationRecommendation } from "./education";
 
@@ -27,6 +27,8 @@ export interface Ticket {
   bank_name: string | null;
   bank_account: string | null;
   reference_number: string | null;
+  assigned_to: string | null;
+  assigned_at: string | null;
   created_at: string;
   updated_at: string;
   sla_deadline: string | null;

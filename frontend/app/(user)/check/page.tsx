@@ -10,7 +10,15 @@ import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
 import { EvidenceUpload } from "@/components/report/EvidenceUpload";
 import { RiskScoreCard } from "@/components/report/RiskScoreCard";
-import { AlertTriangle, CheckCircle, ShieldCheck, CreditCard, Search, MessageSquare, Landmark } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle,
+  ShieldCheck,
+  CreditCard,
+  Search,
+  MessageSquare,
+  Landmark,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ProcessingAnimation } from "@/components/ui/ProcessingAnimation";
 import { toast } from "sonner";
@@ -38,6 +46,15 @@ export default function FraudCheckPage() {
     setLoading(true);
     setResult(null);
 
+    if (!data.summary?.trim() || data.summary.trim().length < 50) {
+      form.setError("summary", {
+        type: "manual",
+        message: "Please provide at least 50 characters for accurate analysis.",
+      });
+      setLoading(false);
+      return;
+    }
+
     try {
       const payload = new FormData();
       payload.append("report_type", "Transaction");
@@ -46,7 +63,8 @@ export default function FraudCheckPage() {
       payload.append("summary", sanitizeText(data.summary || ""));
       payload.append("url", sanitizeText(data.url || ""));
 
-      if (screenshots) payload.append("screenshots", screenshots, screenshots.name);
+      if (screenshots)
+        payload.append("screenshots", screenshots, screenshots.name);
 
       const response = await fetch("/api/analyze", {
         method: "POST",
@@ -70,7 +88,8 @@ export default function FraudCheckPage() {
           Fraud & Transaction Check
         </h1>
         <p className="text-secondary/70 text-md max-w-2xl mx-auto">
-          Verify suspicious accounts or validate receipts against our secure CIMB NIAGA database.
+          Verify suspicious accounts or validate receipts against our secure
+          CIMB NIAGA database.
         </p>
       </div>
 
@@ -97,13 +116,15 @@ export default function FraudCheckPage() {
                 <Input
                   label="Account Number"
                   placeholder="e.g., 706123456789"
+                  type="number"
+                  inputMode="numeric"
                   error={form.formState.errors.senderNumbers?.message as string}
                   {...form.register("senderNumbers")}
                 />
               </div>
 
               <Textarea
-                label="Scam Modus / Message Received"
+                label="Scam Modus / Message Received (min 50 characters)"
                 placeholder="Paste the message here (e.g., 'Saya salah transfer...')"
                 error={form.formState.errors.summary?.message as string}
                 {...form.register("summary")}
@@ -120,14 +141,15 @@ export default function FraudCheckPage() {
                   disabled={loading}
                 />
                 <p className="text-xs text-secondary/60">
-                  *Our AI will cross-verify the reference number with the bank&apos;s core records.
+                  *Our AI will cross-verify the reference number with the
+                  bank&apos;s core records.
                 </p>
               </div>
 
               <Button
                 type="submit"
                 loading={loading}
-                className="w-full py-4 md:py-6 text-base md:text-lg"
+                className="w-full text-base md:text-lg"
                 size="lg"
               >
                 Verify Now
@@ -155,38 +177,42 @@ export default function FraudCheckPage() {
 
           {result && (
             <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
-              <div className={cn(
-                "p-6 rounded-2xl border-2 flex flex-col items-center text-center",
-                result.score >= 75 ? "bg-risk-high/5 border-risk-high/20" :
-                  result.score >= 35 ? "bg-risk-medium/5 border-risk-medium/20" :
-                    "bg-risk-low/5 border-risk-low/20"
-              )}>
+              <div
+                className={cn(
+                  "p-6 rounded-2xl border-2 flex flex-col items-center text-center",
+                  result.score >= 75
+                    ? "bg-risk-high/5 border-risk-high/20"
+                    : result.score >= 35
+                      ? "bg-risk-medium/5 border-risk-medium/20"
+                      : "bg-risk-low/5 border-risk-low/20",
+                )}
+              >
                 <div className="mb-4">
                   <RiskScoreCard score={result.score} />
                 </div>
-                <h3 className={cn(
-                  "text-xl md:text-2xl font-bold mb-2",
-                  result.score >= 75 ? "text-risk-high" :
-                    result.score >= 35 ? "text-risk-medium" :
-                      "text-risk-low"
-                )}>
-                  {result.score >= 75 ? "Verified High Risk!" :
-                    result.score >= 35 ? "Suspicious Activity" :
-                      "Clean / Verified"}
+                <h3 className={cn("text-lg md:text-xl font-bold mb-2")}>
+                  {result.score >= 75
+                    ? "Verified High Risk!"
+                    : result.score >= 35
+                      ? "Suspicious Activity"
+                      : "Clean / Verified"}
                 </h3>
               </div>
 
               <div className="bg-white border border-neutral-border rounded-2xl p-6 shadow-sm">
                 {/* Scenario Analysis Result */}
-                {result.details.detected_scam_type && result.details.detected_scam_type !== "General Phishing" && (
-                  <div className="mb-4 md:mb-6 p-3 md:p-4 bg-primary/5 rounded-xl border border-primary/10">
-                    <p className="text-xs font-bold text-secondary/40 tracking-wide mb-1">Detected Pattern</p>
-                    <p className="text-sm font-bold text-primary flex items-center gap-2">
-                      <ShieldCheck className="size-4" />
-                      {result.details.detected_scam_type}
-                    </p>
-                  </div>
-                )}
+                {result.details.detected_scam_type &&
+                  result.details.detected_scam_type !== "General Phishing" && (
+                    <div className="mb-4 md:mb-6 p-3 md:p-4 bg-primary/5 rounded-xl border border-primary/10">
+                      <p className="text-xs font-bold text-secondary/40 tracking-wide mb-1">
+                        Detected Pattern
+                      </p>
+                      <p className="text-sm font-bold text-primary flex items-center gap-2">
+                        <ShieldCheck className="size-4" />
+                        {result.details.detected_scam_type}
+                      </p>
+                    </div>
+                  )}
 
                 <h4 className="font-bold text-secondary mb-4 flex items-center gap-2">
                   <AlertTriangle className="size-4 text-primary" />
@@ -194,7 +220,10 @@ export default function FraudCheckPage() {
                 </h4>
                 <div className="space-y-3">
                   {result.flags.map((flag: string, idx: number) => (
-                    <div key={idx} className="flex items-start gap-3 p-3 bg-neutral-page rounded-lg border border-neutral-border/50">
+                    <div
+                      key={idx}
+                      className="flex items-start gap-3 p-3 bg-neutral-page rounded-lg border border-neutral-border/50"
+                    >
                       <div className="size-2 rounded-full bg-primary mt-1.5 shrink-0" />
                       <span className="text-sm font-bold text-secondary capitalize">
                         {flag.replace(/_/g, " ").replace(/:/g, ": ")}
@@ -202,7 +231,7 @@ export default function FraudCheckPage() {
                     </div>
                   ))}
                   {result.flags.length === 0 && (
-                    <div className="flex items-center gap-3 p-3 bg-green-50 text-green-700 rounded-lg border border-green-100 font-bold text-sm">
+                    <div className="flex items-center gap-3 p-3 bg-green-50 text-green-700 rounded-lg border border-green-100 font-bold text-xs md:text-sm">
                       <CheckCircle className="size-4" />
                       No threats detected.
                     </div>
@@ -210,15 +239,12 @@ export default function FraudCheckPage() {
                 </div>
 
                 <div className="mt-6 pt-6 border-t border-neutral-border">
-                  <h4 className="font-bold text-secondary mb-2">Validation Result:</h4>
+                  <h4 className="font-bold text-secondary mb-2">
+                    Validation Result
+                  </h4>
                   <p className="text-sm font-medium text-secondary/70 bg-neutral-page p-3 rounded-lg border border-neutral-border/50">
                     {result.details.transaction_validation}
                   </p>
-                  {result.hybrid_formula && (
-                    <p className="text-xs text-secondary/40 mt-2 font-mono tracking-tighter">
-                      {result.hybrid_formula}
-                    </p>
-                  )}
                 </div>
               </div>
 
@@ -245,19 +271,34 @@ export default function FraudCheckPage() {
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
           <div className="space-y-2">
-            <div className="size-10 bg-primary text-white rounded-xl flex items-center justify-center font-bold shadow-md">OS</div>
+            <div className="size-10 bg-primary text-white rounded-xl flex items-center justify-center font-bold shadow-md">
+              OS
+            </div>
             <h4 className="font-bold">Reputation Engine</h4>
-            <p className="text-sm text-secondary/70 font-medium">Instantly cross-checks account numbers against OctoSight&apos;s global scammer database.</p>
+            <p className="text-sm text-secondary/70 font-medium">
+              Instantly cross-checks account numbers against OctoSight&apos;s
+              global scammer database.
+            </p>
           </div>
           <div className="space-y-2">
-            <div className="size-10 bg-primary text-white rounded-xl flex items-center justify-center font-bold shadow-md">OCR</div>
+            <div className="size-10 bg-primary text-white rounded-xl flex items-center justify-center font-bold shadow-md">
+              OCR
+            </div>
             <h4 className="font-bold">Heuristic Scan</h4>
-            <p className="text-sm text-secondary/70 font-medium">Extracts reference codes and scans for Photoshop manipulation or font inconsistencies.</p>
+            <p className="text-sm text-secondary/70 font-medium">
+              Extracts reference codes and scans for Photoshop manipulation or
+              font inconsistencies.
+            </p>
           </div>
           <div className="space-y-2">
-            <div className="size-10 bg-primary text-white rounded-xl flex items-center justify-center font-bold shadow-md">API</div>
+            <div className="size-10 bg-primary text-white rounded-xl flex items-center justify-center font-bold shadow-md">
+              API
+            </div>
             <h4 className="font-bold">Bank Core Sync</h4>
-            <p className="text-sm text-secondary/70 font-medium">Validates the transaction against real CIMB Core Banking records (Simulated).</p>
+            <p className="text-sm text-secondary/70 font-medium">
+              Validates the transaction against real CIMB Core Banking records
+              (Simulated).
+            </p>
           </div>
         </div>
       </div>

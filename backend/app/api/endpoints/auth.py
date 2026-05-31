@@ -8,7 +8,9 @@ Routes:
   POST /api/v1/auth/logout    Clear the auth cookie
 """
 
+import hashlib
 import os
+import secrets
 import uuid
 from datetime import datetime, timezone, timedelta
 
@@ -37,7 +39,7 @@ from app.core.security import (
     ALGORITHM,
 )
 from app.db.session import get_db
-from app.models.models import User
+from app.models.models import User, PendingRegistration
 from app.schemas.schemas import LoginRequest, RegisterRequest, UserResponse, GoogleLoginRequest
 from fastapi import Request
 from app.modules.notifications.service import send_email_notification
@@ -98,31 +100,52 @@ def _validated_email_or_http_error(email: str) -> str:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
 
 
+def _generate_verification_token() -> tuple[str, str]:
+    raw = secrets.token_urlsafe(32)
+    h = hashlib.sha256(raw.encode()).hexdigest()
+    return raw, h
+
+
+def _hash_verification_token(token: str) -> str:
+    return hashlib.sha256(token.encode()).hexdigest()
+
+
 @router.post("/register", status_code=status.HTTP_201_CREATED, summary="Initiate user registration")
 @limiter.limit("1/minute")
 def register(request: Request, data: RegisterRequest, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     """
-    Initiates registration by sending a verification email. 
+    Initiates registration by sending a verification email.
     The user is NOT added to the database until they confirm their email.
+    A cryptographically secure random token is stored (hashed) in the DB.
     """
     normalized_email = _validated_email_or_http_error(data.email)
 
     if db.query(User).filter(User.email == normalized_email).first():
         raise HTTPException(status_code=400, detail="Email is already registered. Please sign in instead.")
 
-    # Create a signup token containing user info (valid for 30 minutes)
-    signup_payload = {
-        "full_name": data.full_name.strip(),
-        "email": normalized_email,
-        "password": hash_password(data.password),
-        "exp": datetime.now(timezone.utc) + timedelta(minutes=30),
-        "type": "signup"
-    }
-    signup_token = jwt.encode(signup_payload, SECRET_KEY, algorithm=ALGORITHM)
-    
-    # Use environment variable for public URL to avoid being trapped in the internal Docker network
+    # Invalidate any previous unverified pending registration for this email
+    existing = db.query(PendingRegistration).filter(
+        PendingRegistration.email == normalized_email,
+        PendingRegistration.is_verified == False,
+    ).first()
+    if existing:
+        db.delete(existing)
+        db.flush()
+
+    raw_token, token_hash = _generate_verification_token()
+
+    pending = PendingRegistration(
+        email=normalized_email,
+        full_name=data.full_name.strip(),
+        hashed_password=hash_password(data.password),
+        token_hash=token_hash,
+        token_expires_at=datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(hours=24),
+    )
+    db.add(pending)
+    db.commit()
+
     api_public_url = os.getenv("API_PUBLIC_URL", "http://localhost:8000").rstrip("/")
-    confirmation_url = f"{api_public_url}/api/v1/auth/verify?token={signup_token}"
+    confirmation_url = f"{api_public_url}/api/v1/auth/verify?token={raw_token}"
 
     send_email_notification(
         background_tasks=background_tasks,
@@ -140,45 +163,47 @@ def register(request: Request, data: RegisterRequest, background_tasks: Backgrou
     }
 
 
-@router.get("/verify", response_model=UserResponse, summary="Confirm email and complete registration")
+@router.get("/verify", summary="Confirm email and complete registration")
 def verify_email(token: str, response: Response, db: Session = Depends(get_db)):
     """
-    Verifies the signup token, creates the user if they don't exist, and logs them in.
+    Looks up the token hash in pending_registrations, creates the user,
+    and logs them in via httpOnly JWT cookies. Idempotent on duplicate clicks.
     """
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        if payload.get("type") != "signup":
-            raise HTTPException(status_code=400, detail="Invalid token type.")
-        
-        email = payload.get("email")
-        full_name = payload.get("full_name")
-        hashed_password = payload.get("password")
-    except JWTError:
+    token_hash = _hash_verification_token(token)
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
+
+    pending = db.query(PendingRegistration).filter(
+        PendingRegistration.token_hash == token_hash,
+        PendingRegistration.is_verified == False,
+    ).first()
+
+    if not pending:
         raise HTTPException(status_code=400, detail="Verification link is invalid or has expired.")
 
-    # Check if user already exists (handles duplicate clicks on the confirmation link)
-    user = db.query(User).filter(User.email == email).first()
+    if pending.token_expires_at < now:
+        raise HTTPException(status_code=400, detail="Verification link has expired. Please register again.")
+
+    user = db.query(User).filter(User.email == pending.email).first()
     if not user:
         user = User(
             id=str(uuid.uuid4()),
-            full_name=full_name,
-            email=email,
-            hashed_password=hashed_password,
+            full_name=pending.full_name,
+            email=pending.email,
+            hashed_password=pending.hashed_password,
             role="user",
         )
         db.add(user)
-        db.commit()
-        db.refresh(user)
 
-    # Auto-login after verification (allows redirect even if already registered)
+    pending.is_verified = True
+    pending.updated_at = now
+    db.commit()
+    db.refresh(user)
+
     access_token = create_access_token({"sub": str(user.id), "email": user.email, "role": user.role})
     refresh_token = create_refresh_token({"sub": str(user.id)})
 
-    # Redirect to homepage after successful login
     frontend_url = os.getenv("FRONTEND_URL", "http://localhost:3000").rstrip("/")
     redirect_resp = RedirectResponse(url=f"{frontend_url}", status_code=307)
-    
-    # Set cookies on the redirect response
     _set_auth_cookies(redirect_resp, access_token, refresh_token)
     return redirect_resp
 

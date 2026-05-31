@@ -19,6 +19,7 @@ const StatusResult: React.FC<StatusResultProps> = ({ result }) => {
   const [logsLoading, setLogsLoading] = useState(true);
 
   useEffect(() => {
+    if (!result.ticket_id) return;
     const fetchAuditLogs = async () => {
       setLogsLoading(true);
       try {
@@ -40,10 +41,10 @@ const StatusResult: React.FC<StatusResultProps> = ({ result }) => {
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="bg-white rounded-3xl border border-neutral-border shadow-sm overflow-hidden">
-        <div
-          className={`h-1.5 ${result.risk_score >= 70 ? "bg-risk-high" : result.risk_score >= 40 ? "bg-risk-medium" : "bg-risk-low"}`}
-        ></div>
+       <div className="bg-white rounded-3xl border border-neutral-border shadow-sm overflow-hidden">
+         <div
+           className={`h-1.5 ${(result.risk_score ?? 0) >= 75 ? "bg-risk-high" : (result.risk_score ?? 0) >= 35 ? "bg-risk-medium" : "bg-risk-low"}`}
+         ></div>
         <div className="p-6 md:p-8">
           <StatusHeader result={result} />
 
@@ -81,9 +82,9 @@ const StatusResult: React.FC<StatusResultProps> = ({ result }) => {
 
       {result.education_recommendation && (
         <div className="bg-white rounded-3xl border border-neutral-border shadow-sm overflow-hidden">
-          <div
-            className={`h-1.5 ${result.risk_score >= 70 ? "bg-risk-high" : result.risk_score >= 40 ? "bg-risk-medium" : "bg-risk-low"}`}
-          ></div>
+           <div
+             className={`h-1.5 ${(result.risk_score ?? 0) >= 75 ? "bg-risk-high" : (result.risk_score ?? 0) >= 35 ? "bg-risk-medium" : "bg-risk-low"}`}
+           ></div>
           <div className="p-6 md:p-8">
             <RiskEducationPanel
               recommendation={result.education_recommendation}
@@ -95,7 +96,7 @@ const StatusResult: React.FC<StatusResultProps> = ({ result }) => {
       {/* Report Timeline */}
       <div className="bg-white rounded-3xl border border-neutral-border shadow-sm overflow-hidden">
         <div
-          className={`h-1.5 ${result.risk_score >= 70 ? "bg-risk-high" : result.risk_score >= 40 ? "bg-risk-medium" : "bg-risk-low"}`}
+          className={`h-1.5 ${(result.risk_score ?? 0) >= 70 ? "bg-risk-high" : (result.risk_score ?? 0) >= 40 ? "bg-risk-medium" : "bg-risk-low"}`}
         />
         <div className="p-6 md:p-8">
           <div className="mb-4 md:mb-6 space-y-1">

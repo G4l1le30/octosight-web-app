@@ -1,20 +1,9 @@
 """
-notifications/service.py — Email notification service for OctoSight.
+notifications/service.py — In-app notification + email notification services.
 
-Uses fastapi-mail with Gmail SMTP and Jinja2 HTML templates.
-All emails are sent asynchronously via FastAPI BackgroundTasks
-to avoid blocking API responses.
-
-Usage:
-    from app.modules.notifications.service import send_email_notification
-
-    await send_email_notification(
-        background_tasks=background_tasks,
-        subject="Your Subject",
-        email_to="user@example.com",
-        template_name="welcome.html",
-        template_body={"user_name": "John"}
-    )
+Combines:
+- NotificationService: in-app notification CRUD (stored in DB, fetched via API)
+- send_email_notification / send_email_async: async email via fastapi-mail + Jinja2
 """
 
 import logging
@@ -24,6 +13,10 @@ from typing import Optional
 
 from fastapi import BackgroundTasks
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig, MessageType
+from sqlalchemy.orm import Session
+
+from app.models.notification import Notification
+from app.modules.notifications.repository import NotificationRepository
 
 logger = logging.getLogger(__name__)
 
@@ -36,26 +29,6 @@ _MAIL_PORT = int(os.getenv("MAIL_PORT", "587"))
 _MAIL_SERVER = os.getenv("MAIL_SERVER", "smtp.gmail.com")
 _MAIL_FROM_NAME = os.getenv("MAIL_FROM_NAME", "OctoSight Security")
 
-
-def _log_mail_startup(enabled: bool) -> None:
-    """Log a sanitized summary of the effective SMTP configuration."""
-    if enabled:
-        logger.info(
-            "[Email] Mail service initialized successfully. server=%s port=%s from=%s username=%s",
-            _MAIL_SERVER,
-            _MAIL_PORT,
-            _MAIL_FROM or _MAIL_USERNAME,
-            _MAIL_USERNAME,
-        )
-        print("[Email] Mail service initialized successfully.")
-        return
-
-    logger.warning(
-        "[Email] Mail service disabled. Missing MAIL_USERNAME or MAIL_PASSWORD."
-    )
-    print("[Email] WARNING: Mail credentials not configured. Emails will be skipped.")
-
-# Only create config if credentials are present
 _mail_enabled = bool(_MAIL_USERNAME and _MAIL_PASSWORD)
 
 if _mail_enabled:
@@ -73,13 +46,26 @@ if _mail_enabled:
         TEMPLATE_FOLDER=Path(__file__).parent / "templates",
     )
     fast_mail = FastMail(conf)
+    logger.info("[Email] Mail service initialized (server=%s).", _MAIL_SERVER)
 else:
     fast_mail = None
+    logger.warning("[Email] Mail disabled — MAIL_USERNAME/PASSWORD not set.")
 
-_log_mail_startup(_mail_enabled)
+
+async def _send_with_logging(message: MessageSchema, template_name: str):
+    """Internal wrapper that catches and logs send errors."""
+    global fast_mail, _mail_enabled
+    try:
+        await fast_mail.send_message(message, template_name=template_name)
+        logger.info("[Email] Sent: %s -> %s", message.subject, message.recipients)
+    except Exception as exc:
+        if "SMTPAuthenticationError" in str(exc):
+            logger.critical("[Email] Authentication failed — check MAIL_PASSWORD.")
+        else:
+            logger.error("[Email] Send failed: %s", exc)
 
 
-# ── Public API ─────────────────────────────────────────────────────────────────
+# ── Email Notification API (from old module, preserved for backward compat) ──
 
 def send_email_notification(
     background_tasks: BackgroundTasks,
@@ -88,36 +74,19 @@ def send_email_notification(
     template_name: str,
     template_body: dict,
 ) -> bool:
-    """
-    Queue an HTML email for background delivery.
-
-    Args:
-        background_tasks: FastAPI BackgroundTasks instance from the route handler.
-        subject: Email subject line.
-        email_to: Recipient email address.
-        template_name: Jinja2 template filename (e.g. 'welcome.html').
-        template_body: Dict of variables to render inside the template.
-
-    Returns:
-        True if the email was queued, False if mail is disabled.
-    """
+    """Queue an HTML email for background delivery."""
     if not _mail_enabled or fast_mail is None:
-        logger.warning(
-            "Email skipped (mail not configured): subject=%s, to=%s",
-            subject, email_to,
-        )
+        logger.warning("Email skipped (mail disabled): subject=%s, to=%s", subject, email_to)
         return False
-
     message = MessageSchema(
         subject=subject,
         recipients=[email_to],
         template_body=template_body,
         subtype=MessageType.html,
     )
-
     background_tasks.add_task(_send_with_logging, message, template_name)
-    logger.info("Email queued: subject=%s, to=%s", subject, email_to)
     return True
+
 
 async def send_email_async(
     subject: str,
@@ -125,36 +94,56 @@ async def send_email_async(
     template_name: str,
     template_body: dict,
 ) -> bool:
-    """Send an email asynchronously without needing BackgroundTasks."""
+    """Send an email asynchronously without BackgroundTasks."""
     if not _mail_enabled or fast_mail is None:
-        logger.warning(
-            "Email skipped (mail not configured): subject=%s, to=%s",
-            subject, email_to,
-        )
+        logger.warning("Email async skipped (mail disabled): subject=%s, to=%s", subject, email_to)
         return False
-
     message = MessageSchema(
         subject=subject,
         recipients=[email_to],
         template_body=template_body,
         subtype=MessageType.html,
     )
-
     await _send_with_logging(message, template_name)
     return True
 
-async def _send_with_logging(message: MessageSchema, template_name: str):
-    """Internal wrapper that catches and logs send errors."""
-    global fast_mail, _mail_enabled
-    try:
-        try:
-            await fast_mail.send_message(message, template_name=template_name)
-            print(f"[Email] Sent successfully: {message.subject} -> {message.recipients}")
-        except Exception as exc:
-            # If authentication fails, disable mail sending for future attempts
-            if isinstance(exc, Exception) and 'SMTPAuthenticationError' in str(exc):
-                print(f"[Email] Critical Error: Authentication failed. Please check MAIL_PASSWORD.")
-            else:
-                print(f"[Email] Failed to send email to {message.recipients}: {str(exc)}")
-    except Exception as e:
-        print(f"[Email] Unexpected error in background task: {str(e)}")
+
+# ── In-App Notification Service (new) ────────────────────────────────────────
+
+class NotificationService:
+    """Business logic for in-app notifications (stored in DB, fetched via API)."""
+
+    @staticmethod
+    def get_unread_count(db: Session, user_id: str) -> int:
+        return NotificationRepository.get_unread_count(db, user_id)
+
+    @staticmethod
+    def list_notifications(
+        db: Session, user_id: str, page: int = 1, per_page: int = 20
+    ) -> tuple[list[Notification], int]:
+        return NotificationRepository.list_for_user(db, user_id, page, per_page)
+
+    @staticmethod
+    def create_notification(
+        db: Session,
+        user_id: str,
+        notification_type: str,
+        title: str,
+        body: Optional[str] = None,
+        link: Optional[str] = None,
+    ) -> Notification:
+        return NotificationRepository.create(
+            db, user_id, notification_type, title, body, link
+        )
+
+    @staticmethod
+    def mark_read(db: Session, notification_id: int, user_id: str) -> bool:
+        return NotificationRepository.mark_read(db, notification_id, user_id)
+
+    @staticmethod
+    def mark_all_read(db: Session, user_id: str) -> int:
+        return NotificationRepository.mark_all_read(db, user_id)
+
+    @staticmethod
+    def delete(db: Session, notification_id: int, user_id: str) -> bool:
+        return NotificationRepository.delete(db, notification_id, user_id)

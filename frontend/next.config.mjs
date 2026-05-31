@@ -26,6 +26,15 @@ const nextConfig = {
   async headers() {
     return [
       {
+        source: '/(login|register)(/.*)?',
+        headers: [
+          {
+            key: 'Cross-Origin-Opener-Policy',
+            value: 'unsafe-none',
+          },
+        ],
+      },
+      {
         source: '/(.*)',
         headers: [
           {

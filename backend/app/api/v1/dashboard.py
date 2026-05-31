@@ -9,6 +9,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.core.security import require_admin
+from app.core.cache import cache_result
 from app.db.session import get_db
 from app.modules.dashboard.repository import DashboardRepository
 
@@ -16,12 +17,17 @@ router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 
 
 @router.get("/summary")
-def get_dashboard_summary(
+@cache_result(ttl=60)
+async def get_dashboard_summary(
+    status: str = Query(None),
+    priority: str = Query(None),
+    date_from: str = Query(None),
+    date_to: str = Query(None),
     db: Session = Depends(get_db),
     _admin=Depends(require_admin),
 ):
-    """Return pre-aggregated dashboard summary (admin only)."""
-    return DashboardRepository.summary(db)
+    """Return pre-aggregated dashboard summary, optionally filtered."""
+    return DashboardRepository.summary(db, status, priority, date_from, date_to)
 
 
 @router.get("/timeline")

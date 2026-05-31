@@ -5,6 +5,7 @@ import React, { useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { usePathname } from "next/navigation";
 import { ProfileDropdown } from "./ProfileDropdown";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 
 const Navbar: React.FC = () => {
   const { user, loading, logout } = useAuth();
@@ -57,6 +58,18 @@ const Navbar: React.FC = () => {
               >
                 Blacklist
               </Link>
+              <Link
+                href="/admin/rule-config"
+                className={getLinkClass("/admin/rule-config")}
+              >
+                Rules
+              </Link>
+              <Link
+                href="/admin/users"
+                className={getLinkClass("/admin/users")}
+              >
+                Users
+              </Link>
             </>
           ) : (
             <>
@@ -80,14 +93,15 @@ const Navbar: React.FC = () => {
 
           <div className="self-center w-px h-4 bg-neutral-border mx-2"></div>
 
-          {loading ? (
-            <div className="w-20 h-8 bg-neutral-page rounded-lg animate-pulse"></div>
-          ) : user ? (
-            <ProfileDropdown 
-              user={user} 
-              logout={logout} 
-              isAdminRoute={isAdminRoute} 
-            />
+          {user && !loading ? (
+            <div className="self-center flex items-center gap-2">
+              <NotificationBell />
+              <ProfileDropdown 
+                user={user} 
+                logout={logout} 
+                isAdminRoute={isAdminRoute} 
+              />
+            </div>
           ) : (
             <div className="self-center flex items-center gap-2">
               <Link
@@ -160,6 +174,20 @@ const Navbar: React.FC = () => {
                 className="block py-2 text-sm font-medium hover:text-primary"
               >
                 Blacklist
+              </Link>
+              <Link
+                href="/admin/rule-config"
+                onClick={() => setMobileOpen(false)}
+                className="block py-2 text-sm font-medium hover:text-primary"
+              >
+                Rules
+              </Link>
+              <Link
+                href="/admin/users"
+                onClick={() => setMobileOpen(false)}
+                className="block py-2 text-sm font-medium hover:text-primary"
+              >
+                Users
               </Link>
             </>
           ) : (

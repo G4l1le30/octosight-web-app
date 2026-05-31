@@ -6,6 +6,8 @@ import { AuthUser } from "@/types/auth";
 interface AuthContextType {
   user: AuthUser | null;
   loading: boolean;
+  sessionExpired: boolean;
+  dismissSessionExpired: () => void;
   login: (email: string, password: string) => Promise<void>;
   register: (fullName: string, email: string, password: string) => Promise<void>;
   loginWithGoogle: (accessToken: string) => Promise<void>;
@@ -18,7 +20,12 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [sessionExpired, setSessionExpired] = useState(false);
   const refreshPromiseRef = useRef<Promise<boolean> | null>(null);
+
+  const dismissSessionExpired = useCallback(() => {
+    setSessionExpired(false);
+  }, []);
 
   const getRequestPath = useCallback((input: RequestInfo | URL) => {
     if (typeof input === "string") {
@@ -104,18 +111,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         credentials: "include",
       };
 
-      let response = await nativeFetch(input, requestInit);
+      const response = await nativeFetch(input, requestInit);
       if (response.status !== 401 || !shouldRetryAfterUnauthorized(path)) {
         return response;
       }
 
       const refreshed = await refreshSession();
       if (!refreshed) {
+        if (user !== null) {
+          setUser(null);
+          setSessionExpired(true);
+        }
         return response;
       }
 
-      response = await nativeFetch(input, requestInit);
-      return response;
+      const retryResponse = await nativeFetch(input, requestInit);
+      return retryResponse;
     },
     [getRequestPath, isManagedApiRequest, refreshSession, shouldRetryAfterUnauthorized]
   );
@@ -295,7 +306,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, loginWithGoogle, registerWithGoogle, logout }}>
+    <AuthContext.Provider value={{ user, loading, sessionExpired, dismissSessionExpired, login, register, loginWithGoogle, registerWithGoogle, logout }}>
       {children}
     </AuthContext.Provider>
   );

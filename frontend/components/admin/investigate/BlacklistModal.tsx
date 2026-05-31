@@ -1,7 +1,17 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Ban, CheckCircle2, AlertTriangle, XCircle, Globe, Phone, Mail, CreditCard, Loader2 } from "lucide-react";
+import {
+  Ban,
+  CheckCircle2,
+  AlertTriangle,
+  XCircle,
+  Globe,
+  Phone,
+  Mail,
+  CreditCard,
+  Loader2,
+} from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
 type BlacklistType = "url" | "account" | "phone" | "email";
@@ -79,7 +89,8 @@ export function BlacklistModal({
     try {
       let endpoint = "/api/v1/admin/blacklist";
       let body: any = {
-        reason: reason.trim() || `Flagged during investigation of ticket ${ticketId}`,
+        reason:
+          reason.trim() || `Flagged during investigation of ticket ${ticketId}`,
         ticket_id: ticketId ?? null,
       };
 
@@ -121,39 +132,51 @@ export function BlacklistModal({
     onClose();
   };
 
-  const isResolved = status === "success" || status === "already" || status === "error";
+  const isResolved =
+    status === "success" || status === "already" || status === "error";
 
   const getIcon = () => {
     switch (type) {
-      case "url": return <Globe className="w-8 h-8 text-secondary" />;
-      case "phone": return <Phone className="w-8 h-8 text-secondary" />;
-      case "email": return <Mail className="w-8 h-8 text-secondary" />;
-      case "account": return <CreditCard className="w-8 h-8 text-secondary" />;
+      case "url":
+        return <Globe className="w-8 h-8 text-secondary" />;
+      case "phone":
+        return <Phone className="w-8 h-8 text-secondary" />;
+      case "email":
+        return <Mail className="w-8 h-8 text-secondary" />;
+      case "account":
+        return <CreditCard className="w-8 h-8 text-secondary" />;
     }
   };
 
   const getLabel = () => {
     switch (type) {
-      case "url": return "URL Domain";
-      case "phone": return "Phone Number";
-      case "email": return "Email Address";
-      case "account": return "Bank Account";
+      case "url":
+        return "URL Domain";
+      case "phone":
+        return "Phone Number";
+      case "email":
+        return "Email Address";
+      case "account":
+        return "Bank Account";
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-3 md:p-4 backdrop-blur-sm">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md flex flex-col h-[440px] p-6 md:p-8 animate-in zoom-in-95 duration-200">
+   return (
+     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-3 md:p-4 backdrop-blur-sm">
+       <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md flex flex-col p-6 md:p-8 animate-in zoom-in-95 duration-200">
         {/* Header — fixed at top */}
         <div className="flex flex-col items-center text-center gap-2 md:gap-3 shrink-0">
           <div className="w-10 h-10 md:w-14 md:h-14 rounded-2xl bg-neutral-page flex items-center justify-center border border-neutral-border">
             {getIcon()}
           </div>
           <div>
-            <h2 className="text-lg md:text-xl font-bold text-secondary tracking-tight">Blacklist {getLabel()}</h2>
+            <h2 className="text-lg md:text-xl font-bold text-secondary tracking-tight">
+              Blacklist {getLabel()}
+            </h2>
             {status !== null && (
               <p className="text-xs text-secondary/60 font-medium mt-1 px-2">
-                Adding this will automatically block future reports containing this indicator.
+                Adding this will automatically block future reports containing
+                this indicator.
               </p>
             )}
           </div>
@@ -164,16 +187,23 @@ export function BlacklistModal({
           {status === null && (
             <div className="flex items-center justify-center gap-2 md:gap-3 py-6 md:py-8">
               <Loader2 className="size-5 animate-spin text-secondary" />
-              <span className="text-sm font-semibold text-secondary/70">Checking blacklist...</span>
+              <span className="text-sm font-semibold text-secondary/70">
+                Checking blacklist...
+              </span>
             </div>
           )}
 
           {status === "form" && (
             <div className="w-full space-y-4">
               <div className="bg-neutral-page rounded-2xl p-3 md:p-4 border border-neutral-border space-y-1 text-left">
-                <p className="text-sm text-secondary font-bold tracking-wide">Indicator to Block</p>
+                <p className="text-sm text-secondary font-bold tracking-wide">
+                  Indicator to Block
+                </p>
                 <p className="text-sm text-secondary font-medium break-all">
-                  {type === "account" && metadata?.bank_name ? `${metadata.bank_name}: ` : ""}{value}
+                  {type === "account" && metadata?.bank_name
+                    ? `${metadata.bank_name}: `
+                    : ""}
+                  {value}
                 </p>
               </div>
               <div className="text-left">
@@ -220,7 +250,7 @@ export function BlacklistModal({
                 id="blacklist-cancel-btn"
                 variant="outline"
                 onClick={handleClose}
-                className="flex-1 rounded-xl h-11"
+                className="flex-1 rounded-xl"
               >
                 Cancel
               </Button>
@@ -229,7 +259,7 @@ export function BlacklistModal({
                 variant="danger"
                 onClick={handleConfirm}
                 loading={isSubmitting}
-                className="flex-1 rounded-xl h-11"
+                className="flex-1 rounded-xl"
               >
                 Block
               </Button>
@@ -239,7 +269,7 @@ export function BlacklistModal({
               id="blacklist-close-btn"
               variant="outline"
               onClick={handleClose}
-              className="w-full rounded-xl h-11"
+              className="w-full rounded-xl"
             >
               Close
             </Button>

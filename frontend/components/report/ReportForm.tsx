@@ -23,6 +23,8 @@ interface ReportFormProps {
   attachmentFile: File | null;
   setAttachmentFile: (file: File | null) => void;
   getLocalISOString: () => string;
+  isConfirming?: boolean;
+  onFileReset?: () => void;
 }
 
 export const ReportForm: React.FC<ReportFormProps> = ({
@@ -128,6 +130,7 @@ export const ReportForm: React.FC<ReportFormProps> = ({
               <Input
                 label="Attacker Account Number"
                 placeholder="e.g., 706123456789"
+                type="number"
                 error={errors.bankAccount?.message}
                 {...register("bankAccount")}
               />

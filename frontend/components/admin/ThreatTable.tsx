@@ -1,15 +1,19 @@
 "use client";
 
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { Ticket } from "@/types/ticket";
 import { cn, formatDateTime } from "@/lib/utils";
+import { RISK } from "@/constants/colors";
 
 interface ThreatTableProps {
   tickets: Ticket[];
   loading?: boolean;
   emptyMessage?: string;
   className?: string;
+  onAssign?: (ticketId: string, email: string) => void;
+  selectedIds?: number[];
+  onSelectionChange?: (ids: number[]) => void;
 }
 
 export const ThreatTable: React.FC<ThreatTableProps> = ({
@@ -17,13 +21,54 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
   loading = false,
   emptyMessage = "No matching reports found.",
   className,
+  onAssign,
+  selectedIds = [],
+  onSelectionChange,
 }) => {
+  const [assignModalOpen, setAssignModalOpen] = useState(false);
+  const [assignTicketId, setAssignTicketId] = useState<string | null>(null);
+  const [assignEmail, setAssignEmail] = useState("");
+  const headerCheckboxRef = useRef<HTMLInputElement>(null);
+
+  const allVisibleSelected = tickets.length > 0 && tickets.every((t) => selectedIds.includes(t.id));
+  const someVisibleSelected = tickets.some((t) => selectedIds.includes(t.id));
+
+  useEffect(() => {
+    if (headerCheckboxRef.current) {
+      headerCheckboxRef.current.indeterminate = someVisibleSelected && !allVisibleSelected;
+    }
+  }, [someVisibleSelected, allVisibleSelected]);
+
+  const handleSelectAll = () => {
+    if (!onSelectionChange) return;
+    if (allVisibleSelected) {
+      onSelectionChange(selectedIds.filter((id) => !tickets.some((t) => t.id === id)));
+    } else {
+      const newIds = [...selectedIds];
+      tickets.forEach((t) => {
+        if (!newIds.includes(t.id)) newIds.push(t.id);
+      });
+      onSelectionChange(newIds);
+    }
+  };
+
+  const handleSelectOne = (id: number) => {
+    if (!onSelectionChange) return;
+    if (selectedIds.includes(id)) {
+      onSelectionChange(selectedIds.filter((sid) => sid !== id));
+    } else {
+      onSelectionChange([...selectedIds, id]);
+    }
+  };
+
   const getStatusBadgeClass = (status: Ticket["status"]) => {
     switch (status) {
       case "Submitted":
         return "bg-blue-50 text-blue-700 border-blue-200";
       case "In Review":
         return "bg-amber-50 text-amber-700 border-amber-200";
+      case "Need More Info":
+        return "bg-purple-50 text-purple-700 border-purple-200";
       case "Confirmed":
         return "bg-red-50 text-red-700 border-red-200";
       case "False Positive":
@@ -37,6 +82,20 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
     }
   };
 
+  const openAssignModal = (ticketId: string) => {
+    setAssignTicketId(ticketId);
+    setAssignEmail("");
+    setAssignModalOpen(true);
+  };
+
+  const handleAssignConfirm = async () => {
+    if (!assignEmail.trim() || !onAssign || !assignTicketId) return;
+    await onAssign(assignTicketId, assignEmail.trim());
+    setAssignModalOpen(false);
+    setAssignTicketId(null);
+    setAssignEmail("");
+  };
+
   if (loading) {
     return (
       <div className="py-20 text-center opacity-40 font-bold">
@@ -45,47 +104,63 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
     );
   }
 
+  const colSpan = (onSelectionChange ? 9 : 8);
+
   return (
     <div className={cn("overflow-x-auto", className)}>
       <table className="w-full text-left">
         <thead className="bg-neutral-page text-sm font-bold text-secondary border-b border-neutral-border">
           <tr>
+            {onSelectionChange && (
+              <th className="px-4 md:px-6 py-4 w-10">
+                <input
+                  ref={headerCheckboxRef}
+                  type="checkbox"
+                  checked={allVisibleSelected}
+                  onChange={handleSelectAll}
+                  className="accent-primary cursor-pointer"
+                />
+              </th>
+            )}
             <th className="px-4 md:px-6 py-4 w-[20%]">Ticket</th>
             <th className="px-4 md:px-6 py-4 w-[20%]">Indicator / Target</th>
-            <th className="px-4 md:px-6 py-4">Priority</th>
-            <th className="px-4 md:px-6 py-4">Risk Score</th>
-            <th className="px-4 md:px-6 py-4">Key Findings</th>
-            <th className="px-4 md:px-6 py-4">Status</th>
+            <th className="px-4 md:px-6 py-4 text-center">Priority</th>
+            <th className="px-4 md:px-6 py-4 text-center">Risk Score</th>
+            <th className="px-4 md:px-6 py-4 text-center">Key Findings</th>
+            <th className="px-4 md:px-6 py-4 text-center">Status</th>
+            <th className="px-4 md:px-6 py-4 text-center">Assignee</th>
             <th className="px-4 md:px-6 py-4 text-right">Actions</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-neutral-border">
           {tickets.length === 0 ? (
             <tr>
-              <td colSpan={7} className="px-4 md:px-6 py-8 md:py-10 text-center opacity-40">
+              <td colSpan={colSpan} className="px-4 md:px-6 py-8 md:py-10 text-center opacity-40">
                 {emptyMessage}
               </td>
             </tr>
           ) : (
-            tickets.map((ticket) => (
+            tickets.map((ticket, index) => (
               <tr
-                key={ticket.id}
+                key={ticket.id ?? ticket.ticket_id ?? `ticket-${index}`}
                 className="hover:bg-neutral-page/50 transition-colors group"
               >
+                {onSelectionChange && (
+                  <td className="px-4 md:px-6 py-4 md:py-5">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.includes(ticket.id)}
+                      onChange={() => handleSelectOne(ticket.id)}
+                      className="accent-primary cursor-pointer"
+                    />
+                  </td>
+                )}
                 <td className="px-4 md:px-6 py-4 md:py-5">
                   <div className="flex flex-col">
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-base text-black">
                         {ticket.ticket_id}
                       </span>
-                      {ticket.sla_breached && (
-                        <span className="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200 whitespace-nowrap">
-                          <svg xmlns="http://www.w3.org/2000/svg" className="size-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                          SLA Breach
-                        </span>
-                      )}
                     </div>
                     <span className="text-xs font-medium text-secondary">
                       {formatDateTime(ticket.created_at).full}
@@ -111,7 +186,7 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
                     </span>
                   </div>
                 </td>
-                <td className="px-4 md:px-6 py-4 md:py-5">
+                <td className="px-4 md:px-6 py-4 md:py-5 text-center">
                   <span
                     className={cn(
                       "text-xs font-bold tracking-wide",
@@ -125,17 +200,12 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
                     {ticket.priority}
                   </span>
                 </td>
-                <td className="px-4 md:px-6 py-4 md:py-5">
+                <td className="px-4 md:px-6 py-4 md:py-5 text-center">
                   <div className="flex flex-col items-center gap-2">
                     <span
                       className="text-sm font-bold"
                       style={{
-                        color:
-                          ticket.risk_score > 70
-                            ? "#e31e24"
-                            : ticket.risk_score > 30
-                              ? "#f97316"
-                              : "#00a651",
+                        color: ticket.risk_score >= 75 ? RISK.high.hex : ticket.risk_score >= 35 ? RISK.medium.hex : RISK.low.hex,
                       }}
                     >
                       {ticket.risk_score}
@@ -145,19 +215,14 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
                         className="h-full rounded-full transition-all duration-1000"
                         style={{
                           width: `${ticket.risk_score}%`,
-                          backgroundColor:
-                            ticket.risk_score > 70
-                              ? "#e31e24"
-                              : ticket.risk_score > 30
-                                ? "#f97316"
-                                : "#00a651",
+                          backgroundColor: ticket.risk_score >= 75 ? RISK.high.hex : ticket.risk_score >= 35 ? RISK.medium.hex : RISK.low.hex,
                         }}
                       />
                     </div>
                   </div>
                 </td>
-                <td className="px-4 md:px-6 py-4 md:py-5">
-                  <div className="flex flex-wrap gap-1">
+                <td className="px-4 md:px-6 py-4 md:py-5 text-center">
+                  <div className="flex flex-wrap gap-1 justify-center">
                     {ticket.flags ? (
                       ticket.flags
                         .split(",")
@@ -180,7 +245,7 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
                     )}
                   </div>
                 </td>
-                <td className="px-4 md:px-6 py-4 md:py-5">
+                <td className="px-4 md:px-6 py-4 md:py-5 text-center">
                   <span
                     className={cn(
                       "text-xs font-bold px-2.5 py-1 rounded-full whitespace-nowrap border",
@@ -190,19 +255,72 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
                     {ticket.status}
                   </span>
                 </td>
+                <td className="px-4 md:px-6 py-4 md:py-5 text-center">
+                  <span className="text-xs font-medium text-secondary truncate max-w-[120px] block" title={ticket.assigned_to || undefined}>
+                    {ticket.assigned_to || "None"}
+                  </span>
+                </td>
                 <td className="px-4 md:px-6 py-4 md:py-5 text-right">
-                  <Link
-                    href={`/admin/investigate/${ticket.ticket_id}`}
-                    className="text-xs font-bold text-secondary hover:text-primary transition-colors bg-white border border-neutral-border px-4 py-2 rounded-xl shadow-sm inline-block"
-                  >
-                    Investigate
-                  </Link>
+                  <div className="flex items-center gap-2 justify-end">
+                    {onAssign && (
+                      <button
+                        onClick={() => openAssignModal(ticket.ticket_id)}
+                        className="text-xs font-bold border border-neutral-border px-3 py-1.5 rounded-lg hover:bg-neutral-page transition-colors"
+                      >
+                        Assign
+                      </button>
+                    )}
+                    <Link
+                      href={`/admin/investigate/${ticket.ticket_id}`}
+                      className="text-xs font-bold text-secondary hover:text-primary transition-colors bg-white border border-neutral-border px-4 py-2 rounded-xl shadow-sm inline-block"
+                    >
+                      Investigate
+                    </Link>
+                  </div>
                 </td>
               </tr>
             ))
           )}
         </tbody>
       </table>
+
+      {/* Assign Modal */}
+      {assignModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setAssignModalOpen(false)} />
+          <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md p-6 animate-in fade-in zoom-in-95 duration-200">
+            <h3 className="text-lg font-bold text-secondary mb-1">Assign Ticket</h3>
+            <p className="text-sm text-secondary/60 mb-4">
+              Assigning <span className="font-bold text-secondary">{assignTicketId}</span> to an analyst.
+            </p>
+            <label className="text-xs font-bold text-secondary block mb-1.5">Email Address</label>
+            <input
+              type="email"
+              value={assignEmail}
+              onChange={(e) => setAssignEmail(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") handleAssignConfirm(); }}
+              placeholder="analyst@domain.com"
+              className="w-full border border-neutral-border rounded-xl px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all mb-4"
+              autoFocus
+            />
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setAssignModalOpen(false)}
+                className="px-4 py-2 text-sm font-bold text-secondary hover:bg-neutral-page rounded-xl transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAssignConfirm}
+                disabled={!assignEmail.trim()}
+                className="px-4 py-2 text-sm font-bold text-white bg-primary hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl transition-colors"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

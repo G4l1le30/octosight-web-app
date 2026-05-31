@@ -16,8 +16,6 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from sqlalchemy.exc import OperationalError
-
 from app.config import settings
 from app.db.base import Base
 from app.db.session import engine, SessionLocal
@@ -32,6 +30,7 @@ from app.models import (
     BlacklistedPhone,
     BlacklistedEmail,
     TicketAuditLog,
+    RuleConfig,
 )
 from app.core.email_validation import (
     EmailValidationError,
@@ -40,6 +39,7 @@ from app.core.email_validation import (
 )
 from app.core.security import hash_password, limiter
 from app.core.error_handlers import register_error_handlers
+from app.modules.rule_config.service import RuleConfigService
 
 # Backward-compat routers (migrating to api/v1/)
 from app.api.endpoints import auth as auth_router
@@ -93,6 +93,7 @@ def _seed_db(db) -> None:
                 risk_score=95, rule_score=80, ml_score=100,
                 priority="High", status="Submitted",
                 flags="punycode_detected,suspicious_tld,ml_prediction:phishing",
+                summary="Fake CIMB bonus claim page with typosquatting domain",
             ),
             Ticket(
                 ticket_id="OCTO-8821",
@@ -101,6 +102,7 @@ def _seed_db(db) -> None:
                 risk_score=92, rule_score=75, ml_score=100,
                 priority="High", status="In Review",
                 flags="brand_impersonation,ml_prediction:phishing",
+                summary="Credential harvesting page impersonating CIMB login",
             ),
             Ticket(
                 ticket_id="OCTO-8822",
@@ -109,6 +111,115 @@ def _seed_db(db) -> None:
                 risk_score=88, rule_score=70, ml_score=98,
                 priority="High", status="Submitted",
                 flags="suspicious_tld,ml_prediction:phishing",
+                summary="Fake security alert page requesting bank credentials",
+            ),
+            Ticket(
+                ticket_id="OCTO-8830",
+                sender_numbers="+6281234567890",
+                type="SMS",
+                risk_score=85, rule_score=65, ml_score=95,
+                priority="High", status="Confirmed",
+                flags="urgency_language,ml_prediction:phishing",
+                summary="SMS claiming account frozen, click link to verify",
+            ),
+            Ticket(
+                ticket_id="OCTO-8831",
+                sender_numbers="+6285678901234",
+                type="WhatsApp",
+                risk_score=78, rule_score=60, ml_score=88,
+                priority="Medium", status="Submitted",
+                flags="ml_prediction:phishing",
+                summary="WhatsApp message about unclaimed prize from CIMB",
+            ),
+            Ticket(
+                ticket_id="OCTO-8832",
+                url="https://secure-cimb-login.com/auth",
+                type="Website",
+                risk_score=72, rule_score=55, ml_score=82,
+                priority="Medium", status="In Review",
+                flags="suspicious_tld,brand_impersonation",
+                summary="Lookalike domain with login form targeting CIMB users",
+            ),
+            Ticket(
+                ticket_id="OCTO-8833",
+                sender_numbers="+6289876543210",
+                type="SMS",
+                risk_score=65, rule_score=50, ml_score=72,
+                priority="Medium", status="Mitigated",
+                flags="ml_prediction:phishing",
+                summary="SMS with shortened URL claiming tax refund",
+            ),
+            Ticket(
+                ticket_id="OCTO-8834",
+                url="https://cimb-update.info/verify",
+                type="Email",
+                risk_score=55, rule_score=40, ml_score=65,
+                priority="Low", status="False Positive",
+                flags="suspicious_tld",
+                summary="Email about account verification from non-official domain",
+            ),
+            Ticket(
+                ticket_id="OCTO-8835",
+                sender_numbers="+6281122334455",
+                type="WhatsApp",
+                risk_score=42, rule_score=30, ml_score=50,
+                priority="Low", status="Closed",
+                flags="",
+                summary="Suspicious WhatsApp forward about CIMB promo",
+            ),
+            Ticket(
+                ticket_id="OCTO-8836",
+                url="https://promo-cimbniaga.com/reward",
+                type="Website",
+                risk_score=80, rule_score=65, ml_score=90,
+                priority="High", status="Submitted",
+                flags="brand_impersonation,urgency_language,ml_prediction:phishing",
+                summary="Promotional reward claiming page with account input form",
+            ),
+            Ticket(
+                ticket_id="OCTO-8837",
+                sender_numbers="+6287766554433",
+                type="SMS",
+                risk_score=70, rule_score=55, ml_score=78,
+                priority="Medium", status="In Review",
+                flags="urgency_language",
+                summary="SMS warning of unauthorized transaction, asks to call number",
+            ),
+            Ticket(
+                ticket_id="OCTO-8838",
+                url="https://cimbniaga-secure.id/login",
+                type="Website",
+                risk_score=90, rule_score=75, ml_score=98,
+                priority="High", status="Submitted",
+                flags="suspicious_tld,punycode_detected,ml_prediction:phishing",
+                summary="Punycode domain mimicking CIMB Niaga login page",
+            ),
+            Ticket(
+                ticket_id="OCTO-8839",
+                sender_numbers="+6283344556677",
+                type="Email",
+                risk_score=48, rule_score=35, ml_score=58,
+                priority="Low", status="Closed",
+                flags="ml_prediction:phishing",
+                summary="Email with fake invoice attachment from unknown sender",
+            ),
+            Ticket(
+                ticket_id="OCTO-8840",
+                url="https://bit.ly/fake-cimb",
+                type="Website",
+                risk_score=82, rule_score=70, ml_score=88,
+                priority="High", status="Confirmed",
+                flags="shortened_url,brand_impersonation,ml_prediction:phishing",
+                summary="Shortened URL redirecting to credential harvesting page",
+            ),
+            Ticket(
+                ticket_id="OCTO-8841",
+                sender_numbers="+6284455667788",
+                type="WhatsApp",
+                risk_score=75, rule_score=60, ml_score=82,
+                priority="Medium", status="Submitted",
+                flags="urgency_language,ml_prediction:phishing",
+                summary="WhatsApp message claiming urgent account security update",
             ),
         ]
         db.add_all(dummy)
@@ -169,6 +280,9 @@ def _seed_db(db) -> None:
         db.commit()
         print("[Seed] blacklisted emails created")
 
+    # Rule config defaults
+    RuleConfigService.seed_default_rules(db)
+
 
 # ── Lifespan ────────────────────────────────────────────────────────────────
 
@@ -178,18 +292,23 @@ async def lifespan(app: FastAPI):
     retries = 10
     while retries > 0:
         try:
-            Base.metadata.create_all(bind=engine)
             run_alembic_migrations()
+            Base.metadata.create_all(bind=engine)
             db = SessionLocal()
             try:
                 apply_migrations(db)
                 _seed_db(db)
                 seed_education_data(db)
+                # Load dynamic rules into the singleton rule engine
+                from app.core.engines import rule_engine
+                db_rules = RuleConfigService.load_all_active(db)
+                rule_engine.load_from_db(db_rules)
+                print(f"[Startup] Rule engine refreshed with {len(db_rules.get('keywords', []))} keywords from DB.")
             finally:
                 db.close()
             print("[Startup] Database ready.")
             break
-        except OperationalError as exc:
+        except Exception as exc:
             retries -= 1
             print(f"[Startup] DB not ready, retrying... ({retries} left) — {exc}")
             time.sleep(5)
@@ -250,11 +369,11 @@ register_error_handlers(app)
 
 # Backward-compat old route paths
 app.include_router(auth_router.router)
-app.include_router(tickets_router.router)
 app.include_router(detection_router.router)
 app.include_router(education_router.router)
 app.include_router(blacklist_router.router)
 app.include_router(evidence_router.router)
 
-# New v1 router (additional endpoints under /api/v1/)
+# New v1 router (registered BEFORE legacy tickets_router so /export beats /{ticket_id})
 app.include_router(v1_router)
+app.include_router(tickets_router.router)

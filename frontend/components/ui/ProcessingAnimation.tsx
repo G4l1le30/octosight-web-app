@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const processingSteps = [
@@ -12,7 +12,7 @@ const processingSteps = [
   "Finalizing security assessment...",
 ];
 
-export const ProcessingAnimation: React.FC<{ title?: string }> = ({ title = "Processing Security Report" }) => {
+export const ProcessingAnimation: React.FC<{ title?: string; onCancel?: () => void }> = ({ title = "Processing Security Report", onCancel }) => {
   const [step, setStep] = useState(0);
 
   useEffect(() => {
@@ -23,7 +23,16 @@ export const ProcessingAnimation: React.FC<{ title?: string }> = ({ title = "Pro
   }, []);
 
   return (
-    <div className="flex flex-col items-center justify-center p-12 text-center space-y-10 animate-in fade-in duration-500">
+    <div className="relative flex flex-col items-center justify-center p-12 text-center space-y-10 animate-in fade-in duration-500">
+      {onCancel && (
+        <button
+          onClick={onCancel}
+          className="absolute top-0 right-0 p-2 rounded-full text-secondary/50 hover:text-secondary hover:bg-neutral-border/30 transition-colors"
+          aria-label="Cancel"
+        >
+          <X className="size-5" />
+        </button>
+      )}
       {/* Sleek Enterprise Loader */}
       <div className="relative size-16 flex items-center justify-center">
         <Loader2 className="size-10 text-primary animate-spin" strokeWidth={2} />

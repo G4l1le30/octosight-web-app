@@ -20,14 +20,14 @@ export const RiskScoreCard = ({
   const score = typeof rawScore === "number" && !isNaN(rawScore) ? Math.round(rawScore) : 0;
 
   const getRiskDetails = (score: number) => {
-    if (score < 40)
+    if (score < 35)
       return {
         label: "Low Risk",
         stroke: "text-risk-low",
         text: "text-risk-low",
         badge: "text-risk-low bg-risk-low/10",
       };
-    if (score < 70)
+    if (score < 75)
       return {
         label: "Medium Risk",
         stroke: "text-risk-medium",

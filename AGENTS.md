@@ -269,6 +269,42 @@ NEXT_PUBLIC_API_URL=http://localhost:8000
 
 ---
 
+## Session Progress (conversation #2)
+
+**Focus:** Fix 500 errors, auth flow, and education module issues end-to-end.
+
+### Achieved
+- **Fixed `NameError: Optional` in `education/service.py`** — missing `from typing import Optional` caused 500 on education endpoints.
+- **Fixed `ResponseValidationError` on education modules** — `status` field in `EducationModuleWithProgress` made `Optional[str] = None`.
+- **Made `predict_spam` public** — changed dependency from `get_current_user` to `get_optional_user` so unauthenticated users can submit reports.
+- **Guarded article read POST with auth check** — `frontend/app/(user)/edu/[id]/page.tsx` now only calls `/articles/{id}/read` when `user` is truthy (prevents 401 for logged-out users).
+- **Frontend UX improvements** — `disabled={loading}` on auth buttons, `type="number"` on attacker account input.
+- **Docker/Turbopack** — enabled Turbopack dev, bumped memory limit, persistent `.next` named volume.
+- **Migration idempotency** — Alembic runs before `create_all`; migrations 0001–0003 wrapped in try/except.
+
+### Open Issues
+- 401s on `/auth/me` and `/auth/refresh` for unauthenticated users — expected behavior (normal auth-check flow), no fix needed.
+
+### Key Decisions
+| Decision | Rationale |
+|---|---|
+| try/except over column inspection in migrations | Simpler, avoids fragile `inspect()` logic |
+| Turbopack for dev | ~5x faster HMR iteration |
+| Named volume for `.next` | Persists cache across `docker compose down` |
+| `get_optional_user` for public endpoints | Avoids 401 when unauthenticated user hits semi-public endpoint |
+
+### Relevant Files Changed
+| File | Change |
+|---|---|
+| `backend/app/modules/education/service.py:3` | Added `Optional` import |
+| `backend/app/schemas/education.py:25` | `status: Optional[str] = None` |
+| `backend/app/api/endpoints/detection.py` | `predict_spam` uses `get_optional_user` |
+| `frontend/app/(user)/edu/[id]/page.tsx:117` | Added `if (user)` guard on read POST |
+| `frontend/app/(auth)/login/page.tsx` | `disabled={loading}` on submit button |
+| `frontend/app/(auth)/register/page.tsx` | `disabled={loading}` on submit button |
+| `frontend/components/report/ReportForm.tsx` | `type="number"` on attacker account input |
+| `docker-compose.yml` | Turbopack, memory, `.next` volume |
+
 ## Referensi Cepat
 
 - PRD & fitur lengkap → `OCTOSIGHT_PRD.md`

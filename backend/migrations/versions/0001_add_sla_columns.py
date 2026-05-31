@@ -17,9 +17,20 @@ branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
 
+def _add_column_if_missing(table: str, column: sa.Column) -> None:
+    """Add a column, silently skipping if it already exists."""
+    try:
+        op.add_column(table, column)
+    except Exception:
+        pass
+
+
 def upgrade() -> None:
-    op.add_column("tickets", sa.Column("sla_deadline", sa.DateTime(), nullable=True))
-    op.add_column("tickets", sa.Column("sla_breached", sa.Boolean(), nullable=False, server_default=sa.text("0")))
+    _add_column_if_missing("tickets", sa.Column("sla_deadline", sa.DateTime(), nullable=True))
+    _add_column_if_missing(
+        "tickets",
+        sa.Column("sla_breached", sa.Boolean(), nullable=False, server_default=sa.text("0")),
+    )
 
 
 def downgrade() -> None:

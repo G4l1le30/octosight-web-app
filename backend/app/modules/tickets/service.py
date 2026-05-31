@@ -7,15 +7,19 @@ from sqlalchemy.orm import Session
 
 from app.core.exceptions import NotFoundException, BadRequestException, ForbiddenException
 from app.modules.tickets.repository import TicketRepository, AuditLogRepository
-from app.modules.notifications.service import send_email_notification
+from app.modules.notifications.service import send_email_notification, NotificationService
+from app.modules.activity.service import ActivityService
 from app.models.user import User
 from app.models.ticket import Ticket
 
 
 # Forward-only status progression
+# Need More Info is at level 1 (same as In Review) so it can cycle between
+# In Review and Need More Info without breaking forward-only guard.
 STATUS_ORDER: dict[str, int] = {
     "Submitted": 0,
     "In Review": 1,
+    "Need More Info": 1,
     "Confirmed": 2,
     "False Positive": 3,
     "Mitigated": 3,
@@ -118,6 +122,10 @@ class TicketService:
         if investigation_notes is not None:
             updates["investigation_notes"] = investigation_notes
 
+        # Set 24h SLA deadline when confirmed for mitigation
+        if status_changed and status == "Confirmed":
+            updates["sla_deadline"] = datetime.now(timezone.utc) + timedelta(hours=24)
+
         if updates:
             TicketRepository.update(db, ticket, **updates)
 
@@ -136,6 +144,13 @@ class TicketService:
                 old_status=old_status if status_changed else None,
                 new_status=status if status_changed else None,
                 notes=investigation_notes,
+            )
+
+        # Activity log for status change
+        if status_changed:
+            ActivityService.log_ticket_updated(
+                db, admin.id, ticket.ticket_id,
+                f"Status changed: {old_status} → {status} by {admin.full_name}",
             )
 
         # Email notification on status change
@@ -182,6 +197,10 @@ class TicketService:
             admin_id=admin.id,
             action_taken=f"Assigned to user {assigned_to}",
         )
+        ActivityService.log_ticket_updated(
+            db, admin.id, ticket.ticket_id,
+            f"Assigned to {assigned_to} by {admin.full_name}",
+        )
         return ticket
 
     @staticmethod
@@ -206,6 +225,11 @@ class TicketService:
             raise BadRequestException("No updates provided")
 
         count = TicketRepository.bulk_update(db, ticket_ids, **updates)
+        update_desc = ", ".join(f"{k}={v}" for k, v in updates.items())
+        ActivityService.log_ticket_updated(
+            db, admin.id, f"bulk:{len(ticket_ids)}",
+            f"Bulk update {len(ticket_ids)} tickets: {update_desc} by {admin.full_name}",
+        )
         return {"updated_count": count, "ticket_ids": ticket_ids}
 
     @staticmethod

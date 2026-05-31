@@ -132,6 +132,7 @@ export default function RegisterPage() {
           autoComplete="name"
           hasError={!!fieldErrors.fullName}
           errorText={fieldErrors.fullName || undefined}
+          disabled={loading}
         />
 
         <AuthInput
@@ -147,6 +148,7 @@ export default function RegisterPage() {
           autoComplete="email"
           hasError={!!fieldErrors.email}
           errorText={fieldErrors.email || undefined}
+          disabled={loading}
         />
 
         <AuthInput
@@ -162,6 +164,7 @@ export default function RegisterPage() {
           autoComplete="new-password"
           hasError={!!fieldErrors.password}
           errorText={fieldErrors.password || undefined}
+          disabled={loading}
         />
 
         <AuthInput
@@ -177,6 +180,7 @@ export default function RegisterPage() {
           autoComplete="new-password"
           hasError={!!fieldErrors.confirmPassword}
           errorText={fieldErrors.confirmPassword || undefined}
+          disabled={loading}
         />
 
         <Button

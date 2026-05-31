@@ -113,10 +113,12 @@ export default function ModuleDetailPage() {
           localStorage.removeItem(`octo_reading_article_id_${moduleId}`);
           localStorage.removeItem(`octo_reading_end_time_${moduleId}`);
 
-          // Mark as read
-          fetch(`/api/v1/education/articles/${savedArticleId}/read`, {
-            method: "POST"
-          }).catch(err => console.error("Failed to mark article as read:", err));
+          // Mark as read (only if logged in)
+          if (user) {
+            fetch(`/api/v1/education/articles/${savedArticleId}/read`, {
+              method: "POST"
+            }).catch(err => console.error("Failed to mark article as read:", err));
+          }
 
           if (mod) {
             // Check if it's already marked as read to prevent infinite state updates

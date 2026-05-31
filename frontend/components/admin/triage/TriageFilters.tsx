@@ -60,7 +60,9 @@ export const TriageFilters: React.FC<TriageFiltersProps> = ({
             {value: "All", label: "All Status"},
             {value: "Submitted", label: "Submitted"},
             {value: "In Review", label: "In Review"},
+            {value: "Need More Info", label: "Need More Info"},
             {value: "Confirmed", label: "Confirmed"},
+            {value: "False Positive", label: "False Positive"},
             {value: "Mitigated", label: "Mitigated"},
             {value: "Closed", label: "Closed"}
           ]}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import ReportSuccess from "@/components/report/ReportSuccess";
@@ -81,8 +81,34 @@ export default function ReportPage() {
     null,
   );
   const [analysisResult, setAnalysisResult] = useState<any>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const [incidentType, setIncidentType] = useState<IncidentType>("Website");
+
+  // Restore pending report data from localStorage on initial load
+  useEffect(() => {
+    try {
+      const savedData = localStorage.getItem('pendingReportData');
+      if (savedData) {
+        const parsedData = JSON.parse(savedData);
+        if (parsedData.confirmedData) {
+          setConfirmedData(parsedData.confirmedData);
+          setAnalysisResult(parsedData.analysisResult);
+          setIncidentType(parsedData.incidentType);
+          // Note: File objects can't be stored in localStorage, so user will need to reselect them
+          setScreenshotFile(null);
+          setAttachmentFile(null);
+          setScreenshotError(parsedData.screenshotError || false);
+          setIsConfirming(true);
+          // Clear the saved data after restoring
+          localStorage.removeItem('pendingReportData');
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to restore report data from localStorage:', e);
+      localStorage.removeItem('pendingReportData');
+    }
+  }, []);
 
   // Store raw File objects — no upload until final submit
   const [screenshotFile, setScreenshotFile] = useState<File | null>(null);
@@ -114,10 +140,6 @@ export default function ReportPage() {
    * Sends files directly as multipart so the backend can OCR them.
    */
   const onSubmit = async (data: ReportFormData) => {
-    if (!user) {
-      router.push("/login?redirect=/report");
-      return;
-    }
     if (!data.summary?.trim() && !screenshotFile) {
       form.setError("summary", {
         type: "manual",
@@ -128,8 +150,21 @@ export default function ReportPage() {
       return;
     }
 
+    if (!screenshotFile && data.summary && data.summary.trim().length < 50) {
+      form.setError("summary", {
+        type: "manual",
+        message:
+          "Please describe the incident in at least 50 characters for accurate analysis.",
+      });
+      setScreenshotError(true);
+      return;
+    }
+
     setScreenshotError(false);
     setLoading(true);
+
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
 
     try {
       const payload = new FormData();
@@ -150,6 +185,7 @@ export default function ReportPage() {
       const response = await fetch("/api/analyze", {
         method: "POST",
         body: payload,
+        signal: controller.signal,
       });
 
       if (!response.ok) throw new Error("Pre-analysis failed");
@@ -159,9 +195,11 @@ export default function ReportPage() {
       setConfirmedData(data);
       setIsConfirming(true);
     } catch (err: any) {
+      if (err.name === "AbortError") return;
       toast.error(err.message);
     } finally {
       setLoading(false);
+      abortControllerRef.current = null;
     }
   };
 
@@ -169,20 +207,36 @@ export default function ReportPage() {
    * Step 2 — Final submit (writes to DB + uploads files to Supabase on backend).
    * Files are sent as raw multipart; backend handles Supabase upload atomically.
    */
-  const handleFinalSubmit = async () => {
-    if (!confirmedData) return;
-    setLoading(true);
+   const handleFinalSubmit = async () => {
+     if (!confirmedData) return;
+     if (!user) {
+       // Save form data to localStorage before redirecting to login (exclude File objects)
+       const reportData = {
+         confirmedData,
+         analysisResult,
+         incidentType,
+         screenshotError
+       };
+       try {
+         localStorage.setItem('pendingReportData', JSON.stringify(reportData));
+       } catch (e) {
+         console.warn('Failed to save report data to localStorage:', e);
+       }
+       router.push("/login?redirect=/report");
+       return;
+     }
+     setLoading(true);
 
-    try {
-      const payload = new FormData();
-      payload.append("report_type", sanitizeText(incidentType));
-      payload.append("url", sanitizeText(confirmedData.url ?? ""));
-      payload.append("summary", sanitizeText(confirmedData.summary ?? ""));
-      payload.append("sender_numbers", sanitizeText(confirmedData.senderNumbers ?? ""));
-      payload.append("incident_date", sanitizeText(confirmedData.incidentDate));
-      payload.append("bank_name", sanitizeText(confirmedData.bankName ?? ""));
-      payload.append("bank_account", sanitizeText(confirmedData.bankAccount ?? ""));
-      payload.append("reference_number", sanitizeText(confirmedData.referenceNumber ?? ""));
+     try {
+       const payload = new FormData();
+       payload.append("report_type", sanitizeText(incidentType));
+       payload.append("url", sanitizeText(confirmedData.url ?? ""));
+       payload.append("summary", sanitizeText(confirmedData.summary ?? ""));
+       payload.append("sender_numbers", sanitizeText(confirmedData.senderNumbers ?? ""));
+       payload.append("incident_date", sanitizeText(confirmedData.incidentDate));
+       payload.append("bank_name", sanitizeText(confirmedData.bankName ?? ""));
+       payload.append("bank_account", sanitizeText(confirmedData.bankAccount ?? ""));
+       payload.append("reference_number", sanitizeText(confirmedData.referenceNumber ?? ""));
 
       // Attach raw files — backend uploads to Supabase then saves paths to DB
       if (screenshotFile)
@@ -205,6 +259,15 @@ export default function ReportPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCancel = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+    setLoading(false);
+    setAnalysisResult(null);
   };
 
   const handleReset = () => {
@@ -248,7 +311,7 @@ export default function ReportPage() {
       {loading && !isConfirming && (
         <div className="fixed inset-0 z-[100] bg-white/80 backdrop-blur-md flex items-center justify-center p-4 md:p-6">
           <div className="max-w-md w-full">
-            <ProcessingAnimation title="Scanning Evidence" />
+            <ProcessingAnimation title="Scanning Evidence" onCancel={handleCancel} />
           </div>
         </div>
       )}
@@ -262,21 +325,22 @@ export default function ReportPage() {
         </p>
       </div>
 
-      <ReportForm
-        form={form}
-        onSubmit={onSubmit}
-        loading={loading}
-        incidentType={incidentType}
-        setIncidentType={setIncidentType}
-        dynamic={dynamic}
-        screenshotFile={screenshotFile}
-        setScreenshotFile={setScreenshotFile}
-        screenshotError={screenshotError}
-        setScreenshotError={setScreenshotError}
-        attachmentFile={attachmentFile}
-        setAttachmentFile={setAttachmentFile}
-        getLocalISOString={getLocalISOString}
-      />
+        <ReportForm
+          form={form}
+          onSubmit={onSubmit}
+          loading={loading}
+          incidentType={incidentType}
+          setIncidentType={setIncidentType}
+          dynamic={dynamic}
+          screenshotFile={screenshotFile}
+          setScreenshotFile={setScreenshotFile}
+          screenshotError={screenshotError}
+          setScreenshotError={setScreenshotError}
+          attachmentFile={attachmentFile}
+          setAttachmentFile={setAttachmentFile}
+          getLocalISOString={getLocalISOString}
+          isConfirming={isConfirming}
+        />
     </div>
   );
 }

@@ -30,7 +30,7 @@ export const DashboardStatsCards: React.FC<DashboardStatsCardsProps> = ({ stats 
           color: "text-risk-low",
         },
       ].map((stat, idx) => (
-        <div key={idx} className="card p-4 md:p-6 border-b-4 border-b-primary/10">
+        <div key={idx} className="card p-4 md:p-6 border-b-4 border-b-primary/10 text-center">
           <p className="text-sm font-bold text-secondary mb-1 tracking-wide">
             {stat.label}
           </p>

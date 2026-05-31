@@ -96,3 +96,7 @@ def analyze_spam(text: str) -> dict:
         "category": str(prediction),
         "confidence": round(confidence, 2),
     }
+
+
+# Eager-load model at import time so first request is fast
+_load_model()

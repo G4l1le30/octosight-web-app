@@ -6,18 +6,24 @@ This file contains the new endpoints added in Phase 1:
 - Ticket assignment
 - Bulk operations
 - ML feedback collection
+- CSV export
 
 The legacy CRUD endpoints remain in api/endpoints/tickets.py
 for backward compatibility.
 """
 
+import csv
+import io
+
 from fastapi import APIRouter, Depends, BackgroundTasks
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
 from app.core.security import get_current_user, require_admin
 from app.core.exceptions import NotFoundException
 from app.db.session import get_db
 from app.models.user import User
+from app.models.ticket import Ticket
 from app.models.feedback import MLFeedback
 from app.schemas.ticket import (
     TicketAssign,
@@ -100,3 +106,41 @@ def submit_feedback(
         "feedback_id": feedback.id,
         "feedback_type": feedback.feedback_type,
     }
+
+
+@router.get("/export")
+def export_tickets_csv(
+    status: str = None,
+    priority: str = None,
+    db: Session = Depends(get_db),
+    _admin=Depends(require_admin),
+):
+    """Export filtered tickets as CSV (admin only)."""
+    query = db.query(Ticket)
+    if status and status != "All":
+        query = query.filter(Ticket.status == status)
+    if priority and priority != "All":
+        query = query.filter(Ticket.priority == priority)
+
+    tickets = query.order_by(Ticket.created_at.desc()).all()
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow([
+        "Ticket ID", "Type", "URL", "Status", "Priority", "Risk Score",
+        "Rule Score", "ML Score", "Flags", "Assigned To", "Summary",
+        "Created At", "Updated At",
+    ])
+    for t in tickets:
+        writer.writerow([
+            t.ticket_id, t.type, t.url, t.status, t.priority, t.risk_score,
+            t.rule_score, t.ml_score, t.flags, t.assigned_to,
+            (t.summary or "")[:200], t.created_at, t.updated_at,
+        ])
+
+    output.seek(0)
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=octosight_export.csv"},
+    )

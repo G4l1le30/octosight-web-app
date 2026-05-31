@@ -14,6 +14,13 @@ import { DownloadModal } from "@/components/admin/investigate/DownloadModal";
 import { InvestigateEvidence } from "@/components/admin/investigate/InvestigateEvidence";
 import { MitigationActions } from "@/components/admin/investigate/MitigationActions";
 import { AuditTrail } from "@/components/admin/investigate/AuditTrail";
+import {
+  ShieldCheck,
+  AlertTriangle,
+  AlertCircle,
+  CheckCircle,
+  BrainCircuit,
+} from "lucide-react";
 import { toast } from "sonner";
 
 export default function InvestigatePage({
@@ -30,6 +37,8 @@ export default function InvestigatePage({
   const [status, setStatus] = useState("");
   const [initialStatus, setInitialStatus] = useState("");
   const [actionLabel, setActionLabel] = useState("");
+  const [feedbackType, setFeedbackType] = useState<string | null>(null);
+  const [submittingFeedback, setSubmittingFeedback] = useState(false);
 
   const [showSaveConfirm, setShowSaveConfirm] = useState(false);
   const [auditLogs, setAuditLogs] = useState<TicketAuditLog[]>([]);
@@ -142,7 +151,8 @@ export default function InvestigatePage({
     }
   };
 
-  const hasChanges = notes !== initialNotes || status !== initialStatus || !!actionLabel;
+  const hasChanges =
+    notes !== initialNotes || status !== initialStatus || !!actionLabel;
 
   const handleUpdate = async () => {
     setShowSaveConfirm(false);
@@ -193,10 +203,34 @@ export default function InvestigatePage({
         isOpen: true,
         type: "error",
         title: "Connection Error",
-        message: err.message || "An error occurred while connecting to the server.",
+        message:
+          err.message || "An error occurred while connecting to the server.",
       });
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleSubmitFeedback = async () => {
+    if (!feedbackType) return;
+    setSubmittingFeedback(true);
+    try {
+      const res = await fetch(`/api/v1/tickets/${ticketId}/feedback`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ feedback_type: feedbackType }),
+      });
+      if (res.ok) {
+        toast.success("ML feedback submitted successfully.");
+        setFeedbackType(null);
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        toast.error(errData.detail || "Failed to submit ML feedback.");
+      }
+    } catch {
+      toast.error("Connection error while submitting ML feedback.");
+    } finally {
+      setSubmittingFeedback(false);
     }
   };
 
@@ -219,7 +253,9 @@ export default function InvestigatePage({
         ticketId={ticket.ticket_id}
         onSave={() => {
           if (!hasChanges) {
-            toast.error("No changes detected. Please modify the data before saving.");
+            toast.error(
+              "No changes detected. Please modify the data before saving.",
+            );
             return;
           }
           setShowSaveConfirm(true);
@@ -259,9 +295,84 @@ export default function InvestigatePage({
           />
         </div>
 
-        {/* Audit Trail — full width */}
-        <div className="lg:col-span-3">
+        {/* Audit Trail */}
+        <div className="lg:col-span-2">
           <AuditTrail logs={auditLogs} loading={auditLoading} />
+        </div>
+
+        {/* ML Feedback */}
+        <div className="lg:col-span-1">
+          <div className="card p-6 md:p-8 h-full flex flex-col">
+            <h3 className="text-lg md:text-xl font-bold text-secondary mb-4 md:mb-6">
+              ML Feedback
+            </h3>
+
+            <div className="flex gap-3 mb-4 text-sm">
+              <div className="flex-1 bg-gray-50 rounded-lg p-2 text-center">
+                <span className="text-gray-500 block text-xs">ML Score</span>
+                <span className="font-bold text-gray-800">
+                  {ticket.ml_score ?? "N/A"}
+                </span>
+              </div>
+              <div className="flex-1 bg-gray-50 rounded-lg p-2 text-center">
+                <span className="text-gray-500 block text-xs">Rule Score</span>
+                <span className="font-bold text-gray-800">
+                  {ticket.rule_score ?? "N/A"}
+                </span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 mb-4">
+              <button
+                onClick={() => setFeedbackType("tp")}
+                className={`flex flex-col items-center gap-1 p-3 rounded-lg border-2 text-xs font-medium transition-all ${
+                  feedbackType === "tp"
+                    ? "border-green-500 ring-2 ring-green-200 bg-green-50 text-green-700"
+                    : "border-gray-200 text-gray-600 hover:border-green-300 hover:bg-green-50/50"
+                }`}
+              >
+                Correct - Phishing
+              </button>
+              <button
+                onClick={() => setFeedbackType("fp")}
+                className={`flex flex-col items-center gap-1 p-3 rounded-lg border-2 text-xs font-medium transition-all ${
+                  feedbackType === "fp"
+                    ? "border-amber-500 ring-2 ring-amber-200 bg-amber-50 text-amber-700"
+                    : "border-gray-200 text-gray-600 hover:border-amber-300 hover:bg-amber-50/50"
+                }`}
+              >
+                False Alarm
+              </button>
+              <button
+                onClick={() => setFeedbackType("fn")}
+                className={`flex flex-col items-center gap-1 p-3 rounded-lg border-2 text-xs font-medium transition-all ${
+                  feedbackType === "fn"
+                    ? "border-red-500 ring-2 ring-red-200 bg-red-50 text-red-700"
+                    : "border-gray-200 text-gray-600 hover:border-red-300 hover:bg-red-50/50"
+                }`}
+              >
+                Missed Phishing
+              </button>
+              <button
+                onClick={() => setFeedbackType("tn")}
+                className={`flex flex-col items-center gap-1 p-3 rounded-lg border-2 text-xs font-medium transition-all ${
+                  feedbackType === "tn"
+                    ? "border-blue-500 ring-2 ring-blue-200 bg-blue-50 text-blue-700"
+                    : "border-gray-200 text-gray-600 hover:border-blue-300 hover:bg-blue-50/50"
+                }`}
+              >
+                Correct - Safe
+              </button>
+            </div>
+
+            <button
+              onClick={handleSubmitFeedback}
+              disabled={!feedbackType || submittingFeedback}
+              className="w-full py-2 px-4 rounded-lg text-sm font-medium transition-all bg-gray-900 text-white hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {submittingFeedback ? "Saving..." : "Submit Feedback"}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -299,7 +410,9 @@ export default function InvestigatePage({
 
       <StatusModal
         {...modalConfig}
-        buttonText={modalConfig.type === "success" ? "Back to Triage" : "Dismiss"}
+        buttonText={
+          modalConfig.type === "success" ? "Back to Triage" : "Dismiss"
+        }
         onClose={() => {
           if (modalConfig.type === "success") {
             toast.success(`Ticket ${ticketId} has been updated successfully.`);

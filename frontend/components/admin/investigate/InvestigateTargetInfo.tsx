@@ -26,11 +26,11 @@ export const InvestigateTargetInfo: React.FC<InvestigateTargetInfoProps> = ({
         </div>
         <div className="text-right">
           <h3 className="text-lg font-bold text-secondary">Risk Score</h3>
-          <p
-            className={`text-3xl md:text-4xl font-bold ${ticket.risk_score >= 80 ? "text-risk-high" : ticket.risk_score >= 50 ? "text-risk-medium" : "text-risk-low"}`}
-          >
-            {ticket.risk_score.toFixed(0)}
-          </p>
+           <p
+             className={`text-3xl md:text-4xl font-bold ${ticket.risk_score >= 75 ? "text-risk-high" : ticket.risk_score >= 35 ? "text-risk-medium" : "text-risk-low"}`}
+           >
+             {ticket.risk_score.toFixed(0)}
+           </p>
         </div>
       </div>
 

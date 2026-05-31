@@ -2,7 +2,7 @@
 
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class BlacklistURLCreate(BaseModel):
@@ -35,6 +35,8 @@ class BlacklistCheckRequest(BaseModel):
 
 
 class BlacklistEntryResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     value: str
     reason: Optional[str] = None
@@ -42,6 +44,3 @@ class BlacklistEntryResponse(BaseModel):
     added_by: Optional[str] = None
     is_active: bool
     created_at: str
-
-    class Config:
-        from_attributes = True

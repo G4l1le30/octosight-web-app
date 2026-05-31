@@ -53,6 +53,12 @@ const Navbar: React.FC = () => {
                 Triage
               </Link>
               <Link
+                href="/admin/kanban"
+                className={getLinkClass("/admin/kanban")}
+              >
+                Kanban
+              </Link>
+              <Link
                 href="/admin/blacklist"
                 className={getLinkClass("/admin/blacklist")}
               >
@@ -63,6 +69,18 @@ const Navbar: React.FC = () => {
                 className={getLinkClass("/admin/rule-config")}
               >
                 Rules
+              </Link>
+              <Link
+                href="/admin/ml"
+                className={getLinkClass("/admin/ml")}
+              >
+                ML
+              </Link>
+              <Link
+                href="/admin/triggers"
+                className={getLinkClass("/admin/triggers")}
+              >
+                Triggers
               </Link>
               <Link
                 href="/admin/users"
@@ -87,6 +105,9 @@ const Navbar: React.FC = () => {
               </Link>
               <Link href="/edu" className={getLinkClass("/edu")}>
                 E-Learning
+              </Link>
+              <Link href="/gamification" className={getLinkClass("/gamification")}>
+                Achievements
               </Link>
             </>
           )}

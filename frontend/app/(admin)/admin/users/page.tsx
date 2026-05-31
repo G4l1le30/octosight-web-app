@@ -127,11 +127,17 @@ export default function AdminUsersPage() {
   const roleBadge = (role: string) => {
     const styles: Record<string, string> = {
       admin: "bg-amber-100 text-amber-800 border-amber-200",
-      moderator: "bg-blue-100 text-blue-800 border-blue-200",
+      investigator: "bg-purple-100 text-purple-800 border-purple-200",
+      analyst: "bg-blue-100 text-blue-800 border-blue-200",
+      cs: "bg-emerald-100 text-emerald-800 border-emerald-200",
+      moderator: "bg-sky-100 text-sky-800 border-sky-200",
       user: "bg-gray-100 text-gray-700 border-gray-200",
     };
     const icons: Record<string, React.ReactNode> = {
       admin: <ShieldCheck className="size-3.5" />,
+      investigator: <Shield className="size-3.5" />,
+      analyst: <Shield className="size-3.5" />,
+      cs: <Shield className="size-3.5" />,
       moderator: <Shield className="size-3.5" />,
       user: <UserCog className="size-3.5" />,
     };
@@ -331,6 +337,9 @@ export default function AdminUsersPage() {
                 }
                 options={[
                   { value: "user", label: "User" },
+                  { value: "cs", label: "Customer Service" },
+                  { value: "analyst", label: "Analyst" },
+                  { value: "investigator", label: "Investigator" },
                   { value: "moderator", label: "Moderator" },
                   { value: "admin", label: "Admin" },
                 ]}

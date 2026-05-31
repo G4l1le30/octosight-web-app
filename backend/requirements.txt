@@ -28,3 +28,4 @@ slowapi
 fastapi-mail
 jinja2
 supabase==2.30.0
+redis[hiredis]

@@ -11,6 +11,11 @@ from app.api.v1 import rule_config
 from app.api.v1 import notifications
 from app.api.v1 import activity
 from app.api.v1 import users
+from app.api.v1 import transactions
+from app.api.v1 import similarity
+from app.api.v1 import gamification
+from app.api.v1 import ml
+from app.api.v1 import triggers
 
 v1_router = APIRouter(prefix="/api/v1")
 
@@ -21,3 +26,8 @@ v1_router.include_router(rule_config.router)
 v1_router.include_router(notifications.router)
 v1_router.include_router(activity.router)
 v1_router.include_router(users.router)
+v1_router.include_router(transactions.router)
+v1_router.include_router(similarity.router)
+v1_router.include_router(gamification.router)
+v1_router.include_router(ml.router)
+v1_router.include_router(triggers.router)

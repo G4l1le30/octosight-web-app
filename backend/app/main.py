@@ -229,26 +229,28 @@ def _seed_db(db) -> None:
     # Mock bank transactions
     if db.query(MockBankTransaction).filter(MockBankTransaction.reference_number == "OCTO-REF-001").count() == 0:
         db.query(MockBankTransaction).delete()
-        mock_txs = [
-            MockBankTransaction(
-                reference_number="OCTO-REF-001", sender_name="Budi CIMB User",
-                sender_account="706123456789", sender_bank="CIMB NIAGA",
-                receiver_account="704987654321", receiver_bank="CIMB NIAGA",
-                amount=500000.0,
-            ),
-            MockBankTransaction(
-                reference_number="OCTO-REF-002", sender_name="Siti Niaga",
-                sender_account="701234555111", sender_bank="CIMB NIAGA",
-                receiver_account="704987654321", receiver_bank="CIMB NIAGA",
-                amount=1250000.0,
-            ),
-            MockBankTransaction(
-                reference_number="OCTO-REF-003", sender_name="Dedi Oktoman",
-                sender_account="705556667770", sender_bank="CIMB NIAGA",
-                receiver_account="704987654321", receiver_bank="CIMB NIAGA",
-                amount=200000.0,
-            ),
-        ]
+        import random
+        from datetime import timedelta
+        names = ["Budi Santoso", "Siti Rahayu", "Dedi Oktoman", "Rina Wati", "Andi Prasetyo",
+                 "Maya Sari", "Joko Widodo", "Dewi Lestari", "Rudi Hermawan", "Nina Agustina",
+                 "Ahmad Fauzi", "Lina Marlina", "Bambang Pamungkas", "Sri Mulyani", "Hendra Wijaya",
+                 "Putri Aurelia", "Deni Kurniawan", "Ratna Sari", "Fajar Nugroho", "Ana Widyasari",
+                 "Tono Sugiarto", "Wati Susilawati", "Agus Setiawan", "Rini Handayani", "Didik Sunaryo"]
+        banks = ["CIMB NIAGA", "BCA", "BRI", "BNI", "MANDIRI", "CIMB NIAGA Virtual Account"]
+        mock_txs = []
+        now = datetime.now(timezone.utc)
+        for i in range(60):
+            sender = random.choice(names)
+            mock_txs.append(MockBankTransaction(
+                reference_number=f"OCTO-REF-{i+1:03d}",
+                sender_name=sender,
+                sender_account=f"70{random.randint(100000000, 999999999)}",
+                sender_bank=random.choice(banks),
+                receiver_account=f"70{random.randint(100000000, 999999999)}",
+                receiver_bank="CIMB NIAGA",
+                amount=round(random.uniform(10000, 5000000), 2),
+                transaction_date=now - timedelta(days=random.randint(0, 90), hours=random.randint(0, 23)),
+            ))
         db.add_all(mock_txs)
         db.commit()
         print(f"[Seed] {len(mock_txs)} mock CIMB transactions created/updated")
@@ -316,7 +318,26 @@ async def lifespan(app: FastAPI):
     if retries == 0:
         print("[Startup] ERROR: Could not connect to database after 10 retries.")
 
+    # Start background URL scanner
+    try:
+        from app.core.scanner import start_scanner
+        start_scanner()
+    except Exception as e:
+        print(f"[Startup] Scanner not started: {e}")
+
     yield
+
+    # Shutdown: stop scanner + close Redis
+    try:
+        from app.core.scanner import stop_scanner
+        stop_scanner()
+    except Exception:
+        pass
+    try:
+        from app.core.cache import close_redis
+        await close_redis()
+    except Exception:
+        pass
 
 
 # ── App Factory ──────────────────────────────────────────────────────────────

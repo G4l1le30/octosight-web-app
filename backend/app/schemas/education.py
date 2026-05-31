@@ -3,10 +3,12 @@
 from typing import Any, Optional
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class EducationArticleRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: str
     title: str
     url: str
@@ -16,11 +18,10 @@ class EducationArticleRead(BaseModel):
     description: Optional[str] = None
     is_read: bool = False
 
-    class Config:
-        from_attributes = True
-
 
 class EducationModuleRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: str
     title: str
     level: str
@@ -28,9 +29,6 @@ class EducationModuleRead(BaseModel):
     description: str
     duration_mins: int
     articles: list[EducationArticleRead] = []
-
-    class Config:
-        from_attributes = True
 
 
 class EducationModuleCreate(BaseModel):
@@ -42,15 +40,14 @@ class EducationModuleCreate(BaseModel):
 
 
 class QuizAttemptRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     score: float
     passed: bool
     attempt_number: int
     created_at: datetime
     details: Optional[str] = None
-
-    class Config:
-        from_attributes = True
 
 
 class EducationModuleWithProgress(EducationModuleRead):
@@ -71,6 +68,8 @@ class UserLearningProgressUpdate(BaseModel):
 
 
 class UserLearningProgressRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     user_id: str
     module_id: str
@@ -78,9 +77,6 @@ class UserLearningProgressRead(BaseModel):
     quiz_score: Optional[float] = None
     quiz_attempts: int
     completed_at: Optional[datetime] = None
-
-    class Config:
-        from_attributes = True
 
 
 class QuizQuestion(BaseModel):

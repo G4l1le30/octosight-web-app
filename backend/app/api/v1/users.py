@@ -73,8 +73,8 @@ def update_user(
         raise NotFoundException("User not found")
 
     if body.role is not None:
-        if body.role not in ("user", "moderator", "admin"):
-            raise BadRequestException("Invalid role. Must be user, moderator, or admin")
+        if body.role not in ("user", "cs", "analyst", "investigator", "moderator", "admin"):
+            raise BadRequestException("Invalid role")
         user.role = body.role
 
     if body.full_name is not None:

@@ -2,7 +2,7 @@
 
 from typing import Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 import re
 
 
@@ -35,13 +35,12 @@ class GoogleLoginRequest(BaseModel):
 
 
 class UserResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: str
     full_name: str
     email: str
     role: str
-
-    class Config:
-        from_attributes = True
 
 
 class TokenResponse(BaseModel):

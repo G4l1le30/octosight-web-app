@@ -39,12 +39,18 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 # Role hierarchy (higher number = more privilege)
 class Role(IntEnum):
     USER = 0
+    CS = 1
+    ANALYST = 2
+    INVESTIGATOR = 3
     MODERATOR = 5
     ADMIN = 10
 
 
 ROLE_HIERARCHY: dict[str, int] = {
     "user": Role.USER,
+    "cs": Role.CS,
+    "analyst": Role.ANALYST,
+    "investigator": Role.INVESTIGATOR,
     "moderator": Role.MODERATOR,
     "admin": Role.ADMIN,
 }

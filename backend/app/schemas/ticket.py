@@ -3,10 +3,12 @@
 from datetime import datetime
 from typing import Any, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class TicketResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     ticket_id: Optional[str] = None
     url: Optional[str] = None
@@ -36,9 +38,6 @@ class TicketResponse(BaseModel):
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
-    class Config:
-        from_attributes = True
-
 
 class TicketUpdate(BaseModel):
     status: Optional[str] = None
@@ -59,6 +58,8 @@ class BulkTicketUpdate(BaseModel):
 
 
 class AuditLogResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     ticket_id: str
     admin_id: Optional[str] = None
@@ -67,9 +68,6 @@ class AuditLogResponse(BaseModel):
     new_status: Optional[str] = None
     notes: Optional[str] = None
     created_at: datetime
-
-    class Config:
-        from_attributes = True
 
 
 class TicketFeedbackCreate(BaseModel):

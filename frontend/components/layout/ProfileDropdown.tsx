@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { AuthUser } from "@/types/auth";
+import { AuthUser, ROLE_BADGE_COLORS } from "@/types/auth";
 
 interface ProfileDropdownProps {
   user: AuthUser;
@@ -22,6 +22,9 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
     setProfileOpen(false);
     window.location.href = "/";
   };
+
+  const badgeColor = ROLE_BADGE_COLORS[user.role] ?? "bg-neutral-border text-secondary/60";
+  const roleLabel = user.role.toUpperCase();
 
   return (
     <div className="self-center relative">
@@ -66,24 +69,18 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
                 {user.email}
               </p>
               <span
-                className={`inline-block mt-2 text-[11px] font-bold px-2 py-0.5 rounded ${
-                  user.role === "admin"
-                    ? "bg-primary/10 text-primary"
-                    : "bg-neutral-border text-secondary/60"
-                }`}
+                className={`inline-block mt-2 text-[11px] font-bold px-2 py-0.5 rounded ${badgeColor}`}
               >
-                {user.role.toUpperCase()}
+                {roleLabel}
               </span>
             </div>
-            {user.role === "admin" && (
-              <Link
-                href={isAdminRoute ? "/" : "/admin"}
-                onClick={() => setProfileOpen(false)}
-                className="block px-4 py-2.5 text-sm font-bold text-secondary hover:bg-neutral-page transition-colors"
-              >
-                {isAdminRoute ? "User Page" : "Admin Dashboard"}
-              </Link>
-            )}
+            <Link
+              href={isAdminRoute ? "/" : "/admin"}
+              onClick={() => setProfileOpen(false)}
+              className="block px-4 py-2.5 text-sm font-bold text-secondary hover:bg-neutral-page transition-colors"
+            >
+              {isAdminRoute ? "User Page" : "Admin Dashboard"}
+            </Link>
             <button
               onClick={handleLogout}
               className="w-full text-left px-4 py-2.5 text-sm font-bold text-risk-high hover:bg-risk-high/5 transition-colors"

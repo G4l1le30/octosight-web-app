@@ -11,6 +11,7 @@ from app.api.v1 import rule_config
 from app.api.v1 import notifications
 from app.api.v1 import activity
 from app.api.v1 import users
+from app.api.v1 import rbac
 
 v1_router = APIRouter(prefix="/api/v1")
 
@@ -21,3 +22,4 @@ v1_router.include_router(rule_config.router)
 v1_router.include_router(notifications.router)
 v1_router.include_router(activity.router)
 v1_router.include_router(users.router)
+v1_router.include_router(rbac.router)

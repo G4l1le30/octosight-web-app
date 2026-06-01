@@ -5,6 +5,7 @@ import Link from "next/link";
 import React from "react";
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
+import { usePermissions } from "@/hooks/usePermissions";
 
 export default function AdminLayout({
   children,
@@ -71,8 +72,11 @@ export default function AdminLayout({
     );
   }
 
-  // Authenticated but NOT admin — access denied
-  if (user.role !== "admin") {
+  // Check permission rather than exact role
+  const { can } = usePermissions();
+
+  // Authenticated but no dashboard access — access denied
+  if (!can("dashboard.view")) {
     return (
       <div className="min-h-screen bg-neutral-page flex items-center justify-center px-4">
         <div className="max-w-md w-full bg-white rounded-2xl shadow-2xl p-10 text-center">

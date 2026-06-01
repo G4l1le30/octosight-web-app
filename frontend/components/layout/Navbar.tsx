@@ -6,9 +6,11 @@ import { useAuth } from "@/lib/auth-context";
 import { usePathname } from "next/navigation";
 import { ProfileDropdown } from "./ProfileDropdown";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
+import { usePermissions } from "@/hooks/usePermissions";
 
 const Navbar: React.FC = () => {
   const { user, loading, logout } = useAuth();
+  const { can } = usePermissions();
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
 
@@ -242,7 +244,7 @@ const Navbar: React.FC = () => {
                     <p className="text-xs text-secondary/60">{user.email}</p>
                   </div>
                 </div>
-                {user.role === "admin" && (
+                {can("dashboard.view") && (
                   <Link
                     href={isAdminRoute ? "/" : "/admin"}
                     onClick={() => setMobileOpen(false)}

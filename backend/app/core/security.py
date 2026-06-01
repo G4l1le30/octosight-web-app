@@ -1,12 +1,14 @@
 """
 auth.py — JWT token generation, password hashing, and FastAPI dependencies.
 
-get_current_user  : resolves authenticated user from httpOnly cookie
-require_admin     : extends get_current_user, enforces admin role
-require_moderator : extends get_current_user, enforces role >= moderator
+get_current_user      : resolves authenticated user from httpOnly cookie
+require_admin         : extends get_current_user, enforces admin role
+require_permission    : factory: returns a dependency that checks a specific permission code
+require_any_role      : factory: returns a dependency that checks for any of the listed roles
 """
 
 from enum import IntEnum
+from typing import List
 
 import os
 
@@ -20,6 +22,7 @@ from slowapi.util import get_remote_address
 
 from app.db.session import get_db
 from app.models.models import User
+from app.models.permission import RolePermission
 
 # ── Configuration ─────────────────────────────────────────────────────────────
 
@@ -38,13 +41,21 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # Role hierarchy (higher number = more privilege)
 class Role(IntEnum):
+    VIEWER = -1
     USER = 0
+    CS = 1
+    ANALYST = 2
+    INVESTIGATOR = 3
     MODERATOR = 5
     ADMIN = 10
 
 
 ROLE_HIERARCHY: dict[str, int] = {
+    "viewer": Role.VIEWER,
     "user": Role.USER,
+    "cs": Role.CS,
+    "analyst": Role.ANALYST,
+    "investigator": Role.INVESTIGATOR,
     "moderator": Role.MODERATOR,
     "admin": Role.ADMIN,
 }
@@ -123,17 +134,54 @@ def require_admin(current_user: User = Depends(get_current_user)) -> User:
     return current_user
 
 
-def require_moderator(current_user: User = Depends(get_current_user)) -> User:
+def require_permission(permission_code: str):
     """
-    Extend get_current_user to enforce role >= moderator.
+    Factory: returns a FastAPI dependency that checks whether the current user
+    has a specific permission code assigned via their role.
 
-    Allows users with role 'moderator' or 'admin'.
-    Raises 403 for regular 'user' role.
+    Usage:
+        @router.get("/tickets")
+        def list_tickets(_=Depends(require_permission("tickets.view"))):
+            ...
+
+    Admin users bypass the check.
     """
-    user_level = ROLE_HIERARCHY.get(current_user.role, 0)
-    if user_level < Role.MODERATOR:
-        raise HTTPException(status_code=403, detail="Moderator or admin access required")
-    return current_user
+    def _checker(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)) -> User:
+        if current_user.role == "admin":
+            return current_user
+        perm = db.query(RolePermission).join(RolePermission.permission).filter(
+            RolePermission.role == current_user.role,
+            RolePermission.permission.has(code=permission_code),
+        ).first()
+        if not perm:
+            raise HTTPException(
+                status_code=403,
+                detail=f"Missing required permission: {permission_code}",
+            )
+        return current_user
+    return _checker
+
+
+def require_any_role(roles: List[str]):
+    """
+    Factory: returns a FastAPI dependency that checks if the current user has
+    any of the listed roles.
+
+    Usage:
+        @router.get("/something")
+        def do_something(_=Depends(require_any_role(["admin", "investigator"]))):
+            ...
+
+    Returns 403 if the user's role is not in the list.
+    """
+    def _checker(current_user: User = Depends(get_current_user)) -> User:
+        if current_user.role not in roles:
+            raise HTTPException(
+                status_code=403,
+                detail=f"Access restricted to roles: {', '.join(roles)}",
+            )
+        return current_user
+    return _checker
 
 
 def get_optional_user(request: Request, db: Session = Depends(get_db)) -> User | None:

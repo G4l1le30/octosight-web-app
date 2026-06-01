@@ -150,7 +150,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (response.ok) {
-        const data = await response.json();
+        const data: AuthUser = await response.json();
+        const permRes = await fetch("/api/v1/auth/my-permissions", {
+          credentials: "include",
+          headers: { "Accept": "application/json" },
+        });
+        if (permRes.ok) {
+          const permData = await permRes.json();
+          data.permissions = permData.permissions;
+        }
         setUser(data);
         return data;
       } else {

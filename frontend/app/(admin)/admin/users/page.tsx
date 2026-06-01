@@ -7,9 +7,6 @@ import { useRouter } from "next/navigation";
 import {
   Users,
   Edit2,
-  Shield,
-  ShieldCheck,
-  UserCog,
   Save,
   X,
   Loader2,
@@ -20,6 +17,9 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { formatDateTime } from "@/lib/utils";
+import { ROLE_BADGE_COLORS, type UserRole } from "@/types/auth";
+import { usePermissions } from "@/hooks/usePermissions";
+import { PermissionGate } from "@/components/ui/PermissionGate";
 
 interface AdminUser {
   id: number;
@@ -39,6 +39,7 @@ interface EditForm {
 
 export default function AdminUsersPage() {
   const router = useRouter();
+  const { can } = usePermissions();
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -125,24 +126,14 @@ export default function AdminUsersPage() {
   };
 
   const roleBadge = (role: string) => {
-    const styles: Record<string, string> = {
-      admin: "bg-amber-100 text-amber-800 border-amber-200",
-      moderator: "bg-blue-100 text-blue-800 border-blue-200",
-      user: "bg-gray-100 text-gray-700 border-gray-200",
-    };
-    const icons: Record<string, React.ReactNode> = {
-      admin: <ShieldCheck className="size-3.5" />,
-      moderator: <Shield className="size-3.5" />,
-      user: <UserCog className="size-3.5" />,
-    };
+    const color = ROLE_BADGE_COLORS[role as UserRole] ?? "bg-gray-100 text-gray-700";
     return (
       <span
         className={cn(
-          "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border",
-          styles[role] || "bg-gray-100 text-gray-700 border-gray-200",
+          "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold",
+          color,
         )}
       >
-        {icons[role] || null}
         {role.charAt(0).toUpperCase() + role.slice(1)}
       </span>
     );
@@ -273,14 +264,16 @@ export default function AdminUsersPage() {
                         </span>
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => openEditModal(user)}
-                          leftIcon={<Edit2 className="size-3.5" />}
-                        >
-                          Edit
-                        </Button>
+                        <PermissionGate permission="users.update_role">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openEditModal(user)}
+                            leftIcon={<Edit2 className="size-3.5" />}
+                          >
+                            Edit
+                          </Button>
+                        </PermissionGate>
                       </td>
                     </tr>
                   ))}
@@ -330,7 +323,11 @@ export default function AdminUsersPage() {
                   setForm({ ...form, role: e.target.value })
                 }
                 options={[
+                  { value: "viewer", label: "Viewer" },
                   { value: "user", label: "User" },
+                  { value: "cs", label: "Customer Service" },
+                  { value: "analyst", label: "Analyst" },
+                  { value: "investigator", label: "Investigator" },
                   { value: "moderator", label: "Moderator" },
                   { value: "admin", label: "Admin" },
                 ]}

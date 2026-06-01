@@ -31,6 +31,8 @@ from app.models import (
     BlacklistedEmail,
     TicketAuditLog,
     RuleConfig,
+    Permission,
+    RolePermission,
 )
 from app.core.email_validation import (
     EmailValidationError,
@@ -282,6 +284,156 @@ def _seed_db(db) -> None:
 
     # Rule config defaults
     RuleConfigService.seed_default_rules(db)
+
+    # ── Permissions & role mappings ────────────────────────────────────────────
+    if db.query(Permission).count() == 0:
+        perm_defs = {
+            # dashboard
+            "dashboard.view": "View main dashboard",
+            "dashboard.view_team": "View team-level dashboard stats",
+            # tickets
+            "tickets.view": "View ticket list and details",
+            "tickets.create": "Submit a new report / ticket",
+            "tickets.update_status": "Change ticket status",
+            "tickets.assign": "Assign ticket to a user",
+            "tickets.comment": "Add comments to a ticket",
+            "tickets.bulk_update": "Perform bulk status updates",
+            "tickets.export": "Export tickets to CSV",
+            # investigate
+            "investigate.view": "View investigation details",
+            "investigate.update_notes": "Update investigation notes",
+            "investigate.update_status": "Change investigation status",
+            "investigate.generate_notes": "Generate AI-based notes",
+            # blacklist
+            "blacklist.view": "View blacklist entries",
+            "blacklist.add": "Add entry to blacklist",
+            "blacklist.remove": "Remove entry from blacklist",
+            # rules
+            "rules.view": "View detection rules",
+            "rules.create": "Create new detection rule",
+            "rules.update": "Edit existing detection rule",
+            "rules.deactivate": "Deactivate a detection rule",
+            # ml
+            "ml.view_stats": "View ML model stats and charts",
+            "ml.submit_feedback": "Submit feedback on ML predictions",
+            "ml.retrain": "Trigger ML model retraining",
+            # users
+            "users.view": "View user list",
+            "users.update_role": "Change user roles",
+            "users.activate_deactivate": "Activate or deactivate users",
+            # transactions
+            "transactions.view": "View mock transactions",
+            "transactions.create": "Add new transaction",
+            "transactions.delete": "Delete a transaction",
+            "transactions.analyze": "Run anomaly analysis on transactions",
+            # education
+            "education.view": "View education modules and articles",
+            "education.complete_modules": "Complete education modules",
+            "education.manage_content": "Create/edit/delete education content",
+            # notifications
+            "notifications.view_own": "View own notifications",
+            "notifications.manage_channels": "Configure notification channels",
+        }
+
+        perm_objects = {}
+        for code, desc in perm_defs.items():
+            p = Permission(code=code, description=desc)
+            db.add(p)
+            perm_objects[code] = p
+        db.flush()
+
+        # Role → permission mappings
+        role_perms = {
+            "user": [
+                "education.view",
+                "education.complete_modules",
+                "tickets.create",
+                "notifications.view_own",
+            ],
+            "cs": [
+                "education.view",
+                "education.complete_modules",
+                "tickets.view",
+                "tickets.comment",
+                "notifications.view_own",
+            ],
+            "analyst": [
+                "dashboard.view",
+                "tickets.view",
+                "tickets.assign",
+                "tickets.comment",
+                "investigate.view",
+                "investigate.comment",
+                "ml.submit_feedback",
+                "education.view",
+                "education.complete_modules",
+                "rules.view",
+                "notifications.view_own",
+            ],
+            "investigator": [
+                "dashboard.view",
+                "tickets.view",
+                "tickets.assign",
+                "tickets.comment",
+                "investigate.view",
+                "investigate.update_notes",
+                "investigate.update_status",
+                "blacklist.view",
+                "blacklist.add",
+                "transactions.view",
+                "transactions.analyze",
+                "education.view",
+                "education.complete_modules",
+                "rules.view",
+                "ml.submit_feedback",
+                "notifications.view_own",
+            ],
+            "moderator": [
+                "dashboard.view",
+                "dashboard.view_team",
+                "tickets.view",
+                "tickets.assign",
+                "tickets.comment",
+                "tickets.bulk_update",
+                "tickets.export",
+                "investigate.view",
+                "investigate.update_notes",
+                "investigate.update_status",
+                "investigate.generate_notes",
+                "blacklist.view",
+                "blacklist.add",
+                "blacklist.remove",
+                "rules.view",
+                "rules.create",
+                "rules.update",
+                "rules.deactivate",
+                "ml.view_stats",
+                "ml.submit_feedback",
+                "transactions.view",
+                "transactions.analyze",
+                "education.view",
+                "education.complete_modules",
+                "notifications.view_own",
+                "notifications.manage_channels",
+            ],
+            "viewer": [
+                "dashboard.view",
+                "tickets.view",
+                "investigate.view",
+                "blacklist.view",
+                "rules.view",
+                "ml.view_stats",
+                "transactions.view",
+                "education.view",
+            ],
+        }
+
+        for role, perm_codes in role_perms.items():
+            for code in perm_codes:
+                if code in perm_objects:
+                    db.add(RolePermission(role=role, permission_id=perm_objects[code].id))
+        db.commit()
+        print(f"[Seed] {len(perm_defs)} permissions created with role mappings")
 
 
 # ── Lifespan ────────────────────────────────────────────────────────────────

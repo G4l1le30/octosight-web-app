@@ -40,6 +40,7 @@ from app.core.security import (
 )
 from app.db.session import get_db
 from app.models.models import User, PendingRegistration
+from app.models.permission import Permission, RolePermission
 from app.schemas.schemas import LoginRequest, RegisterRequest, UserResponse, GoogleLoginRequest
 from fastapi import Request
 from app.modules.notifications.service import send_email_notification
@@ -267,6 +268,26 @@ def get_me(current_user: User = Depends(get_current_user)):
         email=current_user.email,
         role=current_user.role,
     )
+
+
+@router.get("/my-permissions", summary="Get current user's effective permissions")
+def get_my_permissions(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Return the current user's effective permission codes."""
+    if current_user.role == "admin":
+        perms = db.query(Permission).order_by(Permission.code).all()
+        return {"role": current_user.role, "permissions": [p.code for p in perms]}
+
+    role_perms = (
+        db.query(Permission)
+        .join(RolePermission)
+        .filter(RolePermission.role == current_user.role)
+        .order_by(Permission.code)
+        .all()
+    )
+    return {"role": current_user.role, "permissions": [p.code for p in role_perms]}
 
 
 @router.post("/logout", summary="Clear auth cookie")

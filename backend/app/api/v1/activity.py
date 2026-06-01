@@ -3,7 +3,7 @@
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
-from app.core.security import require_admin
+from app.core.security import require_permission
 from app.db.session import get_db
 from app.modules.activity.service import ActivityService
 
@@ -16,7 +16,7 @@ def list_activity(
     per_page: int = Query(50, ge=1, le=100),
     type: str = Query(None, alias="type"),
     db: Session = Depends(get_db),
-    _admin=Depends(require_admin),
+    _=Depends(require_permission("dashboard.view")),
 ):
-    """Paginated activity feed (admin only)."""
+    """Paginated activity feed."""
     return ActivityService.list_activity(db, page, per_page, type)

@@ -15,11 +15,11 @@ for backward compatibility.
 import csv
 import io
 
-from fastapi import APIRouter, Depends, BackgroundTasks
+from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
-from app.core.security import get_current_user, require_admin
+from app.core.security import require_permission
 from app.core.exceptions import NotFoundException
 from app.db.session import get_db
 from app.models.user import User
@@ -45,9 +45,9 @@ def list_tickets(
     priority: str = None,
     assigned_to: str = None,
     db: Session = Depends(get_db),
-    _admin=Depends(require_admin),
+    _=Depends(require_permission("tickets.view")),
 ):
-    """Paginated ticket listing with filters (admin only)."""
+    """Paginated ticket listing with filters."""
     return TicketService.list_tickets(
         db, page, per_page, sort_by, sort_dir, status, priority, assigned_to
     )
@@ -58,10 +58,10 @@ def assign_ticket(
     ticket_id: str,
     data: TicketAssign,
     db: Session = Depends(get_db),
-    admin: User = Depends(require_admin),
+    current_user: User = Depends(require_permission("tickets.assign")),
 ):
-    """Assign a ticket to a user (admin only)."""
-    ticket = TicketService.assign_ticket(db, ticket_id, data.assigned_to, admin)
+    """Assign a ticket to a user."""
+    ticket = TicketService.assign_ticket(db, ticket_id, data.assigned_to, current_user)
     return {"status": "assigned", "ticket_id": ticket.ticket_id, "assigned_to": ticket.assigned_to}
 
 
@@ -69,11 +69,11 @@ def assign_ticket(
 def bulk_update_tickets(
     data: BulkTicketUpdate,
     db: Session = Depends(get_db),
-    admin: User = Depends(require_admin),
+    current_user: User = Depends(require_permission("tickets.bulk_update")),
 ):
-    """Bulk update tickets (status, priority, assignment) — admin only."""
+    """Bulk update tickets (status, priority, assignment)."""
     return TicketService.bulk_update(
-        db, data.ticket_ids, admin, data.status, data.priority, data.assigned_to
+        db, data.ticket_ids, current_user, data.status, data.priority, data.assigned_to
     )
 
 
@@ -82,9 +82,9 @@ def submit_feedback(
     ticket_id: str,
     data: TicketFeedbackCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_admin),
+    current_user: User = Depends(require_permission("ml.submit_feedback")),
 ):
-    """Submit ML feedback (FP/TP/FN/TN) for retraining pipeline (admin only)."""
+    """Submit ML feedback (FP/TP/FN/TN) for retraining pipeline."""
     from app.models.ticket import Ticket
 
     ticket = db.query(Ticket).filter(Ticket.ticket_id == ticket_id).first()
@@ -113,9 +113,9 @@ def export_tickets_csv(
     status: str = None,
     priority: str = None,
     db: Session = Depends(get_db),
-    _admin=Depends(require_admin),
+    _=Depends(require_permission("tickets.export")),
 ):
-    """Export filtered tickets as CSV (admin only)."""
+    """Export filtered tickets as CSV."""
     query = db.query(Ticket)
     if status and status != "All":
         query = query.filter(Ticket.status == status)

@@ -8,7 +8,7 @@ import { useGoogleLogin } from "@react-oauth/google";
 import { AuthCard } from "@/components/auth/AuthCard";
 import { AuthInput } from "@/components/auth/AuthInput";
 import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
-import { UserPlus } from "lucide-react";
+import { UserPlus, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 
 export default function RegisterPage() {
@@ -26,8 +26,8 @@ export default function RegisterPage() {
     confirmPassword: ""
   });
 
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showGoogleSuccess, setShowGoogleSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,7 +82,7 @@ export default function RegisterPage() {
     setLoading(true);
     try {
       await registerAccount(fullName, email, password);
-      router.push("/login?registered=true");
+      toast.success("Registration link sent! Please check your email inbox and spam folder to verify your account.");
     } catch (err: any) {
       toast.error(err.message || "Registration failed");
     } finally {
@@ -91,11 +91,10 @@ export default function RegisterPage() {
   };
 
   const handleGoogleSuccess = async (tokenResponse: any) => {
-    setError("");
     setLoading(true);
     try {
       await registerWithGoogle(tokenResponse.access_token);
-      router.push("/login?registered=true");
+      setShowGoogleSuccess(true);
     } catch (err: any) {
       toast.error(err.message || "Google Sign-Up failed");
     } finally {
@@ -205,6 +204,29 @@ export default function RegisterPage() {
       </div>
 
       <GoogleAuthButton onClick={() => loginWithGoogleAction()} loading={loading} type="register" />
+
+      {showGoogleSuccess && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+          <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 text-center animate-in fade-in zoom-in-95 duration-200">
+            <div className="size-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <CheckCircle2 className="size-8 text-green-600" />
+            </div>
+            <h2 className="text-xl font-bold text-secondary mb-2">
+              Registration Successful!
+            </h2>
+            <p className="text-sm text-secondary/70 mb-6">
+              Your account has been created and verified. Welcome to OctoSight!
+            </p>
+            <button
+              onClick={() => router.push("/")}
+              className="w-full px-6 py-3 bg-primary text-white font-bold text-sm rounded-xl hover:opacity-90 transition-all"
+            >
+              Continue to Home
+            </button>
+          </div>
+        </div>
+      )}
     </AuthCard>
   );
 }

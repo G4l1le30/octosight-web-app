@@ -2,7 +2,7 @@
 
 export const dynamic = "force-dynamic";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import {
   Users,
@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
+import { Pagination } from "@/components/ui/Pagination";
 import { formatDateTime } from "@/lib/utils";
 import { ROLE_BADGE_COLORS, type UserRole } from "@/types/auth";
 import { usePermissions } from "@/hooks/usePermissions";
@@ -44,6 +45,8 @@ export default function AdminUsersPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
   const [form, setForm] = useState<EditForm>({
     full_name: "",
@@ -68,7 +71,13 @@ export default function AdminUsersPage() {
 
   useEffect(() => {
     fetchUsers();
+    setCurrentPage(1);
   }, [fetchUsers]);
+
+  const paginatedUsers = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return users.slice(start, start + itemsPerPage);
+  }, [users, currentPage, itemsPerPage]);
 
   const openEditModal = (user: AdminUser) => {
     setEditingUser(user);
@@ -224,7 +233,7 @@ export default function AdminUsersPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-neutral-border">
-                  {users.map((user) => (
+                  {paginatedUsers.map((user) => (
                     <tr
                       key={user.id}
                       className="hover:bg-neutral-page/30 transition-colors group"
@@ -281,6 +290,15 @@ export default function AdminUsersPage() {
               </table>
             </div>
           ) : null}
+          {users.length > 0 && (
+            <Pagination
+              currentPage={currentPage}
+              totalItems={users.length}
+              itemsPerPage={itemsPerPage}
+              onPageChange={setCurrentPage}
+              onItemsPerPageChange={(n) => { setItemsPerPage(n); setCurrentPage(1); }}
+            />
+          )}
         </div>
       </div>
 

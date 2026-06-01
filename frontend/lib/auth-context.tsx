@@ -302,6 +302,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } catch (e) {}
       throw new Error(errorMessage);
     }
+
+    const currentUser = await fetchMe();
+    if (!currentUser) {
+      throw new Error("Registration succeeded but the session could not be established.");
+    }
   };
 
   const logout = async () => {

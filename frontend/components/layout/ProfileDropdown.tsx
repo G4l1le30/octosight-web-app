@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { AuthUser, ROLE_BADGE_COLORS } from "@/types/auth";
+import { usePermissions } from "@/hooks/usePermissions";
 
 interface ProfileDropdownProps {
   user: AuthUser;
@@ -15,6 +16,7 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
   logout,
   isAdminRoute,
 }) => {
+  const { can } = usePermissions();
   const [profileOpen, setProfileOpen] = useState(false);
 
   const handleLogout = async () => {
@@ -74,13 +76,15 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
                 {roleLabel}
               </span>
             </div>
-            <Link
-              href={isAdminRoute ? "/" : "/admin"}
-              onClick={() => setProfileOpen(false)}
-              className="block px-4 py-2.5 text-sm font-bold text-secondary hover:bg-neutral-page transition-colors"
-            >
-              {isAdminRoute ? "User Page" : "Admin Dashboard"}
-            </Link>
+            {can("dashboard.view") && (
+              <Link
+                href={isAdminRoute ? "/" : "/admin"}
+                onClick={() => setProfileOpen(false)}
+                className="block px-4 py-2.5 text-sm font-bold text-secondary hover:bg-neutral-page transition-colors"
+              >
+                {isAdminRoute ? "User Page" : "Admin Dashboard"}
+              </Link>
+            )}
             <button
               onClick={handleLogout}
               className="w-full text-left px-4 py-2.5 text-sm font-bold text-risk-high hover:bg-risk-high/5 transition-colors"

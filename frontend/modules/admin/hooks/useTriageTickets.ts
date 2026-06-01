@@ -166,7 +166,7 @@ export const useTriageTickets = () => {
       try {
         setError("");
         const response = await fetch(`/api/v1/tickets/${ticketId}/assign`, {
-          method: "PATCH",
+          method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ assigned_to: email }),
         });

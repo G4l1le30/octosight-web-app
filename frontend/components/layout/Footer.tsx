@@ -118,7 +118,7 @@ const Footer: React.FC = () => {
             </h4>
             <div className="flex flex-col items-center sm:items-start gap-4 md:gap-5">
               <a
-                href="mailto:support@octosight.id"
+                href="mailto:octosight.id@gmail.com"
                 className="flex items-center gap-2 md:gap-3 text-white hover:opacity-80 text-sm transition-colors font-medium"
               >
                 <div className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center border border-white/20">

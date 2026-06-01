@@ -2,20 +2,23 @@
 
 export const dynamic = "force-dynamic";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import {
   Plus,
   Edit2,
-  Trash2,
   Save,
   X,
   Loader2,
   Filter,
   Shield,
+  ToggleRight,
+  ToggleLeft,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { Pagination } from "@/components/ui/Pagination";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
 
 type ConfigType =
   | "keyword"
@@ -79,12 +82,20 @@ export default function RuleConfigPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [deactivating, setDeactivating] = useState<number | null>(null);
+  const [confirmConfig, setConfirmConfig] = useState<{
+    isOpen: boolean;
+    id: number | null;
+    key: string;
+    action: "deactivate" | "reactivate";
+  }>({ isOpen: false, id: null, key: "", action: "deactivate" });
   const [modalOpen, setModalOpen] = useState(false);
   const [editingRule, setEditingRule] = useState<RuleConfig | null>(null);
   const [formData, setFormData] = useState<RuleFormData>(INITIAL_FORM);
   const [formErrors, setFormErrors] = useState<
     Partial<Record<keyof RuleFormData, string>>
   >({});
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const fetchRules = useCallback(async () => {
     setLoading(true);
@@ -103,7 +114,13 @@ export default function RuleConfigPage() {
 
   useEffect(() => {
     fetchRules();
+    setCurrentPage(1);
   }, [fetchRules]);
+
+  const paginatedRules = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return rules.slice(start, start + itemsPerPage);
+  }, [rules, currentPage, itemsPerPage]);
 
   const validateForm = (): boolean => {
     const errors: Partial<Record<keyof RuleFormData, string>> = {};
@@ -188,17 +205,35 @@ export default function RuleConfigPage() {
     }
   };
 
-  const handleDeactivate = async (rule: RuleConfig) => {
-    setDeactivating(rule.id);
+  const handleToggleClick = (rule: RuleConfig) => {
+    const action = rule.is_active ? "deactivate" : "reactivate";
+    setConfirmConfig({ isOpen: true, id: rule.id, key: rule.key, action });
+  };
+
+  const confirmToggle = async () => {
+    if (!confirmConfig.id) return;
+    const id = confirmConfig.id;
+    const { action, key } = confirmConfig;
+    setDeactivating(id);
+    setConfirmConfig((prev) => ({ ...prev, isOpen: false }));
     try {
-      const res = await fetch(`/api/v1/admin/rule-config/${rule.id}`, {
-        method: "DELETE",
-      });
-      if (!res.ok) throw new Error("Failed to deactivate");
-      toast.success(`Rule "${rule.key}" deactivated.`);
-      setRules((prev) => prev.filter((r) => r.id !== rule.id));
+      if (action === "deactivate") {
+        const res = await fetch(`/api/v1/admin/rule-config/${id}`, { method: "DELETE" });
+        if (!res.ok) throw new Error("Failed to deactivate");
+        toast.success(`Rule "${key}" deactivated.`);
+        setRules((prev) => prev.map((r) => r.id === id ? { ...r, is_active: false } : r));
+      } else {
+        const res = await fetch(`/api/v1/admin/rule-config/${id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ is_active: true }),
+        });
+        if (!res.ok) throw new Error("Failed to reactivate");
+        toast.success(`Rule "${key}" reactivated.`);
+        setRules((prev) => prev.map((r) => r.id === id ? { ...r, is_active: true } : r));
+      }
     } catch {
-      toast.error("Failed to deactivate rule.");
+      toast.error(action === "deactivate" ? "Failed to deactivate rule." : "Failed to reactivate rule.");
     } finally {
       setDeactivating(null);
     }
@@ -320,7 +355,7 @@ export default function RuleConfigPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-border">
-                {rules.map((rule) => (
+                {paginatedRules.map((rule) => (
                   <tr
                     key={rule.id}
                     className="hover:bg-neutral-page/30 transition-colors group"
@@ -396,15 +431,21 @@ export default function RuleConfigPage() {
                           <Edit2 className="size-4" />
                         </button>
                         <button
-                          onClick={() => handleDeactivate(rule)}
+                          onClick={() => handleToggleClick(rule)}
                           disabled={deactivating === rule.id}
-                          className="p-2.5 text-secondary/60 hover:text-risk-high hover:bg-risk-high/5 rounded-xl transition-all disabled:opacity-50"
-                          title="Deactivate rule"
+                          className={
+                            rule.is_active
+                              ? "p-2.5 text-secondary/60 hover:text-amber-600 hover:bg-amber-50 rounded-xl transition-all disabled:opacity-50"
+                              : "p-2.5 text-secondary/60 hover:text-green-600 hover:bg-green-50 rounded-xl transition-all disabled:opacity-50"
+                          }
+                          title={rule.is_active ? "Deactivate rule" : "Reactivate rule"}
                         >
                           {deactivating === rule.id ? (
                             <Loader2 className="size-4 animate-spin" />
+                          ) : rule.is_active ? (
+                            <ToggleRight className="size-4" />
                           ) : (
-                            <Trash2 className="size-4" />
+                            <ToggleLeft className="size-4" />
                           )}
                         </button>
                       </div>
@@ -414,6 +455,15 @@ export default function RuleConfigPage() {
               </tbody>
             </table>
           </div>
+        )}
+        {rules.length > 0 && (
+          <Pagination
+            currentPage={currentPage}
+            totalItems={rules.length}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
+            onItemsPerPageChange={(n) => { setItemsPerPage(n); setCurrentPage(1); }}
+          />
         )}
       </div>
 
@@ -645,6 +695,21 @@ export default function RuleConfigPage() {
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={confirmConfig.isOpen}
+        title={confirmConfig.action === "deactivate" ? "Deactivate Rule?" : "Reactivate Rule?"}
+        message={
+          confirmConfig.action === "deactivate"
+            ? `Are you sure you want to deactivate rule "${confirmConfig.key}"? This rule will no longer be used for threat detection.`
+            : `Are you sure you want to reactivate rule "${confirmConfig.key}"? This rule will be used for threat detection again.`
+        }
+        confirmText="Confirm"
+        type={confirmConfig.action === "deactivate" ? "danger" : "primary"}
+        onClose={() => setConfirmConfig({ ...confirmConfig, isOpen: false })}
+        onConfirm={confirmToggle}
+        isLoading={deactivating !== null}
+      />
     </div>
   );
 }

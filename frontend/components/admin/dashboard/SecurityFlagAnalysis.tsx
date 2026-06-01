@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo } from "react";
 import {
   BarChart,
   Bar,
@@ -18,9 +18,14 @@ interface SecurityFlagAnalysisProps {
 export const SecurityFlagAnalysis: React.FC<SecurityFlagAnalysisProps> = ({
   flagDist,
 }) => {
-  const [showAll, setShowAll] = useState(false);
-  const displayFlags = showAll ? flagDist : flagDist.slice(0, 8);
-  const maxVal = Math.max(...displayFlags.map((f) => f.value), 1);
+  const displayFlags = useMemo(() => {
+    const sorted = [...flagDist].sort((a, b) => b.value - a.value);
+    const top7 = sorted.slice(0, 7);
+    const rest = sorted.slice(7);
+    if (rest.length === 0) return top7;
+    const othersSum = rest.reduce((sum, f) => sum + f.value, 0);
+    return [...top7, { name: "Others", value: othersSum }];
+  }, [flagDist]);
 
   return (
     <div className="card p-6 md:p-8">
@@ -28,14 +33,6 @@ export const SecurityFlagAnalysis: React.FC<SecurityFlagAnalysisProps> = ({
         <h3 className="font-bold text-base md:text-lg text-secondary">
           Security Flag Analysis (Sub-Categories)
         </h3>
-        {flagDist.length > 8 && (
-          <button
-            onClick={() => setShowAll(!showAll)}
-            className="text-xs font-bold text-primary hover:bg-primary/5 px-3 py-1 rounded-lg transition-colors"
-          >
-            {showAll ? "Show Less" : `Show All (${flagDist.length})`}
-          </button>
-        )}
       </div>
 
       {displayFlags.length > 0 ? (

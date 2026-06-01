@@ -54,8 +54,9 @@ class TicketService:
         for t in items:
             TicketRepository.check_sla_breach(t)
         db.commit()
+        from app.schemas.ticket import TicketResponse
         return {
-            "items": items,
+            "items": [TicketResponse.model_validate(t).model_dump() for t in items],
             "total": total,
             "page": page,
             "per_page": per_page,
@@ -78,13 +79,14 @@ class TicketService:
     @staticmethod
     def get_ticket_with_auth(
         db: Session, ticket_id: str, current_user: User
-    ) -> Ticket:
+    ) -> dict[str, Any]:
         ticket = TicketService.get_ticket_or_404(db, ticket_id)
         if current_user.role != "admin" and ticket.user_id != current_user.id:
             raise ForbiddenException("Access denied")
         TicketRepository.check_sla_breach(ticket)
         db.commit()
-        return ticket
+        from app.schemas.ticket import TicketResponse
+        return TicketResponse.model_validate(ticket).model_dump()
 
     @staticmethod
     def update_ticket(

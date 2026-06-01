@@ -19,6 +19,7 @@ from sqlalchemy.orm import Session
 from app.core.security import get_current_user, require_admin
 from app.db.session import get_db
 from app.models.models import BlacklistedURL, BlacklistedAccount, BlacklistedPhone, BlacklistedEmail
+from app.modules.activity.service import ActivityService
 
 router = APIRouter(prefix="/api/v1/admin/blacklist", tags=["blacklist"])
 
@@ -177,7 +178,11 @@ def add_to_blacklist(
     db.commit()
     db.refresh(entry)
 
-    print(f"[Blacklist] Domain '{domain}' added by admin {admin.email} (ticket: {body.ticket_id})")
+    ActivityService.log_blacklist_added(
+        db, admin.id,
+        f"URL blacklisted: {domain} (ticket: {body.ticket_id or 'manual'})",
+        body.ticket_id,
+    )
     return entry
 
 
@@ -205,7 +210,10 @@ def remove_from_blacklist(
     entry.updated_at = datetime.now(timezone.utc)
     db.commit()
 
-    print(f"[Blacklist] Entry #{entry_id} ({entry.domain}) deactivated by admin {admin.email}")
+    ActivityService.log_blacklist_removed(
+        db, admin.id,
+        f"URL removed from blacklist: {entry.domain}",
+    )
     return {"message": f"Entry #{entry_id} ({entry.domain}) removed from blacklist."}
 
 
@@ -263,6 +271,12 @@ def add_account_to_blacklist(
     db.add(entry)
     db.commit()
     db.refresh(entry)
+
+    ActivityService.log_blacklist_added(
+        db, admin.id,
+        f"Bank account blacklisted: {clean_acc} ({body.bank_name or 'N/A'})",
+        body.ticket_id,
+    )
     return entry
 
 
@@ -297,6 +311,11 @@ def remove_account_from_blacklist(entry_id: int, db: Session = Depends(get_db), 
         raise HTTPException(status_code=404, detail="Entry not found")
     entry.is_active = False
     db.commit()
+
+    ActivityService.log_blacklist_removed(
+        db, _admin.id,
+        f"Bank account removed from blacklist: {entry.account_number}",
+    )
     return {"message": "Account removed from blacklist"}
 
 
@@ -327,6 +346,12 @@ def add_phone_to_blacklist(
     db.add(entry)
     db.commit()
     db.refresh(entry)
+
+    ActivityService.log_blacklist_added(
+        db, admin.id,
+        f"Phone blacklisted: {clean_phone}",
+        body.ticket_id,
+    )
     return entry
 
 
@@ -361,6 +386,11 @@ def remove_phone_from_blacklist(entry_id: int, db: Session = Depends(get_db), _a
         raise HTTPException(status_code=404, detail="Entry not found")
     entry.is_active = False
     db.commit()
+
+    ActivityService.log_blacklist_removed(
+        db, _admin.id,
+        f"Phone removed from blacklist: {entry.phone_number}",
+    )
     return {"message": "Phone removed from blacklist"}
 
 
@@ -391,6 +421,12 @@ def add_email_to_blacklist(
     db.add(entry)
     db.commit()
     db.refresh(entry)
+
+    ActivityService.log_blacklist_added(
+        db, admin.id,
+        f"Email blacklisted: {clean_email}",
+        body.ticket_id,
+    )
     return entry
 
 
@@ -425,4 +461,9 @@ def remove_email_from_blacklist(entry_id: int, db: Session = Depends(get_db), _a
         raise HTTPException(status_code=404, detail="Entry not found")
     entry.is_active = False
     db.commit()
+
+    ActivityService.log_blacklist_removed(
+        db, _admin.id,
+        f"Email removed from blacklist: {entry.email}",
+    )
     return {"message": "Email removed from blacklist"}

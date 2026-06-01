@@ -282,8 +282,22 @@ NEXT_PUBLIC_API_URL=http://localhost:8000
 - **Docker/Turbopack** — enabled Turbopack dev, bumped memory limit, persistent `.next` named volume.
 - **Migration idempotency** — Alembic runs before `create_all`; migrations 0001–0003 wrapped in try/except.
 
+## Session Progress (conversation #3)
+
+**Focus:** RBAC implementation, NaN/empty-object dashboard fix, ticket serialization fixes.
+
+### Achieved
+- **Implemented RBAC (Week 1 + 2)** — Permission/role models, migration files, `require_permission()` factory, 7-role enum, 40+ permissions, RBAC management API.
+- **Replaced `require_admin` → `require_permission()`** across all `api/v1/` endpoints (tickets, dashboard, activity, rule_config, users).
+- **Frontend RBAC** — `usePermissions` hook, `PermissionGate`/`RoleGuard` components, `AuthUser.permissions` from `/auth/my-permissions`, navbar/dropdown/admin-layout gated with `can("dashboard.view")`.
+- **Fixed admin dashboard NaN/empty objects** — root cause: `db.commit()` in `TicketService.list_tickets()` expired all loaded ORM instances, producing `{}` from `jsonable_encoder`. Fix: `TicketResponse.model_validate(t).model_dump()` before returning.
+- **Fixed legacy `GET /api/v1/tickets` endpoint** — same expired-ORM pattern. Now returns dicts via `TicketResponse.model_validate(t).model_dump()`.
+- **Fixed legacy `GET /api/v1/tickets/{id}` endpoint** — same fix applied.
+- **Fixed `TicketService.get_ticket_with_auth()`** — converted to return dict, avoiding expired ORM after `db.commit()`.
+
 ### Open Issues
 - 401s on `/auth/me` and `/auth/refresh` for unauthenticated users — expected behavior (normal auth-check flow), no fix needed.
+- Legacy `api/endpoints/` still use `require_admin()` — untouched as per instruction.
 
 ### Key Decisions
 | Decision | Rationale |
@@ -292,6 +306,9 @@ NEXT_PUBLIC_API_URL=http://localhost:8000
 | Turbopack for dev | ~5x faster HMR iteration |
 | Named volume for `.next` | Persists cache across `docker compose down` |
 | `get_optional_user` for public endpoints | Avoids 401 when unauthenticated user hits semi-public endpoint |
+| `TicketResponse.model_validate().model_dump()` before `db.commit()` | Prevents expired ORM → `{}` serialization bug |
+| `require_permission()` checks DB (not JWT) for permission lookup | Simpler than embedding permissions in token, acceptable at current scale |
+| Admin role bypasses all permission checks at DB query level | No `role_permissions` rows needed for admin |
 
 ### Relevant Files Changed
 | File | Change |
@@ -304,6 +321,29 @@ NEXT_PUBLIC_API_URL=http://localhost:8000
 | `frontend/app/(auth)/register/page.tsx` | `disabled={loading}` on submit button |
 | `frontend/components/report/ReportForm.tsx` | `type="number"` on attacker account input |
 | `docker-compose.yml` | Turbopack, memory, `.next` volume |
+| `backend/app/models/permission.py` | Permission + RolePermission ORM models (new) |
+| `backend/app/core/security.py` | `require_permission()`, `require_any_role()`, viewer role, removed `require_moderator` |
+| `backend/app/api/v1/rbac.py` | RBAC management endpoints (new) |
+| `backend/app/api/v1/tickets.py` | `require_admin` → `require_permission()` |
+| `backend/app/api/v1/dashboard.py` | `require_admin` → `require_permission("dashboard.view")` |
+| `backend/app/api/v1/activity.py` | `require_admin` → `require_permission("dashboard.view")` |
+| `backend/app/api/v1/rule_config.py` | `require_admin` → `require_permission()` |
+| `backend/app/api/v1/users.py` | `require_admin` → `require_permission()`, role validation expanded |
+| `backend/app/api/endpoints/tickets.py` | Serialize to dict before commit (fix NaN/empty) |
+| `backend/app/modules/tickets/service.py` | `list_tickets()` returns dicts; `get_ticket_with_auth()` returns dict |
+| `backend/app/migrations/versions/0005_add_rbac_permissions.py` | permissions + role_permissions tables (new) |
+| `backend/app/migrations/versions/0006_add_is_active.py` | is_active column on users (new) |
+| `backend/app/main.py` | Seeds 40+ permissions + 6 role→permission mappings |
+| `backend/requirements.txt` | `torch` + `sentence-transformers` removed (commented out) |
+| `frontend/types/auth.ts` | `UserRole`, `ROLE_HIERARCHY`, `ROLE_BADGE_COLORS`, `ROLE_DEFAULT_PERMISSIONS`, `AuthUser.permissions` |
+| `frontend/hooks/usePermissions.ts` | Permission-checking hook (new) |
+| `frontend/components/ui/PermissionGate.tsx` | Conditional render based on permission (new) |
+| `frontend/components/ui/RoleGuard.tsx` | Conditional render based on role (new) |
+| `frontend/lib/auth-context.tsx` | `fetchMe` now fetches `/auth/my-permissions` |
+| `frontend/app/(admin)/layout.tsx` | Uses `can("dashboard.view")` |
+| `frontend/components/layout/ProfileDropdown.tsx` | Admin link gated with `can("dashboard.view")` |
+| `frontend/components/layout/Navbar.tsx` | Admin link uses `can("dashboard.view")` |
+| `frontend/app/(admin)/admin/users/page.tsx` | 7-role dropdown, Edit button gated |
 
 ## Referensi Cepat
 

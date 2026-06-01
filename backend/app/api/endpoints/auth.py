@@ -200,6 +200,11 @@ def verify_email(token: str, response: Response, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(user)
 
+    from app.modules.activity.service import ActivityService
+    ActivityService.log_user_registered(
+        db, user.id, f"User registered (email verification): {user.full_name} <{user.email}>",
+    )
+
     access_token = create_access_token({"sub": str(user.id), "email": user.email, "role": user.role})
     refresh_token = create_refresh_token({"sub": str(user.id)})
 
@@ -392,6 +397,11 @@ def google_register(
     db.add(user)
     db.commit()
     db.refresh(user)
+
+    from app.modules.activity.service import ActivityService
+    ActivityService.log_user_registered(
+        db, user.id, f"User registered (Google): {user.full_name} <{user.email}>",
+    )
 
     send_email_notification(
         background_tasks=background_tasks,

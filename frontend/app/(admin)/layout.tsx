@@ -14,6 +14,7 @@ export default function AdminLayout({
 }) {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const { can } = usePermissions();
 
   // Loading state
   if (loading) {
@@ -71,9 +72,6 @@ export default function AdminLayout({
       </div>
     );
   }
-
-  // Check permission rather than exact role
-  const { can } = usePermissions();
 
   // Authenticated but no dashboard access — access denied
   if (!can("dashboard.view")) {

@@ -2,7 +2,7 @@
 
 export const dynamic = "force-dynamic";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -16,6 +16,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
+import { Pagination } from "@/components/ui/Pagination";
 import { formatDateTime } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 
@@ -41,6 +42,8 @@ export default function BlacklistPage() {
   const [entries, setEntries] = useState<BlacklistEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [removing, setRemoving] = useState<number | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [confirmConfig, setConfirmConfig] = useState<{
     isOpen: boolean;
     id: number | null;
@@ -78,7 +81,13 @@ export default function BlacklistPage() {
 
   useEffect(() => {
     fetchEntries();
+    setCurrentPage(1);
   }, [fetchEntries]);
+
+  const paginatedEntries = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return entries.slice(start, start + itemsPerPage);
+  }, [entries, currentPage, itemsPerPage]);
 
   const handleRemoveClick = (id: number, value: string) => {
     setConfirmConfig({ isOpen: true, id, value });
@@ -251,7 +260,7 @@ export default function BlacklistPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-border">
-                {entries.map((entry) => (
+                {paginatedEntries.map((entry) => (
                   <tr
                     key={entry.id}
                     className="hover:bg-neutral-page/30 transition-colors group"
@@ -319,6 +328,15 @@ export default function BlacklistPage() {
               </tbody>
             </table>
           </div>
+        )}
+        {entries.length > 0 && (
+          <Pagination
+            currentPage={currentPage}
+            totalItems={entries.length}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
+            onItemsPerPageChange={(n) => { setItemsPerPage(n); setCurrentPage(1); }}
+          />
         )}
       </div>
 

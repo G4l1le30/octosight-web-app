@@ -8,11 +8,13 @@ interface MitigationActionsProps {
     value: string,
     metadata?: any
   ) => void;
+  onNotify?: () => void;
 }
 
 export const MitigationActions: React.FC<MitigationActionsProps> = ({
   ticket,
   openBlacklistModal,
+  onNotify,
 }) => {
   return (
     <div className="card p-6 md:p-8 h-full flex flex-col">
@@ -70,7 +72,10 @@ export const MitigationActions: React.FC<MitigationActionsProps> = ({
           </button>
         )}
 
-        <button className="w-full py-3 bg-neutral-page hover:bg-risk-medium/5 text-sm font-bold text-secondary rounded-xl transition-all text-left px-5 flex items-center justify-between group border border-neutral-border">
+        <button
+          onClick={onNotify}
+          className="w-full py-3 bg-neutral-page hover:bg-risk-medium/5 text-sm font-bold text-secondary rounded-xl transition-all text-left px-5 flex items-center justify-between group border border-neutral-border"
+        >
           Generate Warning Template
           <span className="opacity-0 group-hover:opacity-100 transition-all translate-x-[-4px] group-hover:translate-x-0">
             →

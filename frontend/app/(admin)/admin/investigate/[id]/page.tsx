@@ -234,6 +234,26 @@ export default function InvestigatePage({
     }
   };
 
+  const handleNotify = async () => {
+    const message = window.prompt("Enter warning message to send to the reporter:");
+    if (!message || !message.trim()) return;
+    try {
+      const res = await fetch(`/api/v1/tickets/${ticketId}/notify`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: message.trim() }),
+      });
+      if (res.ok) {
+        toast.success("Warning notification sent to reporter.");
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        toast.error(errData.detail || "Failed to send notification.");
+      }
+    } catch {
+      toast.error("Connection error while sending notification.");
+    }
+  };
+
   if (loading)
     return (
       <div className="p-20 text-center font-normal opacity-70">
@@ -292,6 +312,7 @@ export default function InvestigatePage({
           <MitigationActions
             ticket={ticket}
             openBlacklistModal={openBlacklistModal}
+            onNotify={handleNotify}
           />
         </div>
 

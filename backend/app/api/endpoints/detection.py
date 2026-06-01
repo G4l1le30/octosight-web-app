@@ -44,6 +44,7 @@ try:
 except ImportError:
     explain_cache = None
 from app.api.endpoints.blacklist import normalize_url_for_match, _extract_domain
+from app.modules.activity.service import ActivityService
 from app.modules.notifications.service import send_email_notification, send_email_async
 from app.services.supabase_service import get_supabase_service, SupabaseStorageService
 
@@ -796,6 +797,11 @@ async def create_report(
     db.add(db_ticket)
     db.commit()
     db.refresh(db_ticket)
+
+    ActivityService.log_ticket_created(
+        db, current_user.id, db_ticket.ticket_id,
+        f"Report submitted: {report_type} — {url or sender_numbers or 'N/A'}",
+    )
 
     if current_user and current_user.email:
         background_tasks.add_task(

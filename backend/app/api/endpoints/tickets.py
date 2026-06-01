@@ -23,6 +23,7 @@ from app.models.models import Ticket, User, TicketAuditLog
 from app.schemas.schemas import TicketUpdate
 from app.schemas.ticket import TicketResponse
 from app.modules.notifications.service import send_email_notification
+from app.modules.activity.service import ActivityService
 from pydantic import BaseModel
 
 class NotifyRequest(BaseModel):
@@ -53,20 +54,7 @@ def _check_sla_breach(ticket: Ticket) -> None:
             ticket.sla_breached = True
 
 
-@router.get("/tickets", response_model=list[TicketResponse], summary="List all tickets (admin only)")
-def get_tickets(
-    db: Session = Depends(get_db),
-    _admin=Depends(require_admin),
-):
-    """Return all tickets ordered by risk score descending. Admin only."""
-    tickets = db.query(Ticket).order_by(Ticket.risk_score.desc()).all()
-    for t in tickets:
-        _check_sla_breach(t)
-    db.commit()
-    return tickets
-
-
-@router.get("/tickets/{ticket_id}", response_model=TicketResponse, summary="Get ticket by ID (authenticated, own ticket)")
+@router.get("/tickets/{ticket_id}", summary="Get ticket by ID (authenticated, own ticket)")
 def get_ticket(
     ticket_id: str,
     db: Session = Depends(get_db),
@@ -85,7 +73,7 @@ def get_ticket(
         raise HTTPException(status_code=403, detail="Access denied")
     _check_sla_breach(ticket)
     db.commit()
-    return ticket
+    return TicketResponse.model_validate(ticket).model_dump()
 
 
 @router.patch("/tickets/{ticket_id}", summary="Update ticket (admin only)")
@@ -153,6 +141,10 @@ def update_ticket(
     db.refresh(ticket)
 
     if status_changed:
+        ActivityService.log_ticket_updated(
+            db, admin.id, ticket.ticket_id,
+            f"Status changed: {old_status} → {update.status} by {admin.full_name}",
+        )
         user = db.query(User).filter(User.id == ticket.user_id).first()
         if user and user.email:
             send_email_notification(

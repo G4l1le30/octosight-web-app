@@ -14,6 +14,7 @@ import { DownloadModal } from "@/components/admin/investigate/DownloadModal";
 import { InvestigateEvidence } from "@/components/admin/investigate/InvestigateEvidence";
 import { MitigationActions } from "@/components/admin/investigate/MitigationActions";
 import { AuditTrail } from "@/components/admin/investigate/AuditTrail";
+import { SimilarIncidents } from "@/components/admin/investigate/SimilarIncidents";
 import {
   ShieldCheck,
   AlertTriangle,
@@ -254,6 +255,37 @@ export default function InvestigatePage({
     }
   };
 
+  const handleScanUrl = async () => {
+    try {
+      toast.loading("Scanning URL...");
+      const res = await fetch(`/api/v1/admin/scan-tickets`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      toast.dismiss();
+      const data = await res.json();
+      const thisResult = (data.results || []).find(
+        (r: any) => r.ticket_id === ticketId,
+      );
+      if (thisResult) {
+        if (thisResult.error) {
+          toast.error(`Scan error: ${thisResult.error}`);
+        } else if (thisResult.live) {
+          toast.success(
+            `URL still live (${thisResult.status_code}), risk score ${thisResult.risk_score}${thisResult.escalated ? ", ticket escalated" : ""}`,
+          );
+        } else {
+          toast.info("URL is no longer live.");
+        }
+      } else {
+        toast.info("No scan result for this ticket (no URL or already scanned).");
+      }
+    } catch {
+      toast.dismiss();
+      toast.error("Connection error while scanning.");
+    }
+  };
+
   if (loading)
     return (
       <div className="p-20 text-center font-normal opacity-70">
@@ -312,7 +344,7 @@ export default function InvestigatePage({
           <MitigationActions
             ticket={ticket}
             openBlacklistModal={openBlacklistModal}
-            onNotify={handleNotify}
+            onScanUrl={handleScanUrl}
           />
         </div>
 
@@ -394,6 +426,11 @@ export default function InvestigatePage({
               {submittingFeedback ? "Saving..." : "Submit Feedback"}
             </button>
           </div>
+        </div>
+
+        {/* Similar Incidents */}
+        <div className="lg:col-span-3">
+          <SimilarIncidents ticketId={ticketId} />
         </div>
       </div>
 

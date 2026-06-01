@@ -24,7 +24,7 @@ class RuleConfigRepository:
         return query.all()
 
     @staticmethod
-    def get_by_id(db: Session, id: int) -> Optional[RuleConfig]:
+    def get_by_id(db: Session, id: str) -> Optional[RuleConfig]:
         return db.query(RuleConfig).filter(RuleConfig.id == id).first()
 
     @staticmethod
@@ -51,7 +51,7 @@ class RuleConfigRepository:
         return entry
 
     @staticmethod
-    def update(db: Session, id: int, **kwargs) -> Optional[RuleConfig]:
+    def update(db: Session, id: str, **kwargs) -> Optional[RuleConfig]:
         entry = db.query(RuleConfig).filter(RuleConfig.id == id).first()
         if not entry:
             return None
@@ -63,7 +63,7 @@ class RuleConfigRepository:
         return entry
 
     @staticmethod
-    def deactivate(db: Session, id: int) -> bool:
+    def deactivate(db: Session, id: str) -> bool:
         entry = db.query(RuleConfig).filter(RuleConfig.id == id).first()
         if not entry:
             return False

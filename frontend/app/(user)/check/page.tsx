@@ -82,7 +82,7 @@ export default function FraudCheckPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 md:py-12 max-w-5xl">
+    <div className="container mx-auto px-4 py-8 md:py-12 max-w-6xl">
       <div className="text-center mb-8 md:mb-10">
         <h1 className="text-3xl md:text-4xl font-bold text-secondary mb-4 flex items-center justify-center gap-3">
           Fraud & Transaction Check
@@ -162,8 +162,8 @@ export default function FraudCheckPage() {
         <div className="lg:col-span-5">
           {!result && !loading && (
             <div className="h-full flex flex-col items-center justify-center p-10 border-2 border-dashed border-neutral-border rounded-2xl opacity-50 text-center">
-              <CreditCard className="size-16 mb-4 text-neutral-border" />
-              <p className="font-medium text-secondary/60">
+              <CreditCard className="size-16 mb-4 text-secondary/80" />
+              <p className="font-medium text-secondary/80">
                 Enter account details or upload a receipt to see the result.
               </p>
             </div>
@@ -267,7 +267,7 @@ export default function FraudCheckPage() {
       <div className="mt-16 bg-primary/5 rounded-3xl p-6 md:p-8 border border-primary/10">
         <h3 className="text-xl md:text-2xl font-bold text-secondary mb-4 flex items-center gap-3">
           <Landmark className="size-6 text-primary" />
-          CIMB NIAGA Verification Logic
+          OctoSight Verification Logic
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
           <div className="space-y-2">

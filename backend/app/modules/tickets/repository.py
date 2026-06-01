@@ -98,7 +98,7 @@ class TicketRepository:
     def check_sla_breach(ticket: Ticket) -> bool:
         """Check and set SLA breach flag. Returns True if breached."""
         if ticket.sla_deadline and not ticket.sla_breached:
-            if datetime.now(timezone.utc) > ticket.sla_deadline and ticket.status in ("Submitted", "In Review"):
+            if datetime.now(timezone.utc).replace(tzinfo=None) > ticket.sla_deadline and ticket.status in ("Submitted", "In Review"):
                 ticket.sla_breached = True
                 return True
         return False

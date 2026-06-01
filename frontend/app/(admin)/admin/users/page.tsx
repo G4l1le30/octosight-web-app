@@ -3,18 +3,10 @@
 export const dynamic = "force-dynamic";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { useRouter } from "next/navigation";
-import {
-  Users,
-  Edit2,
-  Save,
-  X,
-  Loader2,
-} from "lucide-react";
+import { Users, Edit2, X, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Pagination } from "@/components/ui/Pagination";
 import { formatDateTime } from "@/lib/utils";
@@ -32,14 +24,11 @@ interface AdminUser {
 }
 
 interface EditForm {
-  full_name: string;
   role: string;
   is_active: boolean;
-  password: string;
 }
 
 export default function AdminUsersPage() {
-  const router = useRouter();
   const { can } = usePermissions();
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
@@ -49,10 +38,8 @@ export default function AdminUsersPage() {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
   const [form, setForm] = useState<EditForm>({
-    full_name: "",
     role: "user",
     is_active: true,
-    password: "",
   });
 
   const fetchUsers = useCallback(async () => {
@@ -82,10 +69,8 @@ export default function AdminUsersPage() {
   const openEditModal = (user: AdminUser) => {
     setEditingUser(user);
     setForm({
-      full_name: user.full_name,
       role: user.role,
       is_active: user.is_active,
-      password: "",
     });
     setModalOpen(true);
   };
@@ -101,13 +86,9 @@ export default function AdminUsersPage() {
 
     try {
       const body: Record<string, unknown> = {
-        full_name: form.full_name,
         role: form.role,
         is_active: form.is_active,
       };
-      if (form.password.trim()) {
-        body.password = form.password;
-      }
 
       const res = await fetch(`/api/v1/admin/users/${editingUser.id}`, {
         method: "PATCH",
@@ -121,7 +102,7 @@ export default function AdminUsersPage() {
       setUsers((prev) =>
         prev.map((u) =>
           u.id === editingUser.id
-            ? { ...u, ...updated, full_name: form.full_name, role: form.role, is_active: form.is_active }
+            ? { ...u, ...updated, role: form.role, is_active: form.is_active }
             : u,
         ),
       );
@@ -135,7 +116,8 @@ export default function AdminUsersPage() {
   };
 
   const roleBadge = (role: string) => {
-    const color = ROLE_BADGE_COLORS[role as UserRole] ?? "bg-gray-100 text-gray-700";
+    const color =
+      ROLE_BADGE_COLORS[role as UserRole] ?? "bg-gray-100 text-gray-700";
     return (
       <span
         className={cn(
@@ -153,25 +135,6 @@ export default function AdminUsersPage() {
       <div className="container mx-auto px-4 py-6 md:py-8">
         {/* Header */}
         <div className="flex items-center gap-3 md:gap-4 mb-6 md:mb-8">
-          <button
-            onClick={() => router.back()}
-            className="p-2 hover:bg-neutral-border rounded-full transition-all"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6 text-secondary"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M10 19l-7-7m0 0l7-7m-7 7h18"
-              />
-            </svg>
-          </button>
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-secondary">
               User Management
@@ -185,9 +148,7 @@ export default function AdminUsersPage() {
               <p className="text-2xl font-bold text-primary leading-none">
                 {users.length}
               </p>
-              <p className="text-xs text-primary font-bold mt-1">
-                Total Users
-              </p>
+              <p className="text-xs text-primary font-bold mt-1">Total Users</p>
             </div>
             <Users className="size-8 text-primary opacity-40" />
           </div>
@@ -223,11 +184,19 @@ export default function AdminUsersPage() {
                 <thead className="bg-neutral-page/50 text-sm font-semibold text-secondary border-b border-neutral-border">
                   <tr>
                     <th className="px-6 md:px-8 py-4 md:py-5">Name</th>
-                    <th className="px-6 md:px-8 py-4 md:py-5">Email</th>
-                    <th className="px-6 md:px-8 py-4 md:py-5">Role</th>
-                    <th className="px-6 md:px-8 py-4 md:py-5">Status</th>
-                    <th className="px-6 md:px-8 py-4 md:py-5">Created</th>
-                    <th className="px-6 md:px-8 py-4 md:py-5 text-right">
+                    <th className="px-6 md:px-8 py-4 md:py-5 text-center">
+                      Email
+                    </th>
+                    <th className="px-6 md:px-8 py-4 md:py-5 text-center">
+                      Role
+                    </th>
+                    <th className="px-6 md:px-8 py-4 md:py-5 text-center">
+                      Status
+                    </th>
+                    <th className="px-6 md:px-8 py-4 md:py-5 text-center">
+                      Created
+                    </th>
+                    <th className="px-6 md:px-8 py-4 md:py-5 text-center">
                       Actions
                     </th>
                   </tr>
@@ -243,13 +212,15 @@ export default function AdminUsersPage() {
                           {user.full_name}
                         </span>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-4 text-center">
                         <span className="text-sm text-secondary/80 font-medium">
                           {user.email}
                         </span>
                       </td>
-                      <td className="px-6 py-4">{roleBadge(user.role)}</td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-4 text-center">
+                        {roleBadge(user.role)}
+                      </td>
+                      <td className="px-6 py-4 text-center">
                         <span
                           className={cn(
                             "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border",
@@ -267,12 +238,12 @@ export default function AdminUsersPage() {
                           {user.is_active ? "Active" : "Suspended"}
                         </span>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-4 text-center">
                         <span className="text-xs font-semibold text-secondary/80">
                           {formatDateTime(user.created_at).date}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-right">
+                      <td className="px-6 py-4 text-center">
                         <PermissionGate permission="users.update_role">
                           <Button
                             variant="outline"
@@ -296,7 +267,10 @@ export default function AdminUsersPage() {
               totalItems={users.length}
               itemsPerPage={itemsPerPage}
               onPageChange={setCurrentPage}
-              onItemsPerPageChange={(n) => { setItemsPerPage(n); setCurrentPage(1); }}
+              onItemsPerPageChange={(n) => {
+                setItemsPerPage(n);
+                setCurrentPage(1);
+              }}
             />
           )}
         </div>
@@ -310,36 +284,23 @@ export default function AdminUsersPage() {
             onClick={closeModal}
           />
           <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-lg border border-neutral-border animate-in fade-in zoom-in-95 duration-200">
-             <div className="flex items-center justify-between px-6 md:px-8 py-5 border-b border-neutral-border">
-               <div className="flex items-center gap-3">
-                 <h2 className="text-lg font-bold text-secondary">
-                   Edit User
-                 </h2>
-               </div>
-               <button
-                 onClick={closeModal}
-                 className="p-2 hover:bg-neutral-border rounded-lg transition-all"
-               >
-                 <X className="size-5 text-secondary/60" />
-               </button>
-             </div>
+            <div className="flex items-center justify-between px-6 md:px-8 py-5 border-b border-neutral-border">
+              <div className="flex items-center gap-3">
+                <h2 className="text-lg font-bold text-secondary">Edit User</h2>
+              </div>
+              <button
+                onClick={closeModal}
+                className="p-2 hover:bg-neutral-border rounded-lg transition-all"
+              >
+                <X className="size-5 text-secondary/60" />
+              </button>
+            </div>
 
             <div className="px-6 md:px-8 py-6 space-y-5">
-              <Input
-                label="Full Name"
-                value={form.full_name}
-                onChange={(e) =>
-                  setForm({ ...form, full_name: e.target.value })
-                }
-                placeholder="Enter full name"
-              />
-
               <Select
                 label="Role"
                 value={form.role}
-                onChange={(e) =>
-                  setForm({ ...form, role: e.target.value })
-                }
+                onChange={(e) => setForm({ ...form, role: e.target.value })}
                 options={[
                   { value: "viewer", label: "Viewer" },
                   { value: "user", label: "User" },
@@ -384,31 +345,28 @@ export default function AdminUsersPage() {
                   </button>
                 </div>
               </div>
-
-              <Input
-                label="New Password (leave blank to keep current)"
-                type="password"
-                value={form.password}
-                onChange={(e) =>
-                  setForm({ ...form, password: e.target.value })
-                }
-                placeholder="Enter new password"
-              />
             </div>
 
-            <div className="flex items-center justify-end gap-3 px-6 md:px-8 py-5 border-t border-neutral-border bg-neutral-page/30">
-              <Button variant="outline" size="sm" onClick={closeModal}>
-                Cancel
-              </Button>
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={handleSave}
-                loading={saving}
-                leftIcon={saving ? undefined : <Save className="size-4" />}
+            <div className="flex items-center justify-end gap-3 px-6 md:px-8 py-5 border-t border-neutral-border">
+              <button
+                onClick={closeModal}
+                disabled={saving}
+                className="flex items-center gap-2 px-5 py-3 bg-white border-2 border-neutral-border text-secondary font-bold text-sm rounded-xl hover:bg-neutral-page transition-all disabled:opacity-50"
               >
-                {saving ? "Saving..." : "Save Changes"}
-              </Button>
+                Cancel
+              </button>
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="flex items-center gap-2 px-5 py-3 bg-secondary text-white font-bold text-sm rounded-xl hover:opacity-90 transition-all disabled:opacity-50 shadow-md"
+              >
+                {saving ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Edit2 className="size-4" />
+                )}
+                Save Changes
+              </button>
             </div>
           </div>
         </div>

@@ -128,7 +128,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const retryResponse = await nativeFetch(input, requestInit);
       return retryResponse;
     },
-    [getRequestPath, isManagedApiRequest, refreshSession, shouldRetryAfterUnauthorized]
+    [getRequestPath, isManagedApiRequest, refreshSession, shouldRetryAfterUnauthorized, user]
   );
 
   useEffect(() => {

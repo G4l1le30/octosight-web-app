@@ -34,7 +34,7 @@ def create_rule_config(
 
 @router.patch("/{id}")
 def update_rule_config(
-    id: int,
+    id: str,
     data: dict,
     db: Session = Depends(get_db),
     _=Depends(require_permission("rules.update")),
@@ -45,7 +45,7 @@ def update_rule_config(
 
 @router.delete("/{id}")
 def deactivate_rule_config(
-    id: int,
+    id: str,
     db: Session = Depends(get_db),
     _=Depends(require_permission("rules.deactivate")),
 ):

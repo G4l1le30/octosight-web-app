@@ -4,6 +4,7 @@ import { History } from "lucide-react";
 import { RiskEducationPanel } from "./RiskEducationPanel";
 import { TicketTimeline } from "./TicketTimeline";
 import { Button } from "@/components/ui/Button";
+import { toast } from "sonner";
 
 import { StatusHeader } from "./StatusHeader";
 import { StatusOverview } from "./StatusOverview";
@@ -17,6 +18,11 @@ interface StatusResultProps {
 const StatusResult: React.FC<StatusResultProps> = ({ result }) => {
   const [auditLogs, setAuditLogs] = useState<TicketAuditLog[]>([]);
   const [logsLoading, setLogsLoading] = useState(true);
+  const [sendingAccuracy, setSendingAccuracy] = useState(false);
+  const [sendingSupport, setSendingSupport] = useState(false);
+  const [accuracyModal, setAccuracyModal] = useState(false);
+  const [supportModal, setSupportModal] = useState(false);
+  const [messageText, setMessageText] = useState("");
 
   useEffect(() => {
     if (!result.ticket_id) return;
@@ -65,6 +71,11 @@ const StatusResult: React.FC<StatusResultProps> = ({ result }) => {
                 variant="outline"
                 size="md"
                 className="flex-1 sm:flex-none"
+                loading={sendingAccuracy}
+                onClick={() => {
+                  setMessageText("");
+                  setAccuracyModal(true);
+                }}
               >
                 Report Accuracy Issue
               </Button>
@@ -72,11 +83,88 @@ const StatusResult: React.FC<StatusResultProps> = ({ result }) => {
                 variant="secondary"
                 size="md"
                 className="flex-1 sm:flex-none"
+                loading={sendingSupport}
+                onClick={() => {
+                  setMessageText("");
+                  setSupportModal(true);
+                }}
               >
                 Notify Support
               </Button>
             </div>
           </div>
+
+          {/* Accuracy Issue Modal */}
+          {accuracyModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setAccuracyModal(false)}>
+              <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+              <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-md p-6 md:p-8 border border-neutral-border animate-in fade-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
+                <h2 className="text-lg font-bold text-secondary mb-2">Report Accuracy Issue</h2>
+                <p className="text-sm text-secondary/60 mb-4">This will notify the OctoSight admin about an issue with this analysis.</p>
+                <textarea
+                  value={messageText}
+                  onChange={(e) => setMessageText(e.target.value)}
+                  placeholder="Describe what seems incorrect about the analysis..."
+                  rows={4}
+                  className="w-full border-2 border-neutral-border rounded-xl p-3 text-sm outline-none focus:border-primary focus:ring-4 focus:ring-primary/5 resize-none mb-4"
+                />
+                <div className="flex items-center justify-end gap-3">
+                  <button onClick={() => setAccuracyModal(false)} className="px-5 py-2.5 bg-white border-2 border-neutral-border text-secondary font-bold text-sm rounded-xl hover:bg-neutral-page transition-all">Cancel</button>
+                  <button onClick={async () => {
+                    setSendingAccuracy(true);
+                    try {
+                      const res = await fetch(`/api/v1/tickets/${result.ticket_id}/report-accuracy`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ message: messageText }),
+                      });
+                      if (res.ok) { toast.success("Accuracy issue reported to admin."); setAccuracyModal(false); }
+                      else { toast.error("Failed to send report."); }
+                    } catch { toast.error("Connection error."); }
+                    finally { setSendingAccuracy(false); }
+                  }} disabled={sendingAccuracy} className="px-5 py-2.5 bg-secondary text-white font-bold text-sm rounded-xl hover:opacity-90 transition-all disabled:opacity-50 shadow-md">
+                    {sendingAccuracy ? "Sending..." : "Send Report"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Support Modal */}
+          {supportModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setSupportModal(false)}>
+              <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+              <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-md p-6 md:p-8 border border-neutral-border animate-in fade-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
+                <h2 className="text-lg font-bold text-secondary mb-2">Notify Support</h2>
+                <p className="text-sm text-secondary/60 mb-4">Request the OctoSight admin to review and take action on this ticket.</p>
+                <textarea
+                  value={messageText}
+                  onChange={(e) => setMessageText(e.target.value)}
+                  placeholder="Describe what you need help with..."
+                  rows={4}
+                  className="w-full border-2 border-neutral-border rounded-xl p-3 text-sm outline-none focus:border-primary focus:ring-4 focus:ring-primary/5 resize-none mb-4"
+                />
+                <div className="flex items-center justify-end gap-3">
+                  <button onClick={() => setSupportModal(false)} className="px-5 py-2.5 bg-white border-2 border-neutral-border text-secondary font-bold text-sm rounded-xl hover:bg-neutral-page transition-all">Cancel</button>
+                  <button onClick={async () => {
+                    setSendingSupport(true);
+                    try {
+                      const res = await fetch(`/api/v1/tickets/${result.ticket_id}/notify-support`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ message: messageText }),
+                      });
+                      if (res.ok) { toast.success("Support request sent to admin."); setSupportModal(false); }
+                      else { toast.error("Failed to send request."); }
+                    } catch { toast.error("Connection error."); }
+                    finally { setSendingSupport(false); }
+                  }} disabled={sendingSupport} className="px-5 py-2.5 bg-secondary text-white font-bold text-sm rounded-xl hover:opacity-90 transition-all disabled:opacity-50 shadow-md">
+                    {sendingSupport ? "Sending..." : "Send Request"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

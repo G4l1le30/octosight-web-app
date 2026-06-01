@@ -67,14 +67,14 @@ class RuleConfigService:
         )
 
     @staticmethod
-    def update_rule(db: Session, id: int, data: dict[str, Any]):
+    def update_rule(db: Session, id: str, data: dict[str, Any]):
         entry = RuleConfigRepository.get_by_id(db, id)
         if not entry:
             raise NotFoundException("Rule configuration not found")
         return RuleConfigRepository.update(db, id, **data)
 
     @staticmethod
-    def deactivate_rule(db: Session, id: int):
+    def deactivate_rule(db: Session, id: str):
         if not RuleConfigRepository.deactivate(db, id):
             raise NotFoundException("Rule configuration not found")
         return True

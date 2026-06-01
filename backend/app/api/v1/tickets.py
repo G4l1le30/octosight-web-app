@@ -14,8 +14,9 @@ for backward compatibility.
 
 import csv
 import io
+import os
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, BackgroundTasks
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
@@ -53,15 +54,72 @@ def list_tickets(
     )
 
 
+@router.patch("/{ticket_id}/status")
+def update_ticket_status(
+    ticket_id: str,
+    data: dict,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_permission("tickets.edit")),
+):
+    """Update ticket status (used by Kanban drag-and-drop)."""
+    status = data.get("status")
+    if not status:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=400, detail="status is required")
+
+    ticket = db.query(Ticket).filter(Ticket.ticket_id == ticket_id).first()
+    if not ticket:
+        raise NotFoundException("Ticket not found")
+
+    ticket.status = status
+    from datetime import datetime, timezone
+    ticket.updated_at = datetime.now(timezone.utc)
+    db.commit()
+    db.refresh(ticket)
+
+    from app.modules.activity.service import ActivityService
+    ActivityService.log_ticket_updated(
+        db, current_user.id, ticket.ticket_id,
+        f"Status updated via Kanban: {status}",
+    )
+
+    return {"status": "updated", "ticket_id": ticket.ticket_id, "new_status": ticket.status}
+
+
 @router.post("/{ticket_id}/assign")
 def assign_ticket(
     ticket_id: str,
     data: TicketAssign,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_permission("tickets.assign")),
 ):
-    """Assign a ticket to a user."""
+    """Assign a ticket to a user by email and send notification."""
+    from app.modules.notifications.service import send_email_notification
+
     ticket = TicketService.assign_ticket(db, ticket_id, data.assigned_to, current_user)
+
+    assignee_user = db.query(User).filter(User.email == data.assigned_to).first()
+    if assignee_user and assignee_user.email:
+        frontend_url = os.getenv("NEXT_PUBLIC_API_URL", "http://localhost:3000").rstrip("/")
+        send_email_notification(
+            background_tasks=background_tasks,
+            subject=f"OctoSight - Ticket Assigned [{ticket.ticket_id}]",
+            email_to=assignee_user.email,
+            template_name="assign_notify.html",
+            template_body={
+                "assignee_name": assignee_user.full_name or assignee_user.email,
+                "ticket_id": ticket.ticket_id,
+                "ticket_type": ticket.type or "N/A",
+                "ticket_url": ticket.url or "N/A",
+                "ticket_sender": ticket.sender_numbers or "N/A",
+                "risk_score": ticket.risk_score or 0,
+                "priority": ticket.priority or "N/A",
+                "status": ticket.status or "N/A",
+                "summary": (ticket.summary or "")[:300],
+                "investigate_url": f"{frontend_url}/admin/investigate/{ticket.ticket_id}",
+            },
+        )
     return {"status": "assigned", "ticket_id": ticket.ticket_id, "assigned_to": ticket.assigned_to}
 
 

@@ -138,7 +138,7 @@ export default function ModuleDetailPage() {
     }, 1000);
     
     return () => clearInterval(interval);
-  }, [moduleId, mod]);
+  }, [moduleId, mod, user]);
 
   const handleArticleClick = (articleId: string, url: string) => {
     window.open(url, "_blank", "noopener,noreferrer");

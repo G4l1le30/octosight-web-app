@@ -460,7 +460,7 @@ async def _persist_attachment_to_supabase(
         )
 
 
-async def _generate_education_recommendation_for_ticket(ticket_id: int, user_email: Optional[str] = None) -> None:
+async def _generate_education_recommendation_for_ticket(ticket_id: str, user_email: Optional[str] = None) -> None:
     """Generate education recommendation after the main response returns and optionally send email."""
     db = SessionLocal()
     try:
@@ -798,19 +798,19 @@ async def create_report(
     db.commit()
     db.refresh(db_ticket)
 
+    from app.modules.detection.similarity import invalidate_cache as invalidate_similarity_cache
+    invalidate_similarity_cache()
+
     ActivityService.log_ticket_created(
         db, current_user.id, db_ticket.ticket_id,
         f"Report submitted: {report_type} — {url or sender_numbers or 'N/A'}",
     )
 
-    if current_user and current_user.email:
-        background_tasks.add_task(
-            _generate_education_recommendation_for_ticket, db_ticket.id, current_user.email
-        )
-    else:
-        background_tasks.add_task(
-            _generate_education_recommendation_for_ticket, db_ticket.id, None
-        )
+    import asyncio
+    email_param = current_user.email if current_user and current_user.email else None
+    asyncio.create_task(
+        _generate_education_recommendation_for_ticket(db_ticket.id, email_param)
+    )
 
     return db_ticket
 
@@ -1077,8 +1077,9 @@ def _build_explain_prompt(request: ExplainRequest) -> tuple[str, str]:
     """Build the Gemini prompt and return (prompt, flags_str)."""
     flags_str = ", ".join(request.flags) if request.flags else "none"
     prompt = f"""You are a cybersecurity assistant for a bank's anti-phishing system.
-Generate a VERY BRIEF explanation (1-2 short sentences, max 40 words total) for a bank customer.
-Explain what the user submitted and why the system gave the result it did.
+Generate a concise explanation (3-4 sentences) for a bank customer.
+Explain WHAT the user submitted and WHY the system gave the result it did.
+Describe the specific threat indicators found (e.g., URL shorteners, malicious keywords, suspicious patterns, brand impersonation).
 Use clear, simple English. Do NOT use markdown. Do NOT use first-person voice.
 
 USER INPUT:
@@ -1092,7 +1093,7 @@ SYSTEM RESULT:
 - Flags: {flags_str}
 - Detected Scenario: {request.detected_scam_type or 'N/A'}
 
-Generate the explanation now:"""
+Generate the explanation now, mentioning the specific flags and indicators that triggered the detection:"""
     return prompt, flags_str
 
 
@@ -1103,19 +1104,46 @@ def _call_gemini_explain(request: ExplainRequest) -> str:
     if not client or GeminiClient.is_circuit_open():
         raise RuntimeError("Gemini unavailable (client or circuit open)")
     from google.genai import types as gtypes
-    response = client.models.generate_content(
-        model='gemini-2.5-flash',
-        contents=prompt,
-        config=gtypes.GenerateContentConfig(
-            safety_settings=[
-                gtypes.SafetySetting(category='HARM_CATEGORY_DANGEROUS_CONTENT', threshold='BLOCK_NONE'),
-            ]
-        )
-    )
-    explanation = response.text.strip()
-    if not explanation:
-        raise RuntimeError("Gemini returned empty explanation")
-    return explanation
+
+    max_retries = 3
+    last_err = None
+    for attempt in range(1, max_retries + 1):
+        model = GeminiClient.get_model()
+        try:
+            response = client.models.generate_content(
+                model=model,
+                contents=prompt,
+                config=gtypes.GenerateContentConfig(
+                    safety_settings=[
+                        gtypes.SafetySetting(category='HARM_CATEGORY_DANGEROUS_CONTENT', threshold='BLOCK_NONE'),
+                    ]
+                )
+            )
+            explanation = response.text.strip()
+            if not explanation:
+                raise RuntimeError("Gemini returned empty explanation")
+            return explanation
+        except Exception as e:
+            last_err = e
+            err_str = str(e)
+            if "503" in err_str or "UNAVAILABLE" in err_str:
+                GeminiClient.rotate_model_on_overload(retry_delay_seconds=15.0)
+                if attempt < max_retries:
+                    wait = 2 ** attempt
+                    print(f"[Gemini Explain] 503 on model {model}, retry {attempt}/{max_retries} after {wait}s")
+                    time.sleep(wait)
+                continue
+            if "429" in err_str or "RESOURCE_EXHAUSTED" in err_str:
+                delay = GeminiClient.extract_retry_delay(e)
+                GeminiClient.rotate_key_on_exhaustion(delay)
+                if attempt < max_retries:
+                    wait = 2 ** attempt
+                    print(f"[Gemini Explain] 429 on key, retry {attempt}/{max_retries} after {wait}s")
+                    time.sleep(wait)
+                continue
+            raise  # non-retryable error
+
+    raise RuntimeError(f"Gemini explain failed after {max_retries} retries: {last_err}")
 
 
 def _fallback_explain(request: ExplainRequest) -> str:
@@ -1127,6 +1155,8 @@ def _fallback_explain(request: ExplainRequest) -> str:
         f"{f'({request.url}) ' if request.url else ''}"
         f"was flagged as {risk} (score: {request.score:.0f}/100). "
         f"System detected the following indicators: {flags_str}. "
+        f"These patterns are commonly associated with phishing attempts, including URL obfuscation, "
+        f"brand impersonation keywords, and suspicious sender behavior. "
         f"Please review the details above and contact your bank if you shared any personal information."
     )
 
@@ -1150,7 +1180,9 @@ def _get_explanation(request: ExplainRequest) -> dict:
 
 def _handle_gemini_error(e: Exception) -> None:
     err = str(e)
-    if "429" in err or "RESOURCE_EXHAUSTED" in err:
+    if "503" in err or "UNAVAILABLE" in err:
+        GeminiClient.rotate_model_on_overload(retry_delay_seconds=30.0)
+    elif "429" in err or "RESOURCE_EXHAUSTED" in err:
         delay = GeminiClient.extract_retry_delay(e)
         if delay is not None:
             GeminiClient.rotate_key_on_exhaustion(delay)

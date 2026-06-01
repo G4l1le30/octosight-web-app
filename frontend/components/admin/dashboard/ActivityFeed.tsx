@@ -9,7 +9,6 @@ import {
   Shield,
   UserPlus,
   Flag,
-  RefreshCw,
   AlertCircle,
 } from "lucide-react";
 
@@ -35,34 +34,29 @@ const ACTIVITY_COLORS: Record<
   { border: string; bg: string; icon: string }
 > = {
   ticket_created: {
-    border: "border-l-blue-500",
-    bg: "bg-blue-50",
-    icon: "text-blue-600",
+    border: "border-l-neutral-border",
+    bg: "bg-neutral-page",
+    icon: "text-secondary/60",
   },
   ticket_updated: {
-    border: "border-l-amber-500",
-    bg: "bg-amber-50",
-    icon: "text-amber-600",
+    border: "border-l-neutral-border",
+    bg: "bg-neutral-page",
+    icon: "text-secondary/60",
   },
   blacklist_added: {
-    border: "border-l-red-500",
-    bg: "bg-red-50",
-    icon: "text-red-600",
+    border: "border-l-neutral-border",
+    bg: "bg-neutral-page",
+    icon: "text-secondary/60",
   },
   blacklist_removed: {
-    border: "border-l-emerald-500",
-    bg: "bg-emerald-50",
-    icon: "text-emerald-600",
-  },
-  user_registered: {
-    border: "border-l-purple-500",
-    bg: "bg-purple-50",
-    icon: "text-purple-600",
+    border: "border-l-neutral-border",
+    bg: "bg-neutral-page",
+    icon: "text-secondary/60",
   },
   report_submitted: {
-    border: "border-l-indigo-500",
-    bg: "bg-indigo-50",
-    icon: "text-indigo-600",
+    border: "border-l-neutral-border",
+    bg: "bg-neutral-page",
+    icon: "text-secondary/60",
   },
 };
 
@@ -126,7 +120,10 @@ export const ActivityFeed: React.FC = () => {
       const res = await fetch("/api/v1/activity?page=1&per_page=10");
       if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`);
       const data: ActivityResponse = await res.json();
-      setActivities(data.items);
+      const filtered = data.items
+        .filter((item) => item.activity_type !== "user_registered")
+        .slice(0, 4);
+      setActivities(filtered);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
@@ -139,19 +136,9 @@ export const ActivityFeed: React.FC = () => {
   }, [fetchActivities]);
 
   return (
-    <div className="card p-6 md:p-8 text-center h-full flex flex-col">
-      <div className="flex items-center justify-center mb-6">
+    <div className="card p-6 md:p-8 h-full flex flex-col">
+      <div className="mb-6">
         <h3 className="font-bold text-xl text-secondary">Activity Feed</h3>
-      </div>
-      <div className="flex justify-center mb-2">
-        <button
-          onClick={fetchActivities}
-          disabled={loading}
-          className="btn-ghost p-2"
-          title="Refresh"
-        >
-          <RefreshCw className={`size-4 ${loading ? "animate-spin" : ""}`} />
-        </button>
       </div>
 
       <div className="flex-1 overflow-y-auto min-h-0">
@@ -179,9 +166,11 @@ export const ActivityFeed: React.FC = () => {
             </button>
           </div>
         ) : activities.length === 0 ? (
-          <p className="py-8 text-sm text-center opacity-40 font-semibold">
-            No recent activity
-          </p>
+          <div className="flex-1 flex items-center justify-center">
+            <p className="text-sm text-secondary/40 font-semibold">
+              No recent activity
+            </p>
+          </div>
         ) : (
           <div className="space-y-3">
             {activities.map((item) => {
@@ -191,7 +180,7 @@ export const ActivityFeed: React.FC = () => {
               return (
                 <div
                   key={item.id}
-                  className={`flex items-center justify-center gap-4 p-4 rounded-xl border-l-4 ${colors.border} ${colors.bg} transition-all`}
+                  className={`flex items-start gap-4 p-4 rounded-xl border-l-4 ${colors.border} ${colors.bg} transition-all`}
                 >
                   <div
                     className={`size-9 rounded-lg flex items-center justify-center shrink-0 bg-white shadow-sm ${colors.icon}`}

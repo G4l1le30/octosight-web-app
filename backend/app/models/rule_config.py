@@ -8,6 +8,7 @@ Admins can CRUD these via an API, making the system adaptive
 without code deployments.
 """
 
+import uuid
 from datetime import datetime, timezone
 
 from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text
@@ -18,7 +19,7 @@ from app.db.base import Base
 class RuleConfig(Base):
     __tablename__ = "rule_config"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     config_type = Column(String(50), nullable=False, index=True)
     # One of: keyword, scam_scenario, tld, shortener, brand_term
     key = Column(String(255), nullable=False)

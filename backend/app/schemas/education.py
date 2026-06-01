@@ -42,7 +42,7 @@ class EducationModuleCreate(BaseModel):
 
 
 class QuizAttemptRead(BaseModel):
-    id: int
+    id: str
     score: float
     passed: bool
     attempt_number: int
@@ -71,7 +71,7 @@ class UserLearningProgressUpdate(BaseModel):
 
 
 class UserLearningProgressRead(BaseModel):
-    id: int
+    id: str
     user_id: str
     module_id: str
     status: str
@@ -105,7 +105,7 @@ class QuizResult(BaseModel):
     correct_answers: int
     questions_with_explanations: list[dict[str, Any]]
     passed: bool
-    attempt_id: int
+    attempt_id: str
 
 
 class EducationRecommendation(BaseModel):

@@ -3,22 +3,18 @@
 export const dynamic = "force-dynamic";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { useRouter } from "next/navigation";
 import {
   Plus,
   Edit2,
-  Save,
   X,
   Loader2,
-  Filter,
-  Shield,
-  ToggleRight,
-  ToggleLeft,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Pagination } from "@/components/ui/Pagination";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
+import { AdminHeader } from "@/components/admin/AdminHeader";
+import { RulesTable } from "@/components/admin/RulesTable";
 
 type ConfigType =
   | "keyword"
@@ -29,7 +25,7 @@ type ConfigType =
 
 interface RuleConfig {
   id: number;
-  config_type: ConfigType;
+  config_type: string;
   key: string;
   value: string;
   group: string | null;
@@ -41,7 +37,7 @@ interface RuleConfig {
 }
 
 interface RuleFormData {
-  config_type: ConfigType | "";
+  config_type: string;
   key: string;
   value: string;
   group: string;
@@ -76,7 +72,6 @@ const INITIAL_FORM: RuleFormData = {
 };
 
 export default function RuleConfigPage() {
-  const router = useRouter();
   const [activeTab, setActiveTab] = useState<ConfigType | "all">("all");
   const [rules, setRules] = useState<RuleConfig[]>([]);
   const [loading, setLoading] = useState(true);
@@ -251,220 +246,57 @@ export default function RuleConfigPage() {
   };
 
    return (
-    <div className="container mx-auto px-4 py-6 md:py-8">
-       {/* Header */}
-       <div className="flex items-center gap-3 md:gap-4 mb-6 md:mb-8">
-          <button
-            onClick={() => router.back()}
-            className="p-2 hover:bg-neutral-border rounded-full transition-all"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6 text-secondary"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
+    <>
+      <AdminHeader title="Rule Configuration" subtitle="Manage detection rules for keywords, TLDs, shorteners, and more." stat={{ label: "Total Rules", value: rules.length }} />
+
+      <div className="container mx-auto px-4 pb-6 md:pb-8">
+        {/* Tabs + Add Rule */}
+        <div className="flex flex-wrap items-center gap-2 mb-6">
+          {TABS.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={cn(
+                "flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm transition-all",
+                activeTab === tab.id
+                  ? "bg-secondary text-white shadow-md scale-105"
+                  : "bg-white text-secondary/80 border border-neutral-border hover:border-secondary/40 hover:bg-neutral-page",
+              )}
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M10 19l-7-7m0 0l7-7m-7 7h18"
-              />
-            </svg>
-          </button>
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-secondary">
-              Rule Configuration
-            </h1>
-            <p className="text-secondary font-medium opacity-80">
-              Manage dynamic detection rules for keywords, TLDs, shorteners, and
-              more.
-            </p>
+              {tab.label}
+            </button>
+          ))}
+          <div className="ml-auto">
+            <button
+              onClick={openAddModal}
+              className="flex items-center gap-2 px-5 py-3 bg-secondary text-white rounded-xl font-bold text-sm hover:opacity-90 transition-all shadow-md"
+            >
+              <Plus className="size-4" />
+              Add Rule
+            </button>
           </div>
-       </div>
-
-      {/* Tabs + Add Rule */}
-      <div className="flex flex-wrap items-center gap-2 mb-6">
-        {TABS.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={cn(
-              "flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm transition-all",
-              activeTab === tab.id
-                ? "bg-secondary text-white shadow-md scale-105"
-                : "bg-white text-secondary/80 border border-neutral-border hover:border-secondary/40 hover:bg-neutral-page",
-            )}
-          >
-            {tab.label}
-          </button>
-        ))}
-        <div className="ml-auto">
-          <button
-            onClick={openAddModal}
-            className="flex items-center gap-2 px-5 py-3 bg-secondary text-white rounded-xl font-bold text-sm hover:opacity-90 transition-all shadow-md"
-          >
-            <Plus className="size-4" />
-            Add Rule
-          </button>
         </div>
-      </div>
 
-      {/* Table */}
-      <div className="card bg-white border border-neutral-border shadow-sm rounded-3xl overflow-hidden">
-        {loading ? (
-          <div className="p-20 text-center flex flex-col items-center gap-3">
-            <div className="size-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-            <p className="text-sm font-semibold text-secondary/60">
-              Loading rule configurations...
-            </p>
-          </div>
-        ) : rules.length === 0 ? (
-          <div className="p-20 text-center max-w-md mx-auto">
-            <div className="size-16 bg-neutral-page rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <Filter className="size-8 text-secondary/20" />
-            </div>
-            <p className="text-secondary font-bold text-base md:text-lg">
-              No rules found
-            </p>
-            <p className="text-secondary/60 text-sm mt-2 font-medium">
-              {activeTab === "all"
-                ? "No detection rules have been configured yet."
-                : `No ${formatType(activeTab as ConfigType)} rules configured yet.`}
-            </p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead className="bg-neutral-page/50 text-sm font-semibold text-secondary border-b border-neutral-border">
-                <tr>
-                  <th className="px-6 md:px-8 py-4 md:py-5">Type</th>
-                  <th className="px-6 md:px-8 py-4 md:py-5">Key</th>
-                  <th className="px-6 md:px-8 py-4 md:py-5">Group</th>
-                  <th className="px-6 md:px-8 py-4 md:py-5 text-center">
-                    Score
-                  </th>
-                  <th className="px-6 md:px-8 py-4 md:py-5 text-center">
-                    Active
-                  </th>
-                  <th className="px-6 md:px-8 py-4 md:py-5">Description</th>
-                  <th className="px-6 md:px-8 py-4 md:py-5 text-right">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-neutral-border">
-                {paginatedRules.map((rule) => (
-                  <tr
-                    key={rule.id}
-                    className="hover:bg-neutral-page/30 transition-colors group"
-                  >
-                    <td className="px-6 py-4">
-                      <span className="inline-flex items-center px-2.5 py-1 bg-neutral-page text-xs font-bold text-secondary rounded-lg">
-                        {formatType(rule.config_type)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex flex-col">
-                        <span className="font-semibold text-secondary text-sm break-all">
-                          {rule.key}
-                        </span>
-                        <span className="text-xs font-medium text-secondary/60 mt-0.5 break-all">
-                          {rule.value}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm font-semibold text-secondary/80">
-                        {rule.group || (
-                          <span className="opacity-30 font-medium">-</span>
-                        )}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <span
-                        className={cn(
-                          "inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold",
-                          rule.score >= 70
-                            ? "bg-risk-high/10 text-risk-high"
-                            : rule.score >= 40
-                              ? "bg-risk-medium/10 text-risk-medium"
-                              : "bg-risk-low/10 text-risk-low",
-                        )}
-                      >
-                        {rule.score}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <span
-                        className={cn(
-                          "inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold",
-                          rule.is_active
-                            ? "bg-green-100 text-green-700"
-                            : "bg-neutral-page text-secondary/60",
-                        )}
-                      >
-                        <span
-                          className={cn(
-                            "size-1.5 rounded-full",
-                            rule.is_active ? "bg-green-500" : "bg-secondary/30",
-                          )}
-                        />
-                        {rule.is_active ? "Active" : "Inactive"}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <p className="text-sm font-semibold text-secondary/80 max-w-xs break-words">
-                        {rule.description || (
-                          <span className="opacity-30 font-medium">-</span>
-                        )}
-                      </p>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        <button
-                          onClick={() => openEditModal(rule)}
-                          className="p-2.5 text-secondary/60 hover:text-primary hover:bg-primary/5 rounded-xl transition-all"
-                          title="Edit rule"
-                        >
-                          <Edit2 className="size-4" />
-                        </button>
-                        <button
-                          onClick={() => handleToggleClick(rule)}
-                          disabled={deactivating === rule.id}
-                          className={
-                            rule.is_active
-                              ? "p-2.5 text-secondary/60 hover:text-amber-600 hover:bg-amber-50 rounded-xl transition-all disabled:opacity-50"
-                              : "p-2.5 text-secondary/60 hover:text-green-600 hover:bg-green-50 rounded-xl transition-all disabled:opacity-50"
-                          }
-                          title={rule.is_active ? "Deactivate rule" : "Reactivate rule"}
-                        >
-                          {deactivating === rule.id ? (
-                            <Loader2 className="size-4 animate-spin" />
-                          ) : rule.is_active ? (
-                            <ToggleRight className="size-4" />
-                          ) : (
-                            <ToggleLeft className="size-4" />
-                          )}
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-        {rules.length > 0 && (
-          <Pagination
-            currentPage={currentPage}
-            totalItems={rules.length}
-            itemsPerPage={itemsPerPage}
-            onPageChange={setCurrentPage}
-            onItemsPerPageChange={(n) => { setItemsPerPage(n); setCurrentPage(1); }}
+        {/* Table */}
+        <div className="card bg-white border border-neutral-border shadow-sm rounded-3xl">
+          <RulesTable
+            rules={paginatedRules}
+            loading={loading}
+            emptyMessage={activeTab === "all" ? "No detection rules have been configured yet." : `No ${formatType(activeTab as ConfigType)} rules configured yet.`}
+            deactivatingId={deactivating}
+            onEdit={openEditModal}
+            onToggle={handleToggleClick}
           />
-        )}
+          {rules.length > 0 && (
+            <Pagination
+              currentPage={currentPage}
+              totalItems={rules.length}
+              itemsPerPage={itemsPerPage}
+              onPageChange={setCurrentPage}
+              onItemsPerPageChange={(n) => { setItemsPerPage(n); setCurrentPage(1); }}
+            />
+          )}
+        </div>
       </div>
 
        {/* Modal */}
@@ -589,7 +421,7 @@ export default function RuleConfigPage() {
               </div>
 
                {/* group (optional) */}
-               <div className="space-y-2 text-center">
+               <div className="space-y-2">
                  <label className="text-sm font-semibold text-secondary block">
                    Group{" "}
                    <span className="font-normal text-secondary/60">
@@ -680,16 +512,18 @@ export default function RuleConfigPage() {
                  disabled={saving}
                  className="flex items-center gap-2 px-5 py-3 bg-secondary text-white font-bold text-sm rounded-xl hover:opacity-90 transition-all disabled:opacity-50 shadow-md"
                >
-                 {saving ? (
-                   <Loader2 className="size-4 animate-spin" />
-                 ) : (
-                   <Save className="size-4" />
-                 )}
-                 {saving
-                   ? "Saving..."
-                   : editingRule
-                     ? "Update Rule"
-                     : "Create Rule"}
+                  {saving ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : editingRule ? (
+                    <Edit2 className="size-4" />
+                  ) : (
+                    <Plus className="size-4" />
+                  )}
+                  {saving
+                    ? "Saving..."
+                    : editingRule
+                      ? "Update Rule"
+                      : "Create Rule"}
                </button>
              </div>
           </div>
@@ -710,6 +544,6 @@ export default function RuleConfigPage() {
         onConfirm={confirmToggle}
         isLoading={deactivating !== null}
       />
-    </div>
+    </>
   );
 }

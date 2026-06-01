@@ -345,6 +345,14 @@ NEXT_PUBLIC_API_URL=http://localhost:8000
 | `frontend/components/layout/Navbar.tsx` | Admin link uses `can("dashboard.view")` |
 | `frontend/app/(admin)/admin/users/page.tsx` | 7-role dropdown, Edit button gated |
 
+## Catatan Teknis
+
+| Item | Keterangan |
+|---|---|
+| Status "Need More Info" | Backend menyimpan status sebagai string bebas (`String(50)`). Frontend merendernya sebagai badge. Tidak perlu enum ketat — backend hanya menyimpan, frontend yang merender. |
+| ML path inconsistency | `ml/train.py` menulis ke `ml/artifacts/model.pkl`; backend membaca dari `models/spam_pipeline.pkl` (via `config.py`). Setelah training manual, copy file ke `backend/models/`. Path backend bisa diubah via env `ML_MODEL_PATH`. |
+| `torch`/`sentence-transformers` dikomentari | Keputusan sadar — menghindari Docker build timeout. Model sklearn (.pkl) sudah cukup untuk demo. |
+
 ## Referensi Cepat
 
 - PRD & fitur lengkap → `OCTOSIGHT_PRD.md`

@@ -42,36 +42,67 @@ const Navbar: React.FC = () => {
         <nav className="hidden lg:flex items-stretch gap-4 md:gap-6 h-full">
           {isAdminRoute ? (
             <>
-              <Link href="/" className={getLinkClass("/")}>
-                Home
-              </Link>
-              <Link href="/admin" className={getLinkClass("/admin")}>
-                Dashboard
-              </Link>
-              <Link
-                href="/admin/triage"
-                className={getLinkClass("/admin/triage")}
-              >
-                Triage
-              </Link>
-              <Link
-                href="/admin/blacklist"
-                className={getLinkClass("/admin/blacklist")}
-              >
-                Blacklist
-              </Link>
-              <Link
-                href="/admin/rule-config"
-                className={getLinkClass("/admin/rule-config")}
-              >
-                Rules
-              </Link>
-              <Link
-                href="/admin/users"
-                className={getLinkClass("/admin/users")}
-              >
-                Users
-              </Link>
+              {can("dashboard.view") && (
+                <Link href="/admin" className={getLinkClass("/admin")}>
+                  Dashboard
+                </Link>
+              )}
+              {can("tickets.view") && (
+                <>
+                  <Link
+                    href="/admin/triage"
+                    className={getLinkClass("/admin/triage")}
+                  >
+                    Triage
+                  </Link>
+                  <Link
+                    href="/admin/kanban"
+                    className={getLinkClass("/admin/kanban")}
+                  >
+                    Kanban
+                  </Link>
+                </>
+              )}
+              {can("blacklist.view") && (
+                <Link
+                  href="/admin/blacklist"
+                  className={getLinkClass("/admin/blacklist")}
+                >
+                  Blacklist
+                </Link>
+              )}
+              {can("rules.view") && (
+                <Link
+                  href="/admin/rule-config"
+                  className={getLinkClass("/admin/rule-config")}
+                >
+                  Rules
+                </Link>
+              )}
+              {can("transactions.view") && (
+                <>
+                  <Link
+                    href="/admin/transactions"
+                    className={getLinkClass("/admin/transactions")}
+                  >
+                    Transactions
+                  </Link>
+                  <Link
+                    href="/admin/transactions/anomalies"
+                    className={getLinkClass("/admin/transactions/anomalies")}
+                  >
+                    Anomalies
+                  </Link>
+                </>
+              )}
+              {can("users.view") && (
+                <Link
+                  href="/admin/users"
+                  className={getLinkClass("/admin/users")}
+                >
+                  Users
+                </Link>
+              )}
             </>
           ) : (
             <>
@@ -149,48 +180,69 @@ const Navbar: React.FC = () => {
         <div className="lg:hidden bg-white border-t border-neutral-border px-4 py-4 space-y-2 animate-in slide-in-from-top-2 duration-200">
           {isAdminRoute ? (
             <>
-              <Link
-                href="/"
-                onClick={() => setMobileOpen(false)}
-                className="block py-2 text-sm font-medium hover:text-primary"
-              >
-                Home
-              </Link>
-              <Link
-                href="/admin"
-                onClick={() => setMobileOpen(false)}
-                className="block py-2 text-sm font-medium hover:text-primary"
-              >
-                Dashboard
-              </Link>
-              <Link
-                href="/admin/triage"
-                onClick={() => setMobileOpen(false)}
-                className="block py-2 text-sm font-medium hover:text-primary"
-              >
-                Triage
-              </Link>
-              <Link
-                href="/admin/blacklist"
-                onClick={() => setMobileOpen(false)}
-                className="block py-2 text-sm font-medium hover:text-primary"
-              >
-                Blacklist
-              </Link>
-              <Link
-                href="/admin/rule-config"
-                onClick={() => setMobileOpen(false)}
-                className="block py-2 text-sm font-medium hover:text-primary"
-              >
-                Rules
-              </Link>
-              <Link
-                href="/admin/users"
-                onClick={() => setMobileOpen(false)}
-                className="block py-2 text-sm font-medium hover:text-primary"
-              >
-                Users
-              </Link>
+              {can("dashboard.view") && (
+                <Link
+                  href="/admin"
+                  onClick={() => setMobileOpen(false)}
+                  className="block py-2 text-sm font-medium hover:text-primary"
+                >
+                  Dashboard
+                </Link>
+              )}
+              {can("tickets.view") && (
+                <>
+                  <Link
+                    href="/admin/triage"
+                    onClick={() => setMobileOpen(false)}
+                    className="block py-2 text-sm font-medium hover:text-primary"
+                  >
+                    Triage
+                  </Link>
+                  <Link
+                    href="/admin/kanban"
+                    onClick={() => setMobileOpen(false)}
+                    className="block py-2 text-sm font-medium hover:text-primary"
+                  >
+                    Kanban
+                  </Link>
+                </>
+              )}
+              {can("blacklist.view") && (
+                <Link
+                  href="/admin/blacklist"
+                  onClick={() => setMobileOpen(false)}
+                  className="block py-2 text-sm font-medium hover:text-primary"
+                >
+                  Blacklist
+                </Link>
+              )}
+              {can("rules.view") && (
+                <Link
+                  href="/admin/rule-config"
+                  onClick={() => setMobileOpen(false)}
+                  className="block py-2 text-sm font-medium hover:text-primary"
+                >
+                  Rules
+                </Link>
+              )}
+              {can("transactions.view") && (
+                <Link
+                  href="/admin/transactions"
+                  onClick={() => setMobileOpen(false)}
+                  className="block py-2 text-sm font-medium hover:text-primary"
+                >
+                  Transactions
+                </Link>
+              )}
+              {can("users.view") && (
+                <Link
+                  href="/admin/users"
+                  onClick={() => setMobileOpen(false)}
+                  className="block py-2 text-sm font-medium hover:text-primary"
+                >
+                  Users
+                </Link>
+              )}
             </>
           ) : (
             <>

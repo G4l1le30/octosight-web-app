@@ -1,5 +1,6 @@
 """feedback.py — ML feedback model for collecting admin FP/TP labels."""
 
+import uuid
 from datetime import datetime, timezone
 
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Text
@@ -12,7 +13,7 @@ class MLFeedback(Base):
 
     __tablename__ = "ml_feedback"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     ticket_id = Column(String(50), ForeignKey("tickets.ticket_id", ondelete="CASCADE"), nullable=False, index=True)
     admin_id = Column(String(36), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     feedback_type = Column(String(10), nullable=False)  # fp, tp, fn, tn

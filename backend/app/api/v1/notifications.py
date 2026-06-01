@@ -42,7 +42,7 @@ def get_unread_count(
 
 @router.patch("/{notification_id}/read")
 def mark_notification_read(
-    notification_id: int,
+    notification_id: str,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -61,7 +61,7 @@ def mark_all_notifications_read(
 
 @router.delete("/{notification_id}")
 def delete_notification(
-    notification_id: int,
+    notification_id: str,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):

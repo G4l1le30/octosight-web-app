@@ -12,6 +12,9 @@ from app.api.v1 import notifications
 from app.api.v1 import activity
 from app.api.v1 import users
 from app.api.v1 import rbac
+from app.api.v1 import transactions
+from app.api.v1 import url_scanner
+from app.api.v1 import similarity
 
 v1_router = APIRouter(prefix="/api/v1")
 
@@ -23,3 +26,6 @@ v1_router.include_router(notifications.router)
 v1_router.include_router(activity.router)
 v1_router.include_router(users.router)
 v1_router.include_router(rbac.router)
+v1_router.include_router(transactions.router)
+v1_router.include_router(url_scanner.router)
+v1_router.include_router(similarity.router)

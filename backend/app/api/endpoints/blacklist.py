@@ -33,7 +33,7 @@ class BlacklistAddRequest(BaseModel):
 
 
 class BlacklistResponse(BaseModel):
-    id: int
+    id: str
     url: str
     domain: str
     reason: Optional[str]
@@ -54,7 +54,7 @@ class AccountBlacklistAddRequest(BaseModel):
 
 
 class AccountBlacklistResponse(BaseModel):
-    id: int
+    id: str
     account_number: str
     bank_name: str
     reason: Optional[str]
@@ -74,7 +74,7 @@ class PhoneBlacklistAddRequest(BaseModel):
 
 
 class PhoneBlacklistResponse(BaseModel):
-    id: int
+    id: str
     phone_number: str
     reason: Optional[str]
     ticket_id: Optional[str]
@@ -93,7 +93,7 @@ class EmailBlacklistAddRequest(BaseModel):
 
 
 class EmailBlacklistResponse(BaseModel):
-    id: int
+    id: str
     email: str
     reason: Optional[str]
     ticket_id: Optional[str]
@@ -197,7 +197,7 @@ def list_blacklist(
 
 @router.delete("/{entry_id}", summary="Remove URL from blacklist (admin only)")
 def remove_from_blacklist(
-    entry_id: int,
+    entry_id: str,
     db: Session = Depends(get_db),
     admin=Depends(require_admin),
 ):
@@ -305,7 +305,7 @@ def list_account_blacklist(db: Session = Depends(get_db), _admin=Depends(require
 
 
 @router.delete("/accounts/{entry_id}", summary="Remove account from blacklist")
-def remove_account_from_blacklist(entry_id: int, db: Session = Depends(get_db), _admin=Depends(require_admin)):
+def remove_account_from_blacklist(entry_id: str, db: Session = Depends(get_db), _admin=Depends(require_admin)):
     entry = db.query(BlacklistedAccount).filter(BlacklistedAccount.id == entry_id).first()
     if not entry:
         raise HTTPException(status_code=404, detail="Entry not found")
@@ -380,7 +380,7 @@ def list_phone_blacklist(db: Session = Depends(get_db), _admin=Depends(require_a
 
 
 @router.delete("/phones/{entry_id}", summary="Remove phone from blacklist")
-def remove_phone_from_blacklist(entry_id: int, db: Session = Depends(get_db), _admin=Depends(require_admin)):
+def remove_phone_from_blacklist(entry_id: str, db: Session = Depends(get_db), _admin=Depends(require_admin)):
     entry = db.query(BlacklistedPhone).filter(BlacklistedPhone.id == entry_id).first()
     if not entry:
         raise HTTPException(status_code=404, detail="Entry not found")
@@ -455,7 +455,7 @@ def list_email_blacklist(db: Session = Depends(get_db), _admin=Depends(require_a
 
 
 @router.delete("/emails/{entry_id}", summary="Remove email from blacklist")
-def remove_email_from_blacklist(entry_id: int, db: Session = Depends(get_db), _admin=Depends(require_admin)):
+def remove_email_from_blacklist(entry_id: str, db: Session = Depends(get_db), _admin=Depends(require_admin)):
     entry = db.query(BlacklistedEmail).filter(BlacklistedEmail.id == entry_id).first()
     if not entry:
         raise HTTPException(status_code=404, detail="Entry not found")

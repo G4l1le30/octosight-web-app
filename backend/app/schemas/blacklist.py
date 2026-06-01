@@ -35,7 +35,7 @@ class BlacklistCheckRequest(BaseModel):
 
 
 class BlacklistEntryResponse(BaseModel):
-    id: int
+    id: str
     value: str
     reason: Optional[str] = None
     ticket_id: Optional[str] = None

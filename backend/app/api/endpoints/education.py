@@ -40,7 +40,7 @@ def get_module_detail(
 @router.get("/modules/{module_id}/quiz-attempts/{attempt_id}")
 def get_quiz_attempt(
     module_id: str,
-    attempt_id: int,
+    attempt_id: str,
     db: Session = Depends(get_db),
     current_user = Depends(get_current_user)
 ):

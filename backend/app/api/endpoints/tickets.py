@@ -11,6 +11,7 @@ Routes:
 """
 
 import os
+import time
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
@@ -25,6 +26,12 @@ from app.schemas.ticket import TicketResponse
 from app.modules.notifications.service import send_email_notification
 from app.modules.activity.service import ActivityService
 from pydantic import BaseModel
+
+class ReportAccuracyRequest(BaseModel):
+    message: str = ""
+
+class NotifySupportRequest(BaseModel):
+    message: str = ""
 
 class NotifyRequest(BaseModel):
     message: str
@@ -227,12 +234,16 @@ def generate_notes(
         Generate the investigation note now:"""
 
     # Try Gemini, fall back to a template note
-    try:
-        client = GeminiClient.get_client()
-        if client and not GeminiClient.is_circuit_open():
+    max_retries = 3
+    for attempt in range(1, max_retries + 1):
+        try:
+            client = GeminiClient.get_client()
+            if not client or GeminiClient.is_circuit_open():
+                break
             from google.genai import types as gtypes  # type: ignore
+            model = GeminiClient.get_model()
             response = client.models.generate_content(
-                model='gemini-2.5-flash',
+                model=model,
                 contents=prompt,
                 config=gtypes.GenerateContentConfig(
                     safety_settings=[
@@ -243,11 +254,25 @@ def generate_notes(
             suggestion = response.text.strip()
             if suggestion:
                 return {"suggestion": suggestion}
-    except Exception as e:
-        err = str(e)
-        if "429" in err or "RESOURCE_EXHAUSTED" in err:
-            GeminiClient.rotate_key_on_exhaustion(GeminiClient.extract_retry_delay(Exception(err)))
-        print(f"[Gemini Notes] Error: {err}")
+            break  # empty response, don't retry
+        except Exception as e:
+            err = str(e)
+            if "503" in err or "UNAVAILABLE" in err:
+                GeminiClient.rotate_model_on_overload(retry_delay_seconds=15.0)
+                if attempt < max_retries:
+                    wait = 2 ** attempt
+                    print(f"[Gemini Notes] 503 on model {model}, retry {attempt}/{max_retries} after {wait}s")
+                    time.sleep(wait)
+                    continue
+            elif "429" in err or "RESOURCE_EXHAUSTED" in err:
+                GeminiClient.rotate_key_on_exhaustion(GeminiClient.extract_retry_delay(Exception(err)))
+                if attempt < max_retries:
+                    wait = 2 ** attempt
+                    print(f"[Gemini Notes] 429 on key, retry {attempt}/{max_retries} after {wait}s")
+                    time.sleep(wait)
+                    continue
+            print(f"[Gemini Notes] Error: {err}")
+            break
 
     # Fallback: deterministic template (user-facing)
     risk_word = "high" if ticket.risk_score >= 70 else "moderate" if ticket.risk_score >= 35 else "low"
@@ -372,6 +397,60 @@ def notify_user(
     db.commit()
 
     return {"message": "Notification queued"}
+
+
+@router.post("/tickets/{ticket_id}/report-accuracy", summary="Report accuracy issue to admin")
+def report_accuracy(
+    ticket_id: str,
+    data: ReportAccuracyRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Send email to admin reporting an accuracy issue with the analysis."""
+    admin_email = "octosight.id@gmail.com"
+    ticket = db.query(Ticket).filter(Ticket.ticket_id == ticket_id).first()
+    ticket_info = f"{ticket.type} - {ticket.url or ticket.sender_numbers or 'N/A'}" if ticket else "Unknown"
+    send_email_notification(
+        background_tasks=BackgroundTasks(),
+        subject=f"OctoSight - Accuracy Issue Reported [{ticket_id}]",
+        email_to=admin_email,
+        template_name="report_accuracy.html",
+        template_body={
+            "ticket_id": ticket_id,
+            "reporter_name": current_user.full_name,
+            "reporter_email": current_user.email,
+            "ticket_info": ticket_info,
+            "message": data.message or "No additional details provided.",
+        },
+    )
+    return {"status": "sent", "to": admin_email}
+
+
+@router.post("/tickets/{ticket_id}/notify-support", summary="Notify support about ticket")
+def notify_support(
+    ticket_id: str,
+    data: NotifySupportRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Send email to admin requesting support/intervention."""
+    admin_email = "octosight.id@gmail.com"
+    ticket = db.query(Ticket).filter(Ticket.ticket_id == ticket_id).first()
+    ticket_info = f"{ticket.type} - {ticket.url or ticket.sender_numbers or 'N/A'}" if ticket else "Unknown"
+    send_email_notification(
+        background_tasks=BackgroundTasks(),
+        subject=f"OctoSight - Support Request [{ticket_id}]",
+        email_to=admin_email,
+        template_name="notify_support.html",
+        template_body={
+            "ticket_id": ticket_id,
+            "reporter_name": current_user.full_name,
+            "reporter_email": current_user.email,
+            "ticket_info": ticket_info,
+            "message": data.message or "Requesting admin attention on this ticket.",
+        },
+    )
+    return {"status": "sent", "to": admin_email}
 
 
 @router.get("/admin/download/{filename:path}", summary="Download evidence file (admin only)")

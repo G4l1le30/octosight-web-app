@@ -55,7 +55,7 @@ class NotificationRepository:
         return notification
 
     @staticmethod
-    def mark_read(db: Session, notification_id: int, user_id: str) -> bool:
+    def mark_read(db: Session, notification_id: str, user_id: str) -> bool:
         result = (
             db.query(Notification)
             .filter(Notification.id == notification_id, Notification.user_id == user_id)
@@ -75,7 +75,7 @@ class NotificationRepository:
         return count
 
     @staticmethod
-    def delete(db: Session, notification_id: int, user_id: str) -> bool:
+    def delete(db: Session, notification_id: str, user_id: str) -> bool:
         result = (
             db.query(Notification)
             .filter(Notification.id == notification_id, Notification.user_id == user_id)

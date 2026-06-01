@@ -58,11 +58,18 @@ async def _send_with_logging(message: MessageSchema, template_name: str):
     try:
         await fast_mail.send_message(message, template_name=template_name)
         logger.info("[Email] Sent: %s -> %s", message.subject, message.recipients)
+        print(f"[Email] Sent: {message.subject} -> {message.recipients}")
     except Exception as exc:
-        if "SMTPAuthenticationError" in str(exc):
+        err = str(exc)
+        if "SMTPAuthenticationError" in err:
             logger.critical("[Email] Authentication failed — check MAIL_PASSWORD.")
+            print(f"[Email] CRITICAL: Authentication failed: {err}")
+        elif "Connection refused" in err or "ConnectionError" in err or "timeout" in err.lower():
+            logger.error("[Email] Connection failed: %s", exc)
+            print(f"[Email] Connection failed: {err}")
         else:
             logger.error("[Email] Send failed: %s", exc)
+            print(f"[Email] Send failed: {err}")
 
 
 # ── Email Notification API (from old module, preserved for backward compat) ──
@@ -137,7 +144,7 @@ class NotificationService:
         )
 
     @staticmethod
-    def mark_read(db: Session, notification_id: int, user_id: str) -> bool:
+    def mark_read(db: Session, notification_id: str, user_id: str) -> bool:
         return NotificationRepository.mark_read(db, notification_id, user_id)
 
     @staticmethod
@@ -145,5 +152,5 @@ class NotificationService:
         return NotificationRepository.mark_all_read(db, user_id)
 
     @staticmethod
-    def delete(db: Session, notification_id: int, user_id: str) -> bool:
+    def delete(db: Session, notification_id: str, user_id: str) -> bool:
         return NotificationRepository.delete(db, notification_id, user_id)

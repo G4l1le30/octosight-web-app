@@ -4,6 +4,7 @@ ticket.py — Ticket ORM model and TicketAuditLog.
 Core entity representing a phishing/fraud report submitted by a user.
 """
 
+import uuid
 from datetime import datetime, timezone
 
 from sqlalchemy import Boolean, Column, DateTime, Float, ForeignKey, Integer, JSON, String, Text
@@ -14,7 +15,7 @@ from app.db.base import Base
 class Ticket(Base):
     __tablename__ = "tickets"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     ticket_id = Column(String(50), unique=True, index=True)
     url = Column(Text)
     type = Column(String(50))
@@ -51,8 +52,8 @@ class Ticket(Base):
     sla_deadline = Column(DateTime, nullable=True)
     sla_breached = Column(Boolean, default=False)
 
-    # Assignment (added in Phase 1)
-    assigned_to = Column(String(36), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    # Assignment
+    assigned_to = Column(String(255), nullable=True)
     assigned_at = Column(DateTime, nullable=True)
 
     # Relationships
@@ -65,7 +66,7 @@ class Ticket(Base):
 class TicketAuditLog(Base):
     __tablename__ = "ticket_audit_logs"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     ticket_id = Column(String(50), ForeignKey("tickets.ticket_id", ondelete="CASCADE"), nullable=False, index=True)
     admin_id = Column(String(36), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     action_taken = Column(String(255), nullable=False)

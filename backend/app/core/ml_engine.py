@@ -44,8 +44,11 @@ except Exception:
 # Alias to __main__ so joblib can find the class exactly as it was pickled.
 setattr(sys.modules['__main__'], 'SentenceTransformerWrapper', SentenceTransformerWrapper)
 
-# Resolve the path relative to this file (app/core/) up to backend/models/
-MODEL_PATH = os.path.join(os.path.dirname(__file__), '..', '..', 'models', 'spam_pipeline.pkl')
+from app.config import settings as _app_settings
+
+# Resolve path relative to backend root using settings (configurable via env)
+_BACKEND_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+MODEL_PATH = os.path.join(_BACKEND_ROOT, _app_settings.ml_model_path)
 
 _spam_model = None
 _spam_model_lock = threading.Lock()

@@ -3,7 +3,6 @@
 export const dynamic = "force-dynamic";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   ShieldOff,
@@ -57,7 +56,6 @@ export default function BlacklistPage() {
     type: "success" | "error";
     message: string;
   } | null>(null);
-  const router = useRouter();
 
   const showToast = (type: "success" | "error", message: string) => {
     setToast({ type, message });
@@ -158,35 +156,13 @@ export default function BlacklistPage() {
 
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 md:mb-8 gap-3 md:gap-4">
-        <div className="flex items-center gap-3 md:gap-4">
-          <button
-            onClick={() => router.back()}
-            className="p-2 hover:bg-neutral-border rounded-full transition-all"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6 text-secondary"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M10 19l-7-7m0 0l7-7m-7 7h18"
-              />
-            </svg>
-          </button>
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-secondary">
-              Global Blacklist
-            </h1>
-            <p className="text-secondary font-medium opacity-80">
-              Manage verified fraud indicators to protect the OctoSight
-              community.
-            </p>
-          </div>
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold text-secondary">
+            Global Blacklist
+          </h1>
+          <p className="text-secondary font-medium opacity-80">
+            Manage verified fraud indicators to protect the OctoSight community.
+          </p>
         </div>
         <div className="bg-risk-high/10 border border-risk-high/20 rounded-2xl px-6 py-4 flex items-center gap-3 md:gap-4">
           <div>
@@ -251,12 +227,10 @@ export default function BlacklistPage() {
               <thead className="bg-neutral-page/50 text-sm font-semibold text-secondary border-b border-neutral-border">
                 <tr>
                   <th className="px-6 md:px-8 py-4 md:py-5">Blocked {activeTab}</th>
-                  <th className="px-6 md:px-8 py-4 md:py-5">Reason / Modus</th>
+                  <th className="px-6 md:px-8 py-4 md:py-5 text-center">Reason / Modus</th>
                   <th className="px-6 md:px-8 py-4 md:py-5 text-center">Source Ticket</th>
-                  <th className="px-6 md:px-8 py-4 md:py-5">Date Added</th>
-                  <th className="px-6 md:px-8 py-4 md:py-5 text-right text-secondary font-bold">
-                    Actions
-                  </th>
+                  <th className="px-6 md:px-8 py-4 md:py-5 text-center">Date Added</th>
+                  <th className="px-6 md:px-8 py-4 md:py-5 text-center">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-border">
@@ -280,10 +254,10 @@ export default function BlacklistPage() {
                         )}
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <p className="text-sm font-semibold text-secondary/80 max-w-xs break-words">
+                    <td className="px-6 py-4 text-center">
+                      <p className="text-sm font-semibold text-secondary/80 max-w-xs break-words inline-block text-left">
                         {entry.reason || (
-                          <span className="opacity-30 font-medium">
+                          <span className="text-secondary/40 font-medium">
                             No details provided
                           </span>
                         )}
@@ -298,17 +272,17 @@ export default function BlacklistPage() {
                           {entry.ticket_id}
                         </Link>
                       ) : (
-                        <span className="text-xs font-semibold text-secondary opacity-30">
-                          -
+                        <span className="text-xs font-semibold text-secondary/40">
+                          None
                         </span>
                       )}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 text-center">
                       <span className="text-xs font-semibold text-secondary/80">
                         {formatDateTime(entry.created_at).date}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-right">
+                    <td className="px-6 py-4 text-center">
                       <button
                         onClick={() =>
                           handleRemoveClick(

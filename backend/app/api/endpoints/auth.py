@@ -247,6 +247,12 @@ def login(request: Request, data: LoginRequest, response: Response, db: Session 
             db.commit()
         raise HTTPException(status_code=401, detail="Incorrect password for this email address.")
 
+    if not user.is_active:
+        raise HTTPException(
+            status_code=403,
+            detail="Your account has been suspended. Please contact support.",
+        )
+
     # Reset attempts on success
     user.failed_login_attempts = 0
     user.locked_until = None

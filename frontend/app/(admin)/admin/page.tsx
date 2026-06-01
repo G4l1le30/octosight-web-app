@@ -9,6 +9,7 @@ import { IncidentTrendChart, TimeRange } from "@/components/admin/dashboard/Inci
 import { ThreatChannelChart } from "@/components/admin/dashboard/ThreatChannelChart";
 import { SecurityFlagAnalysis } from "@/components/admin/dashboard/SecurityFlagAnalysis";
 import { ActivityFeed } from "@/components/admin/dashboard/ActivityFeed";
+import { TeamPerformance } from "@/components/admin/dashboard/TeamPerformance";
 
 function buildTrendData(tickets: Ticket[], range: TimeRange) {
   const now = new Date();
@@ -198,6 +199,11 @@ export default function AdminDashboard() {
           <div className="order-2 md:order-2">
             <SecurityFlagAnalysis flagDist={stats.flagDist} />
           </div>
+        </div>
+
+        {/* Row 3: Team Performance */}
+        <div className="mb-6 md:mb-8">
+          <TeamPerformance />
         </div>
 
         {/* Recent Alerts Table Preview */}

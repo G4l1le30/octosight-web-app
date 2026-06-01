@@ -158,14 +158,14 @@ export default function TriagePage() {
       </div>
 
       {selectedIds.length > 0 && (
-        <div className="flex items-center gap-3 p-3 mb-4 bg-primary/5 border border-primary/20 rounded-lg flex-wrap">
+        <div className="flex items-center gap-3 p-4 mb-4 bg-neutral-page border border-neutral-border rounded-xl flex-wrap">
           <span className="text-sm font-bold text-secondary whitespace-nowrap">
             {selectedIds.length} selected
           </span>
           <select
             value={bulkStatus}
             onChange={(e) => setBulkStatus(e.target.value)}
-            className="text-xs border border-neutral-border rounded-lg px-2 py-1.5 outline-none focus:border-primary bg-white"
+            className="text-sm border border-neutral-border rounded-lg px-3 py-2 outline-none focus:border-primary bg-white"
           >
             <option value="">Status...</option>
             {STATUS_OPTIONS.map((s) => (
@@ -175,7 +175,7 @@ export default function TriagePage() {
           <select
             value={bulkPriority}
             onChange={(e) => setBulkPriority(e.target.value)}
-            className="text-xs border border-neutral-border rounded-lg px-2 py-1.5 outline-none focus:border-primary bg-white"
+            className="text-sm border border-neutral-border rounded-lg px-3 py-2 outline-none focus:border-primary bg-white"
           >
             <option value="">Priority...</option>
             {PRIORITY_OPTIONS.map((p) => (
@@ -187,7 +187,7 @@ export default function TriagePage() {
             value={bulkAssignTo}
             onChange={(e) => setBulkAssignTo(e.target.value)}
             placeholder="Assign to..."
-            className="text-xs border border-neutral-border rounded-lg px-2 py-1.5 w-36 outline-none focus:border-primary"
+            className="text-sm border border-neutral-border rounded-lg px-3 py-2 w-40 outline-none focus:border-primary"
           />
           <Button size="sm" onClick={handleBulkApply} loading={bulkApplying}>
             Apply

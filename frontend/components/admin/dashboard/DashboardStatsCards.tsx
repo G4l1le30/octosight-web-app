@@ -31,7 +31,7 @@ export const DashboardStatsCards: React.FC<DashboardStatsCardsProps> = ({ stats 
         },
       ].map((stat, idx) => (
         <div key={idx} className="card p-4 md:p-6 border-b-4 border-b-primary/10 text-center">
-          <p className="text-sm font-bold text-secondary mb-1 tracking-wide">
+          <p className="text-xs font-semibold text-secondary/40 mb-1">
             {stat.label}
           </p>
           <h3 className={`text-2xl md:text-3xl font-bold ${stat.color}`}>

@@ -30,19 +30,23 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
   const [assignEmail, setAssignEmail] = useState("");
   const headerCheckboxRef = useRef<HTMLInputElement>(null);
 
-  const allVisibleSelected = tickets.length > 0 && tickets.every((t) => selectedIds.includes(t.id));
+  const allVisibleSelected =
+    tickets.length > 0 && tickets.every((t) => selectedIds.includes(t.id));
   const someVisibleSelected = tickets.some((t) => selectedIds.includes(t.id));
 
   useEffect(() => {
     if (headerCheckboxRef.current) {
-      headerCheckboxRef.current.indeterminate = someVisibleSelected && !allVisibleSelected;
+      headerCheckboxRef.current.indeterminate =
+        someVisibleSelected && !allVisibleSelected;
     }
   }, [someVisibleSelected, allVisibleSelected]);
 
   const handleSelectAll = () => {
     if (!onSelectionChange) return;
     if (allVisibleSelected) {
-      onSelectionChange(selectedIds.filter((id) => !tickets.some((t) => t.id === id)));
+      onSelectionChange(
+        selectedIds.filter((id) => !tickets.some((t) => t.id === id)),
+      );
     } else {
       const newIds = [...selectedIds];
       tickets.forEach((t) => {
@@ -98,13 +102,13 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
 
   if (loading) {
     return (
-      <div className="py-20 text-center opacity-40 font-bold">
+      <div className="py-20 text-center opacity-40 font-semibold">
         Loading threat data...
       </div>
     );
   }
 
-  const colSpan = (onSelectionChange ? 9 : 8);
+  const colSpan = onSelectionChange ? 9 : 8;
 
   return (
     <div className={cn("overflow-x-auto", className)}>
@@ -122,20 +126,23 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
                 />
               </th>
             )}
-            <th className="px-4 md:px-6 py-4 w-[20%]">Ticket</th>
+            <th className="px-4 md:px-6 py-4 w-[25%]">Ticket</th>
             <th className="px-4 md:px-6 py-4 w-[20%]">Indicator / Target</th>
             <th className="px-4 md:px-6 py-4 text-center">Priority</th>
             <th className="px-4 md:px-6 py-4 text-center">Risk Score</th>
             <th className="px-4 md:px-6 py-4 text-center">Key Findings</th>
             <th className="px-4 md:px-6 py-4 text-center">Status</th>
             <th className="px-4 md:px-6 py-4 text-center">Assignee</th>
-            <th className="px-4 md:px-6 py-4 text-right">Actions</th>
+            <th className="px-4 md:px-6 py-4 text-center">Actions</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-neutral-border">
           {tickets.length === 0 ? (
             <tr>
-              <td colSpan={colSpan} className="px-4 md:px-6 py-8 md:py-10 text-center opacity-40">
+              <td
+                colSpan={colSpan}
+                className="px-4 md:px-6 py-8 md:py-10 text-center opacity-40"
+              >
                 {emptyMessage}
               </td>
             </tr>
@@ -205,7 +212,12 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
                     <span
                       className="text-sm font-bold"
                       style={{
-                        color: ticket.risk_score >= 75 ? RISK.high.hex : ticket.risk_score >= 35 ? RISK.medium.hex : RISK.low.hex,
+                        color:
+                          ticket.risk_score >= 75
+                            ? RISK.high.hex
+                            : ticket.risk_score >= 35
+                              ? RISK.medium.hex
+                              : RISK.low.hex,
                       }}
                     >
                       {ticket.risk_score}
@@ -215,7 +227,12 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
                         className="h-full rounded-full transition-all duration-1000"
                         style={{
                           width: `${ticket.risk_score}%`,
-                          backgroundColor: ticket.risk_score >= 75 ? RISK.high.hex : ticket.risk_score >= 35 ? RISK.medium.hex : RISK.low.hex,
+                          backgroundColor:
+                            ticket.risk_score >= 75
+                              ? RISK.high.hex
+                              : ticket.risk_score >= 35
+                                ? RISK.medium.hex
+                                : RISK.low.hex,
                         }}
                       />
                     </div>
@@ -256,12 +273,15 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
                   </span>
                 </td>
                 <td className="px-4 md:px-6 py-4 md:py-5 text-center">
-                  <span className="text-xs font-medium text-secondary truncate max-w-[120px] block" title={ticket.assigned_to || undefined}>
+                  <span
+                    className="text-xs font-medium text-secondary truncate max-w-[120px] block"
+                    title={ticket.assigned_to || undefined}
+                  >
                     {ticket.assigned_to || "None"}
                   </span>
                 </td>
-                <td className="px-4 md:px-6 py-4 md:py-5 text-right">
-                  <div className="flex items-center gap-2 justify-end">
+                <td className="px-4 md:px-6 py-4 md:py-5 text-center">
+                  <div className="flex items-center justify-center gap-2">
                     {onAssign && (
                       <button
                         onClick={() => openAssignModal(ticket.ticket_id)}
@@ -287,18 +307,29 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
       {/* Assign Modal */}
       {assignModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setAssignModalOpen(false)} />
+          <div
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={() => setAssignModalOpen(false)}
+          />
           <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md p-6 animate-in fade-in zoom-in-95 duration-200">
-            <h3 className="text-lg font-bold text-secondary mb-1">Assign Ticket</h3>
+            <h3 className="text-lg font-bold text-secondary mb-1">
+              Assign Ticket
+            </h3>
             <p className="text-sm text-secondary/60 mb-4">
-              Assigning <span className="font-bold text-secondary">{assignTicketId}</span> to an analyst.
+              Assigning{" "}
+              <span className="font-bold text-secondary">{assignTicketId}</span>{" "}
+              to an analyst.
             </p>
-            <label className="text-xs font-bold text-secondary block mb-1.5">Email Address</label>
+            <label className="text-xs font-bold text-secondary block mb-1.5">
+              Email Address
+            </label>
             <input
               type="email"
               value={assignEmail}
               onChange={(e) => setAssignEmail(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter") handleAssignConfirm(); }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleAssignConfirm();
+              }}
               placeholder="analyst@domain.com"
               className="w-full border border-neutral-border rounded-xl px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all mb-4"
               autoFocus

@@ -45,7 +45,7 @@ class EducationArticle(Base):
 class UserLearningProgress(Base):
     __tablename__ = "user_learning_progress"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     user_id = Column(String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     module_id = Column(String(36), ForeignKey("education_modules.id", ondelete="CASCADE"), nullable=False)
     status = Column(String(50), nullable=False, default="LOCKED")
@@ -63,7 +63,7 @@ class UserLearningProgress(Base):
 class UserArticleProgress(Base):
     __tablename__ = "user_article_progress"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     user_id = Column(String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     article_id = Column(String(36), ForeignKey("education_articles.id", ondelete="CASCADE"), nullable=False)
     is_read = Column(Integer, default=1)
@@ -75,7 +75,7 @@ class UserArticleProgress(Base):
 class UserQuizAttempt(Base):
     __tablename__ = "user_quiz_attempts"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     user_id = Column(String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     module_id = Column(String(36), ForeignKey("education_modules.id", ondelete="CASCADE"), nullable=False)
     score = Column(Float, nullable=False)

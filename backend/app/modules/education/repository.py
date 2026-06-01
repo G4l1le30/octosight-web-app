@@ -56,7 +56,7 @@ class EducationRepository:
         ).order_by(UserQuizAttempt.created_at.asc()).all()
 
     @staticmethod
-    def get_quiz_attempt_by_id(db: Session, attempt_id: int, user_id: str, module_id: str) -> Optional[UserQuizAttempt]:
+    def get_quiz_attempt_by_id(db: Session, attempt_id: str, user_id: str, module_id: str) -> Optional[UserQuizAttempt]:
         return db.query(UserQuizAttempt).filter(
             UserQuizAttempt.id == attempt_id,
             UserQuizAttempt.user_id == user_id,

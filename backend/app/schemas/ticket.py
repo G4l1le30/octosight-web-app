@@ -7,7 +7,7 @@ from pydantic import BaseModel
 
 
 class TicketResponse(BaseModel):
-    id: int
+    id: str
     ticket_id: Optional[str] = None
     url: Optional[str] = None
     type: Optional[str] = None
@@ -52,14 +52,14 @@ class TicketAssign(BaseModel):
 
 
 class BulkTicketUpdate(BaseModel):
-    ticket_ids: list[int]
+    ticket_ids: list[str]
     status: Optional[str] = None
     priority: Optional[str] = None
     assigned_to: Optional[str] = None
 
 
 class AuditLogResponse(BaseModel):
-    id: int
+    id: str
     ticket_id: str
     admin_id: Optional[str] = None
     action_taken: str

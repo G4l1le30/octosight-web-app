@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
-import Link from "next/link";
 import {
   FilePlus,
   FileEdit,
@@ -11,9 +10,10 @@ import {
   Flag,
   AlertCircle,
 } from "lucide-react";
+import Link from "next/link";
 
 interface ActivityItem {
-  id: number;
+  id: string;
   activity_type: string;
   description: string;
   actor_id: string;
@@ -29,34 +29,26 @@ interface ActivityResponse {
   per_page: number;
 }
 
-const ACTIVITY_COLORS: Record<
-  string,
-  { border: string; bg: string; icon: string }
-> = {
+const ACTIVITY_COLORS: Record<string, { bg: string; icon: string }> = {
   ticket_created: {
-    border: "border-l-neutral-border",
-    bg: "bg-neutral-page",
-    icon: "text-secondary/60",
+    bg: "bg-sky-50",
+    icon: "text-sky-600",
   },
   ticket_updated: {
-    border: "border-l-neutral-border",
-    bg: "bg-neutral-page",
-    icon: "text-secondary/60",
+    bg: "bg-amber-50",
+    icon: "text-amber-600",
   },
   blacklist_added: {
-    border: "border-l-neutral-border",
-    bg: "bg-neutral-page",
-    icon: "text-secondary/60",
+    bg: "bg-rose-50",
+    icon: "text-rose-600",
   },
   blacklist_removed: {
-    border: "border-l-neutral-border",
-    bg: "bg-neutral-page",
-    icon: "text-secondary/60",
+    bg: "bg-slate-50",
+    icon: "text-slate-600",
   },
   report_submitted: {
-    border: "border-l-neutral-border",
-    bg: "bg-neutral-page",
-    icon: "text-secondary/60",
+    bg: "bg-violet-50",
+    icon: "text-violet-600",
   },
 };
 
@@ -72,7 +64,6 @@ const ACTIVITY_ICONS: Record<string, React.ElementType> = {
 function getActivityColors(type: string) {
   return (
     ACTIVITY_COLORS[type] ?? {
-      border: "border-l-slate-400",
       bg: "bg-slate-50",
       icon: "text-slate-500",
     }
@@ -81,6 +72,27 @@ function getActivityColors(type: string) {
 
 function getActivityIcon(type: string) {
   return ACTIVITY_ICONS[type] ?? Flag;
+}
+
+function getActivityLabel(type: string) {
+  switch (type) {
+    case "ticket_created":
+      return "Report submitted";
+    case "ticket_updated":
+      return "Ticket updated";
+    case "blacklist_added":
+      return "Blacklist entry";
+    case "blacklist_removed":
+      return "Blacklist removed";
+    case "report_submitted":
+      return "New phishing report";
+    default:
+      return "Activity";
+  }
+}
+
+function sanitizeActivityText(text: string) {
+  return text.replace(/—/g, ":").trim();
 }
 
 function timeAgo(dateStr: string): string {
@@ -143,16 +155,13 @@ export const ActivityFeed: React.FC = () => {
 
       <div className="flex-1 overflow-y-auto min-h-0">
         {loading ? (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {Array.from({ length: 5 }).map((_, i) => (
-              <div
-                key={i}
-                className="flex items-center justify-center gap-4 animate-pulse"
-              >
-                <div className="size-9 rounded-lg bg-neutral-border shrink-0" />
+              <div key={i} className="flex items-center gap-3 animate-pulse">
+                <div className="size-9 rounded-xl bg-neutral-border shrink-0" />
                 <div className="flex-1 space-y-2 min-w-0">
-                  <div className="h-4 bg-neutral-border rounded w-3/4" />
-                  <div className="h-3 bg-neutral-border rounded w-1/4" />
+                  <div className="h-3 bg-neutral-border rounded w-2/3" />
+                  <div className="h-2 bg-neutral-border rounded w-1/4" />
                 </div>
               </div>
             ))}
@@ -167,7 +176,7 @@ export const ActivityFeed: React.FC = () => {
           </div>
         ) : activities.length === 0 ? (
           <div className="flex-1 flex items-center justify-center">
-            <p className="text-sm text-secondary/40 font-semibold">
+            <p className="text-sm text-secondary/60 font-semibold">
               No recent activity
             </p>
           </div>
@@ -176,34 +185,45 @@ export const ActivityFeed: React.FC = () => {
             {activities.map((item) => {
               const Icon = getActivityIcon(item.activity_type);
               const colors = getActivityColors(item.activity_type);
+              const content = (
+                <div className="flex items-center gap-3 p-3">
+                  <div
+                    className={`p-2 rounded-xl shrink-0 ${colors.bg} ${colors.icon}`}
+                  >
+                    <Icon className="size-5" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-semibold text-secondary">
+                      {getActivityLabel(item.activity_type)}
+                    </div>
+                    <p className="text-sm text-secondary/70 mt-1 leading-snug">
+                      {sanitizeActivityText(item.description)}
+                    </p>
+                  </div>
+                  <div className="text-xs text-secondary/50 whitespace-nowrap">
+                    {timeAgo(item.created_at)}
+                  </div>
+                </div>
+              );
+
+              if (item.ticket_id) {
+                return (
+                  <Link
+                    key={item.id}
+                    href={`/admin/investigate/${item.ticket_id}`}
+                    className="block rounded-xl border border-neutral-border bg-white shadow-sm transition-all hover:border-primary/40 hover:shadow-md"
+                  >
+                    {content}
+                  </Link>
+                );
+              }
 
               return (
                 <div
                   key={item.id}
-                  className={`flex items-start gap-4 p-4 rounded-xl border-l-4 ${colors.border} ${colors.bg} transition-all`}
+                  className="rounded-xl border border-neutral-border bg-white shadow-sm transition-all"
                 >
-                  <div
-                    className={`size-9 rounded-lg flex items-center justify-center shrink-0 bg-white shadow-sm ${colors.icon}`}
-                  >
-                    <Icon className="size-4" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    {item.ticket_id ? (
-                      <Link
-                        href={`/admin/investigate/${item.ticket_id}`}
-                        className="text-sm font-bold text-secondary hover:text-primary transition-colors"
-                      >
-                        {item.description}
-                      </Link>
-                    ) : (
-                      <p className="text-sm font-bold text-secondary">
-                        {item.description}
-                      </p>
-                    )}
-                    <p className="text-xs font-medium text-secondary/70 mt-1">
-                      {timeAgo(item.created_at)}
-                    </p>
-                  </div>
+                  {content}
                 </div>
               );
             })}

@@ -3,12 +3,7 @@
 export const dynamic = "force-dynamic";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
-import {
-  Plus,
-  Edit2,
-  X,
-  Loader2,
-} from "lucide-react";
+import { Plus, Edit2, X, Loader2, Search } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Pagination } from "@/components/ui/Pagination";
@@ -91,6 +86,18 @@ export default function RuleConfigPage() {
   >({});
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState("config_type");
+  const [sortDir, setSortDir] = useState("asc");
+
+  const toggleSort = useCallback((col: string) => {
+    if (col === sortBy) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortBy(col);
+      setSortDir("asc");
+    }
+  }, [sortBy]);
 
   const fetchRules = useCallback(async () => {
     setLoading(true);
@@ -112,10 +119,31 @@ export default function RuleConfigPage() {
     setCurrentPage(1);
   }, [fetchRules]);
 
+  const filteredRules = useMemo(() => {
+    let result = [...rules];
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      result = result.filter(
+        (r) =>
+          r.key.toLowerCase().includes(q) ||
+          (r.value || "").toLowerCase().includes(q) ||
+          (r.group || "").toLowerCase().includes(q) ||
+          (r.description || "").toLowerCase().includes(q),
+      );
+    }
+    result.sort((a, b) => {
+      const aVal = String(a[sortBy as keyof RuleConfig] ?? "");
+      const bVal = String(b[sortBy as keyof RuleConfig] ?? "");
+      const cmp = aVal.localeCompare(bVal, undefined, { numeric: true });
+      return sortDir === "asc" ? cmp : -cmp;
+    });
+    return result;
+  }, [rules, search, sortBy, sortDir]);
+
   const paginatedRules = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
-    return rules.slice(start, start + itemsPerPage);
-  }, [rules, currentPage, itemsPerPage]);
+    return filteredRules.slice(start, start + itemsPerPage);
+  }, [filteredRules, currentPage, itemsPerPage]);
 
   const validateForm = (): boolean => {
     const errors: Partial<Record<keyof RuleFormData, string>> = {};
@@ -213,10 +241,14 @@ export default function RuleConfigPage() {
     setConfirmConfig((prev) => ({ ...prev, isOpen: false }));
     try {
       if (action === "deactivate") {
-        const res = await fetch(`/api/v1/admin/rule-config/${id}`, { method: "DELETE" });
+        const res = await fetch(`/api/v1/admin/rule-config/${id}`, {
+          method: "DELETE",
+        });
         if (!res.ok) throw new Error("Failed to deactivate");
         toast.success(`Rule "${key}" deactivated.`);
-        setRules((prev) => prev.map((r) => r.id === id ? { ...r, is_active: false } : r));
+        setRules((prev) =>
+          prev.map((r) => (r.id === id ? { ...r, is_active: false } : r)),
+        );
       } else {
         const res = await fetch(`/api/v1/admin/rule-config/${id}`, {
           method: "PATCH",
@@ -225,10 +257,16 @@ export default function RuleConfigPage() {
         });
         if (!res.ok) throw new Error("Failed to reactivate");
         toast.success(`Rule "${key}" reactivated.`);
-        setRules((prev) => prev.map((r) => r.id === id ? { ...r, is_active: true } : r));
+        setRules((prev) =>
+          prev.map((r) => (r.id === id ? { ...r, is_active: true } : r)),
+        );
       }
     } catch {
-      toast.error(action === "deactivate" ? "Failed to deactivate rule." : "Failed to reactivate rule.");
+      toast.error(
+        action === "deactivate"
+          ? "Failed to deactivate rule."
+          : "Failed to reactivate rule.",
+      );
     } finally {
       setDeactivating(null);
     }
@@ -245,11 +283,33 @@ export default function RuleConfigPage() {
     return map[type] || type;
   };
 
-   return (
+  return (
     <>
-      <AdminHeader title="Rule Configuration" subtitle="Manage detection rules for keywords, TLDs, shorteners, and more." stat={{ label: "Total Rules", value: rules.length }} />
+      <AdminHeader
+        title="Rule Configuration"
+        subtitle="Manage detection rules for keywords, TLDs, shorteners, and more."
+        stat={{ label: "Total Rules", value: rules.length }}
+      />
 
       <div className="container mx-auto px-4 pb-6 md:pb-8">
+        {/* Search */}
+        <div className="relative flex-1 min-w-[200px] max-w-xs mb-4">
+          <Search
+            size={16}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary/60"
+          />
+          <input
+            type="text"
+            placeholder="Search by key, value, group, or description..."
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setCurrentPage(1);
+            }}
+            className="w-full pl-9 pr-3 py-2.5 text-sm border-2 border-neutral-border rounded-xl focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all font-medium"
+          />
+        </div>
+
         {/* Tabs + Add Rule */}
         <div className="flex flex-wrap items-center gap-2 mb-6">
           {TABS.map((tab) => (
@@ -282,33 +342,43 @@ export default function RuleConfigPage() {
           <RulesTable
             rules={paginatedRules}
             loading={loading}
-            emptyMessage={activeTab === "all" ? "No detection rules have been configured yet." : `No ${formatType(activeTab as ConfigType)} rules configured yet.`}
+            emptyMessage={
+              activeTab === "all"
+                ? "No detection rules have been configured yet."
+                : `No ${formatType(activeTab as ConfigType)} rules configured yet.`
+            }
             deactivatingId={deactivating}
             onEdit={openEditModal}
             onToggle={handleToggleClick}
+            onSort={toggleSort}
+            sortBy={sortBy}
+            sortDir={sortDir}
           />
-          {rules.length > 0 && (
+          {filteredRules.length > 0 && (
             <Pagination
               currentPage={currentPage}
-              totalItems={rules.length}
+              totalItems={filteredRules.length}
               itemsPerPage={itemsPerPage}
               onPageChange={setCurrentPage}
-              onItemsPerPageChange={(n) => { setItemsPerPage(n); setCurrentPage(1); }}
+              onItemsPerPageChange={(n) => {
+                setItemsPerPage(n);
+                setCurrentPage(1);
+              }}
             />
           )}
         </div>
       </div>
 
-       {/* Modal */}
-       {modalOpen && (
-         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-           <div
-             className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-             onClick={closeModal}
-           />
-           <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-6 md:p-8 [&::-webkit-scrollbar]:w-[6px] [&::-webkit-scrollbar-track]:bg-neutral-page [&::-webkit-scrollbar-thumb]:bg-secondary/30 [&::-webkit-scrollbar-thumb:hover]:bg-secondary/40 scrollbar-thin scrollbar-thumb-secondary scrollbar-track-neutral-page">
-            {/* Modal header */}
-            <div className="flex items-center justify-between mb-6">
+      {/* Modal */}
+      {modalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={closeModal}
+          />
+          <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-lg flex flex-col max-h-[90vh]">
+            {/* Modal header — fixed */}
+            <div className="flex items-center justify-between px-6 md:px-8 pt-6 md:pt-8 pb-4 shrink-0">
               <h2 className="text-xl font-bold text-secondary">
                 {editingRule ? "Edit Rule" : "Add Rule"}
               </h2>
@@ -320,8 +390,8 @@ export default function RuleConfigPage() {
               </button>
             </div>
 
-            {/* Form */}
-            <div className="space-y-5">
+            {/* Scrollable form body */}
+            <div className="overflow-y-auto px-6 md:px-8 pb-4 space-y-5 [&::-webkit-scrollbar]:w-[6px] [&::-webkit-scrollbar-track]:bg-neutral-page [&::-webkit-scrollbar-thumb]:bg-secondary/30 [&::-webkit-scrollbar-thumb:hover]:bg-secondary/40 scrollbar-thin scrollbar-thumb-secondary scrollbar-track-neutral-page">
               {/* config_type */}
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-secondary block">
@@ -420,23 +490,23 @@ export default function RuleConfigPage() {
                 )}
               </div>
 
-               {/* group (optional) */}
-               <div className="space-y-2">
-                 <label className="text-sm font-semibold text-secondary block">
-                   Group{" "}
-                   <span className="font-normal text-secondary/60">
-                     (optional)
-                   </span>
-                 </label>
-                 <input
-                   value={formData.group}
-                   onChange={(e) =>
-                     setFormData({ ...formData, group: e.target.value })
-                   }
-                   placeholder="e.g. social_engineering, phishing_urls"
-                   className="w-full max-w-xl mx-auto bg-white border-2 border-neutral-border rounded-lg outline-none transition-all font-medium placeholder:text-secondary/60 focus:border-primary focus:ring-4 focus:ring-primary/5 px-4 py-3.5 text-sm"
-                 />
-               </div>
+              {/* group (optional) */}
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-secondary block">
+                  Group{" "}
+                  <span className="font-normal text-secondary/60">
+                    (optional)
+                  </span>
+                </label>
+                <input
+                  value={formData.group}
+                  onChange={(e) =>
+                    setFormData({ ...formData, group: e.target.value })
+                  }
+                  placeholder="e.g. social_engineering, phishing_urls"
+                  className="w-full max-w-xl mx-auto bg-white border-2 border-neutral-border rounded-lg outline-none transition-all font-medium placeholder:text-secondary/60 focus:border-primary focus:ring-4 focus:ring-primary/5 px-4 py-3.5 text-sm"
+                />
+              </div>
 
               {/* score */}
               <div className="space-y-2">
@@ -498,41 +568,45 @@ export default function RuleConfigPage() {
               </div>
             </div>
 
-             {/* Actions */}
-             <div className="flex items-center justify-end gap-3 mt-8 pt-4 border-t border-neutral-border">
-               <button
-                 onClick={closeModal}
-                 disabled={saving}
-                 className="flex items-center gap-2 px-5 py-3 bg-white border-2 border-neutral-border text-secondary font-bold text-sm rounded-xl hover:bg-neutral-page transition-all disabled:opacity-50"
-               >
-                 Cancel
-               </button>
-               <button
-                 onClick={handleSave}
-                 disabled={saving}
-                 className="flex items-center gap-2 px-5 py-3 bg-secondary text-white font-bold text-sm rounded-xl hover:opacity-90 transition-all disabled:opacity-50 shadow-md"
-               >
-                  {saving ? (
-                    <Loader2 className="size-4 animate-spin" />
-                  ) : editingRule ? (
-                    <Edit2 className="size-4" />
-                  ) : (
-                    <Plus className="size-4" />
-                  )}
-                  {saving
-                    ? "Saving..."
-                    : editingRule
-                      ? "Update Rule"
-                      : "Create Rule"}
-               </button>
-             </div>
+            {/* Actions — fixed */}
+            <div className="flex items-center justify-end gap-3 px-6 md:px-8 pb-6 md:pb-8 pt-4 border-t border-neutral-border shrink-0">
+              <button
+                onClick={closeModal}
+                disabled={saving}
+                className="flex items-center gap-2 px-5 py-3 bg-white border-2 border-neutral-border text-secondary font-bold text-sm rounded-xl hover:bg-neutral-page transition-all disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="flex items-center gap-2 px-5 py-3 bg-secondary text-white font-bold text-sm rounded-xl hover:opacity-90 transition-all disabled:opacity-50 shadow-md"
+              >
+                {saving ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : editingRule ? (
+                  <Edit2 className="size-4" />
+                ) : (
+                  <Plus className="size-4" />
+                )}
+                {saving
+                  ? "Saving..."
+                  : editingRule
+                    ? "Update Rule"
+                    : "Create Rule"}
+              </button>
+            </div>
           </div>
         </div>
       )}
 
       <ConfirmModal
         isOpen={confirmConfig.isOpen}
-        title={confirmConfig.action === "deactivate" ? "Deactivate Rule?" : "Reactivate Rule?"}
+        title={
+          confirmConfig.action === "deactivate"
+            ? "Deactivate Rule?"
+            : "Reactivate Rule?"
+        }
         message={
           confirmConfig.action === "deactivate"
             ? `Are you sure you want to deactivate rule "${confirmConfig.key}"? This rule will no longer be used for threat detection.`

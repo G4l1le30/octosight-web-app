@@ -15,8 +15,8 @@ export const ROLE_BADGE_COLORS: Record<UserRole, string> = {
   user: "bg-blue-100 text-blue-700",
   cs: "bg-green-100 text-green-700",
   analyst: "bg-purple-100 text-purple-700",
-  investigator: "bg-orange-100 text-orange-700",
-  moderator: "bg-yellow-100 text-yellow-700",
+  investigator: "bg-orange-200 text-orange-800",
+  moderator: "bg-amber-200 text-amber-800",
   admin: "bg-risk-high/10 text-risk-high",
 };
 
@@ -39,12 +39,12 @@ export const ROLE_DEFAULT_PERMISSIONS: Record<UserRole, string[]> = {
     "ml.submit_feedback", "notifications.view_own",
   ],
   moderator: [
-    "dashboard.view", "dashboard.view_team",
+    "dashboard.view",
     "tickets.view", "tickets.assign", "tickets.comment", "tickets.bulk_update", "tickets.export",
     "investigate.view", "investigate.update_notes", "investigate.update_status", "investigate.generate_notes",
     "blacklist.view", "blacklist.add", "blacklist.remove",
     "rules.view", "rules.create", "rules.update", "rules.deactivate",
-    "ml.view_stats", "ml.submit_feedback",
+    "ml.submit_feedback",
     "transactions.view", "transactions.analyze",
     "education.view", "education.complete_modules",
     "notifications.view_own", "notifications.manage_channels",
@@ -52,7 +52,7 @@ export const ROLE_DEFAULT_PERMISSIONS: Record<UserRole, string[]> = {
   admin: ["*"],  // wildcard — admin has all permissions
   viewer: [
     "dashboard.view", "tickets.view", "investigate.view",
-    "blacklist.view", "rules.view", "ml.view_stats",
+    "blacklist.view", "rules.view",
     "transactions.view", "education.view",
   ],
 };

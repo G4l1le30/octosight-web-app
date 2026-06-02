@@ -136,10 +136,10 @@ export default function AdminUsersPage() {
         {/* Header */}
         <div className="flex items-center gap-3 md:gap-4 mb-6 md:mb-8">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-secondary">
+            <h1 className="text-xl md:text-2xl font-bold text-secondary">
               User Management
             </h1>
-            <p className="text-secondary font-medium opacity-80">
+            <p className="text-sm text-secondary/80 font-medium">
               View, edit, and manage all registered users.
             </p>
           </div>
@@ -174,7 +174,7 @@ export default function AdminUsersPage() {
           {loading ? (
             <div className="p-20 text-center flex flex-col items-center gap-3">
               <Loader2 className="size-8 text-primary animate-spin" />
-              <p className="text-sm font-bold text-secondary/40">
+              <p className="text-sm font-bold text-secondary/60">
                 Loading users...
               </p>
             </div>
@@ -221,21 +221,16 @@ export default function AdminUsersPage() {
                         {roleBadge(user.role)}
                       </td>
                       <td className="px-6 py-4 text-center">
-                        <span
-                          className={cn(
-                            "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border",
-                            user.is_active
-                              ? "bg-green-100 text-green-800 border-green-200"
-                              : "bg-red-100 text-red-800 border-red-200",
-                          )}
-                        >
+                        <span className="inline-flex items-center gap-1.5 text-xs font-bold">
                           <span
                             className={cn(
                               "size-1.5 rounded-full",
                               user.is_active ? "bg-green-500" : "bg-red-500",
                             )}
                           />
-                          {user.is_active ? "Active" : "Suspended"}
+                          <span className={user.is_active ? "text-green-700" : "text-red-700"}>
+                            {user.is_active ? "Active" : "Suspended"}
+                          </span>
                         </span>
                       </td>
                       <td className="px-6 py-4 text-center">

@@ -115,7 +115,7 @@ export default function ReportSuccess({
         <div className="flex flex-wrap justify-center gap-6 md:gap-10">
           <div className="flex items-center gap-2 text-secondary/60 font-semibold text-sm">
             <Lock className="size-4 text-green-600" />
-            <span>AES-256 Encryption</span>
+            <span>RBAC Protected Review</span>
           </div>
           <div className="flex items-center gap-2 text-secondary/60 font-semibold text-sm">
             <ShieldCheck className="size-4 text-green-600" />

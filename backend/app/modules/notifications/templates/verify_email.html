@@ -133,13 +133,15 @@
         </h1>
         <p class="message">
           Hello <strong>{{ user_name }}</strong>,<br /><br />
-          {% if confirmation_url %} You're almost ready to start using
-          OctoSight. To ensure the security of your account and verify that
-          <strong>{{ user_email }}</strong> belongs to you, please click the
-          button below to confirm your registration. {% else %} Your account
-          has been successfully created using Google. You can now access all
-          features of OctoSight to protect your digital banking experience. {%
-          endif %}
+          {% if confirmation_url %}
+          You're almost ready to start using OctoSight. To ensure the security of
+          your account and verify that <strong>{{ user_email }}</strong> belongs
+          to you, please click the button below to confirm your registration.
+          {% else %}
+          Your account has been successfully created using Google. You can now
+          access all features of OctoSight to protect your digital banking
+          experience.
+          {% endif %}
         </p>
 
         {% if confirmation_url %}
@@ -149,9 +151,13 @@
         {% endif %}
 
         <p class="message" style="margin-bottom: 0">
-          If you didn't {% if not confirmation_url %}perform this login{% else
-          %}request this registration{% endif %}, you can safely ignore this
-          email.
+          If you didn't
+          {% if not confirmation_url %}
+          perform this login
+          {% else %}
+          request this registration
+          {% endif %},
+          you can safely ignore this email.
         </p>
       </div>
 

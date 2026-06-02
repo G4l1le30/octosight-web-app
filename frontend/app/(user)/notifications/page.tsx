@@ -1,0 +1,180 @@
+"use client";
+
+import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import { ArrowLeft, Loader2 } from "lucide-react";
+import { useAuth } from "@/lib/auth-context";
+import { AuthRequired } from "@/components/auth/AuthRequired";
+import {
+  NotificationList,
+  NotificationItem,
+} from "@/components/notifications/NotificationList";
+
+interface NotificationsResponse {
+  items: NotificationItem[];
+  total: number;
+  page: number;
+  per_page: number;
+  unread_count: number;
+}
+
+const PER_PAGE = 20;
+
+export default function NotificationsPage() {
+  const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
+
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const totalPages = Math.ceil(total / PER_PAGE);
+
+  const fetchNotifications = useCallback(async (p: number) => {
+    setLoading(true);
+    try {
+      const res = await fetch(
+        `/api/v1/notifications?page=${p}&per_page=${PER_PAGE}`,
+      );
+      if (res.ok) {
+        const data: NotificationsResponse = await res.json();
+        setNotifications(data.items ?? []);
+        setTotal(data.total);
+        setPage(data.page);
+      }
+    } catch {
+      // silent
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    fetchNotifications(page);
+  }, [user, page, fetchNotifications]);
+
+  const handleMarkRead = async (id: string) => {
+    try {
+      await fetch(`/api/v1/notifications/${id}/read`, { method: "PATCH" });
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === id ? { ...n, is_read: true } : n)),
+      );
+    } catch {
+      // silent
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    setDeletingId(id);
+    try {
+      const res = await fetch(`/api/v1/notifications/${id}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        setNotifications((prev) => prev.filter((n) => n.id !== id));
+        setTotal((prev) => Math.max(0, prev - 1));
+      }
+    } catch {
+      // silent
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const handleItemClick = (notification: NotificationItem) => {
+    if (notification.link) {
+      router.push(notification.link);
+    }
+  };
+
+  if (authLoading) {
+    return (
+      <div className="container mx-auto px-4 py-32 text-center">
+        <div className="size-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+        <p className="text-secondary font-medium">Loading...</p>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <AuthRequired description="Please log in to view your notifications." />
+    );
+  }
+
+  return (
+    <div className="container mx-auto px-4 py-8 md:py-12 max-w-6xl">
+      <div className="mb-8 md:mb-12 text-center">
+        <h1 className="text-3xl md:text-4xl font-bold mb-4 text-secondary">
+          Notifications
+        </h1>
+        <p className="text-secondary opacity-70 font-medium max-w-2xl mx-auto">
+          Review your in-app notifications, including admin notifications from
+          across the platform.
+        </p>
+      </div>
+
+      <div className="bg-white rounded-3xl border border-neutral-border shadow-xl overflow-hidden">
+        <div className="flex flex-col gap-4 p-5 md:p-6 lg:p-8">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm text-secondary/60 font-medium">
+                {total} notification{total !== 1 ? "s" : ""}
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                onClick={() => router.back()}
+                className="px-3 py-2 rounded-xl border border-neutral-border hover:bg-neutral-page transition-colors"
+                aria-label="Back"
+              >
+                <ArrowLeft className="h-4 w-4 text-secondary" />
+              </button>
+            </div>
+          </div>
+
+          {loading ? (
+            <div className="flex items-center justify-center py-20">
+              <Loader2 className="h-6 w-6 animate-spin text-secondary/60" />
+            </div>
+          ) : (
+            <>
+              <NotificationList
+                notifications={notifications}
+                onMarkRead={handleMarkRead}
+                onItemClick={handleItemClick}
+              />
+
+              <div className="border-t border-neutral-border" />
+
+              <div className="flex items-center justify-between px-4 py-3rounded-b-3xl">
+                <button
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page <= 1}
+                  className="px-3 py-1.5 text-sm font-bold text-secondary border border-neutral-border rounded-xl hover:bg-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                >
+                  Previous
+                </button>
+
+                <span className="text-sm text-secondary/70 font-medium">
+                  Page {page} of {totalPages || 1}
+                </span>
+
+                <button
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page >= totalPages}
+                  className="px-3 py-1.5 text-sm font-bold text-secondary border border-neutral-border rounded-xl hover:bg-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                >
+                  Next
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

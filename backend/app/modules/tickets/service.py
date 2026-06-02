@@ -1,6 +1,6 @@
 """tickets/service.py — Ticket business logic."""
 
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from typing import Any, Optional
 
 from sqlalchemy.orm import Session
@@ -47,9 +47,10 @@ class TicketService:
         status: Optional[str] = None,
         priority: Optional[str] = None,
         assigned_to: Optional[str] = None,
+        sla_breached: Optional[bool] = None,
     ) -> dict[str, Any]:
         items, total = TicketRepository.list_all(
-            db, page, per_page, sort_by, sort_dir, status, priority, assigned_to
+            db, page, per_page, sort_by, sort_dir, status, priority, assigned_to, sla_breached
         )
         for t in items:
             TicketRepository.check_sla_breach(t)
@@ -135,7 +136,7 @@ class TicketService:
         if status_changed or investigation_notes is not None:
             audit_action = (
                 action_taken
-                or (f"Status changed: {old_status} → {status}" if status_changed
+                or (f"Status changed: {old_status} to {status}" if status_changed
                     else "Investigation notes updated")
             )
             AuditLogRepository.create(
@@ -152,7 +153,7 @@ class TicketService:
         if status_changed:
             ActivityService.log_ticket_updated(
                 db, admin.id, ticket.ticket_id,
-                f"Status changed: {old_status} → {status} by {admin.full_name}",
+                f"Status changed: {old_status} to {status} by {admin.full_name}",
             )
 
         # Email notification on status change

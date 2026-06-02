@@ -31,6 +31,7 @@ class TicketRepository:
         status: Optional[str] = None,
         priority: Optional[str] = None,
         assigned_to: Optional[str] = None,
+        sla_breached: Optional[bool] = None,
     ) -> tuple[list[Ticket], int]:
         """Return paginated, filtered, sorted tickets + total count."""
         query = db.query(Ticket)
@@ -41,6 +42,8 @@ class TicketRepository:
             query = query.filter(Ticket.priority == priority)
         if assigned_to:
             query = query.filter(Ticket.assigned_to == assigned_to)
+        if sla_breached is not None:
+            query = query.filter(Ticket.sla_breached == sla_breached)
 
         total = query.count()
 

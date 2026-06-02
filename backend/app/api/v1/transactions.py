@@ -7,7 +7,6 @@ Endpoints:
   POST   /api/v1/transactions         — Create a new transaction
   PATCH  /api/v1/transactions/{id}/flag   — Flag a transaction
   PATCH  /api/v1/transactions/{id}/unflag — Unflag a transaction
-  GET    /api/v1/transactions/anomalies    — List flagged/anomalous transactions
 """
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -35,17 +34,6 @@ def list_transactions(
     data, total = TransactionService.list_transactions(
         db, page, per_page, transaction_type, status, flagged_only, sort_by, sort_dir,
     )
-    return {"data": data, "total": total, "page": page, "per_page": per_page}
-
-
-@router.get("/anomalies")
-def list_anomalies(
-    page: int = Query(1, ge=1),
-    per_page: int = Query(20, ge=1, le=100),
-    db: Session = Depends(get_db),
-    _=Depends(require_permission("dashboard.view")),
-):
-    data, total = TransactionService.get_anomalies(db, page, per_page)
     return {"data": data, "total": total, "page": page, "per_page": per_page}
 
 

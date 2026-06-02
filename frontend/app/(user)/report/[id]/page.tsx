@@ -74,7 +74,9 @@ export default function DetailedReportPage() {
       <div className="container mx-auto px-4 py-32 text-center max-w-md">
         <div className="bg-risk-high/10 text-risk-high p-4 md:p-6 rounded-2xl border border-risk-high/20 mb-4 md:mb-6">
           <AlertTriangle className="size-12 mx-auto mb-4" />
-          <h2 className="text-lg md:text-xl font-bold mb-2">Report Not Found</h2>
+          <h2 className="text-lg md:text-xl font-bold mb-2">
+            Report Not Found
+          </h2>
           <p className="text-sm font-medium opacity-80">
             The ticket ID you provided does not exist in our system.
           </p>
@@ -91,7 +93,7 @@ export default function DetailedReportPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 md:py-12 max-w-5xl">
+    <div className="container mx-auto px-4 py-8 md:py-12 max-w-6xl">
       <div className="mb-8 md:mb-10 flex items-center gap-3 md:gap-4 animate-in fade-in slide-in-from-left-4 duration-500">
         <button
           onClick={() => router.push("/status")}

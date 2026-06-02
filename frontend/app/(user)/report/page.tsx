@@ -88,7 +88,7 @@ export default function ReportPage() {
   // Restore pending report data from localStorage on initial load
   useEffect(() => {
     try {
-      const savedData = localStorage.getItem('pendingReportData');
+      const savedData = localStorage.getItem("pendingReportData");
       if (savedData) {
         const parsedData = JSON.parse(savedData);
         if (parsedData.confirmedData) {
@@ -101,12 +101,12 @@ export default function ReportPage() {
           setScreenshotError(parsedData.screenshotError || false);
           setIsConfirming(true);
           // Clear the saved data after restoring
-          localStorage.removeItem('pendingReportData');
+          localStorage.removeItem("pendingReportData");
         }
       }
     } catch (e) {
-      console.warn('Failed to restore report data from localStorage:', e);
-      localStorage.removeItem('pendingReportData');
+      console.warn("Failed to restore report data from localStorage:", e);
+      localStorage.removeItem("pendingReportData");
     }
   }, []);
 
@@ -174,7 +174,10 @@ export default function ReportPage() {
       payload.append("sender_numbers", sanitizeText(data.senderNumbers || ""));
       payload.append("bank_name", sanitizeText(data.bankName || ""));
       payload.append("bank_account", sanitizeText(data.bankAccount || ""));
-      payload.append("reference_number", sanitizeText(data.referenceNumber || ""));
+      payload.append(
+        "reference_number",
+        sanitizeText(data.referenceNumber || ""),
+      );
 
       // Attach raw files — backend receives them as UploadFile (no Supabase yet)
       if (screenshotFile)
@@ -207,36 +210,45 @@ export default function ReportPage() {
    * Step 2 — Final submit (writes to DB + uploads files to Supabase on backend).
    * Files are sent as raw multipart; backend handles Supabase upload atomically.
    */
-   const handleFinalSubmit = async () => {
-     if (!confirmedData) return;
-     if (!user) {
-       // Save form data to localStorage before redirecting to login (exclude File objects)
-       const reportData = {
-         confirmedData,
-         analysisResult,
-         incidentType,
-         screenshotError
-       };
-       try {
-         localStorage.setItem('pendingReportData', JSON.stringify(reportData));
-       } catch (e) {
-         console.warn('Failed to save report data to localStorage:', e);
-       }
-       router.push("/login?redirect=/report");
-       return;
-     }
-     setLoading(true);
+  const handleFinalSubmit = async () => {
+    if (!confirmedData) return;
+    if (!user) {
+      // Save form data to localStorage before redirecting to login (exclude File objects)
+      const reportData = {
+        confirmedData,
+        analysisResult,
+        incidentType,
+        screenshotError,
+      };
+      try {
+        localStorage.setItem("pendingReportData", JSON.stringify(reportData));
+      } catch (e) {
+        console.warn("Failed to save report data to localStorage:", e);
+      }
+      router.push("/login?redirect=/report");
+      return;
+    }
+    setLoading(true);
 
-     try {
-       const payload = new FormData();
-       payload.append("report_type", sanitizeText(incidentType));
-       payload.append("url", sanitizeText(confirmedData.url ?? ""));
-       payload.append("summary", sanitizeText(confirmedData.summary ?? ""));
-       payload.append("sender_numbers", sanitizeText(confirmedData.senderNumbers ?? ""));
-       payload.append("incident_date", sanitizeText(confirmedData.incidentDate));
-       payload.append("bank_name", sanitizeText(confirmedData.bankName ?? ""));
-       payload.append("bank_account", sanitizeText(confirmedData.bankAccount ?? ""));
-       payload.append("reference_number", sanitizeText(confirmedData.referenceNumber ?? ""));
+    try {
+      const payload = new FormData();
+      payload.append("report_type", sanitizeText(incidentType));
+      payload.append("url", sanitizeText(confirmedData.url ?? ""));
+      payload.append("summary", sanitizeText(confirmedData.summary ?? ""));
+      payload.append(
+        "sender_numbers",
+        sanitizeText(confirmedData.senderNumbers ?? ""),
+      );
+      payload.append("incident_date", sanitizeText(confirmedData.incidentDate));
+      payload.append("bank_name", sanitizeText(confirmedData.bankName ?? ""));
+      payload.append(
+        "bank_account",
+        sanitizeText(confirmedData.bankAccount ?? ""),
+      );
+      payload.append(
+        "reference_number",
+        sanitizeText(confirmedData.referenceNumber ?? ""),
+      );
 
       // Attach raw files — backend uploads to Supabase then saves paths to DB
       if (screenshotFile)
@@ -294,7 +306,7 @@ export default function ReportPage() {
 
   if (isConfirming && confirmedData)
     return (
-      <div className="container mx-auto px-4 py-8 md:py-12 max-w-5xl">
+      <div className="container mx-auto px-4 py-8 md:py-12 max-w-6xl">
         <ReportConfirmation
           formData={confirmedData}
           analysisResult={analysisResult}
@@ -306,12 +318,15 @@ export default function ReportPage() {
     );
 
   return (
-    <div className="container mx-auto px-4 py-8 md:py-12 max-w-5xl">
+    <div className="container mx-auto px-4 py-8 md:py-12 max-w-6xl">
       {/* Loading Overlay for Pre-analysis */}
       {loading && !isConfirming && (
         <div className="fixed inset-0 z-[100] bg-white/80 backdrop-blur-md flex items-center justify-center p-4 md:p-6">
           <div className="max-w-md w-full">
-            <ProcessingAnimation title="Scanning Evidence" onCancel={handleCancel} />
+            <ProcessingAnimation
+              title="Scanning Evidence"
+              onCancel={handleCancel}
+            />
           </div>
         </div>
       )}
@@ -325,22 +340,22 @@ export default function ReportPage() {
         </p>
       </div>
 
-        <ReportForm
-          form={form}
-          onSubmit={onSubmit}
-          loading={loading}
-          incidentType={incidentType}
-          setIncidentType={setIncidentType}
-          dynamic={dynamic}
-          screenshotFile={screenshotFile}
-          setScreenshotFile={setScreenshotFile}
-          screenshotError={screenshotError}
-          setScreenshotError={setScreenshotError}
-          attachmentFile={attachmentFile}
-          setAttachmentFile={setAttachmentFile}
-          getLocalISOString={getLocalISOString}
-          isConfirming={isConfirming}
-        />
+      <ReportForm
+        form={form}
+        onSubmit={onSubmit}
+        loading={loading}
+        incidentType={incidentType}
+        setIncidentType={setIncidentType}
+        dynamic={dynamic}
+        screenshotFile={screenshotFile}
+        setScreenshotFile={setScreenshotFile}
+        screenshotError={screenshotError}
+        setScreenshotError={setScreenshotError}
+        attachmentFile={attachmentFile}
+        setAttachmentFile={setAttachmentFile}
+        getLocalISOString={getLocalISOString}
+        isConfirming={isConfirming}
+      />
     </div>
   );
 }

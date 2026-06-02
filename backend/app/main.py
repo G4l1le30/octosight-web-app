@@ -13,6 +13,9 @@ import time
 import uuid
 from datetime import datetime, timedelta, timezone
 from contextlib import asynccontextmanager
+from dotenv import load_dotenv
+
+load_dotenv()
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -34,6 +37,10 @@ from app.models import (
     RuleConfig,
     Permission,
     RolePermission,
+    ActivityLog,
+    Achievement,
+    UserAchievement,
+    UserGamification,
 )
 from app.core.email_validation import (
     EmailValidationError,
@@ -478,7 +485,7 @@ def _seed_db(db) -> None:
         perm_defs = {
             # dashboard
             "dashboard.view": "View main dashboard",
-            "dashboard.view_team": "View team-level dashboard stats",
+
             # tickets
             "tickets.view": "View ticket list and details",
             "tickets.create": "Submit a new report / ticket",
@@ -502,9 +509,7 @@ def _seed_db(db) -> None:
             "rules.update": "Edit existing detection rule",
             "rules.deactivate": "Deactivate a detection rule",
             # ml
-            "ml.view_stats": "View ML model stats and charts",
             "ml.submit_feedback": "Submit feedback on ML predictions",
-            "ml.retrain": "Trigger ML model retraining",
             # users
             "users.view": "View user list",
             "users.update_role": "Change user roles",
@@ -578,7 +583,6 @@ def _seed_db(db) -> None:
             ],
             "moderator": [
                 "dashboard.view",
-                "dashboard.view_team",
                 "tickets.view",
                 "tickets.assign",
                 "tickets.comment",
@@ -595,7 +599,6 @@ def _seed_db(db) -> None:
                 "rules.create",
                 "rules.update",
                 "rules.deactivate",
-                "ml.view_stats",
                 "ml.submit_feedback",
                 "transactions.view",
                 "transactions.analyze",
@@ -610,7 +613,6 @@ def _seed_db(db) -> None:
                 "investigate.view",
                 "blacklist.view",
                 "rules.view",
-                "ml.view_stats",
                 "transactions.view",
                 "education.view",
             ],
@@ -623,8 +625,79 @@ def _seed_db(db) -> None:
         db.commit()
         print(f"[Seed] {len(perm_defs)} permissions created with role mappings")
 
+    # ── Achievement seeds ────────────────────────────────────────────────
+    if db.query(Achievement).count() == 0:
+        achievement_defs = [
+            ("first_report", "First Report", "Submit your first ticket", "count", 1, 50),
+            ("reporter_5", "Reporter x5", "Submit 5 tickets", "count", 5, 100),
+            ("reporter_10", "Reporter x10", "Submit 10 tickets", "count", 10, 200),
+            ("feedback_master", "Feedback Master", "Submit 10 feedbacks", "count", 10, 150),
+            ("accurate_eye", "Accurate Eye", "5 correct TP/FP labels", "count", 5, 150),
+            ("streak_3", "Streak 3", "3-day login streak", "streak", 3, 30),
+            ("streak_7", "Streak 7", "7-day login streak", "streak", 7, 100),
+            ("scholar", "Scholar", "Complete all education modules", "module", 0, 200),
+            ("phishing_hunter", "Phishing Hunter", "5 confirmed tickets", "count", 5, 250),
+            ("guardian", "Guardian", "20 total confirmed tickets", "count", 20, 500),
+        ]
+        for code, name, desc, crit_type, crit_val, pts in achievement_defs:
+            db.add(Achievement(
+                code=code, name=name, description=desc,
+                criteria_type=crit_type, criteria_value=crit_val, points=pts,
+            ))
+        db.commit()
+        print(f"[Seed] {len(achievement_defs)} achievements created")
 
-# ── Lifespan ────────────────────────────────────────────────────────────────
+    # ── Activity Log seeds ───────────────────────────────────────────────
+    if db.query(ActivityLog).count() == 0:
+        try:
+            admin_id = str(uuid.uuid4())
+            admin_user = db.query(User).filter(User.role == "admin").first()
+            if admin_user:
+                admin_id = admin_user.id
+            all_tickets_act = db.query(Ticket).order_by(Ticket.created_at).all()
+            now_act = datetime.now(timezone.utc)
+            activities = []
+            act_templates = [
+                "New phishing report submitted: {summary}",
+                "Ticket updated — status changed to {status}",
+                "Blacklist entry added for domain {url}",
+                "ML analysis completed for ticket {ticket_id}",
+            ]
+            for i, t in enumerate(all_tickets_act):
+                t_created = t.created_at or (now_act - timedelta(days=14))
+                activities.append(ActivityLog(
+                    activity_type="ticket_created",
+                    description=act_templates[0].format(summary=(t.summary or "No summary")[:80]),
+                    actor_id=admin_id,
+                    ticket_id=t.ticket_id,
+                    created_at=t_created,
+                ))
+                if i % 3 == 0:
+                    updated_at = t_created + timedelta(hours=2 + i)
+                    activities.append(ActivityLog(
+                        activity_type="ticket_updated",
+                        description=act_templates[1].format(status=t.status or "In Review"),
+                        actor_id=admin_id,
+                        ticket_id=t.ticket_id,
+                        created_at=updated_at,
+                    ))
+                if i % 4 == 0 and t.url:
+                    bl_at = t_created + timedelta(hours=4 + i)
+                    activities.append(ActivityLog(
+                        activity_type="blacklist_added",
+                        description=act_templates[2].format(url=t.url[:60]),
+                        actor_id=admin_id,
+                        ticket_id=t.ticket_id,
+                        created_at=bl_at,
+                    ))
+            db.add_all(activities)
+            db.commit()
+            print(f"[Seed] {len(activities)} activity log entries created")
+        except Exception as e:
+            db.rollback()
+            print(f"[Seed] activity logs skipped ({e})")
+
+    # ── Lifespan ────────────────────────────────────────────────────────────────
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

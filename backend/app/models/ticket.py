@@ -52,6 +52,9 @@ class Ticket(Base):
     sla_deadline = Column(DateTime, nullable=True)
     sla_breached = Column(Boolean, default=False)
 
+    # Attack similarity embedding (JSON array of float vector)
+    embedding = Column(Text, nullable=True)
+
     # Assignment
     assigned_to = Column(String(255), nullable=True)
     assigned_at = Column(DateTime, nullable=True)

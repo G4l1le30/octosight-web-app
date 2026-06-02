@@ -82,7 +82,7 @@ export const QuizActionCard: React.FC<QuizActionCardProps> = ({
             </p>
             <Button
               disabled
-              className="gap-2 px-6 md:px-8 text-base md:text-lg bg-neutral-border text-secondary/40 border-none pointer-events-none shadow-none"
+              className="gap-2 px-6 md:px-8 text-base md:text-lg bg-neutral-border text-secondary/60 border-none pointer-events-none shadow-none"
             >
               <Lock className="size-5" /> Quiz Locked
             </Button>
@@ -98,7 +98,7 @@ export const QuizActionCard: React.FC<QuizActionCardProps> = ({
             </p>
             <Button
               disabled
-              className="gap-2 px-6 md:px-8 text-base md:text-lg bg-neutral-border text-secondary/40 border-none pointer-events-none shadow-none"
+              className="gap-2 px-6 md:px-8 text-base md:text-lg bg-neutral-border text-secondary/60 border-none pointer-events-none shadow-none"
             >
               <Lock className="size-5" /> Finish Materials First
             </Button>

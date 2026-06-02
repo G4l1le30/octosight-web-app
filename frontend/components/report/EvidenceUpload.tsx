@@ -15,7 +15,14 @@ import React, { useCallback } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
-import { Camera, FileCode, AlertTriangle, FileText, Archive, FileImage } from "lucide-react";
+import {
+  Camera,
+  FileCode,
+  AlertTriangle,
+  FileText,
+  Archive,
+  FileImage,
+} from "lucide-react";
 
 // Constants
 
@@ -25,13 +32,24 @@ const IMAGE_EXTENSIONS = ["png", "jpg", "jpeg"];
 // Phishing attachment types — NO images (images go to screenshot uploader)
 const ALLOWED_ATTACHMENT_EXTENSIONS = [
   // Documents
-  "pdf", "doc", "docx", "docm", "rtf",
+  "pdf",
+  "doc",
+  "docx",
+  "docm",
+  "rtf",
   // Archives
-  "zip", "rar", "7z",
+  "zip",
+  "rar",
+  "7z",
   // Executables / APKs
-  "apk", "exe", "scr", "vbs",
+  "apk",
+  "exe",
+  "scr",
+  "vbs",
   // Web / Email
-  "html", "htm", "eml",
+  "html",
+  "htm",
+  "eml",
 ];
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
@@ -49,24 +67,52 @@ function getAttachmentBadge(ext: string): {
   Icon: React.FC<{ className?: string }>;
 } {
   if (["pdf", "doc", "docx", "docm", "rtf"].includes(ext)) {
-    return { label: "Document", color: "text-blue-600 bg-blue-50 border-blue-200", Icon: FileText };
+    return {
+      label: "Document",
+      color: "text-blue-600 bg-blue-50 border-blue-200",
+      Icon: FileText,
+    };
   }
   if (["zip", "rar", "7z"].includes(ext)) {
-    return { label: "Archive", color: "text-yellow-700 bg-yellow-50 border-yellow-200", Icon: Archive };
+    return {
+      label: "Archive",
+      color: "text-yellow-700 bg-yellow-50 border-yellow-200",
+      Icon: Archive,
+    };
   }
   if (["apk", "exe", "scr", "vbs"].includes(ext)) {
-    return { label: "Executable", color: "text-risk-high bg-risk-high/10 border-risk-high/30", Icon: FileCode };
+    return {
+      label: "Executable",
+      color: "text-risk-high bg-risk-high/10 border-risk-high/30",
+      Icon: FileCode,
+    };
   }
   if (["html", "htm", "svg"].includes(ext)) {
-    return { label: "Web File", color: "text-purple-600 bg-purple-50 border-purple-200", Icon: FileCode };
+    return {
+      label: "Web File",
+      color: "text-purple-600 bg-purple-50 border-purple-200",
+      Icon: FileCode,
+    };
   }
   if (["eml"].includes(ext)) {
-    return { label: "Email File", color: "text-orange-600 bg-orange-50 border-orange-200", Icon: FileText };
+    return {
+      label: "Email File",
+      color: "text-orange-600 bg-orange-50 border-orange-200",
+      Icon: FileText,
+    };
   }
   if (IMAGE_EXTENSIONS.includes(ext)) {
-    return { label: "Image", color: "text-green-700 bg-green-50 border-green-200", Icon: FileImage };
+    return {
+      label: "Image",
+      color: "text-green-700 bg-green-50 border-green-200",
+      Icon: FileImage,
+    };
   }
-  return { label: ext.toUpperCase(), color: "text-secondary bg-neutral-border border-neutral-border", Icon: FileCode };
+  return {
+    label: ext.toUpperCase(),
+    color: "text-secondary bg-neutral-border border-neutral-border",
+    Icon: FileCode,
+  };
 }
 
 // Props
@@ -112,7 +158,9 @@ export const EvidenceUpload = ({
   // State
   const [file, setFile] = React.useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
-  const [validationError, setValidationError] = React.useState<string | null>(null);
+  const [validationError, setValidationError] = React.useState<string | null>(
+    null,
+  );
   const [isDragging, setIsDragging] = React.useState(false);
   const [imageDimensions, setImageDimensions] = React.useState<{
     width: number;
@@ -138,7 +186,7 @@ export const EvidenceUpload = ({
       }
       return null;
     },
-    [allowedExtensions, otherSelectedFile]
+    [allowedExtensions, otherSelectedFile],
   );
 
   // Apply selected file
@@ -168,7 +216,10 @@ export const EvidenceUpload = ({
         // Detect portrait vs landscape safely
         const img = new window.Image();
         img.onload = () => {
-          setImageDimensions({ width: img.naturalWidth, height: img.naturalHeight });
+          setImageDimensions({
+            width: img.naturalWidth,
+            height: img.naturalHeight,
+          });
         };
         img.onerror = () => {
           setImageDimensions(null);
@@ -181,7 +232,7 @@ export const EvidenceUpload = ({
 
       onFileChange(f);
     },
-    [validate, onFileChange]
+    [validate, onFileChange],
   );
 
   // Reset
@@ -262,7 +313,7 @@ export const EvidenceUpload = ({
               "flex flex-row items-center w-full h-36 md:h-48 border-2 rounded-xl p-3 md:p-4 gap-3 md:gap-4 bg-white transition-all",
               error
                 ? "border-risk-high bg-risk-high/5"
-                : "border-neutral-border"
+                : "border-neutral-border",
             )}
           >
             {/* Left Side: Square Preview Container */}
@@ -278,9 +329,9 @@ export const EvidenceUpload = ({
               ) : (
                 <div className="flex flex-col items-center justify-center">
                   {badge ? (
-                    <badge.Icon className="size-12 text-secondary/40" />
+                    <badge.Icon className="size-12 text-secondary/60" />
                   ) : (
-                    <FileCode className="size-12 text-secondary/40" />
+                    <FileCode className="size-12 text-secondary/60" />
                   )}
                 </div>
               )}
@@ -331,7 +382,7 @@ export const EvidenceUpload = ({
                 : isDragging
                   ? "border-primary bg-primary/10 scale-[1.02]"
                   : "border-neutral-border hover:border-primary",
-              disabled && "opacity-60 cursor-not-allowed pointer-events-none"
+              disabled && "opacity-60 cursor-not-allowed pointer-events-none",
             )}
           >
             <div className="flex flex-col items-center justify-center text-center p-2 gap-2">

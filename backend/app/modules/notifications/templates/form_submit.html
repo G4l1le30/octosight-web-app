@@ -175,7 +175,7 @@
         <div
           style="background-color: #ffffff; padding: 16px; border-radius: 6px; margin-top: 24px; border-left: 4px solid #e31e24; font-size: 14px; color: #374151;">
           <div style="font-weight: 600; margin-bottom: 12px; font-size: 15px; color: #111827;">Security Recommendations
-            <span style="font-weight: 400; color: #6b7280;">&middot; Powered by Gemini AI</span></div>
+            <span style="font-weight: 400; color: #6b7280;">: OctoSight security guidance</span></div>
 
           {% if gemini_warnings %}
           <div style="margin-bottom: 10px;">
@@ -212,29 +212,7 @@
         </div>
         {% endif %}
 
-          {% if gemini_actions %}
-          <div style="margin-bottom: 10px;">
-            <strong style="color: #374151; display: block; margin-bottom: 4px;">Suggested Actions</strong>
-            <ul style="margin: 0; padding-left: 20px; color: #374151; font-size: 14px; line-height: 1.5;">
-              {% for action in gemini_actions %}
-              <li>{{ action }}</li>
-              {% endfor %}
-            </ul>
-          </div>
-          {% endif %}
 
-          {% if gemini_tips %}
-          <div style="margin-bottom: 0;">
-            <strong style="color: #374151; display: block; margin-bottom: 4px;">Prevention Tips</strong>
-            <ul style="margin: 0; padding-left: 20px; color: #374151; font-size: 14px; line-height: 1.5;">
-              {% for tip in gemini_tips %}
-              <li>{{ tip }}</li>
-              {% endfor %}
-            </ul>
-          </div>
-          {% endif %}
-        </div>
-        {% endif %}
 
         <p class="message" style="margin-top: 24px; margin-bottom: 0;">
           You can monitor the status of this report in the report dashboard menu on the OctoSight application.

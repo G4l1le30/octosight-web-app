@@ -33,9 +33,9 @@ export const Select: React.FC<SelectProps> = ({
       <div className="relative group">
         <select
           className={cn(
-            "w-full bg-white border-2 border-neutral-border rounded-lg outline-none transition-all font-medium placeholder:text-secondary/40",
+            "w-full bg-white border-2 border-neutral-border rounded-lg outline-none transition-all font-medium placeholder:text-secondary/60",
             "focus:border-primary focus:ring-4 focus:ring-primary/5",
-            "appearance-none pr-10 pl-4 py-2 text-sm",
+            "appearance-none pr-12 pl-4 py-2 text-sm",
             error
               ? "border-risk-high focus:border-risk-high focus:ring-risk-high/5"
               : "border-neutral-border",

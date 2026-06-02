@@ -19,7 +19,7 @@ const Hero: React.FC = () => {
         style={{ animationDelay: "2s" }}
       ></div>
 
-      <div className="container mx-auto px-4 text-center max-w-5xl py-20 relative z-10">
+      <div className="container mx-auto px-4 text-center max-w-6xl py-20 relative z-10">
         {/* Badge */}
         <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/5 border border-primary/10 rounded-full mb-8 md:mb-12 animate-in fade-in slide-in-from-bottom-2 duration-700">
           <div className="w-2 h-2 bg-primary rounded-full animate-ping"></div>

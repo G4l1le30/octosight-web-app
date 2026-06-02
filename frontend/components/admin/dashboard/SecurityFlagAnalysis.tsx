@@ -28,7 +28,7 @@ export const SecurityFlagAnalysis: React.FC<SecurityFlagAnalysisProps> = ({
   }, [flagDist]);
 
   return (
-    <div className="card p-6 md:p-8">
+    <div className="card p-6 md:p-8 h-full">
       <div className="flex items-center justify-between mb-4 md:mb-6">
         <h3 className="font-bold text-base md:text-lg text-secondary">
           Security Flag Analysis (Sub-Categories)

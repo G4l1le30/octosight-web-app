@@ -13,9 +13,10 @@ import os
 import secrets
 import uuid
 from datetime import datetime, timezone, timedelta
-
+from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Response, BackgroundTasks, status
 from fastapi.responses import RedirectResponse
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from google.oauth2 import id_token
 from google.auth.transport import requests
@@ -208,6 +209,12 @@ def verify_email(token: str, response: Response, db: Session = Depends(get_db)):
     access_token = create_access_token({"sub": str(user.id), "email": user.email, "role": user.role})
     refresh_token = create_refresh_token({"sub": str(user.id)})
 
+    from app.modules.gamification.repository import GamificationRepository as _GamificationRepo
+    try:
+        _GamificationRepo.update_streak(db, user.id)
+    except Exception:
+        pass
+
     frontend_url = os.getenv("FRONTEND_URL", "http://localhost:3000").rstrip("/")
     redirect_resp = RedirectResponse(url=f"{frontend_url}", status_code=307)
     _set_auth_cookies(redirect_resp, access_token, refresh_token)
@@ -258,6 +265,12 @@ def login(request: Request, data: LoginRequest, response: Response, db: Session 
     user.locked_until = None
     db.commit()
 
+    from app.modules.gamification.repository import GamificationRepository
+    try:
+        GamificationRepository.update_streak(db, user.id)
+    except Exception:
+        pass  # Gamification is non-critical; don't block login
+
     token = create_access_token(
         {"sub": str(user.id), "email": user.email, "role": user.role}
     )
@@ -270,9 +283,47 @@ def login(request: Request, data: LoginRequest, response: Response, db: Session 
     )
 
 
+class UpdateMeRequest(BaseModel):
+    full_name: Optional[str] = None
+    old_password: Optional[str] = None
+    new_password: Optional[str] = None
+
+
 @router.get("/me", response_model=UserResponse, summary="Get current user profile")
 def get_me(current_user: User = Depends(get_current_user)):
     """Return the authenticated user's profile."""
+    return UserResponse(
+        id=current_user.id,
+        full_name=current_user.full_name,
+        email=current_user.email,
+        role=current_user.role,
+    )
+
+
+@router.patch("/me", response_model=UserResponse, summary="Update current user profile")
+def update_me(
+    body: UpdateMeRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if body.new_password and not body.old_password:
+        raise HTTPException(
+            status_code=400,
+            detail="Old password is required to change password.",
+        )
+
+    if body.old_password and not verify_password(body.old_password, current_user.hashed_password):
+        raise HTTPException(status_code=400, detail="Old password is incorrect.")
+
+    if body.full_name is not None:
+        current_user.full_name = body.full_name.strip()
+
+    if body.new_password:
+        current_user.hashed_password = hash_password(body.new_password)
+
+    db.commit()
+    db.refresh(current_user)
+
     return UserResponse(
         id=current_user.id,
         full_name=current_user.full_name,
@@ -418,6 +469,12 @@ def google_register(
     )
     
     # Immediate login for Google users
+    from app.modules.gamification.repository import GamificationRepository as _GamificationRepo
+    try:
+        _GamificationRepo.update_streak(db, user.id)
+    except Exception:
+        pass
+
     access_token = create_access_token({"sub": str(user.id), "email": user.email, "role": user.role})
     refresh_token = create_refresh_token({"sub": str(user.id)})
     _set_auth_cookies(response, access_token, refresh_token)

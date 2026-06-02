@@ -1,8 +1,16 @@
+"use client";
+
 import Link from "next/link";
 import React from "react";
+import { usePathname } from "next/navigation";
+import { usePermissions } from "@/hooks/usePermissions";
 import { Mail, Instagram, Twitter } from "lucide-react";
 
 const Footer: React.FC = () => {
+  const pathname = usePathname();
+  const { can } = usePermissions();
+  const isAdminRoute = pathname?.startsWith("/admin");
+
   return (
     <footer className="relative bg-gradient-to-br from-primary via-primary-dark to-primary-light text-white pt-24 pb-16 px-4 md:px-6 mt-auto overflow-hidden">
       {/* Decorative Background Elements */}
@@ -20,8 +28,7 @@ const Footer: React.FC = () => {
               OCTOSIGHT
             </Link>
             <p className="text-white/80 text-sm leading-relaxed mb-6 md:mb-8 max-w-sm mx-auto sm:mx-0 font-medium">
-              Empowering users to detect and rep
-              ort phishing threats with
+              Empowering users to detect and report phishing threats with
               advanced AI-driven analysis and real-time security intelligence.
             </p>
             <div className="space-y-1">
@@ -37,7 +44,7 @@ const Footer: React.FC = () => {
             </div>
           </div>
 
-          {/* Quick Links */}
+          {/* Navigation */}
           <div className="text-center sm:text-left">
             <h4 className="text-white font-bold mb-6 text-sm tracking-wide">
               Navigation
@@ -51,60 +58,108 @@ const Footer: React.FC = () => {
                   Home
                 </Link>
               </li>
-              <li>
-                <Link
-                  href="/report"
-                  className="text-white hover:opacity-80 text-sm transition-colors font-medium"
-                >
-                  Report Incident
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/status"
-                  className="text-white hover:opacity-80 text-sm transition-colors font-medium"
-                >
-                  Check Status
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/edu"
-                  className="text-white hover:opacity-80 text-sm transition-colors font-medium"
-                >
-                  E-Learning
-                </Link>
-              </li>
+              {!isAdminRoute ? (
+                <>
+                  <li>
+                    <Link
+                      href="/report"
+                      className="text-white hover:opacity-80 text-sm transition-colors font-medium"
+                    >
+                      Report Incident
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/check"
+                      className="text-white hover:opacity-80 text-sm transition-colors font-medium"
+                    >
+                      Fraud Check
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/status"
+                      className="text-white hover:opacity-80 text-sm transition-colors font-medium"
+                    >
+                      Check Status
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/edu"
+                      className="text-white hover:opacity-80 text-sm transition-colors font-medium"
+                    >
+                      E-Learning
+                    </Link>
+                  </li>
+                </>
+              ) : (
+                <>
+                  {can("dashboard.view") && (
+                    <li>
+                      <Link
+                        href="/admin"
+                        className="text-white hover:opacity-80 text-sm transition-colors font-medium"
+                      >
+                        Dashboard
+                      </Link>
+                    </li>
+                  )}
+                  {can("tickets.view") && (
+                    <li>
+                      <Link
+                        href="/admin/triage"
+                        className="text-white hover:opacity-80 text-sm transition-colors font-medium"
+                      >
+                        Triage
+                      </Link>
+                    </li>
+                  )}
+                </>
+              )}
             </ul>
           </div>
 
-          {/* Support/Legal */}
+          {/* Links (admin extra + legal) */}
           <div className="text-center sm:text-left">
-            <h4 className="text-white font-bold mb-6 text-sm tracking-wide">
-              Resources
-            </h4>
+            {isAdminRoute && <h4 className="text-white font-bold mb-6 text-sm tracking-wide">Links</h4>}
             <ul className="space-y-4">
+              {isAdminRoute ? (
+                <>
+                  {can("blacklist.view") && (
+                    <li>
+                      <Link href="/admin/blacklist" className="text-white hover:opacity-80 text-sm transition-colors font-medium">Blacklist</Link>
+                    </li>
+                  )}
+                  {can("rules.view") && (
+                    <li>
+                      <Link href="/admin/rule-config" className="text-white hover:opacity-80 text-sm transition-colors font-medium">Rules</Link>
+                    </li>
+                  )}
+                  {can("transactions.view") && (
+                    <li>
+                      <Link href="/admin/transactions" className="text-white hover:opacity-80 text-sm transition-colors font-medium">Transactions</Link>
+                    </li>
+                  )}
+                  {can("users.view") && (
+                    <li>
+                      <Link href="/admin/users" className="text-white hover:opacity-80 text-sm transition-colors font-medium">Users</Link>
+                    </li>
+                  )}
+                </>
+              ) : null}
               <li>
-                <Link
-                  href="#"
-                  className="text-white hover:opacity-80 text-sm transition-colors font-medium"
-                >
+                <Link href="#" className="text-white hover:opacity-80 text-sm transition-colors font-medium">
                   Documentation
                 </Link>
               </li>
               <li>
-                <Link
-                  href="#"
-                  className="text-white hover:opacity-80 text-sm transition-colors font-medium"
-                >
+                <Link href="#" className="text-white hover:opacity-80 text-sm transition-colors font-medium">
                   Privacy Policy
                 </Link>
               </li>
               <li>
-                <Link
-                  href="#"
-                  className="text-white hover:opacity-80 text-sm transition-colors font-medium"
-                >
+                <Link href="#" className="text-white hover:opacity-80 text-sm transition-colors font-medium">
                   Terms of Use
                 </Link>
               </li>

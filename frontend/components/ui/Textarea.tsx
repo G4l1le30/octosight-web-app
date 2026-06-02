@@ -18,7 +18,7 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
         <textarea
           ref={ref}
           className={cn(
-            "w-full bg-white border-2 border-neutral-border rounded-lg outline-none transition-all font-medium placeholder:text-secondary/40",
+            "w-full bg-white border-2 border-neutral-border rounded-lg outline-none transition-all font-medium placeholder:text-secondary/60",
             "focus:border-primary focus:ring-4 focus:ring-primary/5",
             error
               ? "border-risk-high focus:border-risk-high focus:ring-risk-high/5"

@@ -20,6 +20,7 @@ from app.core.security import get_current_user, require_admin
 from app.db.session import get_db
 from app.models.models import BlacklistedURL, BlacklistedAccount, BlacklistedPhone, BlacklistedEmail
 from app.modules.activity.service import ActivityService
+from app.modules.notifications.service import NotificationService
 
 router = APIRouter(prefix="/api/v1/admin/blacklist", tags=["blacklist"])
 
@@ -183,6 +184,17 @@ def add_to_blacklist(
         f"URL blacklisted: {domain} (ticket: {body.ticket_id or 'manual'})",
         body.ticket_id,
     )
+    
+    # Create in-app notification for blacklist addition
+    NotificationService.create_notification(
+        db=db,
+        user_id=admin.id,
+        notification_type="blacklist_added",
+        title=f"Blacklist entry added: {domain}",
+        body=f"URL/domain blacklisted: {body.url}",
+        link=f"/admin/blacklist",
+    )
+    
     return entry
 
 
@@ -214,6 +226,17 @@ def remove_from_blacklist(
         db, admin.id,
         f"URL removed from blacklist: {entry.domain}",
     )
+    
+    # Create in-app notification for blacklist removal
+    NotificationService.create_notification(
+        db=db,
+        user_id=admin.id,
+        notification_type="blacklist_removed",
+        title=f"Blacklist entry removed: {entry.domain}",
+        body=f"URL/domain removed from blacklist: {entry.url}",
+        link=f"/admin/blacklist",
+    )
+    
     return {"message": f"Entry #{entry_id} ({entry.domain}) removed from blacklist."}
 
 
@@ -277,6 +300,17 @@ def add_account_to_blacklist(
         f"Bank account blacklisted: {clean_acc} ({body.bank_name or 'N/A'})",
         body.ticket_id,
     )
+    
+    # Create in-app notification for blacklist addition
+    NotificationService.create_notification(
+        db=db,
+        user_id=admin.id,
+        notification_type="blacklist_added",
+        title=f"Bank account blacklisted: {clean_acc}",
+        body=f"Account {clean_acc} blacklisted for {body.bank_name or 'N/A'}",
+        link=f"/admin/blacklist/accounts",
+    )
+    
     return entry
 
 
@@ -316,6 +350,17 @@ def remove_account_from_blacklist(entry_id: str, db: Session = Depends(get_db), 
         db, _admin.id,
         f"Bank account removed from blacklist: {entry.account_number}",
     )
+    
+    # Create in-app notification for blacklist removal
+    NotificationService.create_notification(
+        db=db,
+        user_id=_admin.id,
+        notification_type="blacklist_removed",
+        title=f"Bank account removed from blacklist: {entry.account_number}",
+        body=f"Account {entry.account_number} removed from blacklist",
+        link=f"/admin/blacklist/accounts",
+    )
+    
     return {"message": "Account removed from blacklist"}
 
 
@@ -352,6 +397,17 @@ def add_phone_to_blacklist(
         f"Phone blacklisted: {clean_phone}",
         body.ticket_id,
     )
+    
+    # Create in-app notification for blacklist addition
+    NotificationService.create_notification(
+        db=db,
+        user_id=admin.id,
+        notification_type="blacklist_added",
+        title=f"Phone number blacklisted: {clean_phone}",
+        body=f"Phone {clean_phone} blacklisted",
+        link=f"/admin/blacklist/phones",
+    )
+    
     return entry
 
 
@@ -391,6 +447,16 @@ def remove_phone_from_blacklist(entry_id: str, db: Session = Depends(get_db), _a
         db, _admin.id,
         f"Phone removed from blacklist: {entry.phone_number}",
     )
+    
+    NotificationService.create_notification(
+        db=db,
+        user_id=_admin.id,
+        notification_type="blacklist_removed",
+        title=f"Phone number removed from blacklist: {entry.phone_number}",
+        body=f"Phone {entry.phone_number} removed from blacklist",
+        link=f"/admin/blacklist/phones",
+    )
+    
     return {"message": "Phone removed from blacklist"}
 
 
@@ -427,6 +493,16 @@ def add_email_to_blacklist(
         f"Email blacklisted: {clean_email}",
         body.ticket_id,
     )
+    
+    NotificationService.create_notification(
+        db=db,
+        user_id=admin.id,
+        notification_type="blacklist_added",
+        title=f"Email blacklisted: {clean_email}",
+        body=f"Email {clean_email} blacklisted",
+        link=f"/admin/blacklist/emails",
+    )
+    
     return entry
 
 
@@ -466,4 +542,14 @@ def remove_email_from_blacklist(entry_id: str, db: Session = Depends(get_db), _a
         db, _admin.id,
         f"Email removed from blacklist: {entry.email}",
     )
+    
+    NotificationService.create_notification(
+        db=db,
+        user_id=_admin.id,
+        notification_type="blacklist_removed",
+        title=f"Email removed from blacklist: {entry.email}",
+        body=f"Email {entry.email} removed from blacklist",
+        link=f"/admin/blacklist/emails",
+    )
+    
     return {"message": "Email removed from blacklist"}

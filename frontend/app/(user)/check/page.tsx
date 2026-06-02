@@ -17,7 +17,6 @@ import {
   CreditCard,
   Search,
   MessageSquare,
-  Landmark,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ProcessingAnimation } from "@/components/ui/ProcessingAnimation";
@@ -106,6 +105,7 @@ export default function FraudCheckPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                 <Select
                   label="Target Bank"
+                  className="py-3.5"
                   options={[
                     { label: "CIMB NIAGA", value: "CIMB NIAGA" },
                     { label: "OCTO Pay / Digital", value: "OCTO Pay" },
@@ -125,7 +125,7 @@ export default function FraudCheckPage() {
 
               <Textarea
                 label="Scam Modus / Message Received (min 50 characters)"
-                placeholder="Paste the message here (e.g., 'Saya salah transfer...')"
+                placeholder="Paste the suspicious message here (e.g., 'Please transfer funds to...')"
                 error={form.formState.errors.summary?.message as string}
                 {...form.register("summary")}
                 className="min-h-[100px]"
@@ -141,8 +141,8 @@ export default function FraudCheckPage() {
                   disabled={loading}
                 />
                 <p className="text-xs text-secondary/60">
-                  *Our AI will cross-verify the reference number with the
-                  bank&apos;s core records.
+                  *Our AI will cross-check the account number and report details
+                  with CIMB NIAGA data.
                 </p>
               </div>
 
@@ -204,7 +204,7 @@ export default function FraudCheckPage() {
                 {result.details.detected_scam_type &&
                   result.details.detected_scam_type !== "General Phishing" && (
                     <div className="mb-4 md:mb-6 p-3 md:p-4 bg-primary/5 rounded-xl border border-primary/10">
-                      <p className="text-xs font-bold text-secondary/40 tracking-wide mb-1">
+                      <p className="text-xs font-bold text-secondary/60 tracking-wide mb-1">
                         Detected Pattern
                       </p>
                       <p className="text-sm font-bold text-primary flex items-center gap-2">
@@ -261,45 +261,6 @@ export default function FraudCheckPage() {
               </Button>
             </div>
           )}
-        </div>
-      </div>
-
-      <div className="mt-16 bg-primary/5 rounded-3xl p-6 md:p-8 border border-primary/10">
-        <h3 className="text-xl md:text-2xl font-bold text-secondary mb-4 flex items-center gap-3">
-          <Landmark className="size-6 text-primary" />
-          OctoSight Verification Logic
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-          <div className="space-y-2">
-            <div className="size-10 bg-primary text-white rounded-xl flex items-center justify-center font-bold shadow-md">
-              OS
-            </div>
-            <h4 className="font-bold">Reputation Engine</h4>
-            <p className="text-sm text-secondary/70 font-medium">
-              Instantly cross-checks account numbers against OctoSight&apos;s
-              global scammer database.
-            </p>
-          </div>
-          <div className="space-y-2">
-            <div className="size-10 bg-primary text-white rounded-xl flex items-center justify-center font-bold shadow-md">
-              OCR
-            </div>
-            <h4 className="font-bold">Heuristic Scan</h4>
-            <p className="text-sm text-secondary/70 font-medium">
-              Extracts reference codes and scans for Photoshop manipulation or
-              font inconsistencies.
-            </p>
-          </div>
-          <div className="space-y-2">
-            <div className="size-10 bg-primary text-white rounded-xl flex items-center justify-center font-bold shadow-md">
-              API
-            </div>
-            <h4 className="font-bold">Bank Core Sync</h4>
-            <p className="text-sm text-secondary/70 font-medium">
-              Validates the transaction against real CIMB Core Banking records
-              (Simulated).
-            </p>
-          </div>
         </div>
       </div>
     </div>

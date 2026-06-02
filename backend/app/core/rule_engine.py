@@ -62,15 +62,37 @@ class RuleEngine:
 
     def _load_whitelist(self, path):
         try:
+            whitelist = set()
             with open(path, "r") as f:
-                # Remove scheme and trailing slashes for clean matching
-                return {
-                    urlparse(line.strip()).netloc.lower() or line.strip().lower()
-                    for line in f
-                    if line.strip()
-                }
+                for line in f:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    normalized = self._normalize_whitelist_entry(line)
+                    if normalized:
+                        whitelist.add(normalized)
+            return whitelist
         except FileNotFoundError:
             return set()
+
+    def _normalize_whitelist_entry(self, entry: str) -> str:
+        """Normalize whitelist entries preserving domain root and optional path prefixes."""
+        if not entry:
+            return ""
+
+        entry = entry.strip()
+        parsed = urlparse(entry)
+        if not parsed.scheme:
+            parsed = urlparse(f"http://{entry}")
+
+        domain = parsed.netloc.lower()
+        if domain.startswith("www."):
+            domain = domain[4:]
+
+        path = parsed.path.lower().rstrip("/")
+        if path:
+            return f"{domain}{path}"
+        return domain
 
     def _is_punycode(self, domain):
         if "xn--" in domain:
@@ -259,16 +281,36 @@ class RuleEngine:
             flags.append("FAKE_WRONG_TRANSFER_CLAIM")
             details["transaction_validation"] = "Mutation Not Found (Suspected Wrong Transfer Scam)"
 
-        # 1. Whitelist Check
-        if url:
-            clean_domain = domain.replace("www.", "")
-            if clean_domain in self.whitelist or domain in self.whitelist:
-                return {
-                    "score": 0, 
-                    "priority": "Low", 
-                    "flags": ["on_whitelist"],
-                    "details": {**details, "typosquatting": "Verified Domain"}
-                }
+        # 1. Whitelist Check — match by exact domain or by suffix
+        #    (so www.cimbniaga.co.id and any sub-path /id/home/welcome are both whitelisted)
+        if url and domain:
+            normalized_report = self._normalize_whitelist_entry(url)
+            for whitelist_entry in self.whitelist:
+                if normalized_report == whitelist_entry:
+                    return {
+                        "score": 0,
+                        "priority": "Low",
+                        "flags": ["on_whitelist"],
+                        "details": {**details, "typosquatting": "Verified Domain"}
+                    }
+
+                # Match domain root and any sub-paths for root entries.
+                if whitelist_entry == domain and normalized_report.startswith(f"{whitelist_entry}/"):
+                    return {
+                        "score": 0,
+                        "priority": "Low",
+                        "flags": ["on_whitelist"],
+                        "details": {**details, "typosquatting": "Verified Domain"}
+                    }
+
+                # Match exact path prefix for path-based whitelist entries.
+                if normalized_report.startswith(f"{whitelist_entry}/"):
+                    return {
+                        "score": 0,
+                        "priority": "Low",
+                        "flags": ["on_whitelist"],
+                        "details": {**details, "typosquatting": "Verified Domain"}
+                    }
 
         # 2. URL Checks
         if url:

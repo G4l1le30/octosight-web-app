@@ -2,23 +2,26 @@
 similarity.py — Attack similarity scoring using TF-IDF + cosine similarity.
 
 Computes similarity between a given ticket and all other tickets based on
-combined text fields (summary, url, extracted_text, flags). Results are
-cached in-memory and invalidated when new tickets are created.
+combined text fields (summary, url, extracted_text, flags). Embeddings are
+stored in the DB and results are cached in Redis (30min TTL).
 """
 
-import hashlib
-import time
+import json
+import logging
 from typing import Any, Optional
 
+import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from sqlalchemy.orm import Session
 
+from app.core.redis_client import RedisClient
 from app.models.ticket import Ticket
 
-# In-memory cache
-_cache: dict[str, Any] = {"version": 0, "matrix": None, "tickets": [], "built_at": 0}
-_cache_ttl = 3600  # 1 hour
+logger = logging.getLogger("octosight.similarity")
+
+_redis = RedisClient()
+_SIMILARITY_CACHE_TTL = 1800  # 30 minutes
 
 
 def _build_text(t: Ticket) -> str:
@@ -32,35 +35,35 @@ def _build_text(t: Ticket) -> str:
     return " ".join(parts)
 
 
-def _rebuild_index(db: Session) -> None:
-    """Build or rebuild the TF-IDF matrix from all tickets."""
-    tickets = db.query(Ticket).order_by(Ticket.created_at.desc()).limit(500).all()
-    texts = [_build_text(t) for t in tickets]
-    ticket_ids = [t.ticket_id for t in tickets]
-
-    if not texts:
-        _cache["matrix"] = None
-        _cache["tickets"] = []
-        _cache["built_at"] = time.time()
+def _ensure_embeddings(db: Session) -> None:
+    """Compute and store TF-IDF embeddings for tickets missing them."""
+    unembedded = db.query(Ticket).filter(Ticket.embedding.is_(None)).all()
+    if not unembedded:
         return
 
+    texts = [_build_text(t) for t in unembedded]
     vectorizer = TfidfVectorizer(max_features=5000, stop_words="english")
     matrix = vectorizer.fit_transform(texts)
 
-    _cache["matrix"] = matrix
-    _cache["tickets"] = ticket_ids
-    _cache["built_at"] = time.time()
+    for i, ticket in enumerate(unembedded):
+        vec = matrix[i].toarray().flatten().tolist()
+        ticket.embedding = json.dumps(vec)
+
+    db.commit()
+    logger.info("Stored embeddings for %d tickets", len(unembedded))
 
 
-def _ensure_index(db: Session) -> None:
-    age = time.time() - _cache.get("built_at", 0)
-    if _cache["matrix"] is None or age > _cache_ttl:
-        _rebuild_index(db)
+def _load_embeddings(db: Session, max_tickets: int = 1000) -> tuple[np.ndarray, list[str]]:
+    """Load embeddings from DB into a numpy array."""
+    tickets = db.query(Ticket).filter(Ticket.embedding.isnot(None)).limit(max_tickets).all()
+    ticket_ids = [t.ticket_id for t in tickets]
+    vectors = [np.array(json.loads(t.embedding)) for t in tickets]
+    return np.array(vectors), ticket_ids
 
 
 def invalidate_cache() -> None:
-    """Call when a new ticket is created to force index rebuild."""
-    _cache["built_at"] = 0
+    """Call when a new ticket is created to force similarity cache clear."""
+    _redis.delete("similarity_cache_version")
 
 
 def find_similar(
@@ -70,37 +73,41 @@ def find_similar(
     min_score: float = 0.1,
 ) -> list[dict]:
     """
-    Find top-N most similar tickets to the given ticket_id.
+    Find top-N most similar tickets to the given ticket_id using DB-stored embeddings.
+
+    Results are cached in Redis (30min TTL). Embeddings are auto-computed for
+    tickets missing them.
 
     Returns list of dicts: {ticket_id, similarity_score, summary, url, type, status, priority, risk_score}.
     """
-    _ensure_index(db)
+    # Check Redis cache first
+    cache_key = f"similarity:{ticket_id}:{top_n}:{min_score}"
+    cached = _redis.get_json(cache_key)
+    if cached is not None:
+        return cached
 
-    if _cache["matrix"] is None or not _cache["tickets"]:
+    # Ensure all tickets have embeddings
+    _ensure_embeddings(db)
+
+    # Load target ticket
+    target = db.query(Ticket).filter(Ticket.ticket_id == ticket_id).first()
+    if not target or not target.embedding:
         return []
 
-    if ticket_id not in _cache["tickets"]:
-        # Query the ticket directly
-        ticket = db.query(Ticket).filter(Ticket.ticket_id == ticket_id).first()
-        if not ticket:
-            return []
-        # Rebuild with the target included
-        _rebuild_index(db)
+    target_vec = np.array(json.loads(target.embedding)).reshape(1, -1)
 
-    try:
-        idx = _cache["tickets"].index(ticket_id)
-    except ValueError:
+    # Load all other embeddings
+    matrix, ticket_ids = _load_embeddings(db)
+
+    if matrix.size == 0:
         return []
 
-    matrix = _cache["matrix"]
-    ticket_ids = _cache["tickets"]
+    # Compute cosine similarity
+    scores = cosine_similarity(target_vec, matrix).flatten()
 
-    vec = matrix[idx]
-    scores = cosine_similarity(vec, matrix).flatten()
-
-    # Sort by similarity, exclude self
+    # Rank excluding self
     ranked = sorted(
-        [(s, i) for i, s in enumerate(scores) if i != idx and s >= min_score],
+        [(s, i) for i, s in enumerate(scores) if ticket_ids[i] != ticket_id and s >= min_score],
         key=lambda x: x[0],
         reverse=True,
     )[:top_n]
@@ -120,5 +127,8 @@ def find_similar(
                 "priority": t.priority or "",
                 "risk_score": t.risk_score,
             })
+
+    # Cache in Redis for 30 minutes
+    _redis.set_json(cache_key, results, _SIMILARITY_CACHE_TTL)
 
     return results

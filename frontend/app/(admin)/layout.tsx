@@ -1,6 +1,7 @@
 "use client";
 
 import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
 import Link from "next/link";
 import React, { useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
@@ -14,7 +15,7 @@ function RedirectToHome() {
   }, [router]);
   return (
     <div className="min-h-screen bg-neutral-page flex items-center justify-center">
-      <p className="text-sm font-bold text-secondary/40">Redirecting...</p>
+      <p className="text-sm font-bold text-secondary/60">Redirecting...</p>
     </div>
   );
 }
@@ -47,7 +48,7 @@ export default function AdminLayout({
     return (
       <div className="min-h-screen bg-neutral-page flex items-center justify-center px-4">
         <div className="max-w-md w-full bg-white rounded-2xl shadow-2xl p-10 text-center">
-          <div className="w-8 h-8 md:w-12 md:h-12 md:w-16 md:h-16 bg-risk-high/10 text-risk-high rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="w-8 h-8 md:w-16 md:h-16 bg-risk-high/10 text-risk-high rounded-full flex items-center justify-center mx-auto mb-4">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="h-8 w-8"
@@ -94,6 +95,7 @@ export default function AdminLayout({
     <div className="min-h-screen bg-neutral-page flex flex-col">
       <Navbar />
       <main className="flex-1">{children}</main>
+      <Footer />
     </div>
   );
 }

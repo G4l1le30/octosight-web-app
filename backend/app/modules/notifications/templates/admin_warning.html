@@ -140,7 +140,7 @@
 
         <div class="warning-box">
           <div class="message-text">
-            {{ warning_message | safe | replace('\n', '<br>') }}
+            {{ warning_message | e | replace('\n', '<br>') | safe }}
           </div>
           {% if ticket_id %}
           <div class="ticket-ref">

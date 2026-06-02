@@ -3,10 +3,7 @@
 export const dynamic = "force-dynamic";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
-import {
-  Search,
-  Flag,
-} from "lucide-react";
+import { Search, Flag } from "lucide-react";
 import { Pagination } from "@/components/ui/Pagination";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { TransactionsTable } from "@/components/admin/TransactionsTable";
@@ -67,7 +64,15 @@ export default function TransactionsPage() {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, itemsPerPage, sortBy, sortDir, typeFilter, statusFilter, flaggedOnly]);
+  }, [
+    currentPage,
+    itemsPerPage,
+    sortBy,
+    sortDir,
+    typeFilter,
+    statusFilter,
+    flaggedOnly,
+  ]);
 
   useEffect(() => {
     fetchTransactions();
@@ -96,7 +101,11 @@ export default function TransactionsPage() {
 
   return (
     <>
-      <AdminHeader title="Transactions" subtitle="Monitor and review all bank transactions" stat={{ label: "Total", value: total }} />
+      <AdminHeader
+        title="Transactions"
+        subtitle="Monitor and review all bank transactions"
+        stat={{ label: "Total", value: total }}
+      />
 
       <div className="container mx-auto px-4 pb-6 md:pb-8 space-y-6">
         {/* Filters */}
@@ -104,7 +113,7 @@ export default function TransactionsPage() {
           <div className="relative flex-1 min-w-[200px] max-w-xs">
             <Search
               size={16}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary/40"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary/60"
             />
             <input
               type="text"

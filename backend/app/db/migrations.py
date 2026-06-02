@@ -41,6 +41,7 @@ def apply_migrations(db: Session) -> None:
             "bank_name":          "VARCHAR(100)",
             "bank_account":       "VARCHAR(50)",
             "reference_number":   "VARCHAR(100)",
+            "embedding":          "TEXT",
         },
         "users": {
             "updated_at": "DATETIME",
@@ -54,6 +55,54 @@ def apply_migrations(db: Session) -> None:
             "receiver_bank":      "VARCHAR(100)",
         },
     }
+
+    pending_tables = {
+        "achievements": """
+            CREATE TABLE IF NOT EXISTS achievements (
+                id VARCHAR(36) PRIMARY KEY,
+                code VARCHAR(50) NOT NULL UNIQUE,
+                name VARCHAR(100) NOT NULL,
+                description VARCHAR(500),
+                icon_url VARCHAR(255),
+                criteria_type VARCHAR(50),
+                criteria_value INTEGER DEFAULT 0,
+                points INTEGER DEFAULT 0,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_achievement_code (code)
+            )
+        """,
+        "user_achievements": """
+            CREATE TABLE IF NOT EXISTS user_achievements (
+                id VARCHAR(36) PRIMARY KEY,
+                user_id VARCHAR(36) NOT NULL,
+                achievement_id VARCHAR(36) NOT NULL,
+                earned_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+                FOREIGN KEY (achievement_id) REFERENCES achievements(id) ON DELETE CASCADE,
+                UNIQUE KEY uq_user_achievement (user_id, achievement_id)
+            )
+        """,
+        "user_gamification": """
+            CREATE TABLE IF NOT EXISTS user_gamification (
+                user_id VARCHAR(36) PRIMARY KEY,
+                total_points INTEGER DEFAULT 0,
+                current_streak INTEGER DEFAULT 0,
+                longest_streak INTEGER DEFAULT 0,
+                last_activity_date DATE,
+                level INTEGER DEFAULT 1,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            )
+        """,
+    }
+
+    for table, ddl in pending_tables.items():
+        try:
+            db.execute(text(ddl))
+            db.commit()
+            print(f"[Migration] Created table '{table}'")
+        except Exception:
+            db.rollback()
 
     for table, columns in pending_columns.items():
         for col, col_type in columns.items():

@@ -9,7 +9,7 @@ import { IncidentTrendChart, TimeRange } from "@/components/admin/dashboard/Inci
 import { ThreatChannelChart } from "@/components/admin/dashboard/ThreatChannelChart";
 import { SecurityFlagAnalysis } from "@/components/admin/dashboard/SecurityFlagAnalysis";
 import { ActivityFeed } from "@/components/admin/dashboard/ActivityFeed";
-import { TeamPerformance } from "@/components/admin/dashboard/TeamPerformance";
+import KanbanBoard from "@/components/admin/KanbanBoard";
 
 function buildTrendData(tickets: Ticket[], range: TimeRange) {
   const now = new Date();
@@ -110,6 +110,8 @@ export default function AdminDashboard() {
       data.reduce((acc, t) => acc + t.risk_score, 0) / total
     ).toFixed(1);
     const highRisk = data.filter((t) => t.risk_score >= 75).length;
+    const openTickets = data.filter((t) => !["Mitigated", "Closed"].includes(t.status)).length;
+    const resolvedTickets = data.filter((t) => ["Mitigated", "Closed"].includes(t.status)).length;
 
     const types: Record<string, number> = {};
     const flags: Record<string, number> = {};
@@ -132,7 +134,7 @@ export default function AdminDashboard() {
       .map(([name, value]) => ({ name: name.replace(/_/g, " "), value }))
       .sort((a, b) => b.value - a.value);
 
-    setStats({ total, avgScore, highRisk, typeDist, trendData: [], flagDist });
+    setStats({ total, avgScore, highRisk, openTickets, resolvedTickets, typeDist, trendData: [], flagDist });
   };
 
   const trendData = useMemo(() => buildTrendData(tickets, timeRange), [tickets, timeRange]);
@@ -149,10 +151,10 @@ export default function AdminDashboard() {
       <div className="container mx-auto px-4 py-6 md:py-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4 mb-6 md:mb-8">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold mb-2">
+            <h1 className="text-xl md:text-2xl font-bold text-secondary mb-1">
               Threat Intelligence Dashboard
             </h1>
-            <p className="text-secondary-light">
+            <p className="text-sm text-secondary/80 font-medium">
               Unified monitoring for Website, SMS, WhatsApp, and Email threats.
             </p>
           </div>
@@ -201,12 +203,7 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Row 3: Team Performance */}
-        <div className="mb-6 md:mb-8">
-          <TeamPerformance />
-        </div>
-
-        {/* Recent Alerts Table Preview */}
+        {/* Live Threat Feed */}
         <div className="mb-6 md:mb-8 card overflow-hidden">
           <div className="px-6 md:px-8 py-4 md:py-5 border-b border-neutral-border flex items-center justify-between bg-white">
             <h3 className="font-bold text-lg md:text-xl text-secondary">
@@ -223,6 +220,22 @@ export default function AdminDashboard() {
             tickets={tickets.slice(0, 5)}
             loading={loading}
           />
+        </div>
+
+        {/* Kanban Board */}
+        <div className="mb-6 md:mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-bold text-lg md:text-xl text-secondary">Kanban Board</h3>
+            <Link
+              href="/admin/kanban"
+              className="text-sm font-bold text-primary hover:underline px-3 py-1 bg-primary/5 rounded-full"
+            >
+              Full Board →
+            </Link>
+          </div>
+          <div className="card p-4 md:p-6 overflow-hidden">
+            <KanbanBoard compact />
+          </div>
         </div>
       </div>
     </div>

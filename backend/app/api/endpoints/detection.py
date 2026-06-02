@@ -33,7 +33,7 @@ from sqlalchemy.orm import Session
 
 from app.core.security import get_current_user, get_optional_user
 from app.db.session import SessionLocal, get_db
-from app.models.models import Ticket, BlacklistedURL, BlacklistedAccount, MockBankTransaction, BlacklistedPhone, BlacklistedEmail
+from app.models.models import Ticket, User, BlacklistedURL, BlacklistedAccount, MockBankTransaction, BlacklistedPhone, BlacklistedEmail
 from pydantic import BaseModel
 from app.schemas.schemas import AnalysisRequest, MessageRequest, SpamPredictionResponse
 from app.core.engines import analyze_spam, ocr_engine, rule_engine
@@ -45,10 +45,11 @@ except ImportError:
     explain_cache = None
 from app.api.endpoints.blacklist import normalize_url_for_match, _extract_domain
 from app.modules.activity.service import ActivityService
-from app.modules.notifications.service import send_email_notification, send_email_async
+from app.modules.notifications.service import NotificationService, send_email_notification, send_email_async
 from app.services.supabase_service import get_supabase_service, SupabaseStorageService
 
 router = APIRouter(prefix="/api/v1", tags=["detection"])
+ADMIN_NOTIFICATION_EMAIL = "octosight.id@gmail.com"
 
 
 # ── Input Sanitization & Validation ───────────────────────────────────────────
@@ -251,6 +252,10 @@ def _compute_hybrid_score(rule_score: float, combined_text: str, only_ml: bool =
         ml_category = ml_result["category"]
         ml_confidence = ml_result["confidence"]
 
+        # Normalize legacy ML labels: ham → not phishing
+        if ml_category == "ham":
+            ml_category = "not phishing"
+
         # Convert ML output into a 0-100 phishing-probability score
         if ml_category == "phishing":
             ml_score = ml_confidence          # e.g. 96.2 → 96.2
@@ -308,6 +313,67 @@ def _resolve_priority(score: float) -> str:
     elif score >= 35:
         return "Medium"
     return "Low"
+
+
+def _admin_notification_users(db: Session) -> list[User]:
+    """Return admin recipients for in-app operational notifications."""
+    users = db.query(User).filter(
+        (User.email == ADMIN_NOTIFICATION_EMAIL) | (User.role == "admin")
+    ).all()
+    seen: set[str] = set()
+    unique_users: list[User] = []
+    for user in users:
+        if user.id in seen:
+            continue
+        seen.add(user.id)
+        unique_users.append(user)
+    return unique_users
+
+
+def _notify_admin_report_submitted(
+    db: Session,
+    background_tasks: BackgroundTasks,
+    ticket: Ticket,
+    reporter: User,
+) -> None:
+    """Notify admins by email and in-app when a user submits a report."""
+    indicator = ticket.url or ticket.sender_numbers or ticket.bank_account or "N/A"
+    reporter_email = reporter.email or "unknown reporter"
+    body = f"{ticket.type or 'Report'} report from {reporter_email}: {indicator}"
+    link = f"/admin/investigate/{ticket.ticket_id}"
+
+    for admin in _admin_notification_users(db):
+        NotificationService.create_notification(
+            db=db,
+            user_id=admin.id,
+            notification_type="ticket_created",
+            title=f"New report from {reporter_email}",
+            body=body,
+            link=link,
+        )
+
+    send_email_notification(
+        background_tasks=background_tasks,
+        subject=f"OctoSight: New report from {reporter_email} [{ticket.ticket_id}]",
+        email_to=ADMIN_NOTIFICATION_EMAIL,
+        template_name="form_submit.html",
+        template_body={
+            "ticket_id": ticket.ticket_id,
+            "type": ticket.type or "N/A",
+            "url": ticket.url or "N/A",
+            "sender_numbers": ticket.sender_numbers or "N/A",
+            "summary": (ticket.summary or "")[:300],
+            "risk_score": ticket.risk_score,
+            "priority": ticket.priority,
+            "bank_name": ticket.bank_name or "",
+            "bank_account": ticket.bank_account or "",
+            "reference_number": ticket.reference_number or "",
+            "gemini_warnings": [],
+            "gemini_actions": [],
+            "gemini_tips": [],
+            "reporter_email": reporter_email,
+        },
+    )
 
 
 def _save_upload(file: UploadFile, prefix: str, subfolder: str = "") -> str:
@@ -693,6 +759,8 @@ async def create_report(
     ml_input_text = f"{summary}\n{combined_text}".strip()
     flags: List[str] = list(rule_analysis["flags"])
 
+    is_whitelisted = "on_whitelist" in flags
+
     if blacklisted_entry or account_blacklisted:
         hybrid = {
             "final_score": 100.0,
@@ -707,6 +775,21 @@ async def create_report(
         }
         if "BLACKLISTED" not in flags:
             flags.append("BLACKLISTED")
+    elif is_whitelisted:
+        # Skip ML entirely for whitelisted URLs — all scores 0
+        hybrid = {
+            "final_score": 0.0,
+            "rule_score": 0.0,
+            "ml_score": 0.0,
+            "ml_category": "not phishing",
+            "ml_confidence": 100.0,
+            "ml_available": True,
+            "rule_weight": 100,
+            "ml_weight": 0,
+            "formula": "final = 0 (Whitelisted)"
+        }
+        if "WHITELISTED" not in flags:
+            flags.append("WHITELISTED")
     else:
         # Restore standard hybrid scoring (35% Rule + 65% ML)
         hybrid = _compute_hybrid_score(rule_score, ml_input_text, only_ml=False)
@@ -717,12 +800,13 @@ async def create_report(
     is_scam_scenario = any("scam_scenario:" in f for f in flags)
     is_valid_ref = "VERIFIED_BY_BANK" in flags
     is_any_blacklisted = blacklisted_entry or account_blacklisted
+    is_whitelisted = "on_whitelist" in flags
     is_gibberish = any("GIBBERISH_TEXT:" in f for f in flags)
 
     # Gibberish override — ML confidently says "not phishing" but the rule engine
     # found the text is meaningless/junk. Bump score so gibberish isn't hidden
     # by the ML's 65% weight.
-    if is_gibberish and not is_any_blacklisted:
+    if is_gibberish and not is_any_blacklisted and not is_whitelisted:
         # Rule engine already applied a boost; ensure it isn't washed out by ML
         boosted = round((rule_score * 0.70) + (hybrid["ml_score"] * 0.30), 2)
         if boosted > final_score:
@@ -732,7 +816,7 @@ async def create_report(
             hybrid["formula"] = "final = rule×0.70 + ml×0.30 (Gibberish Override)"
             print(f"[Override] Gibberish override triggered (70/30). Final score: {final_score}")
 
-    if not url.strip() and (is_scam_scenario or is_valid_ref) and not is_any_blacklisted:
+    if not url.strip() and (is_scam_scenario or is_valid_ref) and not is_any_blacklisted and not is_whitelisted:
         # If it's a scam scenario without a link, Rule Engine is prioritized
         # User Requirement: ML still gets 20% contribution
         # ONLY apply this if NOT explicitly blacklisted
@@ -803,10 +887,25 @@ async def create_report(
 
     ActivityService.log_ticket_created(
         db, current_user.id, db_ticket.ticket_id,
-        f"Report submitted: {report_type} — {url or sender_numbers or 'N/A'}",
+        f"Report submitted: {report_type}: {url or sender_numbers or 'N/A'}",
     )
 
-    import asyncio
+    NotificationService.create_notification(
+        db=db,
+        user_id=current_user.id,
+        notification_type="ticket_created",
+        title="Report submitted",
+        body=f"{report_type} report: {url or sender_numbers or 'N/A'}",
+        link=f"/report/{db_ticket.ticket_id}",
+    )
+
+    _notify_admin_report_submitted(db, background_tasks, db_ticket, current_user)
+
+    from app.modules.gamification.service import GamificationService
+    GamificationService.add_points_and_check_achievements(
+        db, current_user.id, 10, "report"
+    )
+
     email_param = current_user.email if current_user and current_user.email else None
     asyncio.create_task(
         _generate_education_recommendation_for_ticket(db_ticket.id, email_param)
@@ -975,6 +1074,8 @@ async def analyze_preview(
             rule_analysis["flags"].append("domain_blacklisted")
 
     # 4. Hybrid scoring (Rule 35% + ML 65%)
+    is_whitelisted = "on_whitelist" in rule_analysis["flags"]
+
     if blacklisted_entry or account_blacklisted or (is_transaction and ref_found and not ref_valid):
         final_score = 100.0
         hybrid = {
@@ -990,6 +1091,20 @@ async def analyze_preview(
         }
         if "BLACKLISTED" not in rule_analysis["flags"] and (blacklisted_entry or account_blacklisted):
              rule_analysis["flags"].append("BLACKLISTED")
+    elif is_whitelisted:
+        # Skip ML entirely for whitelisted URLs — all scores 0
+        hybrid = {
+            "final_score": 0.0,
+            "rule_score": 0.0,
+            "ml_score": 0.0,
+            "ml_category": "not phishing",
+            "ml_confidence": 100.0,
+            "ml_available": True,
+            "rule_weight": 100,
+            "ml_weight": 0,
+            "formula": "final = 0 (Whitelisted)"
+        }
+        final_score = 0.0
     else:
         # Restore standard hybrid scoring (35% Rule + 65% ML)
         hybrid = _compute_hybrid_score(rule_score, full_text_context or url, only_ml=False)
@@ -999,8 +1114,9 @@ async def analyze_preview(
     is_scam_scenario = any("scam_scenario:" in f for f in rule_analysis["flags"])
     is_valid_ref = "VERIFIED_BY_BANK" in rule_analysis["flags"]
     is_any_blacklisted = blacklisted_entry is not None or account_blacklisted
+    is_whitelisted = "on_whitelist" in rule_analysis["flags"]
 
-    if not url.strip() and (is_scam_scenario or is_valid_ref) and not is_any_blacklisted:
+    if not url.strip() and (is_scam_scenario or is_valid_ref) and not is_any_blacklisted and not is_whitelisted:
         final_score = round((rule_score * 0.8) + (hybrid["ml_score"] * 0.2), 2)
         hybrid["rule_weight"] = 80
         hybrid["ml_weight"] = 20
@@ -1076,24 +1192,17 @@ def analyze_explain(request: ExplainRequest):
 def _build_explain_prompt(request: ExplainRequest) -> tuple[str, str]:
     """Build the Gemini prompt and return (prompt, flags_str)."""
     flags_str = ", ".join(request.flags) if request.flags else "none"
-    prompt = f"""You are a cybersecurity assistant for a bank's anti-phishing system.
-Generate a concise explanation (3-4 sentences) for a bank customer.
-Explain WHAT the user submitted and WHY the system gave the result it did.
-Describe the specific threat indicators found (e.g., URL shorteners, malicious keywords, suspicious patterns, brand impersonation).
-Use clear, simple English. Do NOT use markdown. Do NOT use first-person voice.
+    prompt = f"""You are a security analyst summarizing the suspicious report for a bank customer.
+Write 2-3 short, factual sentences describing what the system detected.
+Use simple, direct language and avoid reassurance or emotional tone.
+Focus on observed risk indicators and report details.
 
-USER INPUT:
-- Type: {request.report_type}
-- URL/Indicator: {request.url or 'N/A'}
-- Summary: {(request.summary or '')[:300]}
-
-SYSTEM RESULT:
-- Risk Score: {request.score}/100 ({request.priority})
-- ML Prediction: {request.ml_category or 'N/A'}
-- Flags: {flags_str}
-- Detected Scenario: {request.detected_scam_type or 'N/A'}
-
-Generate the explanation now, mentioning the specific flags and indicators that triggered the detection:"""
+What was reported: {request.report_type or 'something'}
+URL: {request.url or 'N/A'}
+Details: {(request.summary or '')[:200]}
+Risk score: {request.score}/100 ({request.priority})
+What the system saw: {flags_str}
+Detected type: {request.detected_scam_type or 'N/A'}"""
     return prompt, flags_str
 
 
@@ -1148,16 +1257,16 @@ def _call_gemini_explain(request: ExplainRequest) -> str:
 
 def _fallback_explain(request: ExplainRequest) -> str:
     """Deterministic fallback explanation when Gemini is unavailable."""
-    _, flags_str = _build_explain_prompt(request)
+    flags_text = ", ".join(
+        [f.replace("_", " ").replace(":", " ") for f in request.flags]
+    ) if request.flags else "none"
     risk = "high risk" if request.score >= 70 else "medium risk" if request.score >= 40 else "low risk"
+    target = request.url or "the reported item"
     return (
-        f"The {request.report_type.lower() or 'reported content'} "
-        f"{f'({request.url}) ' if request.url else ''}"
-        f"was flagged as {risk} (score: {request.score:.0f}/100). "
-        f"System detected the following indicators: {flags_str}. "
-        f"These patterns are commonly associated with phishing attempts, including URL obfuscation, "
-        f"brand impersonation keywords, and suspicious sender behavior. "
-        f"Please review the details above and contact your bank if you shared any personal information."
+        f"The report for {target} was assigned a {risk} score of {request.score:.0f}/100. "
+        f"The system identified indicators such as {flags_text}. "
+        f"The evidence is consistent with a potential phishing attempt. "
+        f"Review the details and verify the source before taking action."
     )
 
 

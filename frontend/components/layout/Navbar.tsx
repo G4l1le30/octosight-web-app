@@ -27,7 +27,7 @@ const Navbar: React.FC = () => {
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-neutral-border shadow-sm">
-      <div className="container mx-auto px-4 h-16 flex items-center justify-between max-w-7xl">
+      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
           <span className="text-primary text-xl md:text-2xl font-black tracking-wide">
             OCTOSIGHT
@@ -55,12 +55,6 @@ const Navbar: React.FC = () => {
                   >
                     Triage
                   </Link>
-                  <Link
-                    href="/admin/kanban"
-                    className={getLinkClass("/admin/kanban")}
-                  >
-                    Kanban
-                  </Link>
                 </>
               )}
               {can("blacklist.view") && (
@@ -80,20 +74,12 @@ const Navbar: React.FC = () => {
                 </Link>
               )}
               {can("transactions.view") && (
-                <>
-                  <Link
-                    href="/admin/transactions"
-                    className={getLinkClass("/admin/transactions")}
-                  >
-                    Transactions
-                  </Link>
-                  <Link
-                    href="/admin/transactions/anomalies"
-                    className={getLinkClass("/admin/transactions/anomalies")}
-                  >
-                    Anomalies
-                  </Link>
-                </>
+                <Link
+                  href="/admin/transactions"
+                  className={getLinkClass("/admin/transactions")}
+                >
+                  Transactions
+                </Link>
               )}
               {can("users.view") && (
                 <Link
@@ -121,6 +107,9 @@ const Navbar: React.FC = () => {
               <Link href="/edu" className={getLinkClass("/edu")}>
                 E-Learning
               </Link>
+              <Link href="/profile" className={getLinkClass("/profile")}>
+                Profile
+              </Link>
             </>
           )}
 
@@ -129,10 +118,10 @@ const Navbar: React.FC = () => {
           {user && !loading ? (
             <div className="self-center flex items-center gap-2">
               <NotificationBell />
-              <ProfileDropdown 
-                user={user} 
-                logout={logout} 
-                isAdminRoute={isAdminRoute} 
+              <ProfileDropdown
+                user={user}
+                logout={logout}
+                isAdminRoute={isAdminRoute}
               />
             </div>
           ) : (

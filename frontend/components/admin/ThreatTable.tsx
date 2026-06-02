@@ -14,6 +14,9 @@ interface ThreatTableProps {
   onAssign?: (ticketId: string, email: string) => void;
   selectedIds?: number[];
   onSelectionChange?: (ids: number[]) => void;
+  onSort?: (column: string) => void;
+  sortBy?: string;
+  sortDir?: string;
 }
 
 export const ThreatTable: React.FC<ThreatTableProps> = ({
@@ -24,6 +27,9 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
   onAssign,
   selectedIds = [],
   onSelectionChange,
+  onSort,
+  sortBy,
+  sortDir,
 }) => {
   const [assignModalOpen, setAssignModalOpen] = useState(false);
   const [assignTicketId, setAssignTicketId] = useState<string | null>(null);
@@ -108,7 +114,7 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
     );
   }
 
-  const colSpan = onSelectionChange ? 9 : 8;
+  const colSpan = onSelectionChange ? 10 : 9;
 
   return (
     <div className={cn("overflow-x-auto", className)}>
@@ -116,7 +122,7 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
         <thead className="bg-neutral-page text-sm font-bold text-secondary border-b border-neutral-border">
           <tr>
             {onSelectionChange && (
-              <th className="px-4 md:px-6 py-4 w-10">
+              <th className="px-2 md:px-3 py-4 w-8">
                 <input
                   ref={headerCheckboxRef}
                   type="checkbox"
@@ -126,14 +132,25 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
                 />
               </th>
             )}
-            <th className="px-4 md:px-6 py-4 w-[25%]">Ticket</th>
-            <th className="px-4 md:px-6 py-4 w-[20%]">Indicator / Target</th>
-            <th className="px-4 md:px-6 py-4 text-center">Priority</th>
-            <th className="px-4 md:px-6 py-4 text-center">Risk Score</th>
+            <th className="px-4 md:px-6 py-4 w-[28%] cursor-pointer select-none" onClick={() => onSort?.("ticket_id")}>
+              Ticket {sortBy === "ticket_id" && (sortDir === "asc" ? "↑" : "↓")}
+            </th>
+            <th className="px-4 md:px-6 py-4 w-[25%] cursor-pointer select-none" onClick={() => onSort?.("url")}>
+              Indicator / Target {sortBy === "url" && (sortDir === "asc" ? "↑" : "↓")}
+            </th>
+            <th className="px-4 md:px-6 py-4 text-center cursor-pointer select-none" onClick={() => onSort?.("priority")}>
+              Priority {sortBy === "priority" && (sortDir === "asc" ? "↑" : "↓")}
+            </th>
+            <th className="px-4 md:px-6 py-4 text-center cursor-pointer select-none" onClick={() => onSort?.("risk_score")}>
+              Risk Score {sortBy === "risk_score" && (sortDir === "asc" ? "↑" : "↓")}
+            </th>
             <th className="px-4 md:px-6 py-4 text-center">Key Findings</th>
-            <th className="px-4 md:px-6 py-4 text-center">Status</th>
-            <th className="px-4 md:px-6 py-4 text-center">Assignee</th>
-            <th className="px-4 md:px-6 py-4 text-center">Actions</th>
+            <th className="px-4 md:px-6 py-4 text-center cursor-pointer select-none" onClick={() => onSort?.("status")}>
+              Status {sortBy === "status" && (sortDir === "asc" ? "↑" : "↓")}
+            </th>
+            <th className="px-4 md:px-6 py-4 text-center w-[100px]">SLA</th>
+            <th className="px-4 md:px-6 py-4 text-center w-[110px]">Assignee</th>
+            <th className="px-4 md:px-6 py-4 text-center w-[90px]">Actions</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-neutral-border">
@@ -273,6 +290,28 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
                   </span>
                 </td>
                 <td className="px-4 md:px-6 py-4 md:py-5 text-center">
+                  {ticket.sla_breached ? (
+                    <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200 inline-flex items-center gap-1">
+                      Breached
+                    </span>
+                  ) : ticket.sla_deadline ? (
+                    <span className="text-xs font-medium text-secondary">
+                      {(() => {
+                        const deadline = new Date(ticket.sla_deadline);
+                        const now = new Date();
+                        const diffMs = deadline.getTime() - now.getTime();
+                        if (diffMs <= 0) return "Expired";
+                        const diffHrs = Math.floor(diffMs / 3600000);
+                        const diffMins = Math.floor((diffMs % 3600000) / 60000);
+                        if (diffHrs > 0) return `${diffHrs}h ${diffMins}m left`;
+                        return `${diffMins}m left`;
+                      })()}
+                    </span>
+                  ) : (
+                    <span className="text-xs text-secondary/60">N/A</span>
+                  )}
+                </td>
+                <td className="px-4 md:px-6 py-4 md:py-5 text-center">
                   <span
                     className="text-xs font-medium text-secondary truncate max-w-[120px] block"
                     title={ticket.assigned_to || undefined}
@@ -281,21 +320,21 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
                   </span>
                 </td>
                 <td className="px-4 md:px-6 py-4 md:py-5 text-center">
-                  <div className="flex items-center justify-center gap-2">
+                  <div className="flex flex-col items-center gap-1.5">
+                    <Link
+                      href={`/admin/investigate/${ticket.ticket_id}`}
+                      className="text-xs font-bold text-white bg-primary px-3 py-1.5 rounded-lg hover:opacity-90 transition-all w-full text-center"
+                    >
+                      Investigate
+                    </Link>
                     {onAssign && (
                       <button
                         onClick={() => openAssignModal(ticket.ticket_id)}
-                        className="text-xs font-bold border border-neutral-border px-3 py-1.5 rounded-lg hover:bg-neutral-page transition-colors"
+                        className="text-xs font-bold border border-neutral-border px-3 py-1.5 rounded-lg hover:bg-neutral-page transition-colors w-full text-center"
                       >
                         Assign
                       </button>
                     )}
-                    <Link
-                      href={`/admin/investigate/${ticket.ticket_id}`}
-                      className="text-xs font-bold text-secondary hover:text-primary transition-colors bg-white border border-neutral-border px-4 py-2 rounded-xl shadow-sm inline-block"
-                    >
-                      Investigate
-                    </Link>
                   </div>
                 </td>
               </tr>

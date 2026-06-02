@@ -20,23 +20,27 @@ export const StatusOverview: React.FC<StatusOverviewProps> = ({ result }) => {
         <p className="text-sm font-bold text-secondary tracking-wide">
           Automated Risk Score
         </p>
-       <div className="flex items-center gap-3 md:gap-4 mt-2">
-         <span
-           className={`text-3xl md:text-4xl font-bold ${(result.risk_score ?? 0) >= 75 ? "text-risk-high" : (result.risk_score ?? 0) >= 35 ? "text-risk-medium" : "text-risk-low"}`}
-         >
-            {result.risk_score != null ? Number(result.risk_score) : <span className="text-secondary/40">None</span>}
-           <span className="text-xl md:text-2xl text-secondary/40">/100</span>
-         </span>
-         <div className="flex-1 h-3 bg-neutral-border/60 rounded-full overflow-hidden">
-           <div
-             className="h-full rounded-full transition-all duration-1000"
-             style={{
-               width: `${result.risk_score ?? 0}%`,
-               backgroundColor: getRiskHex(result.risk_score ?? 0),
-             }}
-           ></div>
-         </div>
-       </div>
+        <div className="flex items-center gap-3 md:gap-4 mt-2">
+          <span
+            className={`text-3xl md:text-4xl font-bold ${(result.risk_score ?? 0) >= 75 ? "text-risk-high" : (result.risk_score ?? 0) >= 35 ? "text-risk-medium" : "text-risk-low"}`}
+          >
+            {result.risk_score != null ? (
+              Number(result.risk_score)
+            ) : (
+              <span className="text-secondary/60">None</span>
+            )}
+            <span className="text-xl md:text-2xl text-secondary/60">/100</span>
+          </span>
+          <div className="flex-1 h-3 bg-neutral-border/60 rounded-full overflow-hidden">
+            <div
+              className="h-full rounded-full transition-all duration-1000"
+              style={{
+                width: `${result.risk_score ?? 0}%`,
+                backgroundColor: getRiskHex(result.risk_score ?? 0),
+              }}
+            ></div>
+          </div>
+        </div>
       </div>
 
       {/* Basic Details */}

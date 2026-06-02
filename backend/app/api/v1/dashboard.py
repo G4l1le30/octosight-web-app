@@ -40,10 +40,4 @@ def get_timeline(
     return {"range": f"{days}d", "points": DashboardRepository.timeline(db, days)}
 
 
-@router.get("/team")
-def get_team_summary(
-    db: Session = Depends(get_db),
-    _=Depends(require_permission("dashboard.view")),
-):
-    """Return per-assignee ticket statistics."""
-    return {"team": DashboardRepository.team_summary(db)}
+

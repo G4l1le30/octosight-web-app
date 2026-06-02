@@ -18,11 +18,6 @@ export const RiskEducationPanel: React.FC<RiskEducationPanelProps> = ({
         <h3 className="text-lg md:text-xl font-bold text-secondary">
           Security Recommendations
         </h3>
-        <div className="flex items-center gap-1.5 px-0 py-0 bg-transparent">
-          <span className="text-sm font-bold text-secondary">
-            Powered by Gemini AI
-          </span>
-        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">

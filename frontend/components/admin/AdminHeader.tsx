@@ -19,9 +19,9 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({ title, subtitle, stat 
     <div className="container mx-auto px-4 py-6 md:py-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-secondary">{title}</h1>
+          <h1 className="text-xl md:text-2xl font-bold text-secondary">{title}</h1>
           {subtitle && (
-            <p className="text-secondary font-medium opacity-80 text-sm mt-1">{subtitle}</p>
+            <p className="text-sm text-secondary/80 font-medium mt-1">{subtitle}</p>
           )}
         </div>
         {stat && (

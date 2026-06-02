@@ -69,7 +69,7 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --log-level debug
     env_file:
       - ./.env
     environment:
@@ -85,11 +85,11 @@ services:
       db:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "python -c \"import socket; s=socket.socket(); s.settimeout(2); s.connect(('localhost',8000)); s.close()\" || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 60s
+      test: ["CMD-SHELL", "python -c \"import socket; s=socket.socket(); s.settimeout(5); s.connect(('localhost',8000)); s.close()\" || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 90s
     volumes:
       - ./backend:/app
     networks:
@@ -152,6 +152,58 @@ services:
       resources:
         limits:
           memory: "128M"
+
+  # Celery Worker
+  celery_worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: celery -A celery_app worker --loglevel=info
+    volumes:
+      - ./backend:/app
+      - ./ml:/ml
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - DATABASE_URL=mysql+pymysql://octouser:octopassword@db:3306/octosight_db
+      - SECRET_KEY=${SECRET_KEY}
+      - ML_MODEL_PATH=ml/artifacts/model.pkl
+      - ML_VECTORIZER_PATH=ml/artifacts/vectorizer.pkl
+    depends_on:
+      redis:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+    networks:
+      - octo-network
+    healthcheck:
+      disable: true
+    restart: unless-stopped
+
+  # Celery Beat
+  celery_beat:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: celery -A celery_app beat --loglevel=info
+    volumes:
+      - ./backend:/app
+      - ./ml:/ml
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - DATABASE_URL=mysql+pymysql://octouser:octopassword@db:3306/octosight_db
+      - SECRET_KEY=${SECRET_KEY}
+      - ML_MODEL_PATH=ml/artifacts/model.pkl
+      - ML_VECTORIZER_PATH=ml/artifacts/vectorizer.pkl
+    depends_on:
+      redis:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+    networks:
+      - octo-network
+    healthcheck:
+      disable: true
+    restart: unless-stopped
 
   # phpMyAdmin
   phpmyadmin:

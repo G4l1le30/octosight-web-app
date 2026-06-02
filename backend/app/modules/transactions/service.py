@@ -56,14 +56,6 @@ class TransactionService:
         tx = TransactionRepository.unflag(db, tx)
         return _tx_to_dict(tx)
 
-    @staticmethod
-    def get_anomalies(db: Session, page: int = 1, per_page: int = 20):
-        rows, total = TransactionRepository.list_all(
-            db, page, per_page, flagged_only=True, sort_by="anomaly_score", sort_dir="desc",
-        )
-        return [_tx_to_dict(t) for t in rows], total
-
-
 def _tx_to_dict(tx) -> dict:
     return {
         "id": tx.id,

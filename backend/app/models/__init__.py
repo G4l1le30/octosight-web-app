@@ -14,6 +14,7 @@ from app.models.notification import Notification
 from app.models.activity import ActivityLog
 from app.models.pending_registration import PendingRegistration
 from app.models.permission import Permission, RolePermission
+from app.models.gamification import Achievement, UserAchievement, UserGamification
 
 __all__ = [
     "User",
@@ -36,4 +37,7 @@ __all__ = [
     "PendingRegistration",
     "Permission",
     "RolePermission",
+    "Achievement",
+    "UserAchievement",
+    "UserGamification",
 ]

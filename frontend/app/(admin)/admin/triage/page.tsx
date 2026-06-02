@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { RefreshCw, Download } from "lucide-react";
 import { SearchBar } from "@/components/ui/SearchBar";
 import { ThreatTable } from "@/components/admin/ThreatTable";
@@ -8,13 +7,16 @@ import { Pagination } from "@/components/ui/Pagination";
 import { TriageFilters } from "@/components/admin/triage/TriageFilters";
 import { useTriageTickets } from "@/modules/admin/hooks/useTriageTickets";
 import { Button } from "@/components/ui/Button";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { toast } from "sonner";
 
 const STATUS_OPTIONS = ["Submitted", "In Review", "Confirmed", "False Positive", "Mitigated", "Closed"] as const;
 const PRIORITY_OPTIONS = ["High", "Medium", "Low"] as const;
 
 export default function TriagePage() {
+  const [sortBy, setSortBy] = useState("created_at");
+  const [sortDir, setSortDir] = useState("desc");
+
   const {
     tickets,
     paginatedData,
@@ -34,13 +36,22 @@ export default function TriagePage() {
     resetFilters,
     fetchTickets,
     assignTicket,
-  } = useTriageTickets();
+  } = useTriageTickets(sortBy, sortDir);
 
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [bulkStatus, setBulkStatus] = useState("");
   const [bulkPriority, setBulkPriority] = useState("");
   const [bulkAssignTo, setBulkAssignTo] = useState("");
   const [bulkApplying, setBulkApplying] = useState(false);
+
+  const toggleSort = useCallback((col: string) => {
+    if (col === sortBy) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortBy(col);
+      setSortDir("desc");
+    }
+  }, [sortBy]);
 
   const handleBulkCancel = () => {
     setSelectedIds([]);
@@ -77,34 +88,13 @@ export default function TriagePage() {
   return (
     <div className="container mx-auto px-4 py-6 md:py-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 md:mb-8">
-        <div className="flex items-center gap-3 md:gap-4">
-          <Link
-            href="/admin"
-            className="p-2 hover:bg-neutral-border rounded-full transition-all"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6 text-secondary"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M10 19l-7-7m0 0l7-7m-7 7h18"
-              />
-            </svg>
-          </Link>
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-secondary">
-              Triage Management
-            </h1>
-            <p className="text-secondary font-normal mt-2">
-              Advanced search and multi-factor threat filtering.
-            </p>
-          </div>
+        <div>
+          <h1 className="text-xl md:text-2xl font-bold text-secondary">
+            Triage Management
+          </h1>
+          <p className="text-sm text-secondary/80 font-medium mt-1">
+            Advanced search and multi-factor threat filtering.
+          </p>
         </div>
         <div className="flex items-center gap-3 md:gap-4">
           <Button
@@ -206,6 +196,9 @@ export default function TriagePage() {
           onAssign={assignTicket}
           selectedIds={selectedIds}
           onSelectionChange={setSelectedIds}
+          onSort={toggleSort}
+          sortBy={sortBy}
+          sortDir={sortDir}
         />
         <Pagination
           currentPage={currentPage}

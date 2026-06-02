@@ -18,10 +18,13 @@ def list_notifications(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    is_admin = current_user.role == "admin"
     items, total = NotificationService.list_notifications(
-        db, current_user.id, page, per_page
+        db, current_user.id, page, per_page, include_all=is_admin
     )
-    unread_count = NotificationService.get_unread_count(db, current_user.id)
+    unread_count = NotificationService.get_unread_count(
+        db, current_user.id, include_all=is_admin
+    )
     return {
         "items": items,
         "total": total,
@@ -36,7 +39,10 @@ def get_unread_count(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    count = NotificationService.get_unread_count(db, current_user.id)
+    is_admin = current_user.role == "admin"
+    count = NotificationService.get_unread_count(
+        db, current_user.id, include_all=is_admin
+    )
     return {"unread_count": count}
 
 
@@ -46,7 +52,10 @@ def mark_notification_read(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    ok = NotificationService.mark_read(db, notification_id, current_user.id)
+    is_admin = current_user.role == "admin"
+    ok = NotificationService.mark_read(
+        db, notification_id, current_user.id, allow_all=is_admin
+    )
     return {"status": "read" if ok else "not_found"}
 
 
@@ -55,7 +64,10 @@ def mark_all_notifications_read(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    count = NotificationService.mark_all_read(db, current_user.id)
+    is_admin = current_user.role == "admin"
+    count = NotificationService.mark_all_read(
+        db, current_user.id, allow_all=is_admin
+    )
     return {"status": "all_read", "marked_count": count}
 
 
@@ -65,5 +77,8 @@ def delete_notification(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    ok = NotificationService.delete(db, notification_id, current_user.id)
+    is_admin = current_user.role == "admin"
+    ok = NotificationService.delete(
+        db, notification_id, current_user.id, allow_all=is_admin
+    )
     return {"status": "deleted" if ok else "not_found"}

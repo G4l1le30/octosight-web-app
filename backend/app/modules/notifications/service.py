@@ -121,14 +121,24 @@ class NotificationService:
     """Business logic for in-app notifications (stored in DB, fetched via API)."""
 
     @staticmethod
-    def get_unread_count(db: Session, user_id: str) -> int:
-        return NotificationRepository.get_unread_count(db, user_id)
+    def get_unread_count(
+        db: Session,
+        user_id: str,
+        include_all: bool = False,
+    ) -> int:
+        return NotificationRepository.get_unread_count(db, user_id, all_users=include_all)
 
     @staticmethod
     def list_notifications(
-        db: Session, user_id: str, page: int = 1, per_page: int = 20
+        db: Session,
+        user_id: str,
+        page: int = 1,
+        per_page: int = 20,
+        include_all: bool = False,
     ) -> tuple[list[Notification], int]:
-        return NotificationRepository.list_for_user(db, user_id, page, per_page)
+        return NotificationRepository.list_for_user(
+            db, user_id, page, per_page, all_users=include_all
+        )
 
     @staticmethod
     def create_notification(
@@ -144,13 +154,33 @@ class NotificationService:
         )
 
     @staticmethod
-    def mark_read(db: Session, notification_id: str, user_id: str) -> bool:
-        return NotificationRepository.mark_read(db, notification_id, user_id)
+    def mark_read(
+        db: Session,
+        notification_id: str,
+        user_id: str,
+        allow_all: bool = False,
+    ) -> bool:
+        return NotificationRepository.mark_read(
+            db, notification_id, user_id, allow_all=allow_all
+        )
 
     @staticmethod
-    def mark_all_read(db: Session, user_id: str) -> int:
-        return NotificationRepository.mark_all_read(db, user_id)
+    def mark_all_read(
+        db: Session,
+        user_id: str,
+        allow_all: bool = False,
+    ) -> int:
+        return NotificationRepository.mark_all_read(
+            db, user_id, allow_all=allow_all
+        )
 
     @staticmethod
-    def delete(db: Session, notification_id: str, user_id: str) -> bool:
-        return NotificationRepository.delete(db, notification_id, user_id)
+    def delete(
+        db: Session,
+        notification_id: str,
+        user_id: str,
+        allow_all: bool = False,
+    ) -> bool:
+        return NotificationRepository.delete(
+            db, notification_id, user_id, allow_all=allow_all
+        )

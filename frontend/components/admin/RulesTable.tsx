@@ -2,7 +2,7 @@
 
 import React from "react";
 import { cn } from "@/lib/utils";
-import { Edit2, Loader2 } from "lucide-react";
+import { Edit2, XCircle, Loader2 } from "lucide-react";
 
 interface RuleConfig {
   id: number;
@@ -24,6 +24,9 @@ interface RulesTableProps {
   deactivatingId?: number | null;
   onEdit: (rule: RuleConfig) => void;
   onToggle: (rule: RuleConfig) => void;
+  onSort?: (column: string) => void;
+  sortBy?: string;
+  sortDir?: string;
   className?: string;
 }
 
@@ -45,6 +48,9 @@ export const RulesTable: React.FC<RulesTableProps> = ({
   deactivatingId = null,
   onEdit,
   onToggle,
+  onSort,
+  sortBy,
+  sortDir,
   className,
 }) => {
   if (loading) {
@@ -60,39 +66,58 @@ export const RulesTable: React.FC<RulesTableProps> = ({
       <table className="w-full text-left">
         <thead className="bg-neutral-page text-sm font-bold text-secondary border-b border-neutral-border">
           <tr>
-            <th className="px-4 md:px-6 py-4">Type</th>
-            <th className="px-4 md:px-6 py-4">Key</th>
-            <th className="px-4 md:px-6 py-4">Group</th>
-            <th className="px-4 md:px-6 py-4 text-center">Score</th>
-            <th className="px-4 md:px-6 py-4 text-center">Active</th>
+            <th className="px-4 md:px-6 py-4 cursor-pointer select-none" onClick={() => onSort?.("config_type")}>
+              Type {sortBy === "config_type" && (sortDir === "asc" ? "↑" : "↓")}
+            </th>
+            <th className="px-4 md:px-6 py-4 cursor-pointer select-none" onClick={() => onSort?.("key")}>
+              Key {sortBy === "key" && (sortDir === "asc" ? "↑" : "↓")}
+            </th>
+            <th className="px-4 md:px-6 py-4 cursor-pointer select-none" onClick={() => onSort?.("group")}>
+              Group {sortBy === "group" && (sortDir === "asc" ? "↑" : "↓")}
+            </th>
+            <th className="px-4 md:px-6 py-4 text-center cursor-pointer select-none" onClick={() => onSort?.("score")}>
+              Score {sortBy === "score" && (sortDir === "asc" ? "↑" : "↓")}
+            </th>
             <th className="px-4 md:px-6 py-4">Description</th>
+            <th className="px-4 md:px-6 py-4 text-center cursor-pointer select-none" onClick={() => onSort?.("is_active")}>
+              Active {sortBy === "is_active" && (sortDir === "asc" ? "↑" : "↓")}
+            </th>
             <th className="px-4 md:px-6 py-4 text-right">Actions</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-neutral-border">
           {rules.length === 0 ? (
             <tr>
-              <td colSpan={7} className="px-4 md:px-6 py-8 md:py-10 text-center opacity-40">
+              <td
+                colSpan={7}
+                className="px-4 md:px-6 py-8 md:py-10 text-center opacity-40"
+              >
                 {emptyMessage}
               </td>
             </tr>
           ) : (
             rules.map((rule) => (
-              <tr key={rule.id} className="hover:bg-neutral-page/50 transition-colors group">
+              <tr
+                key={rule.id}
+                className="hover:bg-neutral-page/50 transition-colors group"
+              >
                 <td className="px-4 md:px-6 py-4 md:py-5">
                   <span className="inline-flex items-center px-2.5 py-1 bg-neutral-page text-xs font-bold text-secondary rounded-lg">
                     {formatType(rule.config_type)}
                   </span>
                 </td>
                 <td className="px-4 md:px-6 py-4 md:py-5">
-                  <div className="flex flex-col">
-                    <span className="font-semibold text-secondary text-sm break-all">{rule.key}</span>
-                    <span className="text-xs font-medium text-secondary/60 mt-0.5 break-all">{rule.value}</span>
-                  </div>
+                  <span className="font-bold text-sm text-secondary break-all">
+                    {rule.key}
+                  </span>
                 </td>
                 <td className="px-4 md:px-6 py-4 md:py-5">
                   <span className="text-sm font-semibold text-secondary/80">
-                    {rule.group || <span className="text-secondary/40 font-medium">None</span>}
+                    {rule.group || (
+                      <span className="text-secondary/60 font-medium">
+                        None
+                      </span>
+                    )}
                   </span>
                 </td>
                 <td className="px-4 md:px-6 py-4 md:py-5 text-center">
@@ -109,10 +134,21 @@ export const RulesTable: React.FC<RulesTableProps> = ({
                     {rule.score}
                   </span>
                 </td>
+                <td className="px-4 md:px-6 py-4 md:py-5">
+                  <p className="text-sm font-semibold text-secondary/80 max-w-xs break-words">
+                    {rule.description || (
+                      <span className="text-secondary/60 font-medium">
+                        None
+                      </span>
+                    )}
+                  </p>
+                </td>
                 <td className="px-4 md:px-6 py-4 md:py-5 text-center">
                   <label
                     className="relative inline-flex items-center cursor-pointer"
-                    title={rule.is_active ? "Deactivate rule" : "Reactivate rule"}
+                    title={
+                      rule.is_active ? "Deactivate rule" : "Reactivate rule"
+                    }
                   >
                     <input
                       type="checkbox"
@@ -124,19 +160,15 @@ export const RulesTable: React.FC<RulesTableProps> = ({
                     <div className="w-9 h-5 bg-gray-200 rounded-full peer peer-checked:bg-green-500 after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full peer-disabled:opacity-50" />
                   </label>
                 </td>
-                <td className="px-4 md:px-6 py-4 md:py-5">
-                  <p className="text-sm font-semibold text-secondary/80 max-w-xs break-words">
-                    {rule.description || <span className="text-secondary/40 font-medium">None</span>}
-                  </p>
-                </td>
                 <td className="px-4 md:px-6 py-4 md:py-5 text-right">
                   <div className="flex items-center justify-end gap-1">
                     <button
                       onClick={() => onEdit(rule)}
-                      className="p-2.5 text-secondary/60 hover:text-primary hover:bg-primary/5 rounded-xl transition-all"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-secondary/80 hover:text-primary hover:bg-primary/5 rounded-lg transition-all"
                       title="Edit rule"
                     >
-                      <Edit2 className="size-4" />
+                      <Edit2 className="size-3.5" />
+                      Edit
                     </button>
                     {deactivatingId === rule.id && (
                       <Loader2 className="size-4 animate-spin" />

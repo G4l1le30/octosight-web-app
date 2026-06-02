@@ -5,7 +5,10 @@ import { Bell, CheckCheck, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
-import { NotificationList, NotificationItem } from "@/components/notifications/NotificationList";
+import {
+  NotificationList,
+  NotificationItem,
+} from "@/components/notifications/NotificationList";
 
 const POLL_INTERVAL = 30000;
 
@@ -64,7 +67,10 @@ export const NotificationBell: React.FC = () => {
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
         setOpen(false);
       }
     };
@@ -72,7 +78,7 @@ export const NotificationBell: React.FC = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleMarkRead = async (id: number) => {
+  const handleMarkRead = async (id: string) => {
     try {
       await fetch(`/api/v1/notifications/${id}/read`, { method: "PATCH" });
       setNotifications((prev) =>
@@ -128,7 +134,9 @@ export const NotificationBell: React.FC = () => {
       {open && (
         <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white border border-neutral-border rounded-xl shadow-xl z-50">
           <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-border">
-            <span className="text-sm font-bold text-secondary">Notifications</span>
+            <span className="text-sm font-bold text-secondary">
+              Notifications
+            </span>
             <button
               onClick={handleMarkAllRead}
               disabled={markingAll || unreadCount === 0}
@@ -145,7 +153,7 @@ export const NotificationBell: React.FC = () => {
 
           {loading ? (
             <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-5 w-5 animate-spin text-secondary/40" />
+              <Loader2 className="h-5 w-5 animate-spin text-secondary/60" />
             </div>
           ) : (
             <NotificationList

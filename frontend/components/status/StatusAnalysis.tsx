@@ -31,6 +31,11 @@ export const StatusAnalysis: React.FC<StatusAnalysisProps> = ({ result }) => {
     console.error("Failed to parse analysis results", e);
   }
 
+  const rawMlPrediction = result.flags?.split("ml_prediction:")[1]?.split(",")[0] ?? null;
+  const normalizedMlPrediction = rawMlPrediction === "ham"
+    ? "not phishing"
+    : rawMlPrediction?.replace(/_/g, " ") ?? null;
+
   return (
     <div className="space-y-6 pt-2">
       {/* Hybrid Score Breakdown */}
@@ -70,11 +75,11 @@ export const StatusAnalysis: React.FC<StatusAnalysisProps> = ({ result }) => {
               ></div>
             </div>
             <div className="flex justify-between items-center mt-2.5">
-              {result.flags?.includes("ml_prediction:") && (
+              {normalizedMlPrediction && (
                 <p className="text-xs font-bold text-secondary">
-                  Prediction:{" "}
+                  ML prediction:{" "}
                   <span className="text-secondary/80">
-                    {result.flags.split("ml_prediction:")[1].split(",")[0]}
+                    {normalizedMlPrediction}
                   </span>
                 </p>
               )}

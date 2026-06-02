@@ -160,7 +160,7 @@ export const ReportConfirmation = ({
   };
 
   return (
-    <div className="mx-auto max-w-4xl">
+    <div className="mx-auto max-w-6xl">
       <div className="mb-8 md:mb-10 text-center">
         <h1 className="text-3xl md:text-4xl font-bold mb-4 text-secondary">
           Report Phishing Incident
@@ -171,7 +171,7 @@ export const ReportConfirmation = ({
       </div>
 
       <div className="bg-white rounded-3xl border border-neutral-border shadow-xl overflow-hidden">
-        <div className="p-8 md:p-12">
+        <div className="py-8 md:py-12">
           <div className="grid md:grid-cols-2 gap-12 items-start">
             {/* Left Side: Summary Details */}
             <div className="space-y-6">
@@ -393,7 +393,7 @@ export const ReportConfirmation = ({
                       </div>
                       {isNoUrlScam && (
                         <div className="pt-2 mt-2 border-t border-dashed border-neutral-border">
-                          <p className="text-xs text-secondary/40 font-medium leading-tight">
+                          <p className="text-xs text-secondary/60 font-medium leading-tight">
                             *Rule-based detection is prioritized (100%) for
                             social engineering scams without URLs. Phishing AI
                             remains as language context.
@@ -462,9 +462,8 @@ export const ReportConfirmation = ({
               <Info className="size-5 text-primary" />
             </div>
             <p className="text-secondary/60 text-sm leading-relaxed font-medium">
-              By submitting this report, I declare that the information provided
-              is true and I understand that this report will be used for
-              OctoSight network security purposes.
+              By submitting this report, I confirm the information is accurate
+              and understand it will be used by OctoSight for phishing security review.
             </p>
           </div>
 

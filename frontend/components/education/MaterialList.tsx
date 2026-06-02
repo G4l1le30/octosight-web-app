@@ -94,9 +94,9 @@ export const MaterialList: React.FC<MaterialListProps> = ({
                 </div>
               </div>
               {isArticleLocked ? (
-                <Lock className="size-5 text-secondary/40 shrink-0" />
+                <Lock className="size-5 text-secondary/60 shrink-0" />
               ) : (
-                <ExternalLink className="size-5 text-secondary/40 group-hover:text-primary shrink-0" />
+                <ExternalLink className="size-5 text-secondary/60 group-hover:text-primary shrink-0" />
               )}
             </div>
           );

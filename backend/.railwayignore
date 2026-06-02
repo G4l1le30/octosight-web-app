@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+venv/
+.env
+.git
+uploads/
+data/models_cache/
+models/*.pkl
+models/*.h5
+models/*.pt
+node_modules/

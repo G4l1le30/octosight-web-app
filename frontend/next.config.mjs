@@ -5,7 +5,7 @@ const internalApiUrl =
   "http://backend:8000";
 
 const nextConfig = {
-  ...(process.env.NODE_ENV === 'production' ? { output: 'standalone' } : {}),
+  ...(process.env.STANDALONE === 'true' ? { output: 'standalone' } : {}),
   images: {
     unoptimized: true,
   },

@@ -7,6 +7,7 @@ interface ModuleHeaderProps {
 }
 
 export const ModuleHeader: React.FC<ModuleHeaderProps> = ({ module }) => {
+  const totalMinutes = module.articles.reduce((sum, a) => sum + (a.duration_mins || 0), 0);
   return (
     <div className="bg-white border border-neutral-border rounded-2xl p-4 md:p-6 shadow-sm mb-6 md:mb-8">
       <p className="text-secondary-light leading-relaxed font-medium mb-6">
@@ -19,7 +20,7 @@ export const ModuleHeader: React.FC<ModuleHeaderProps> = ({ module }) => {
         </div>
         <div className="flex items-center gap-2">
           <Clock className="size-4 text-primary" />
-          <span>Estimation: {module.duration_mins} Mins</span>
+          <span>Estimation: {totalMinutes} Mins</span>
         </div>
         <div className="flex items-center gap-2">
           <BookOpen className="size-4 text-primary" />

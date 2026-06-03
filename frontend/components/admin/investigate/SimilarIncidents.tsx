@@ -59,9 +59,8 @@ export const SimilarIncidents: React.FC<SimilarIncidentsProps> = ({
   return (
     <div className="card p-6">
       <div className="flex items-center gap-2 mb-4">
-        <Shuffle size={18} className="text-secondary/60" />
-        <h3 className="text-lg font-bold text-secondary">Similar Incidents</h3>
-        <span className="text-xs text-secondary/60">
+        <h3 className="text-xl font-bold text-secondary">Similar Incidents</h3>
+        <span className="text-sm text-secondary/80">
           ({results.length} found)
         </span>
       </div>

@@ -20,6 +20,10 @@ ACHIEVEMENT_DEFS: dict[str, dict] = {
     "scholar": {"name": "Scholar", "description": "Complete all education modules", "criteria_type": "module", "criteria_value": 0, "points": 200},
     "phishing_hunter": {"name": "Phishing Hunter", "description": "5 confirmed tickets", "criteria_type": "count", "criteria_value": 5, "points": 250},
     "guardian": {"name": "Guardian", "description": "20 total confirmed tickets", "criteria_type": "count", "criteria_value": 20, "points": 500},
+    "first_module": {"name": "First Step", "description": "Complete your first education module", "criteria_type": "module", "criteria_value": 1, "points": 50},
+    "half_modules": {"name": "Halfway Scholar", "description": "Complete 50% of education modules", "criteria_type": "module", "criteria_value": 4, "points": 100},
+    "quiz_ace": {"name": "Quiz Ace", "description": "Score 100% on any quiz", "criteria_type": "quiz", "criteria_value": 100, "points": 150},
+    "bookworm": {"name": "Bookworm", "description": "Read 10 articles", "criteria_type": "count", "criteria_value": 10, "points": 100},
 }
 
 

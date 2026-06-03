@@ -101,15 +101,19 @@ const Navbar: React.FC = () => {
               <Link href="/check" className={getLinkClass("/check")}>
                 Fraud Check
               </Link>
-              <Link href="/status" className={getLinkClass("/status")}>
-                Check Status
-              </Link>
+              {user && (
+                <Link href="/status" className={getLinkClass("/status")}>
+                  Check Status
+                </Link>
+              )}
               <Link href="/edu" className={getLinkClass("/edu")}>
                 E-Learning
               </Link>
-              <Link href="/profile" className={getLinkClass("/profile")}>
-                Profile
-              </Link>
+              {user && (
+                <Link href="/profile" className={getLinkClass("/profile")}>
+                  Profile
+                </Link>
+              )}
             </>
           )}
 
@@ -256,13 +260,15 @@ const Navbar: React.FC = () => {
               >
                 Fraud Check
               </Link>
-              <Link
-                href="/status"
-                onClick={() => setMobileOpen(false)}
-                className="block py-2 text-sm font-medium hover:text-primary"
-              >
-                Check Status
-              </Link>
+              {user && (
+                <Link
+                  href="/status"
+                  onClick={() => setMobileOpen(false)}
+                  className="block py-2 text-sm font-medium hover:text-primary"
+                >
+                  Check Status
+                </Link>
+              )}
               <Link
                 href="/edu"
                 onClick={() => setMobileOpen(false)}
@@ -285,16 +291,23 @@ const Navbar: React.FC = () => {
                     <p className="text-xs text-secondary/60">{user.email}</p>
                   </div>
                 </div>
-                {can("dashboard.view") && (
                   <Link
-                    href={isAdminRoute ? "/" : "/admin"}
+                    href="/profile"
                     onClick={() => setMobileOpen(false)}
                     className="block py-2 text-sm font-bold text-primary"
                   >
-                    {isAdminRoute ? "User Page" : "Admin Dashboard"}
+                    Profile
                   </Link>
-                )}
-                <button
+                  {can("dashboard.view") && (
+                    <Link
+                      href={isAdminRoute ? "/" : "/admin"}
+                      onClick={() => setMobileOpen(false)}
+                      className="block py-2 text-sm font-bold text-primary"
+                    >
+                      {isAdminRoute ? "User Page" : "Admin Dashboard"}
+                    </Link>
+                  )}
+                  <button
                   onClick={async () => {
                     await logout();
                     setMobileOpen(false);

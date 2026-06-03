@@ -51,6 +51,16 @@ def get_quiz_attempt(
         raise HTTPException(status_code=404, detail="Attempt not found")
     return attempt
 
+@router.get("/articles/{article_id}")
+def get_article(
+    article_id: str,
+    db: Session = Depends(get_db),
+    current_user = Depends(get_optional_user)
+):
+    """Get a single article by ID. Public — no login required."""
+    user_id = current_user.id if current_user else None
+    return EducationService.get_article_detail(db, user_id, article_id)
+
 @router.post("/articles/{article_id}/read")
 def mark_article_as_read(
     article_id: str,

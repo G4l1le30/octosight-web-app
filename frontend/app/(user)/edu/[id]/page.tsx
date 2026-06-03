@@ -2,12 +2,11 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { EducationModuleWithProgress, QuizAttempt } from "@/types/education";
+import { EducationModuleWithProgress } from "@/types/education";
 import { useAuth } from "@/lib/auth-context";
-import { Loader2, ArrowLeft, AlertCircle, AlertTriangle } from "lucide-react";
-import { toast } from "sonner";
+import { Loader2, ArrowLeft, AlertCircle, Home, ChevronRight, BarChart3 } from "lucide-react";
+import Image from "next/image";
 import { Button } from "@/components/ui/Button";
-// Modular Components
 import { ModuleHeader } from "@/components/education/ModuleHeader";
 import { MaterialList } from "@/components/education/MaterialList";
 import { QuizActionCard } from "@/components/education/QuizActionCard";
@@ -18,11 +17,14 @@ export default function ModuleDetailPage() {
   const router = useRouter();
   const moduleId = params.id as string;
   const { user, loading: authLoading } = useAuth();
-  
+
   const [mod, setMod] = useState<EducationModuleWithProgress | null>(null);
+  const [allModules, setAllModules] = useState<EducationModuleWithProgress[]>([]);
   const [loading, setLoading] = useState(true);
-  
-  // Quiz Resume state
+  const [error, setError] = useState("");
+  const [readingArticleId, setReadingArticleId] = useState<string | null>(null);
+  const [readingTimeLeft, setReadingTimeLeft] = useState<number | undefined>(undefined);
+
   const [savedQuiz, setSavedQuiz] = useState<{
     answers: number[];
     timeLeft: number;
@@ -30,10 +32,9 @@ export default function ModuleDetailPage() {
   } | null>(null);
 
   const [nextModuleId, setNextModuleId] = useState<string | null>(null);
-  
+
   const fetchModule = useCallback(async () => {
     try {
-      // Fetch current module
       const response = await fetch(`/api/v1/education/modules/${moduleId}`);
       if (!response.ok) {
         throw new Error("Module not found or locked");
@@ -41,45 +42,39 @@ export default function ModuleDetailPage() {
       const data = await response.json();
       setMod(data);
 
-      // Fetch all modules to find the next one
       const allRes = await fetch(`/api/v1/education/modules`);
       if (allRes.ok) {
         const allData = await allRes.json();
+        setAllModules(allData);
         const next = allData.find((m: any) => m.order_index === data.order_index + 1);
         if (next) setNextModuleId(next.id);
       }
     } catch (err: any) {
-      toast.error(err.message);
+      setError(err.message);
     } finally {
       setLoading(false);
     }
   }, [moduleId]);
 
   useEffect(() => {
-    fetchModule();
+    if (moduleId) fetchModule();
   }, [moduleId, fetchModule]);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || !moduleId) return;
 
     const checkSavedProgress = () => {
       const savedAnswers = localStorage.getItem(`octo_quiz_${moduleId}_answers`);
       const savedEndTime = localStorage.getItem(`octo_quiz_${moduleId}_end_time`);
-      
+
       if (savedAnswers) {
         const answers = JSON.parse(savedAnswers) as number[];
         const answeredCount = answers.filter(a => a !== -1).length;
-        
         let timeLeft = 0;
         if (savedEndTime) {
           timeLeft = Math.max(0, Math.floor((parseInt(savedEndTime) - Date.now()) / 1000));
         }
-
-        setSavedQuiz({
-          answers,
-          timeLeft,
-          answeredCount
-        });
+        setSavedQuiz({ answers, timeLeft, answeredCount });
       } else {
         setSavedQuiz(null);
       }
@@ -90,70 +85,12 @@ export default function ModuleDetailPage() {
     return () => clearInterval(interval);
   }, [user, moduleId]);
 
-  const [readingArticleId, setReadingArticleId] = useState<string | null>(null);
-  const [readingTimeLeft, setReadingTimeLeft] = useState<number>(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const savedArticleId = localStorage.getItem(`octo_reading_article_id_${moduleId}`);
-      const savedEndTime = localStorage.getItem(`octo_reading_end_time_${moduleId}`);
-
-      if (savedArticleId && savedEndTime) {
-        const endTime = parseInt(savedEndTime, 10);
-        const timeLeft = Math.max(0, Math.ceil((endTime - Date.now()) / 1000));
-
-        if (timeLeft > 0) {
-          setReadingArticleId(savedArticleId);
-          setReadingTimeLeft(timeLeft);
-        } else {
-          // Time is up
-          setReadingArticleId(null);
-          setReadingTimeLeft(0);
-
-          localStorage.removeItem(`octo_reading_article_id_${moduleId}`);
-          localStorage.removeItem(`octo_reading_end_time_${moduleId}`);
-
-          // Mark as read (only if logged in)
-          if (user) {
-            fetch(`/api/v1/education/articles/${savedArticleId}/read`, {
-              method: "POST"
-            }).catch(err => console.error("Failed to mark article as read:", err));
-          }
-
-          if (mod) {
-            // Check if it's already marked as read to prevent infinite state updates
-            const article = mod.articles.find(a => a.id === savedArticleId);
-            if (article && !article.is_read) {
-              const updatedArticles = mod.articles.map(a => 
-                a.id === savedArticleId ? { ...a, is_read: true } : a
-              );
-              setMod({ ...mod, articles: updatedArticles });
-            }
-          }
-        }
-      } else {
-        setReadingArticleId(null);
-        setReadingTimeLeft(0);
-      }
-    }, 1000);
-    
-    return () => clearInterval(interval);
-  }, [moduleId, mod, user]);
-
-  const handleArticleClick = (articleId: string, url: string) => {
-    window.open(url, "_blank", "noopener,noreferrer");
-    
-    if (mod) {
-      const article = mod.articles.find(a => a.id === articleId);
-      if (article && !article.is_read && readingArticleId !== articleId) {
-        // Start timer globally via localStorage (60 seconds)
-        localStorage.setItem(`octo_reading_article_id_${moduleId}`, articleId);
-        localStorage.setItem(`octo_reading_end_time_${moduleId}`, (Date.now() + 60000).toString());
-        setReadingArticleId(articleId);
-        setReadingTimeLeft(60);
-      }
-    }
+  const handleArticleClick = async (articleId: string) => {
+    router.push(`/article/${articleId}`);
   };
+
+  const completedModulesCount = allModules.filter((m) => m.status === "COMPLETED").length;
+  const totalModulesCount = allModules.length;
 
   if (authLoading) return (
     <div className="container mx-auto px-4 py-32 text-center">
@@ -163,27 +100,25 @@ export default function ModuleDetailPage() {
 
   if (loading) return (
     <div className="container mx-auto px-4 py-32 text-center">
-      <Loader2 className="animate-spin size-12 text-primary mx-auto mb-4" />
-      <p className="text-secondary font-medium">Loading module...</p>
+      <Loader2 className="animate-spin size-10 text-primary mx-auto mb-3" />
+      <p className="text-secondary font-semibold text-lg">Loading module...</p>
     </div>
   );
 
-  if (!mod) return (
-    <div className="container mx-auto px-4 py-32 text-center max-w-md">
-      <div className="bg-risk-high/10 text-risk-high p-4 md:p-6 rounded-2xl border border-risk-high/20 mb-6">
-        <AlertTriangle className="size-12 mx-auto mb-4" />
-        <h2 className="text-lg md:text-xl font-bold mb-2">Content Not Found</h2>
-        <p className="text-sm font-medium opacity-80">
-          The educational content you requested could not be found.
-        </p>
+  if (error || !mod) return (
+    <div className="container mx-auto px-4 py-32 text-center max-w-xl">
+      <div className="bg-neutral-page text-secondary p-6 md:p-8 rounded-2xl border border-neutral-border mb-6">
+        <AlertCircle className="size-14 mx-auto mb-4 text-secondary-light" />
+        <h2 className="text-xl md:text-2xl font-bold mb-2">Module Not Found</h2>
+        <p className="text-base font-medium opacity-80">{error}</p>
       </div>
-      <Button onClick={() => router.push("/edu")} variant="outline" className="gap-2">
-        <ArrowLeft className="size-4" /> Back to E-Learning
+      <Button onClick={() => router.push("/edu")} variant="outline" className="gap-2 text-base">
+        <ArrowLeft className="size-4" /> Back to Learning Hub
       </Button>
     </div>
   );
 
-  const isLocked = mod.status === "LOCKED";
+  const isLocked = false;
   const isCompleted = mod.status === "COMPLETED" || (mod.quiz_score !== null && mod.quiz_score !== undefined && mod.quiz_score >= 70);
   const completedArticles = mod.articles.filter(a => a.is_read).length;
   const totalArticles = mod.articles.length;
@@ -192,19 +127,65 @@ export default function ModuleDetailPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-12 max-w-6xl">
-      <div className="mb-6 md:mb-8 flex items-center gap-3 md:gap-4">
-        <button
-          onClick={() => router.push("/edu")}
-          className="p-2 rounded-xl border border-neutral-border hover:bg-neutral-page transition-all text-secondary/60 hover:text-primary group shadow-sm"
-        >
-          <ArrowLeft className="size-6 group-hover:-translate-x-0.5 transition-transform" />
+      {/* Breadcrumb */}
+      <nav className="flex items-center gap-2 text-sm md:text-base font-semibold text-secondary-light mb-8">
+        <button onClick={() => router.push("/edu")} className="hover:text-primary transition-colors flex items-center gap-1">
+          <span className="hidden sm:inline">Learning Hub</span>
         </button>
-        <h1 className="text-2xl md:text-3xl font-bold text-secondary">{mod.title}</h1>
+        <ChevronRight className="size-4" />
+        <span className="text-primary truncate max-w-xs">{mod.title}</span>
+      </nav>
+
+      {/* Learning Progress Overview */}
+      {user && totalModulesCount > 0 && (
+        <div className="bg-white rounded-2xl border border-neutral-border p-5 md:p-6 mb-8 md:mb-10 shadow-sm">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="size-12 rounded-full bg-neutral-page flex items-center justify-center">
+                <BarChart3 className="size-6 text-secondary" />
+              </div>
+              <div>
+                <p className="font-bold text-base text-secondary">Your Learning Progress</p>
+                <p className="text-sm text-secondary-light">{completedModulesCount} of {totalModulesCount} modules completed</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 w-full md:w-auto">
+              <div className="flex-1 md:w-48 h-2.5 bg-neutral-border rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-secondary transition-all duration-500 rounded-full"
+                  style={{ width: `${totalModulesCount > 0 ? (completedModulesCount / totalModulesCount) * 100 : 0}%` }}
+                />
+              </div>
+              <span className="text-lg font-bold text-secondary shrink-0">
+                {totalModulesCount > 0 ? Math.round((completedModulesCount / totalModulesCount) * 100) : 0}%
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Hero Image */}
+      {mod.image_url && (
+        <div className="rounded-2xl overflow-hidden mb-6 md:mb-8 bg-neutral-page shadow-sm relative h-56 md:h-72 lg:h-80">
+          <Image
+            src={mod.image_url}
+            alt={mod.title}
+            fill
+            unoptimized
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, 1024px"
+          />
+        </div>
+      )}
+
+      {/* Title */}
+      <div className="mb-4 md:mb-6">
+        <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-secondary">{mod.title}</h1>
       </div>
 
       <ModuleHeader module={mod} />
 
-      <MaterialList 
+      <MaterialList
         articles={mod.articles}
         isLocked={isLocked}
         onArticleClick={handleArticleClick}
@@ -212,10 +193,10 @@ export default function ModuleDetailPage() {
         totalArticles={totalArticles}
         isCompleted={isCompleted}
         readingArticleId={readingArticleId}
-        readingTimeLeft={readingTimeLeft}
+        readingTimeLeft={readingTimeLeft ?? undefined}
       />
 
-      <QuizActionCard 
+      <QuizActionCard
         moduleId={mod.id}
         isCompleted={isCompleted}
         isLocked={isLocked}
@@ -224,10 +205,7 @@ export default function ModuleDetailPage() {
         savedQuiz={savedQuiz}
         hasAttempted={hasAttempted}
         onStartQuiz={() => {
-          if (!user) {
-            router.push(`/login?redirect=/edu/${mod.id}`);
-            return;
-          }
+          if (!user) { router.push(`/login?redirect=/edu/${mod.id}`); return; }
           if (!savedQuiz) {
             localStorage.removeItem(`octo_quiz_${mod.id}_answers`);
             localStorage.removeItem(`octo_quiz_${mod.id}_step`);
@@ -236,10 +214,7 @@ export default function ModuleDetailPage() {
           router.push(`/edu/${mod.id}/quiz`);
         }}
         onResetQuiz={() => {
-          if (!user) {
-            router.push(`/login?redirect=/edu/${mod.id}`);
-            return;
-          }
+          if (!user) { router.push(`/login?redirect=/edu/${mod.id}`); return; }
           if (confirm("Are you sure you want to discard your current progress and start fresh?")) {
             localStorage.removeItem(`octo_quiz_${mod.id}_answers`);
             localStorage.removeItem(`octo_quiz_${mod.id}_step`);
@@ -251,7 +226,7 @@ export default function ModuleDetailPage() {
         onNextModule={nextModuleId ? () => router.push(`/edu/${nextModuleId}`) : undefined}
       />
 
-      <QuizHistory 
+      <QuizHistory
         history={mod.quiz_attempts_history || []}
         onViewAttempt={(attemptId) => router.push(`/edu/${mod.id}/result?attempt_id=${attemptId}`)}
       />

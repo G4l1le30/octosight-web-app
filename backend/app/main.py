@@ -42,11 +42,7 @@ from app.models import (
     UserAchievement,
     UserGamification,
 )
-from app.core.email_validation import (
-    EmailValidationError,
-    EmailValidationUnavailableError,
-    normalize_and_validate_real_email,
-)
+
 from app.core.security import hash_password, limiter
 from app.core.error_handlers import register_error_handlers
 from app.modules.rule_config.service import RuleConfigService
@@ -72,11 +68,9 @@ def _seed_db(db) -> None:
 
     if admin_email:
         try:
-            admin_email = normalize_and_validate_real_email(admin_email)
-        except EmailValidationUnavailableError:
-            print("[Seed] Skipping admin user creation — email deliverability validation unavailable.")
-            admin_email = ""
-        except EmailValidationError as exc:
+            from email_validator import validate_email
+            admin_email = validate_email(admin_email, check_deliverability=False).normalized.lower()
+        except Exception as exc:
             print(f"[Seed] Skipping admin user — DEFAULT_ADMIN_EMAIL invalid: {exc}")
             admin_email = ""
 
@@ -638,6 +632,10 @@ def _seed_db(db) -> None:
             ("scholar", "Scholar", "Complete all education modules", "module", 0, 200),
             ("phishing_hunter", "Phishing Hunter", "5 confirmed tickets", "count", 5, 250),
             ("guardian", "Guardian", "20 total confirmed tickets", "count", 20, 500),
+            ("first_module", "First Step", "Complete your first education module", "module", 1, 50),
+            ("half_modules", "Halfway Scholar", "Complete 50% of education modules", "module", 4, 100),
+            ("quiz_ace", "Quiz Ace", "Score 100% on any quiz", "quiz", 100, 150),
+            ("bookworm", "Bookworm", "Read 10 articles", "count", 10, 100),
         ]
         for code, name, desc, crit_type, crit_val, pts in achievement_defs:
             db.add(Achievement(
@@ -705,8 +703,8 @@ async def lifespan(app: FastAPI):
     retries = 10
     while retries > 0:
         try:
-            run_alembic_migrations()
             Base.metadata.create_all(bind=engine)
+            run_alembic_migrations()
             db = SessionLocal()
             try:
                 apply_migrations(db)

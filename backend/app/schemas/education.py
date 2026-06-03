@@ -14,6 +14,8 @@ class EducationArticleRead(BaseModel):
     duration_mins: int
     publication_date: Optional[datetime] = None
     description: Optional[str] = None
+    image_url: Optional[str] = None
+    content: Optional[Any] = None
     is_read: bool = False
 
     class Config:
@@ -27,6 +29,7 @@ class EducationModuleRead(BaseModel):
     order_index: int
     description: str
     duration_mins: int
+    image_url: Optional[str] = None
     articles: list[EducationArticleRead] = []
 
     class Config:
@@ -39,6 +42,7 @@ class EducationModuleCreate(BaseModel):
     order_index: int
     description: str
     duration_mins: int
+    image_url: Optional[str] = None
 
 
 class QuizAttemptRead(BaseModel):

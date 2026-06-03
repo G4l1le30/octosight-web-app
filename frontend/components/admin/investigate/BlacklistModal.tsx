@@ -174,7 +174,7 @@ export function BlacklistModal({
               Blacklist {getLabel()}
             </h2>
             {status !== null && (
-              <p className="text-xs text-secondary/60 font-medium mt-1 px-2">
+              <p className="text-xs text-secondary/60 font-medium my-2 px-2">
                 Adding this will automatically block future reports containing
                 this indicator.
               </p>

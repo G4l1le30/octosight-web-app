@@ -4,6 +4,7 @@ from typing import List, Dict, Any, Optional
 from datetime import datetime, timezone
 from fastapi import HTTPException
 
+from app.models.education import EducationArticle
 from .repository import EducationRepository
 from .gemini_service import GeminiEducationService
 
@@ -37,6 +38,8 @@ class EducationService:
                     "duration_mins": article.duration_mins,
                     "publication_date": article.publication_date,
                     "description": article.description,
+                    "image_url": article.image_url,
+                    "content": article.content,
                     "is_read": is_read
                 })
 
@@ -47,6 +50,7 @@ class EducationService:
                 "order_index": module.order_index,
                 "description": module.description,
                 "duration_mins": module.duration_mins,
+                "image_url": module.image_url,
                 "articles": articles_with_progress,
                 "status": None if not user_id else (progress.status if progress else "LOCKED"),
                 "quiz_score": None if not user_id else (progress.quiz_score if progress else None),
@@ -86,6 +90,8 @@ class EducationService:
                 "duration_mins": article.duration_mins,
                 "publication_date": article.publication_date,
                 "description": article.description,
+                "image_url": article.image_url,
+                "content": article.content,
                 "is_read": is_read
             })
 
@@ -98,11 +104,64 @@ class EducationService:
             "order_index": module.order_index,
             "description": module.description,
             "duration_mins": module.duration_mins,
+            "image_url": module.image_url,
             "articles": articles_with_progress,
             "status": None if not user_id else (progress.status if progress else "LOCKED"),
             "quiz_score": None if not user_id else (progress.quiz_score if progress else None),
             "completed_at": None if not user_id else (progress.completed_at if progress else None),
             "quiz_attempts_history": attempts
+        }
+
+    @staticmethod
+    def get_article_detail(db: Session, user_id: Optional[str], article_id: str) -> Dict[str, Any]:
+        article = EducationRepository.get_article_by_id(db, article_id)
+        if not article:
+            raise HTTPException(status_code=404, detail="Article not found")
+
+        is_read = EducationRepository.get_article_progress(db, user_id, article.id) is not None if user_id else False
+
+        # Enforce prerequisite: if authenticated and not first article, check previous article is read
+        if user_id and article.order_index and article.order_index > 1:
+            prev_article = db.query(EducationArticle).filter(
+                EducationArticle.module_id == article.module_id,
+                EducationArticle.order_index == article.order_index - 1
+            ).first()
+            if prev_article:
+                prev_read = EducationRepository.get_article_progress(db, user_id, prev_article.id)
+                if not prev_read:
+                    raise HTTPException(status_code=403, detail="Complete the previous article first")
+
+        module_title = ""
+        module_id = ""
+        next_article = None
+        is_last_article = True
+        if article.module:
+            module_title = article.module.title
+            module_id = article.module.id
+            sorted_articles = sorted(article.module.articles, key=lambda a: a.order_index)
+            for i, a in enumerate(sorted_articles):
+                if a.id == article.id:
+                    if i + 1 < len(sorted_articles):
+                        nxt = sorted_articles[i + 1]
+                        next_article = {"id": nxt.id, "title": nxt.title, "duration_mins": nxt.duration_mins}
+                        is_last_article = False
+                    break
+
+        return {
+            "id": article.id,
+            "title": article.title,
+            "url": article.url,
+            "author": article.author,
+            "duration_mins": article.duration_mins,
+            "publication_date": article.publication_date,
+            "description": article.description,
+            "image_url": article.image_url,
+            "content": article.content,
+            "is_read": is_read,
+            "module_id": module_id,
+            "module_title": module_title,
+            "next_article": next_article,
+            "is_last_article": is_last_article
         }
 
     @staticmethod

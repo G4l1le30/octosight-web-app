@@ -3,7 +3,7 @@
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import Column, Date, DateTime, Float, ForeignKey, Integer, String, Text, UniqueConstraint
+from sqlalchemy import Column, Date, DateTime, Float, ForeignKey, Integer, JSON, String, Text, UniqueConstraint
 from sqlalchemy.orm import relationship
 
 from app.db.base import Base
@@ -18,6 +18,7 @@ class EducationModule(Base):
     order_index = Column(Integer, nullable=False, unique=True)
     description = Column(Text, nullable=False)
     duration_mins = Column(Integer, nullable=False)
+    image_url = Column(Text, nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
@@ -36,6 +37,9 @@ class EducationArticle(Base):
     duration_mins = Column(Integer, nullable=False)
     publication_date = Column(Date, nullable=True)
     description = Column(Text, nullable=True)
+    image_url = Column(Text, nullable=True)
+    content = Column(JSON, nullable=True)
+    order_index = Column(Integer, nullable=False, default=0)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     module = relationship("EducationModule", back_populates="articles")

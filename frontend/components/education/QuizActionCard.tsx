@@ -71,22 +71,6 @@ export const QuizActionCard: React.FC<QuizActionCardProps> = ({
               )}
             </div>
           </>
-        ) : isLocked ? (
-          <>
-            <h3 className="text-xl md:text-2xl font-bold text-secondary mb-2">
-              Module Locked
-            </h3>
-            <p className="text-secondary-light font-medium mb-4 md:mb-6 max-w-lg mx-auto">
-              Please complete the previous modules to unlock this quiz and its
-              learning materials.
-            </p>
-            <Button
-              disabled
-              className="gap-2 px-6 md:px-8 text-base md:text-lg bg-neutral-border text-secondary/60 border-none pointer-events-none shadow-none"
-            >
-              <Lock className="size-5" /> Quiz Locked
-            </Button>
-          </>
         ) : !allMaterialsFinished ? (
           <>
             <h3 className="text-xl md:text-2xl font-bold text-secondary mb-2">

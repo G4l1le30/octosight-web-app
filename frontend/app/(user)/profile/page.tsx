@@ -17,9 +17,13 @@ const ACHIEVEMENT_ORDER: Record<string, number> = {
   accurate_eye: 4,
   streak_3: 5,
   streak_7: 6,
-  scholar: 7,
-  phishing_hunter: 8,
-  guardian: 9,
+  first_module: 7,
+  quiz_ace: 8,
+  bookworm: 9,
+  half_modules: 10,
+  scholar: 11,
+  phishing_hunter: 12,
+  guardian: 13,
 };
 
 export default function ProfilePage() {

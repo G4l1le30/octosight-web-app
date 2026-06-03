@@ -6,16 +6,8 @@ const internalApiUrl =
 
 const nextConfig = {
   ...(process.env.NODE_ENV === 'production' ? { output: 'standalone' } : {}),
-  // Allow external images from Supabase Storage
   images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'tvhahvigtjlzwvmmfylb.supabase.co',
-        port: '',
-        pathname: '/storage/v1/object/sign/**',
-      },
-    ],
+    unoptimized: true,
   },
   // Allow the /api/analyze route to receive large image uploads (up to 20 MB)
   experimental: {
@@ -25,15 +17,6 @@ const nextConfig = {
   },
   async headers() {
     return [
-      {
-        source: '/(login|register)(/.*)?',
-        headers: [
-          {
-            key: 'Cross-Origin-Opener-Policy',
-            value: 'unsafe-none',
-          },
-        ],
-      },
       {
         source: '/(.*)',
         headers: [

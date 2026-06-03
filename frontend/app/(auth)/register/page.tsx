@@ -8,6 +8,7 @@ import { useGoogleLogin } from "@react-oauth/google";
 import { AuthCard } from "@/components/auth/AuthCard";
 import { AuthInput } from "@/components/auth/AuthInput";
 import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
+import { SecurityTips } from "@/components/auth/SecurityTips";
 import { UserPlus, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -204,6 +205,8 @@ export default function RegisterPage() {
       </div>
 
       <GoogleAuthButton onClick={() => loginWithGoogleAction()} loading={loading} type="register" />
+
+      <SecurityTips />
 
       {showGoogleSuccess && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 md:p-4">

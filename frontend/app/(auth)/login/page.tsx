@@ -8,6 +8,7 @@ import { useGoogleLogin } from "@react-oauth/google";
 import { AuthCard } from "@/components/auth/AuthCard";
 import { AuthInput } from "@/components/auth/AuthInput";
 import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
+import { SecurityTips } from "@/components/auth/SecurityTips";
 import { Lock } from "lucide-react";
 import { toast } from "sonner";
 
@@ -144,6 +145,8 @@ function LoginForm() {
       </div>
 
       <GoogleAuthButton onClick={() => loginWithGoogleAction()} loading={loading} type="login" />
+
+      <SecurityTips />
     </AuthCard>
   );
 }

@@ -1,6 +1,7 @@
 import React from "react";
 import { Ticket } from "@/types/ticket";
 import { formatDateTime } from "@/lib/utils";
+import { usePermissions } from "@/hooks/usePermissions";
 
 interface InvestigateTargetInfoProps {
   ticket: Ticket;
@@ -13,6 +14,7 @@ export const InvestigateTargetInfo: React.FC<InvestigateTargetInfoProps> = ({
   status,
   setStatus,
 }) => {
+  const { can } = usePermissions();
   return (
     <div className="card p-6 md:p-8 h-full flex flex-col">
       <div className="flex justify-between items-start mb-6 md:mb-8">
@@ -95,24 +97,30 @@ export const InvestigateTargetInfo: React.FC<InvestigateTargetInfoProps> = ({
             <span className="text-xs md:text-sm font-bold block text-secondary">
               Status
             </span>
-            <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              className="text-xs md:text-sm font-medium bg-neutral-page border border-neutral-border rounded-md md:rounded-lg px-3 md:px-4 py-1.5 md:py-2 outline-none focus:border-primary text-secondary transition-all appearance-none pr-8 md:pr-10 cursor-pointer w-full md:w-auto"
-              style={{
-                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
-                backgroundRepeat: "no-repeat",
-                backgroundPosition: "right 0.75rem center",
-                backgroundSize: "1rem",
-              }}
-            >
-              <option value="Submitted">Submitted</option>
-              <option value="In Review">In Review</option>
-              <option value="Confirmed">Confirmed</option>
-              <option value="False Positive">False Positive</option>
-              <option value="Mitigated">Mitigated</option>
-              <option value="Closed">Closed</option>
-            </select>
+            {can("investigate.update_status") ? (
+              <select
+                value={status}
+                onChange={(e) => setStatus(e.target.value)}
+                className="text-xs md:text-sm font-medium bg-neutral-page border border-neutral-border rounded-md md:rounded-lg px-3 md:px-4 py-1.5 md:py-2 outline-none focus:border-primary text-secondary transition-all appearance-none pr-8 md:pr-10 cursor-pointer w-full md:w-auto"
+                style={{
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+                  backgroundRepeat: "no-repeat",
+                  backgroundPosition: "right 0.75rem center",
+                  backgroundSize: "1rem",
+                }}
+              >
+                <option value="Submitted">Submitted</option>
+                <option value="In Review">In Review</option>
+                <option value="Confirmed">Confirmed</option>
+                <option value="False Positive">False Positive</option>
+                <option value="Mitigated">Mitigated</option>
+                <option value="Closed">Closed</option>
+              </select>
+            ) : (
+              <span className="inline-flex items-center px-2 md:px-3 py-1 md:py-1.5 rounded-md md:rounded-lg text-xs md:text-sm font-bold bg-neutral-page text-secondary border border-neutral-border">
+                {status}
+              </span>
+            )}
           </div>
         </div>
       </div>

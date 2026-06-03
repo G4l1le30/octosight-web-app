@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Ticket } from "@/types/ticket";
 import { toast } from "sonner";
+import { usePermissions } from "@/hooks/usePermissions";
 
 interface MitigationActionsProps {
   ticket: Ticket;
@@ -17,6 +18,7 @@ export const MitigationActions: React.FC<MitigationActionsProps> = ({
   openBlacklistModal,
   onNotify,
 }) => {
+  const { can } = usePermissions();
   const [assignModal, setAssignModal] = useState(false);
   const [assignEmail, setAssignEmail] = useState("");
   const [assigning, setAssigning] = useState(false);
@@ -69,7 +71,7 @@ export const MitigationActions: React.FC<MitigationActionsProps> = ({
         Mitigation Actions
       </h3>
       <div className="space-y-2 md:space-y-3">
-        {ticket.url && ticket.url.trim() !== "" && ticket.url !== "N/A" && (
+        {can("blacklist.add") && ticket.url && ticket.url.trim() !== "" && ticket.url !== "N/A" && (
           <button
             id="btn-add-blacklist-url"
             onClick={() => openBlacklistModal("url", ticket.url!)}
@@ -82,7 +84,7 @@ export const MitigationActions: React.FC<MitigationActionsProps> = ({
           </button>
         )}
 
-        {ticket.bank_account && (
+        {can("blacklist.add") && ticket.bank_account && (
           <button
             id="btn-add-blacklist-account"
             onClick={() =>
@@ -99,7 +101,7 @@ export const MitigationActions: React.FC<MitigationActionsProps> = ({
           </button>
         )}
 
-        {ticket.sender_numbers && (
+        {can("blacklist.add") && ticket.sender_numbers && (
           <button
             id="btn-add-blacklist-sender"
             onClick={() => {
@@ -119,20 +121,20 @@ export const MitigationActions: React.FC<MitigationActionsProps> = ({
           </button>
         )}
 
-        <button
-          onClick={() => {
-            setAssignEmail(ticket.assigned_to || "");
-            setAssignModal(true);
-          }}
-          className="w-full py-2 md:py-3 bg-neutral-page hover:bg-risk-medium/5 text-xs md:text-sm font-bold text-secondary rounded-lg md:rounded-xl transition-all text-left px-4 md:px-5 flex items-center justify-between group border border-neutral-border"
-        >
-          <span>{ticket.assigned_to ? "Reassign Ticket" : "Add Assignee"}</span>
-          <span className="opacity-0 group-hover:opacity-100 transition-all translate-x-[-4px] group-hover:translate-x-0">
-            →
-          </span>
-        </button>
-
-
+        {can("tickets.assign") && (
+          <button
+            onClick={() => {
+              setAssignEmail(ticket.assigned_to || "");
+              setAssignModal(true);
+            }}
+            className="w-full py-2 md:py-3 bg-neutral-page hover:bg-risk-medium/5 text-xs md:text-sm font-bold text-secondary rounded-lg md:rounded-xl transition-all text-left px-4 md:px-5 flex items-center justify-between group border border-neutral-border"
+          >
+            <span>{ticket.assigned_to ? "Reassign Ticket" : "Add Assignee"}</span>
+            <span className="opacity-0 group-hover:opacity-100 transition-all translate-x-[-4px] group-hover:translate-x-0">
+              →
+            </span>
+          </button>
+        )}
       </div>
 
       {/* Assignee Modal */}

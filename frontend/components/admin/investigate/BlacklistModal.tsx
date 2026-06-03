@@ -13,6 +13,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { usePermissions } from "@/hooks/usePermissions";
 
 type BlacklistType = "url" | "account" | "phone" | "email";
 
@@ -37,6 +38,7 @@ export function BlacklistModal({
   onClose,
   onSuccess,
 }: BlacklistModalProps) {
+  const { can } = usePermissions();
   const [reason, setReason] = useState("");
   const [status, setStatus] = useState<SubmitStatus | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -259,6 +261,7 @@ export function BlacklistModal({
                 variant="danger"
                 onClick={handleConfirm}
                 loading={isSubmitting}
+                disabled={!can("blacklist.add")}
                 className="flex-1 rounded-lg md:rounded-xl"
               >
                 Block

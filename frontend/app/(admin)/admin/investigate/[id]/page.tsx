@@ -23,6 +23,7 @@ import {
   BrainCircuit,
 } from "lucide-react";
 import { toast } from "sonner";
+import { PermissionGate } from "@/components/ui/PermissionGate";
 
 export default function InvestigatePage({
   params,
@@ -324,6 +325,7 @@ export default function InvestigatePage({
         </div>
 
         {/* ML Feedback */}
+        <PermissionGate permission="ml.submit_feedback">
         <div className="lg:col-span-1">
           <div className="card p-6 md:p-8 h-full flex flex-col">
             <h3 className="text-lg md:text-xl font-bold text-secondary mb-4 md:mb-6">
@@ -397,6 +399,7 @@ export default function InvestigatePage({
             </button>
           </div>
         </div>
+        </PermissionGate>
 
         {/* Similar Incidents */}
         <div className="lg:col-span-3">

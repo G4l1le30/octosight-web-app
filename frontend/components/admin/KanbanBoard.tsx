@@ -21,6 +21,7 @@ import { toast } from "sonner";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { getRiskLevel, RISK } from "@/constants/colors";
+import { usePermissions } from "@/hooks/usePermissions";
 
 interface KanbanTicket {
   id: string;
@@ -101,7 +102,7 @@ function TypeBadge({ type }: { type: string }) {
   );
 }
 
-function KanbanCard({ ticket }: { ticket: KanbanTicket }) {
+function KanbanCard({ ticket, canDrag }: { ticket: KanbanTicket; canDrag: boolean }) {
   const {
     attributes,
     listeners,
@@ -111,6 +112,7 @@ function KanbanCard({ ticket }: { ticket: KanbanTicket }) {
     isDragging,
   } = useSortable({
     id: ticket.ticket_id,
+    disabled: !canDrag,
   });
 
   const style = {
@@ -131,7 +133,7 @@ function KanbanCard({ ticket }: { ticket: KanbanTicket }) {
     <div
       ref={setNodeRef}
       style={style}
-      className="bg-white rounded-lg md:rounded-xl border border-neutral-border shadow-sm hover:shadow-md transition-all cursor-grab active:cursor-grabbing overflow-hidden"
+      className={cn("bg-white rounded-lg md:rounded-xl border border-neutral-border shadow-sm hover:shadow-md transition-all overflow-hidden", canDrag ? "cursor-grab active:cursor-grabbing" : "cursor-default")}
       {...attributes}
       {...listeners}
     >
@@ -178,9 +180,11 @@ function KanbanCard({ ticket }: { ticket: KanbanTicket }) {
 function KanbanColumn({
   status,
   tickets,
+  canDrag,
 }: {
   status: string;
   tickets: KanbanTicket[];
+  canDrag: boolean;
 }) {
   const { setNodeRef } = useDroppable({ id: status });
   const columnColors: Record<string, string> = {
@@ -226,7 +230,7 @@ function KanbanColumn({
           strategy={verticalListSortingStrategy}
         >
           {tickets.map((ticket) => (
-            <KanbanCard key={ticket.ticket_id} ticket={ticket} />
+            <KanbanCard key={ticket.ticket_id} ticket={ticket} canDrag={canDrag} />
           ))}
         </SortableContext>
         {tickets.length === 0 && (
@@ -248,6 +252,7 @@ export default function KanbanBoard({
   tickets: initialTickets,
   compact,
 }: KanbanBoardProps) {
+  const { can } = usePermissions();
   const [tickets, setTickets] = useState<KanbanTicket[]>(initialTickets || []);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [loading, setLoading] = useState(!initialTickets);
@@ -383,7 +388,7 @@ export default function KanbanBoard({
         )}
         {!loading && !error && grouped.map(({ status, tickets: colTickets }) => (
           <div key={status} className="flex-shrink-0">
-            <KanbanColumn status={status} tickets={colTickets} />
+            <KanbanColumn status={status} tickets={colTickets} canDrag={can("investigate.update_status")} />
           </div>
         ))}
       </div>

@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
+import { usePermissions } from "@/hooks/usePermissions";
 
 interface InvestigateHeaderProps {
   ticketId: string;
@@ -15,6 +16,7 @@ export const InvestigateHeader: React.FC<InvestigateHeaderProps> = ({
   saving,
   disabled,
 }) => {
+  const { can } = usePermissions();
   return (
     <div className="flex items-center justify-between mb-6 md:mb-8">
       <div className="flex items-center gap-3 md:gap-4">
@@ -42,14 +44,16 @@ export const InvestigateHeader: React.FC<InvestigateHeaderProps> = ({
         </h1>
       </div>
       <div className="flex gap-2 md:gap-3">
-        <Button
-          onClick={onSave}
-          loading={saving}
-          disabled={disabled}
-          className="px-6 md:px-8"
-        >
-          Save Changes
-        </Button>
+        {can("investigate.update_status") && (
+          <Button
+            onClick={onSave}
+            loading={saving}
+            disabled={disabled}
+            className="px-6 md:px-8"
+          >
+            Save Changes
+          </Button>
+        )}
       </div>
     </div>
   );

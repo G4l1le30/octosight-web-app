@@ -10,6 +10,7 @@ import { Pagination } from "@/components/ui/Pagination";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { RulesTable } from "@/components/admin/RulesTable";
+import { PermissionGate } from "@/components/ui/PermissionGate";
 
 type ConfigType =
   | "keyword"
@@ -327,13 +328,15 @@ export default function RuleConfigPage() {
             </button>
           ))}
           <div className="ml-auto">
-            <button
-              onClick={openAddModal}
-              className="flex items-center gap-1.5 md:gap-2 px-4 md:px-5 py-2 md:py-3 bg-secondary text-white rounded-lg md:rounded-xl font-bold text-xs md:text-sm hover:opacity-90 transition-all shadow-md"
-            >
-              <Plus className="size-4" />
-              Add Rule
-            </button>
+            <PermissionGate permission="rules.create">
+              <button
+                onClick={openAddModal}
+                className="flex items-center gap-1.5 md:gap-2 px-4 md:px-5 py-2 md:py-3 bg-secondary text-white rounded-lg md:rounded-xl font-bold text-xs md:text-sm hover:opacity-90 transition-all shadow-md"
+              >
+                <Plus className="size-4" />
+                Add Rule
+              </button>
+            </PermissionGate>
           </div>
         </div>
 

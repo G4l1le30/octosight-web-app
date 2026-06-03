@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Ticket } from "@/types/ticket";
 import { cn, formatDateTime } from "@/lib/utils";
 import { RISK } from "@/constants/colors";
+import { usePermissions } from "@/hooks/usePermissions";
 
 interface ThreatTableProps {
   tickets: Ticket[];
@@ -31,6 +32,7 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
   sortBy,
   sortDir,
 }) => {
+  const { can } = usePermissions();
   const [assignModalOpen, setAssignModalOpen] = useState(false);
   const [assignTicketId, setAssignTicketId] = useState<string | null>(null);
   const [assignEmail, setAssignEmail] = useState("");
@@ -327,7 +329,7 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
                     >
                       Investigate
                     </Link>
-                    {onAssign && (
+                    {onAssign && can("tickets.assign") && (
                       <button
                         onClick={() => openAssignModal(ticket.ticket_id)}
                         className="text-xs font-bold border border-neutral-border px-2 md:px-3 py-1 md:py-1.5 rounded-md md:rounded-lg hover:bg-neutral-page transition-colors w-full text-center"

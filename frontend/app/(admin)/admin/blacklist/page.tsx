@@ -19,6 +19,7 @@ import { Pagination } from "@/components/ui/Pagination";
 import { formatDateTime } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { AdminHeader } from "@/components/admin/AdminHeader";
+import { PermissionGate } from "@/components/ui/PermissionGate";
 
 type BlacklistType = "url" | "account" | "phone" | "email";
 
@@ -327,19 +328,21 @@ export default function BlacklistPage() {
                       </span>
                     </td>
                     <td className="px-4 md:px-6 py-3 md:py-4 text-center">
-                      <button
-                        onClick={() =>
-                          handleRemoveClick(
-                            entry.id,
-                            getEntryValue(entry) || "",
-                          )
-                        }
-                        disabled={removing === entry.id}
-                        className="inline-flex items-center gap-1 md:gap-1.5 px-2 md:px-3 py-1 md:py-1.5 text-xs font-bold text-risk-high hover:bg-risk-high/5 rounded-md md:rounded-lg transition-all disabled:opacity-50"
-                      >
-                        <Trash2 className="size-3.5" />
-                        Delete
-                      </button>
+                      <PermissionGate permission="blacklist.remove">
+                        <button
+                          onClick={() =>
+                            handleRemoveClick(
+                              entry.id,
+                              getEntryValue(entry) || "",
+                            )
+                          }
+                          disabled={removing === entry.id}
+                          className="inline-flex items-center gap-1 md:gap-1.5 px-2 md:px-3 py-1 md:py-1.5 text-xs font-bold text-risk-high hover:bg-risk-high/5 rounded-md md:rounded-lg transition-all disabled:opacity-50"
+                        >
+                          <Trash2 className="size-3.5" />
+                          Delete
+                        </button>
+                      </PermissionGate>
                     </td>
                   </tr>
                 ))}

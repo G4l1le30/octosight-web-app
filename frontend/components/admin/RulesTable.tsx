@@ -3,6 +3,7 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 import { Edit2, XCircle, Loader2 } from "lucide-react";
+import { usePermissions } from "@/hooks/usePermissions";
 
 interface RuleConfig {
   id: number;
@@ -53,6 +54,7 @@ export const RulesTable: React.FC<RulesTableProps> = ({
   sortDir,
   className,
 }) => {
+  const { can } = usePermissions();
   if (loading) {
     return (
       <div className="py-14 md:py-20 text-center opacity-40 font-semibold">
@@ -144,32 +146,43 @@ export const RulesTable: React.FC<RulesTableProps> = ({
                   </p>
                 </td>
                 <td className="px-4 md:px-6 py-4 md:py-5 text-center">
-                  <label
-                    className="relative inline-flex items-center cursor-pointer"
-                    title={
-                      rule.is_active ? "Deactivate rule" : "Reactivate rule"
-                    }
-                  >
-                    <input
-                      type="checkbox"
-                      className="sr-only peer"
-                      checked={rule.is_active}
-                      onChange={() => onToggle(rule)}
-                      disabled={deactivatingId === rule.id}
-                    />
-                    <div className="w-9 h-5 bg-gray-200 rounded-full peer peer-checked:bg-green-500 after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full peer-disabled:opacity-50" />
-                  </label>
+                  {can("rules.deactivate") ? (
+                    <label
+                      className="relative inline-flex items-center cursor-pointer"
+                      title={
+                        rule.is_active ? "Deactivate rule" : "Reactivate rule"
+                      }
+                    >
+                      <input
+                        type="checkbox"
+                        className="sr-only peer"
+                        checked={rule.is_active}
+                        onChange={() => onToggle(rule)}
+                        disabled={deactivatingId === rule.id}
+                      />
+                      <div className="w-9 h-5 bg-gray-200 rounded-full peer peer-checked:bg-green-500 after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full peer-disabled:opacity-50" />
+                    </label>
+                  ) : (
+                    <span className="inline-flex items-center px-2 md:px-2.5 py-0.5 md:py-1 rounded-md md:rounded-lg text-xs font-bold bg-green-50 text-green-700">
+                      {rule.is_active ? "Active" : "Inactive"}
+                    </span>
+                  )}
                 </td>
                 <td className="px-4 md:px-6 py-4 md:py-5 text-right">
                   <div className="flex items-center justify-end gap-0.5 md:gap-1">
-                    <button
-                      onClick={() => onEdit(rule)}
-                      className="inline-flex items-center gap-1 md:gap-1.5 px-2 md:px-3 py-1 md:py-1.5 text-xs font-bold text-secondary/80 hover:text-primary hover:bg-primary/5 rounded-md md:rounded-lg transition-all"
-                      title="Edit rule"
-                    >
-                      <Edit2 className="size-3.5" />
-                      Edit
-                    </button>
+                    {can("rules.update") && (
+                      <button
+                        onClick={() => onEdit(rule)}
+                        className="inline-flex items-center gap-1 md:gap-1.5 px-2 md:px-3 py-1 md:py-1.5 text-xs font-bold text-secondary/80 hover:text-primary hover:bg-primary/5 rounded-md md:rounded-lg transition-all"
+                        title="Edit rule"
+                      >
+                        <Edit2 className="size-3.5" />
+                        Edit
+                      </button>
+                    )}
+                    {!can("rules.update") && !can("rules.deactivate") && (
+                      <span className="text-xs text-secondary/40 font-medium">—</span>
+                    )}
                     {deactivatingId === rule.id && (
                       <Loader2 className="size-4 animate-spin" />
                     )}

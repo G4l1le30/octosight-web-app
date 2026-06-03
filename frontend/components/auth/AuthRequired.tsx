@@ -15,15 +15,15 @@ export function AuthRequired({
   description = "Please log in to your account to access this feature and track your progress.",
 }: AuthRequiredProps) {
   return (
-    <div className="min-h-[calc(100vh-64px)] flex flex-col items-center justify-center px-4 py-12 animate-in fade-in zoom-in duration-500">
+    <div className="min-h-[calc(100vh-64px)] flex flex-col items-center justify-center px-4 py-8 md:py-12 animate-in fade-in zoom-in duration-500">
       <div className="max-w-md w-full">
         <div className="card p-10 shadow-xl text-center border-neutral-border">
           {/* Icon Header */}
-          <div className="mb-8 flex flex-col items-center">
-            <div className="w-14 h-14 bg-primary/10 text-primary rounded-2xl flex items-center justify-center mb-4">
+          <div className="mb-6 md:mb-8 flex flex-col items-center">
+            <div className="w-10 h-10 md:w-14 md:h-14 bg-primary/10 text-primary rounded-2xl flex items-center justify-center mb-4">
               <Lock className="h-7 w-7" />
             </div>
-            <h1 className="text-2xl font-bold text-secondary">{title}</h1>
+            <h1 className="text-xl md:text-2xl font-bold text-secondary">{title}</h1>
             <p className="text-secondary/60 text-sm mt-2 leading-relaxed">
               {description}
             </p>

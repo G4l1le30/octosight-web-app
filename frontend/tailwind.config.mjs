@@ -5,6 +5,14 @@ export default {
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
+    screens: {
+      xs: "480px",
+      sm: "640px",
+      md: "768px",
+      lg: "1024px",
+      xl: "1280px",
+      "2xl": "1536px",
+    },
     extend: {
       colors: {
         primary: {
@@ -18,7 +26,7 @@ export default {
           light: "#4d4d4d",
         },
         risk: {
-          low: "#00a651",      // Green
+          low: "#ca8a04",      // Yellow
           medium: "#f97316",   // Orange
           high: "#e31e24",     // Red
         },

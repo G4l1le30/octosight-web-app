@@ -6,16 +6,18 @@ interface InvestigateHeaderProps {
   ticketId: string;
   onSave: () => void;
   saving: boolean;
+  disabled?: boolean;
 }
 
 export const InvestigateHeader: React.FC<InvestigateHeaderProps> = ({
   ticketId,
   onSave,
   saving,
+  disabled,
 }) => {
   return (
-    <div className="flex items-center justify-between mb-8">
-      <div className="flex items-center gap-4">
+    <div className="flex items-center justify-between mb-6 md:mb-8">
+      <div className="flex items-center gap-3 md:gap-4">
         <Link
           href="/admin/triage"
           className="p-2 hover:bg-neutral-border rounded-full transition-all"
@@ -35,7 +37,7 @@ export const InvestigateHeader: React.FC<InvestigateHeaderProps> = ({
             />
           </svg>
         </Link>
-        <h1 className="text-3xl font-bold text-secondary">
+        <h1 className="text-2xl md:text-3xl font-bold text-secondary">
           Investigate {ticketId}
         </h1>
       </div>
@@ -43,7 +45,8 @@ export const InvestigateHeader: React.FC<InvestigateHeaderProps> = ({
         <Button
           onClick={onSave}
           loading={saving}
-          className="px-8"
+          disabled={disabled}
+          className="px-6 md:px-8"
         >
           Save Changes
         </Button>

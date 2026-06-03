@@ -7,37 +7,68 @@ interface InvestigateEvidenceProps {
 }
 
 export const InvestigateEvidence: React.FC<InvestigateEvidenceProps> = ({ ticket, onDownloadAttachment }) => {
+  const screenshotPaths = ticket.screenshot_paths?.split(",").filter(Boolean) ?? [];
+  const attachmentPaths = ticket.attachment_paths?.split(",").filter(Boolean) ?? [];
+
+  const openEvidenceFile = async (path: string) => {
+    if (!path) return;
+
+    // Supabase paths contain "/" (e.g. "OCTO-xxx/screenshot_yyy.png").
+    // Always request a signed URL from the backend for these.
+    // Legacy local-only flat filenames (no "/") fall back to /uploads/.
+    if (!path.includes("/")) {
+      window.open(`/uploads/${path}`, "_blank");
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `/api/v1/evidence/signed-url?filename=${encodeURIComponent(path)}`
+      );
+      if (!response.ok) {
+        // Fallback: try serving from local uploads mount
+        window.open(`/uploads/${path}`, "_blank");
+        return;
+      }
+      const data = await response.json();
+      window.open(data.preview_url, "_blank");
+    } catch (error) {
+      console.error("Failed to open evidence file:", error);
+      window.open(`/uploads/${path}`, "_blank");
+    }
+  };
+
   return (
-    <div className="card p-8 h-full">
-      <h3 className="text-xl font-bold mb-6 text-secondary">
+    <div className="card p-6 md:p-8 h-full">
+      <h3 className="text-lg md:text-xl font-bold mb-4 md:mb-6 text-secondary">
         Incident Evidence
       </h3>
 
       <div className="space-y-6">
         <div>
-          <span className="text-base font-bold block mb-3 text-secondary">
+          <span className="text-sm font-bold block mb-3 text-secondary">
             User Summary
           </span>
-          <div className="bg-neutral-page/50 p-4 rounded-xl border border-neutral-border text-sm font-medium text-secondary/80 leading-relaxed max-h-40 overflow-y-auto custom-scrollbar">
+          <div className="bg-neutral-page/50 p-3 md:p-4 rounded-xl border border-neutral-border text-sm font-medium text-secondary/80 leading-relaxed max-h-40 overflow-y-auto custom-scrollbar">
             &quot;{ticket.summary || "No summary provided."}&quot;
           </div>
         </div>
 
-        {ticket.screenshot_paths && (
+        {screenshotPaths.length > 0 && (
           <div>
-            <span className="text-base font-bold block mb-4 text-secondary">
+            <span className="text-sm font-bold block mb-4 text-secondary">
               Evidence Screenshots
             </span>
-            <div className="grid grid-cols-1 gap-4">
-              {ticket.screenshot_paths.split(",").map((path, i) => {
+            <div className="grid grid-cols-1 gap-3 md:gap-4">
+              {screenshotPaths.map((path, i) => {
                 const filename = path.split("/").pop() || path;
                 return (
                   <div
                     key={i}
-                    className="flex items-center justify-between p-4 bg-risk-high/5 border border-risk-high/20 rounded-xl group transition-all"
+                    className="flex items-center justify-between p-3 md:p-4 bg-neutral-page border border-neutral-border rounded-xl group transition-all"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="p-1.5 bg-risk-high/10 rounded-lg text-risk-high">
+                      <div className="p-1.5 bg-neutral-border/30 rounded-lg text-secondary/60">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           className="size-4"
@@ -60,18 +91,15 @@ export const InvestigateEvidence: React.FC<InvestigateEvidenceProps> = ({ ticket
                           <polyline points="21 15 16 10 5 21" />
                         </svg>
                       </div>
-                      <span className="text-xs font-bold text-secondary opacity-80 truncate max-w-[250px] sm:max-w-none">
+                      <span className="text-xs font-semibold text-secondary truncate max-w-[250px] sm:max-w-none">
                         {filename}
                       </span>
                     </div>
                     <button
-                      onClick={() =>
-                        window.open(`/uploads/${path}`, "_blank")
-                      }
-                      className="px-3 py-1.5 bg-risk-high text-white text-xs font-bold rounded-lg hover:bg-risk-high/90 transition-all"
+                      onClick={() => openEvidenceFile(path)}
+                      className="px-3 py-1.5 bg-secondary text-white text-xs font-bold rounded-lg hover:bg-secondary/90 transition-all"
                     >
-                      {" "}
-                      Open
+                      View
                     </button>
                   </div>
                 );
@@ -82,30 +110,29 @@ export const InvestigateEvidence: React.FC<InvestigateEvidenceProps> = ({ ticket
 
         {ticket.extracted_text && (
           <div>
-            <span className="text-base font-bold block mb-3 text-secondary">
+            <span className="text-sm font-bold block mb-3 text-secondary">
               Extracted OCR Text
             </span>
-            <div className="bg-neutral-page/50 p-4 rounded-xl border border-neutral-border text-sm font-medium text-secondary/80 leading-relaxed whitespace-pre-wrap max-h-40 overflow-y-auto custom-scrollbar">
+            <div className="bg-neutral-page/50 p-3 md:p-4 rounded-xl border border-neutral-border text-sm font-medium text-secondary/80 leading-relaxed whitespace-pre-wrap max-h-40 overflow-y-auto custom-scrollbar">
               {ticket.extracted_text}
             </div>
           </div>
         )}
 
-        {ticket.attachment_names && (
+        {attachmentPaths.length > 0 && (
           <div>
-            <span className="text-base font-bold block mb-4 text-secondary">
+            <span className="text-sm font-bold block mb-4 text-secondary">
               Attachments
             </span>
-            <div className="grid grid-cols-1 gap-4">
-              {ticket.attachment_names.split(",").map((origName, i) => {
-                const hashedPath =
-                  ticket.attachment_paths?.split(",")[i] || origName;
+            <div className="grid grid-cols-1 gap-3 md:gap-4">
+              {attachmentPaths.map((path, i) => {
+                const filename = path.split("/").pop() || path;
                 return (
                   <div
                     key={i}
-                    className="flex items-center gap-3 p-4 bg-risk-high/5 border border-risk-high/20 rounded-xl"
+                    className="flex items-center gap-3 p-3 md:p-4 bg-neutral-page border border-neutral-border rounded-xl"
                   >
-                    <div className="w-8 h-8 bg-risk-high/10 text-risk-high rounded-full flex items-center justify-center flex-shrink-0">
+                    <div className="w-8 h-8 bg-neutral-border/30 text-secondary/60 rounded-full flex items-center justify-center flex-shrink-0">
                       <svg
                         className="w-4 h-4"
                         fill="none"
@@ -122,16 +149,16 @@ export const InvestigateEvidence: React.FC<InvestigateEvidenceProps> = ({ ticket
                       </svg>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold truncate text-secondary opacity-80">
-                        {origName}
+                      <p className="text-sm font-bold truncate text-secondary">
+                        {filename}
                       </p>
-                      <p className="text-xs font-bold text-risk-high opacity-70">
+                      <p className="text-xs font-medium text-secondary/60 opacity-70">
                         Security Restricted
                       </p>
                     </div>
                     <button
-                      onClick={() => onDownloadAttachment(hashedPath)}
-                      className="px-3 py-1.5 bg-risk-high text-white text-xs font-bold rounded-lg hover:bg-risk-high/90 transition-all"
+                      onClick={() => onDownloadAttachment(path)}
+                      className="px-3 py-1.5 bg-secondary text-white text-xs font-bold rounded-lg hover:bg-secondary/90 transition-all"
                     >
                       Download
                     </button>

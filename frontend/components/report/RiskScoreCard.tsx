@@ -20,14 +20,14 @@ export const RiskScoreCard = ({
   const score = typeof rawScore === "number" && !isNaN(rawScore) ? Math.round(rawScore) : 0;
 
   const getRiskDetails = (score: number) => {
-    if (score < 40)
+    if (score < 35)
       return {
         label: "Low Risk",
         stroke: "text-risk-low",
         text: "text-risk-low",
         badge: "text-risk-low bg-risk-low/10",
       };
-    if (score < 70)
+    if (score < 75)
       return {
         label: "Medium Risk",
         stroke: "text-risk-medium",
@@ -49,11 +49,11 @@ export const RiskScoreCard = ({
   return (
     <div
       className={cn(
-        "bg-white rounded-3xl p-6 border-2 border-gray-100 flex items-center justify-center h-full gap-8",
+        "bg-white rounded-3xl p-4 md:p-6 border-2 border-gray-100 flex items-center justify-center h-full gap-6 md:gap-8",
         className,
       )}
     >
-      <div className="relative w-24 h-24 sm:w-28 sm:h-28 shrink-0">
+      <div className="relative w-16 h-16 md:w-24 md:h-24 sm:w-28 sm:h-28 shrink-0">
         {/* Circular Gauge Background */}
         <svg className="size-full transform -rotate-90" viewBox="0 0 128 128">
           <circle
@@ -84,7 +84,7 @@ export const RiskScoreCard = ({
         {/* Score Text */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <span
-            className={cn("text-3xl font-bold leading-none", riskDetails.text)}
+            className={cn("text-2xl md:text-3xl font-bold leading-none", riskDetails.text)}
           >
             {score}
           </span>
@@ -100,7 +100,7 @@ export const RiskScoreCard = ({
         </p>
         <span
           className={cn(
-            "px-4 py-1.5 rounded-full text-[10px] font-bold uppercase whitespace-nowrap",
+            "px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap",
             activeBadgeClass,
           )}
         >

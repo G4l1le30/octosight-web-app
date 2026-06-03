@@ -1,86 +1,36 @@
-import uuid
-from datetime import datetime, timezone
+"""models.py — Backward-compatible re-exports."""
 
-from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String, Text, JSON, Boolean
+from app.models.user import User
+from app.models.ticket import Ticket, TicketAuditLog
+from app.models.blacklist import BlacklistedURL, BlacklistedAccount, BlacklistedPhone, BlacklistedEmail
+from app.models.education import EducationModule, EducationArticle, UserLearningProgress, UserArticleProgress, UserQuizAttempt
+from app.models.mock_bank import MockBankTransaction
+from app.models.feedback import MLFeedback
+from app.models.rule_config import RuleConfig
+from app.models.notification import Notification
+from app.models.activity import ActivityLog
+from app.models.pending_registration import PendingRegistration
+from app.models.permission import Permission, RolePermission
 
-from app.db.session import Base
-
-
-class User(Base):
-    """Registered user account. Role is 'user' or 'admin'."""
-
-    __tablename__ = "users"
-
-    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    full_name = Column(String(255), nullable=False)
-    email = Column(String(255), unique=True, nullable=False, index=True)
-    hashed_password = Column(String(255), nullable=False)
-    role = Column(String(20), default="user")
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
-    updated_at = Column(
-        DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc)
-    )
-
-
-class Ticket(Base):
-    """Phishing / fraud report ticket submitted by a user."""
-
-    __tablename__ = "tickets"
-
-    id = Column(Integer, primary_key=True, index=True)
-    ticket_id = Column(String(50), unique=True, index=True)
-    url = Column(Text)
-    type = Column(String(50))
-    summary = Column(Text)
-
-    # Risk scoring
-    risk_score = Column(Float)
-    rule_score = Column(Float, nullable=True)   # raw rule-engine score (0-100)
-    ml_score = Column(Float, nullable=True)     # raw ML-engine score (0-100)
-
-    status = Column(String(50), default="Submitted")
-    priority = Column(String(50))
-    flags = Column(Text)
-    investigation_notes = Column(Text)
-
-    # Report content
-    sender_numbers = Column(Text)
-    extracted_text = Column(Text)
-    attachment_names = Column(Text)
-    attachment_paths = Column(Text)
-    screenshot_paths = Column(Text)
-
-    # Detailed analysis JSON
-    analysis_results = Column(Text)
-    
-    # Education recommendations
-    education_recommendation = Column(JSON, nullable=True)
-
-    # Relationships
-    user_id = Column(
-        String(36), ForeignKey("users.id", ondelete="SET NULL"), nullable=True
-    )
-
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
-    updated_at = Column(
-        DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc)
-    )
-
-
-class BlacklistedURL(Base):
-    """Internally blacklisted URLs/domains added by admins during investigation."""
-
-    __tablename__ = "blacklisted_urls"
-
-    id = Column(Integer, primary_key=True, index=True)
-    url = Column(Text, nullable=False)
-    domain = Column(String(255), nullable=False, index=True)
-    reason = Column(Text, nullable=True)
-    ticket_id = Column(String(50), nullable=True)   # linked ticket, if any
-    added_by = Column(String(36), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
-    is_active = Column(Boolean, default=True)
-
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
-    updated_at = Column(
-        DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc)
-    )
+__all__ = [
+    "User",
+    "Ticket",
+    "TicketAuditLog",
+    "BlacklistedURL",
+    "BlacklistedAccount",
+    "BlacklistedPhone",
+    "BlacklistedEmail",
+    "EducationModule",
+    "EducationArticle",
+    "UserLearningProgress",
+    "UserArticleProgress",
+    "UserQuizAttempt",
+    "MockBankTransaction",
+    "MLFeedback",
+    "RuleConfig",
+    "Notification",
+    "ActivityLog",
+    "PendingRegistration",
+    "Permission",
+    "RolePermission",
+]

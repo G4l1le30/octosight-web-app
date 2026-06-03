@@ -31,7 +31,7 @@ export const TriageFilters: React.FC<TriageFiltersProps> = ({
   onReset,
 }) => {
   return (
-    <div className="card p-6 mb-8 bg-white border-primary/10 border-t-4 shadow-xl overflow-visible">
+    <div className="card p-4 md:p-6 mb-6 md:mb-8 bg-white border-primary/10 border-t-4 shadow-xl overflow-visible">
       <div className="flex items-center gap-2 mb-6 border-b border-neutral-border pb-4">
         <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 8.293A1 1 0 013 7.586V4z"></path>
@@ -39,7 +39,7 @@ export const TriageFilters: React.FC<TriageFiltersProps> = ({
         <h2 className="font-bold text-slgm text-secondary">Advanced Search Filters</h2>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
         <Select 
           label="Priority"
           value={filters.priority}
@@ -60,7 +60,9 @@ export const TriageFilters: React.FC<TriageFiltersProps> = ({
             {value: "All", label: "All Status"},
             {value: "Submitted", label: "Submitted"},
             {value: "In Review", label: "In Review"},
+            {value: "Need More Info", label: "Need More Info"},
             {value: "Confirmed", label: "Confirmed"},
+            {value: "False Positive", label: "False Positive"},
             {value: "Mitigated", label: "Mitigated"},
             {value: "Closed", label: "Closed"}
           ]}

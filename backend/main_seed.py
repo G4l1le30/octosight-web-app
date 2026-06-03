@@ -8,15 +8,48 @@ from dotenv import load_dotenv
 # Load environment variables from the root .env file
 load_dotenv()
 from app.db.session import SessionLocal, engine
-from app.models.models import Base, Ticket, User
+from app.models.models import (
+    Base,
+    Ticket,
+    User,
+    BlacklistedAccount,
+    BlacklistedPhone,
+    BlacklistedEmail,
+    MockBankTransaction,
+)
 from app.models.education import EducationModule, EducationArticle
+from app.core.email_validation import (
+    EmailValidationError,
+    EmailValidationUnavailableError,
+    normalize_and_validate_real_email,
+)
 from app.core.security import hash_password
 
+def _get_required_env(name: str) -> str:
+    """Load required env vars for seed credentials."""
+    value = (os.getenv(name) or "").strip()
+    if not value:
+        raise RuntimeError(f"{name} must be set in the environment before seeding.")
+    return value
+
+
+def _get_required_email_env(name: str) -> str:
+    """Load and validate seed emails against real mail-domain deliverability."""
+    try:
+        return normalize_and_validate_real_email(_get_required_env(name))
+    except EmailValidationUnavailableError as exc:
+        raise RuntimeError(
+            f"{name} could not be validated because email deliverability checks are temporarily unavailable."
+        ) from exc
+    except EmailValidationError as exc:
+        raise RuntimeError(f"{name} is invalid: {exc}") from exc
+
+
 # Configuration
-DEFAULT_ADMIN_EMAIL = os.getenv("DEFAULT_ADMIN_EMAIL", "admin@octosight.id")
-DEFAULT_ADMIN_PASSWORD = os.getenv("DEFAULT_ADMIN_PASSWORD", "admin123")
-DEFAULT_USER_EMAIL = os.getenv("DEFAULT_USER_EMAIL", "user@octosight.id")
-DEFAULT_USER_PASSWORD = os.getenv("DEFAULT_USER_PASSWORD", "user123")
+DEFAULT_ADMIN_EMAIL = _get_required_email_env("DEFAULT_ADMIN_EMAIL")
+DEFAULT_ADMIN_PASSWORD = _get_required_env("DEFAULT_ADMIN_PASSWORD")
+DEFAULT_USER_EMAIL = _get_required_email_env("DEFAULT_USER_EMAIL")
+DEFAULT_USER_PASSWORD = _get_required_env("DEFAULT_USER_PASSWORD")
 
 # Education Data
 EDUCATION_MODULES_DATA = [
@@ -202,7 +235,6 @@ TICKET_SCENARIOS = [
         "summary": "Ada yang mengirim pesan di WA, katanya dari Customer Service CIMB Niaga. Dia kirim file .apk untuk update aplikasi.",
         "risk_score": 95,
         "flags": "malicious_file,brand_impersonation,suspicious_sender",
-        "attachment_names": "OCTO_Mobile_Update_v2.apk",
         "priority": "High",
         "status": "Confirmed"
     },
@@ -273,12 +305,80 @@ TICKET_SCENARIOS = [
     }
 ]
 
-def main_seed():
-    print("Dropping all tables...")
-    Base.metadata.drop_all(bind=engine)
-    print("Creating all tables...")
-    Base.metadata.create_all(bind=engine)
-    
+MOCK_BANK_TRANSACTIONS = [
+    {
+        "reference_number": "OCTO-REF-001",
+        "sender_name": "Budi CIMB User",
+        "sender_account": "706123456789",
+        "sender_bank": "CIMB NIAGA",
+        "receiver_account": "704987654321",
+        "receiver_bank": "CIMB NIAGA",
+        "amount": 500000.0,
+    },
+    {
+        "reference_number": "OCTO-REF-002",
+        "sender_name": "Siti Niaga",
+        "sender_account": "701234555111",
+        "sender_bank": "CIMB NIAGA",
+        "receiver_account": "704987654321",
+        "receiver_bank": "CIMB NIAGA",
+        "amount": 1250000.0,
+    },
+    {
+        "reference_number": "OCTO-REF-003",
+        "sender_name": "Dedi Oktoman",
+        "sender_account": "705556667770",
+        "sender_bank": "CIMB NIAGA",
+        "receiver_account": "704987654321",
+        "receiver_bank": "CIMB NIAGA",
+        "amount": 200000.0,
+    },
+]
+
+BLACKLISTED_ACCOUNTS = [
+    {
+        "account_number": "1234567890",
+        "bank_name": "OCTO Virtual",
+        "reason": "Penipuan modus salah kirim",
+    },
+    {
+        "account_number": "081234567890",
+        "bank_name": "E-Wallet Scam",
+        "reason": "Dompet digital penipu barang fiktif",
+    },
+]
+
+BLACKLISTED_PHONES = [
+    {
+        "phone_number": "08968554576",
+        "reason": "Spam penipuan anak kecelakaan",
+    },
+    {
+        "phone_number": "08123456789",
+        "reason": "SMS phishing hadiah palsu",
+    },
+]
+
+BLACKLISTED_EMAILS = [
+    {
+        "email": "scammer@urgent-cimb.com",
+        "reason": "Email impersonasi CIMB NIAGA",
+    },
+    {
+        "email": "admin@secure-payment.xyz",
+        "reason": "Email phishing payment gateway",
+    },
+]
+
+def main_seed(reset_schema: bool = True):
+    if reset_schema:
+        print("Dropping all tables...")
+        Base.metadata.drop_all(bind=engine)
+        print("Creating all tables...")
+        Base.metadata.create_all(bind=engine)
+    else:
+        print("Skipping drop/create because reset_schema=False")
+
     db = SessionLocal()
     try:
         # 1. Cleanup (Already handled by drop_all)
@@ -300,9 +400,9 @@ def main_seed():
             hashed_password=hash_password(DEFAULT_USER_PASSWORD),
             role="user"
         )
-        db.add(admin)
-        db.add(user)
+        db.add_all([admin, user])
         db.commit()
+        db.refresh(admin)
         db.refresh(user)
 
         # 3. Seed Education
@@ -319,11 +419,30 @@ def main_seed():
             for article_data in articles_data:
                 # Use UUID for article ID
                 a_id = str(uuid.uuid4())
+                # Ensure publication_date is a date object to match the model
+                if article_data.get("publication_date"):
+                    try:
+                        article_data["publication_date"] = datetime.strptime(article_data["publication_date"], "%Y-%m-%d").date()
+                    except Exception:
+                        # If parsing fails, drop the field so DB default/null behavior applies
+                        article_data.pop("publication_date", None)
+
                 article = EducationArticle(id=a_id, module_id=m_id, **article_data)
                 db.add(article)
         db.commit()
 
-        # 4. Seed Tickets (20 tickets)
+        # 4. Seed supporting security datasets
+        print("Seeding mock bank transactions...")
+        db.add_all([MockBankTransaction(**tx) for tx in MOCK_BANK_TRANSACTIONS])
+        db.commit()
+
+        print("Seeding blacklist datasets...")
+        db.add_all([BlacklistedAccount(**account) for account in BLACKLISTED_ACCOUNTS])
+        db.add_all([BlacklistedPhone(**phone) for phone in BLACKLISTED_PHONES])
+        db.add_all([BlacklistedEmail(**email) for email in BLACKLISTED_EMAILS])
+        db.commit()
+
+        # 5. Seed Tickets (20 tickets)
         print("Seeding 20 realistic tickets...")
         all_tickets = []
         for i in range(20):
@@ -342,13 +461,24 @@ def main_seed():
                 type=base["type"],
                 summary=base["summary"],
                 risk_score=max(0, min(100, base["risk_score"] + random.randint(-5, 3))),
+                rule_score=max(0, min(100, base["risk_score"] + random.randint(-12, 5))),
+                ml_score=max(0, min(100, base["risk_score"] + random.randint(-8, 6))),
                 priority=base["priority"],
                 status=status,
                 sender_numbers=base.get("sender_numbers"),
                 extracted_text=base.get("extracted_text"),
-                attachment_names=base.get("attachment_names"),
+                attachment_paths=base.get("attachment_paths"),
+                screenshot_paths=base.get("screenshot_paths"),
                 flags=base["flags"],
-                user_id=user.id,
+                analysis_results=json.dumps(
+                    {
+                        "seeded": True,
+                        "scenario_type": base["type"],
+                        "notes": base["summary"],
+                    }
+                ),
+                education_recommendation=None,
+                user_id=user.id if user else None,
                 created_at=created_at,
                 investigation_notes=f"Investigasi awal menunjukkan adanya {base['flags'].replace(',', ', ')}. Langkah mitigasi sedang dilakukan." if status != "Submitted" else None
             )
@@ -358,9 +488,13 @@ def main_seed():
         db.commit()
 
         print("\nSeeding completed successfully!")
-        print(f"Users created: {DEFAULT_ADMIN_EMAIL}, {DEFAULT_USER_EMAIL}")
+        print(f"Users created: admin={DEFAULT_ADMIN_EMAIL}, user={DEFAULT_USER_EMAIL}")
         print(f"Tickets created: 20")
         print(f"Education Modules: {len(EDUCATION_MODULES_DATA)}")
+        print(f"Mock Transactions: {len(MOCK_BANK_TRANSACTIONS)}")
+        print(f"Blacklisted Accounts: {len(BLACKLISTED_ACCOUNTS)}")
+        print(f"Blacklisted Phones: {len(BLACKLISTED_PHONES)}")
+        print(f"Blacklisted Emails: {len(BLACKLISTED_EMAILS)}")
 
     except Exception as e:
         print(f"Error during seeding: {e}")
@@ -369,4 +503,5 @@ def main_seed():
         db.close()
 
 if __name__ == "__main__":
-    main_seed()
+    skip_reset = "--no-reset" in os.sys.argv
+    main_seed(reset_schema=not skip_reset)

@@ -1,423 +1,216 @@
-import React from "react";
-import { Ticket } from "@/types/ticket";
-import { Info } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { Ticket, TicketAuditLog } from "@/types/ticket";
+import { History } from "lucide-react";
 import { RiskEducationPanel } from "./RiskEducationPanel";
-import { formatDateTime } from "@/lib/utils";
+import { TicketTimeline } from "./TicketTimeline";
 import { Button } from "@/components/ui/Button";
+import { toast } from "sonner";
+
+import { StatusHeader } from "./StatusHeader";
+import { StatusOverview } from "./StatusOverview";
+import { StatusAnalysis } from "./StatusAnalysis";
+import { StatusEvidence } from "./StatusEvidence";
 
 interface StatusResultProps {
   result: Ticket;
 }
 
 const StatusResult: React.FC<StatusResultProps> = ({ result }) => {
+  const [auditLogs, setAuditLogs] = useState<TicketAuditLog[]>([]);
+  const [logsLoading, setLogsLoading] = useState(true);
+  const [sendingAccuracy, setSendingAccuracy] = useState(false);
+  const [sendingSupport, setSendingSupport] = useState(false);
+  const [accuracyModal, setAccuracyModal] = useState(false);
+  const [supportModal, setSupportModal] = useState(false);
+  const [messageText, setMessageText] = useState("");
+
+  useEffect(() => {
+    if (!result.ticket_id) return;
+    const fetchAuditLogs = async () => {
+      setLogsLoading(true);
+      try {
+        const res = await fetch(
+          `/api/v1/tickets/${result.ticket_id}/audit-logs`,
+        );
+        if (res.ok) {
+          const data = await res.json();
+          setAuditLogs(data);
+        }
+      } catch {
+        // Non-fatal: timeline simply shows empty state
+      } finally {
+        setLogsLoading(false);
+      }
+    };
+    fetchAuditLogs();
+  }, [result.ticket_id]);
+
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="bg-white rounded-3xl border border-neutral-border shadow-xl overflow-hidden">
-        <div
-          className={`h-1.5 ${result.risk_score >= 70 ? "bg-risk-high" : result.risk_score >= 40 ? "bg-risk-medium" : "bg-risk-low"}`}
-        ></div>
-        <div className="p-8">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <span className="text-sm font-bold text-secondary">
-                Ticket ID
-              </span>
-              <h2 className="text-2xl font-bold">{result.ticket_id}</h2>
-            </div>
-            <div className="text-right">
-              <span className="text-sm font-bold text-secondary">
-                Current Status
-              </span>
-              <div className="mt-1">
-                <span
-                  className={`px-3 py-1 rounded-lg text-sm font-bold border ${
-                    result.status.toLowerCase() === "submitted"
-                      ? "bg-blue-50 text-blue-700 border-blue-200"
-                      : result.status.toLowerCase() === "in review"
-                        ? "bg-orange-50 text-orange-700 border-orange-200"
-                        : result.status.toLowerCase() === "confirmed"
-                          ? "bg-red-50 text-red-700 border-red-200"
-                          : result.status.toLowerCase() === "false positive"
-                            ? "bg-green-50 text-green-700 border-green-200"
-                            : result.status.toLowerCase() === "mitigated"
-                              ? "bg-cyan-50 text-cyan-700 border-cyan-200"
-                              : result.status.toLowerCase() === "closed"
-                                ? "bg-gray-100 text-gray-700 border-gray-200"
-                                : "bg-neutral-page text-secondary border-neutral-border"
-                  }`}
-                >
-                  {result.status}
-                </span>
-              </div>
+       <div className="bg-white rounded-3xl border border-neutral-border shadow-sm overflow-hidden">
+         <div
+           className={`h-1.5 ${(result.risk_score ?? 0) >= 75 ? "bg-risk-high" : (result.risk_score ?? 0) >= 35 ? "bg-risk-medium" : "bg-risk-low"}`}
+         ></div>
+        <div className="p-6 md:p-8">
+          <StatusHeader result={result} />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-8 md:mb-10">
+            {/* Left Column */}
+            <StatusOverview result={result} />
+
+            {/* Right Column */}
+            <div className="space-y-8">
+              <StatusAnalysis result={result} />
+              <StatusEvidence result={result} />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-            <div className="space-y-6">
-              <div>
-                <p className="text-sm font-bold text-secondary">
-                  Automated Risk Score
-                </p>
-                <div className="flex items-center gap-4 mt-1">
-                  <span
-                    className={`text-3xl font-bold ${result.risk_score >= 70 ? "text-risk-high" : result.risk_score >= 40 ? "text-risk-medium" : "text-risk-low"}`}
-                  >
-                    {Number(result.risk_score)}/100
-                  </span>
-                  <div className="flex-1 h-2 bg-neutral-border/60 rounded-full">
-                    <div
-                      className="h-full rounded-full"
-                      style={{
-                        width: `${result.risk_score}%`,
-                        backgroundColor:
-                          result.risk_score >= 70
-                            ? "#e31e24"
-                            : result.risk_score >= 40
-                              ? "#f97316"
-                              : "#00a651",
-                      }}
-                    ></div>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <p className="text-sm font-bold text-secondary">
-                  Incident Type
-                </p>
-                <p className="text-base font-semibold">{result.type}</p>
-              </div>
-              {result.url && (
-                <div>
-                  <p className="text-sm font-bold text-secondary">Target URL</p>
-                  <p className="text-base font-semibold break-all opacity-90">
-                    {result.url}
-                  </p>
-                </div>
-              )}
-              {result.sender_numbers && (
-                <div>
-                  <p className="text-sm font-bold text-secondary">
-                    Reported Sender
-                  </p>
-                  <p className="text-base font-semibold truncate">
-                    {result.sender_numbers}
-                  </p>
-                </div>
-              )}
-              {/* User Summary */}
-              <div>
-                <p className="text-sm font-bold text-secondary mb-2">
-                  User Summary
-                </p>
-                <div className="max-h-40 overflow-y-auto pr-2 custom-scrollbar bg-neutral-page/30 p-3 rounded-xl border border-neutral-border/50">
-                  <p className="text-xs font-semibold text-secondary/80 leading-relaxed whitespace-pre-wrap">
-                    &quot;{result.summary || "No summary provided."}&quot;
-                  </p>
-                </div>
-              </div>
-
-              {/* Extracted OCR Text */}
-              {result.extracted_text && (
-                <div>
-                  <p className="text-sm font-bold text-secondary mb-2">
-                    Extracted OCR Text
-                  </p>
-                  <div className="max-h-40 overflow-y-auto pr-2 custom-scrollbar bg-neutral-page/30 p-3 rounded-lg border border-neutral-border/50">
-                    <p className="text-xs font-semibold text-secondary/80 leading-relaxed whitespace-pre-wrap">
-                      {result.extracted_text}
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="space-y-6">
-              {/* Hybrid Score Breakdown */}
-              <div className="pt-2">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-sm font-bold text-secondary">
-                    Hybrid Score Breakdown
-                  </h3>
-                  {result.flags?.includes("BLACKLISTED") && (
-                    <span className="px-2 py-0.5 rounded-md bg-secondary text-white text-[10px] font-bold tracking-wider">
-                      Blacklist
-                    </span>
-                  )}
-                </div>
-                <div className="grid grid-cols-1 gap-4">
-                  <div className="bg-neutral-page/30 p-3 rounded-xl border border-neutral-border/50">
-                    <div className="flex justify-between text-sm font-bold text-secondary mb-1">
-                      <span>Rule-based (35%)</span>
-                      <span>{Number(result.rule_score)} / 100</span>
-                    </div>
-                    <div className="w-full bg-neutral-border/60 rounded-full h-1.5 overflow-hidden">
-                      <div
-                        className="bg-secondary h-full rounded-full transition-all duration-1000"
-                        style={{ width: `${result.rule_score}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                  <div className="bg-neutral-page/30 p-3 rounded-xl border border-neutral-border/50">
-                    <div className="flex justify-between text-sm font-bold text-secondary mb-1">
-                      <span>ML Engine (65%)</span>
-                      <span>{Number(result.ml_score)} / 100</span>
-                    </div>
-                    <div className="w-full bg-neutral-border/60 rounded-full h-1.5 overflow-hidden">
-                      <div
-                        className="bg-primary h-full rounded-full transition-all duration-1000"
-                        style={{ width: `${result.ml_score}%` }}
-                      ></div>
-                    </div>
-                    {result.flags?.includes("ml_prediction:") && (
-                      <p className="text-xs font-semibold text-secondary mt-1.5">
-                        Prediction:{" "}
-                        <span className="text-secondary">
-                          {
-                            result.flags
-                              .split("ml_prediction:")[1]
-                              .split(",")[0]
-                          }
-                        </span>
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-neutral-page/30 p-6 rounded-xl border border-neutral-border shadow-sm">
-                <h3 className="text-base font-bold text-secondary mb-4 flex items-center gap-2">
-                  <Info className="size-4 text-primary" />
-                  Analysis Detail
-                </h3>
-                <div className="space-y-4">
-                  {(() => {
-                    let details = {
-                      typosquatting: "Safe",
-                      keywords: "Clean",
-                      attachments: result.attachment_names
-                        ? "Detected"
-                        : "Clean",
-                      ocr: result.extracted_text ? "Complete" : "N/A",
-                    };
-
-                    try {
-                      if (result.analysis_results) {
-                        details = {
-                          ...details,
-                          ...JSON.parse(result.analysis_results),
-                        };
-                      }
-                    } catch (e) {
-                      console.error("Failed to parse analysis results", e);
-                    }
-
-                    return (
-                      <ul className="text-sm space-y-3 font-bold opacity-90">
-                        <li className="flex justify-between">
-                          <span className="text-secondary">Typosquatting Rules:</span>
-                          <span
-                            className={
-                              details.typosquatting !== "Safe" &&
-                              details.typosquatting !== "Verified Domain"
-                                ? "text-risk-high"
-                                : "text-green-600"
-                            }
-                          >
-                            {details.typosquatting}
-                          </span>
-                        </li>
-                        <li className="flex justify-between">
-                          <span className="text-secondary">OCR Evidence Analysis:</span>
-                          <span
-                            className={
-                              details.ocr === "Complete" ? "text-green-600" : ""
-                            }
-                          >
-                            {details.ocr}
-                          </span>
-                        </li>
-                        <li className="flex justify-between">
-                          <span className="text-secondary">Keyword Analysis:</span>
-                          <span
-                            className={
-                              details.keywords !== "Clean"
-                                ? "text-risk-high"
-                                : "text-green-600"
-                            }
-                          >
-                            {details.keywords}
-                          </span>
-                        </li>
-                        <li className="flex justify-between">
-                          <span className="text-secondary">Malicious Attachment:</span>
-                          <span
-                            className={
-                              details.attachments !== "Clean"
-                                ? "text-risk-high"
-                                : "text-green-600"
-                            }
-                          >
-                            {details.attachments}
-                          </span>
-                        </li>
-                      </ul>
-                    );
-                  })()}
-                </div>
-              </div>
-
-              {result.investigation_notes && (
-                <div className="bg-neutral-page/30 p-6 rounded-xl border border-neutral-border shadow-sm">
-                  <h3 className="text-sm font-bold text-secondary mb-3 flex items-center gap-2">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4 text-primary"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                    </svg>
-                    Investigation Notes
-                  </h3>
-                  <div className="max-h-32 overflow-y-auto pr-2 custom-scrollbar">
-                    <p className="text-sm font-medium text-secondary leading-relaxed">
-                      &quot;{result.investigation_notes}&quot;
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* Evidence Screenshots */}
-              {result.screenshot_paths && (
-                <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 delay-150">
-                  <p className="text-sm font-bold text-secondary mb-3">
-                    Evidence Screenshots
-                  </p>
-                  <div className="space-y-2">
-                    {result.screenshot_paths.split(",").map((path, i) => {
-                      const filename = path.split("/").pop() || path;
-                      return (
-                        <div
-                          key={i}
-                          className="flex items-center justify-between p-3 bg-primary/5 border border-primary/10 rounded-xl group transition-all"
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="p-1.5 bg-white rounded-lg border border-primary/20 text-primary">
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="size-4"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              >
-                                <rect
-                                  x="3"
-                                  y="3"
-                                  width="18"
-                                  height="18"
-                                  rx="2"
-                                  ry="2"
-                                />
-                                <circle cx="8.5" cy="8.5" r="1.5" />
-                                <polyline points="21 15 16 10 5 21" />
-                              </svg>
-                            </div>
-                            <span className="text-xs font-bold text-secondary truncate max-w-[150px] sm:max-w-[200px]">
-                              {filename}
-                            </span>
-                          </div>
-                          <button
-                            onClick={() =>
-                              window.open(`/uploads/${filename}`, "_blank")
-                            }
-                            className="text-xs font-bold text-primary hover:underline transition-colors px-2 py-1"
-                          >
-                            Open
-                          </button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {/* Attachments */}
-              {result.attachment_names && (
-                <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 delay-300">
-                  <p className="text-sm font-bold text-secondary mb-3">
-                    Attachments
-                  </p>
-                  <div className="space-y-2">
-                    {result.attachment_names.split(",").map((f, i) => {
-                      return (
-                        <div
-                          key={i}
-                          className="flex items-center justify-between p-3 bg-primary/5 border border-primary/10 rounded-xl group transition-all"
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="p-1.5 bg-white rounded-lg border border-primary/20 text-primary">
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="size-4"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              >
-                                <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
-                                <polyline points="13 2 13 9 20 9" />
-                              </svg>
-                            </div>
-                            <span className="text-xs font-bold text-secondary truncate max-w-[150px] sm:max-w-[200px]">
-                              {f}
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="pt-6 border-t border-neutral-border flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <p className="text-sm font-semibold text-secondary">
-              Submitted on {formatDateTime(result.created_at).full}
-            </p>
-            <div className="flex gap-2">
-              <Button variant="outline" size="md">
+          <div className="pt-6 border-t border-neutral-border flex flex-col sm:flex-row sm:items-center justify-end gap-3 md:gap-4">
+            <div className="flex gap-3 w-full sm:w-auto">
+              <Button
+                variant="outline"
+                size="md"
+                className="flex-1 sm:flex-none"
+                loading={sendingAccuracy}
+                onClick={() => {
+                  setMessageText("");
+                  setAccuracyModal(true);
+                }}
+              >
                 Report Accuracy Issue
               </Button>
-              <Button variant="secondary" size="md">
+              <Button
+                variant="secondary"
+                size="md"
+                className="flex-1 sm:flex-none"
+                loading={sendingSupport}
+                onClick={() => {
+                  setMessageText("");
+                  setSupportModal(true);
+                }}
+              >
                 Notify Support
               </Button>
             </div>
           </div>
+
+          {/* Accuracy Issue Modal */}
+          {accuracyModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setAccuracyModal(false)}>
+              <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+              <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-md p-6 md:p-8 border border-neutral-border animate-in fade-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
+                <h2 className="text-lg font-bold text-secondary mb-2">Report Accuracy Issue</h2>
+                <p className="text-sm text-secondary/60 mb-4">This will notify the OctoSight admin about an issue with this analysis.</p>
+                <textarea
+                  value={messageText}
+                  onChange={(e) => setMessageText(e.target.value)}
+                  placeholder="Describe what seems incorrect about the analysis..."
+                  rows={4}
+                  className="w-full border-2 border-neutral-border rounded-xl p-3 text-sm outline-none focus:border-primary focus:ring-4 focus:ring-primary/5 resize-none mb-4"
+                />
+                <div className="flex items-center justify-end gap-3">
+                  <button onClick={() => setAccuracyModal(false)} className="px-5 py-2.5 bg-white border-2 border-neutral-border text-secondary font-bold text-sm rounded-xl hover:bg-neutral-page transition-all">Cancel</button>
+                  <button onClick={async () => {
+                    setSendingAccuracy(true);
+                    try {
+                      const res = await fetch(`/api/v1/tickets/${result.ticket_id}/report-accuracy`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ message: messageText }),
+                      });
+                      if (res.ok) { toast.success("Accuracy issue reported to admin."); setAccuracyModal(false); }
+                      else { toast.error("Failed to send report."); }
+                    } catch { toast.error("Connection error."); }
+                    finally { setSendingAccuracy(false); }
+                  }} disabled={sendingAccuracy} className="px-5 py-2.5 bg-secondary text-white font-bold text-sm rounded-xl hover:opacity-90 transition-all disabled:opacity-50 shadow-md">
+                    {sendingAccuracy ? "Sending..." : "Send Report"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Support Modal */}
+          {supportModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setSupportModal(false)}>
+              <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+              <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-md p-6 md:p-8 border border-neutral-border animate-in fade-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
+                <h2 className="text-lg font-bold text-secondary mb-2">Notify Support</h2>
+                <p className="text-sm text-secondary/60 mb-4">Request the OctoSight admin to review and take action on this ticket.</p>
+                <textarea
+                  value={messageText}
+                  onChange={(e) => setMessageText(e.target.value)}
+                  placeholder="Describe what you need help with..."
+                  rows={4}
+                  className="w-full border-2 border-neutral-border rounded-xl p-3 text-sm outline-none focus:border-primary focus:ring-4 focus:ring-primary/5 resize-none mb-4"
+                />
+                <div className="flex items-center justify-end gap-3">
+                  <button onClick={() => setSupportModal(false)} className="px-5 py-2.5 bg-white border-2 border-neutral-border text-secondary font-bold text-sm rounded-xl hover:bg-neutral-page transition-all">Cancel</button>
+                  <button onClick={async () => {
+                    setSendingSupport(true);
+                    try {
+                      const res = await fetch(`/api/v1/tickets/${result.ticket_id}/notify-support`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ message: messageText }),
+                      });
+                      if (res.ok) { toast.success("Support request sent to admin."); setSupportModal(false); }
+                      else { toast.error("Failed to send request."); }
+                    } catch { toast.error("Connection error."); }
+                    finally { setSendingSupport(false); }
+                  }} disabled={sendingSupport} className="px-5 py-2.5 bg-secondary text-white font-bold text-sm rounded-xl hover:opacity-90 transition-all disabled:opacity-50 shadow-md">
+                    {sendingSupport ? "Sending..." : "Send Request"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
       {result.education_recommendation && (
-        <div className="bg-white rounded-3xl border border-neutral-border shadow-xl overflow-hidden">
-          <div
-            className={`h-1.5 ${result.risk_score >= 70 ? "bg-risk-high" : result.risk_score >= 40 ? "bg-risk-medium" : "bg-risk-low"}`}
-          ></div>
-          <div className="p-8">
-            <RiskEducationPanel recommendation={result.education_recommendation} />
+        <div className="bg-white rounded-3xl border border-neutral-border shadow-sm overflow-hidden">
+           <div
+             className={`h-1.5 ${(result.risk_score ?? 0) >= 75 ? "bg-risk-high" : (result.risk_score ?? 0) >= 35 ? "bg-risk-medium" : "bg-risk-low"}`}
+           ></div>
+          <div className="p-6 md:p-8">
+            <RiskEducationPanel
+              recommendation={result.education_recommendation}
+            />
           </div>
         </div>
       )}
+
+      {/* Report Timeline */}
+      <div className="bg-white rounded-3xl border border-neutral-border shadow-sm overflow-hidden">
+        <div
+          className={`h-1.5 ${(result.risk_score ?? 0) >= 70 ? "bg-risk-high" : (result.risk_score ?? 0) >= 40 ? "bg-risk-medium" : "bg-risk-low"}`}
+        />
+        <div className="p-6 md:p-8">
+          <div className="mb-4 md:mb-6 space-y-1">
+            <h3 className="text-lg md:text-xl font-bold text-secondary">
+              Report Timeline
+            </h3>
+            <p className="text-sm text-secondary/60 font-medium">
+              Live status updates and investigator actions
+            </p>
+          </div>
+          {logsLoading ? (
+            <div className="flex items-center gap-3 text-sm text-secondary/60 font-medium py-4 md:py-6">
+              <div className="size-5 border-2 border-secondary/20 border-t-secondary/60 rounded-full animate-spin" />
+              Loading timeline...
+            </div>
+          ) : (
+            <div className="py-2">
+              <TicketTimeline
+                auditLogs={auditLogs}
+                currentStatus={result.status}
+                submittedAt={result.created_at}
+              />
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

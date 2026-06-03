@@ -20,10 +20,10 @@ export const DownloadModal: React.FC<DownloadModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-secondary/40 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-8 animate-in zoom-in-95 duration-200 border border-neutral-border">
-        <div className="text-center mb-6">
-          <div className="w-14 h-14 bg-risk-high/10 text-risk-high rounded-full flex items-center justify-center mx-auto mb-4">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 md:p-4 bg-secondary/40 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 md:p-8 animate-in zoom-in-95 duration-200 border border-neutral-border">
+        <div className="text-center mb-4 md:mb-6">
+          <div className="w-10 h-10 md:w-14 md:h-14 bg-risk-high/10 text-risk-high rounded-full flex items-center justify-center mx-auto mb-4">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="h-7 w-7"
@@ -39,7 +39,7 @@ export const DownloadModal: React.FC<DownloadModalProps> = ({
               />
             </svg>
           </div>
-          <h3 className="text-xl font-bold text-secondary">
+          <h3 className="text-lg md:text-xl font-bold text-secondary">
             Secure Download
           </h3>
           <p className="text-secondary/60 text-sm mt-2 font-normal leading-relaxed">

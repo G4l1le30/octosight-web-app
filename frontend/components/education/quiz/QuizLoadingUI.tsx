@@ -23,13 +23,13 @@ export const QuizLoadingUI: React.FC = () => {
   
   return (
     <div className="container mx-auto px-4 min-h-[calc(100vh-120px)] flex flex-col items-center justify-center max-w-md">
-      <div className="bg-white p-8 rounded-2xl shadow-sm border border-neutral-border w-full text-center">
-        <div className="relative size-20 mx-auto mb-6 flex items-center justify-center bg-primary/10 rounded-full">
+      <div className="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-neutral-border w-full text-center">
+        <div className="relative size-20 mx-auto mb-4 md:mb-6 flex items-center justify-center bg-primary/10 rounded-full">
           <CurrentIcon className="size-10 text-primary animate-pulse" />
           <div className="absolute inset-0 border-4 border-primary/20 rounded-full border-t-primary animate-spin" />
         </div>
         
-        <h2 className="text-xl font-bold text-secondary mb-2">Generating Quiz</h2>
+        <h2 className="text-lg md:text-xl font-bold text-secondary mb-2">Generating Quiz</h2>
         
         <div className="h-2 w-full bg-neutral-border rounded-full overflow-hidden mb-4">
           <div 

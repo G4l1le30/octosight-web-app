@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { EducationModuleWithProgress } from "@/types/education";
 import { useAuth } from "@/lib/auth-context";
 import { Loader2, Lock, CheckCircle2, BookOpen } from "lucide-react";
-import { AuthRequired } from "@/components/auth/AuthRequired";
 import { Button } from "@/components/ui/Button";
 
 export default function EducationPage() {
@@ -15,10 +14,8 @@ export default function EducationPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (user) {
-      fetchModules();
-    }
-  }, [user]);
+    fetchModules();
+  }, []);
 
   const fetchModules = async () => {
     try {
@@ -42,51 +39,51 @@ export default function EducationPage() {
     );
   }
 
-  if (!user) {
-    return <AuthRequired description="Please log in to access the security microlearning modules." />;
-  }
-
   let totalPercentage = 0;
 
-  modules.forEach((mod) => {
-    const moduleTotal = (mod.articles?.length || 0) + 1;
-    let moduleCompleted = mod.articles?.filter((a) => a.is_read).length || 0;
-    const moduleIsPassed = mod.status === "COMPLETED" || (mod.quiz_score !== null && mod.quiz_score !== undefined && mod.quiz_score >= 70);
-    if (moduleIsPassed) {
-      moduleCompleted += 1;
-    }
-    totalPercentage += (moduleCompleted / moduleTotal);
-  });
+  if (user) {
+    modules.forEach((mod) => {
+      const moduleTotal = (mod.articles?.length || 0) + 1;
+      let moduleCompleted = mod.articles?.filter((a) => a.is_read).length || 0;
+      const moduleIsPassed = mod.status === "COMPLETED" || (mod.quiz_score !== null && mod.quiz_score !== undefined && mod.quiz_score >= 70);
+      if (moduleIsPassed) {
+        moduleCompleted += 1;
+      }
+      totalPercentage += (moduleCompleted / moduleTotal);
+    });
+  }
 
   const progressPercent = Math.round((totalPercentage / 8) * 100);
   const completedModulesCount = modules.filter((m) => m.status === "COMPLETED").length;
   const totalModulesCount = modules.length;
 
   return (
-    <div className="container mx-auto px-4 py-12 max-w-6xl">
-      <div className="flex flex-col md:flex-row items-end justify-between gap-6 mb-12">
+    <div className="container mx-auto px-4 py-8 md:py-12 max-w-6xl">
+      <div className="flex flex-col md:flex-row items-end justify-between gap-4 md:gap-6 mb-8 md:mb-12">
         <div className="max-w-2xl">
-          <h1 className="text-4xl font-bold mb-4">Security Microlearning</h1>
+          <h1 className="text-3xl md:text-4xl font-bold mb-4">Security Microlearning</h1>
           <p className="font-medium text-secondary-light">
             Improve your digital literacy with bite-sized security modules
             designed to prevent fraud and phishing.
           </p>
         </div>
-        <div className="bg-primary/5 p-4 rounded-xl border border-primary/10 flex items-center gap-4">
-          <div className="text-right">
-            <p className="text-sm font-bold text-secondary">Learning Progress</p>
-            <p className="text-xl font-bold text-primary">
-              {completedModulesCount} / {totalModulesCount} Modules
-            </p>
+        {user && (
+          <div className="bg-primary/5 p-4 rounded-xl border border-primary/10 flex items-center gap-4">
+            <div className="text-right">
+              <p className="text-sm font-bold text-secondary">Learning Progress</p>
+              <p className="text-lg md:text-xl font-bold text-primary">
+                {completedModulesCount} / {totalModulesCount} Modules
+              </p>
+            </div>
+            <div className="w-10 h-10 md:w-14 md:h-14 rounded-full border-4 border-primary/20 flex items-center justify-center text-lg font-bold text-primary relative overflow-hidden bg-white">
+              <div 
+                className="absolute bottom-0 left-0 right-0 bg-primary/20" 
+                style={{ height: `${progressPercent}%` }}
+              />
+              <span className="relative z-10">{progressPercent}%</span>
+            </div>
           </div>
-          <div className="w-14 h-14 rounded-full border-4 border-primary/20 flex items-center justify-center text-lg font-bold text-primary relative overflow-hidden bg-white">
-            <div 
-              className="absolute bottom-0 left-0 right-0 bg-primary/20" 
-              style={{ height: `${progressPercent}%` }}
-            />
-            <span className="relative z-10">{progressPercent}%</span>
-          </div>
-        </div>
+        )}
       </div>
 
       <div className="max-w-6xl mx-auto mt-16">
@@ -118,7 +115,7 @@ export default function EducationPage() {
                     <div className="w-full md:w-1/2 md:pr-12 z-10">
                       <div 
                         onClick={() => router.push(`/edu/${mod.id}`)}
-                        className={`card bg-white p-6 cursor-pointer border hover:border-primary hover:shadow-lg transition-all overflow-hidden relative ${
+                        className={`card bg-white p-4 md:p-6 cursor-pointer border hover:border-primary hover:shadow-lg transition-all overflow-hidden relative ${
                           isLocked ? "border-neutral-border bg-neutral-page/50" : "border-neutral-border shadow-sm"
                         }`}
                       >
@@ -135,7 +132,7 @@ export default function EducationPage() {
                           </div>
                         </div>
 
-                        <h3 className={`text-xl font-bold mb-4 leading-tight ${isLocked ? "text-secondary" : "text-secondary"}`}>
+                        <h3 className={`text-lg md:text-xl font-bold mb-4 leading-tight ${isLocked ? "text-secondary" : "text-secondary"}`}>
                           {mod.title}
                         </h3>
 
@@ -187,7 +184,7 @@ export default function EducationPage() {
                     </div>
 
                     {/* Center Node */}
-                    <div className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center justify-center w-12 h-12 rounded-full bg-neutral-page border-4 border-white shadow-sm z-20">
+                    <div className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center justify-center w-8 h-8 md:w-12 md:h-12 rounded-full bg-neutral-page border-4 border-white shadow-sm z-20">
                       <div className={`w-full h-full rounded-full flex items-center justify-center ${
                         isLocked ? "bg-neutral-border text-secondary/40" :
                         "bg-primary text-white"
@@ -200,7 +197,7 @@ export default function EducationPage() {
 
                     {/* Right Column: Title & Description */}
                     <div className="w-full md:w-1/2 md:pl-12 hidden md:flex flex-col justify-center py-4">
-                      <h3 className={`text-xl font-bold mb-3 ${isLocked ? "text-secondary" : "text-secondary"}`}>
+                      <h3 className={`text-lg md:text-xl font-bold mb-3 ${isLocked ? "text-secondary" : "text-secondary"}`}>
                         {subTitle}
                       </h3>
                       <p className={`font-medium leading-relaxed ${isLocked ? "text-secondary/50" : "text-secondary-light"}`}>
@@ -216,7 +213,7 @@ export default function EducationPage() {
 
         {/* Continue Learning Action */}
         {!loading && modules.length > 0 && (
-          <div className="mt-16 mb-10 text-center border-t border-neutral-border pt-12">
+          <div className="mt-16 mb-8 md:mb-10 text-center border-t border-neutral-border pt-12">
             <h3 className="text-3xl font-bold mb-4">Ready to continue your journey?</h3>
             <p className="text-secondary mb-8 max-w-xl mx-auto">
               Pick up where you left off and keep improving your security awareness.

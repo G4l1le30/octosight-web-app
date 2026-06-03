@@ -7,7 +7,7 @@ interface DashboardStatsCardsProps {
 
 export const DashboardStatsCards: React.FC<DashboardStatsCardsProps> = ({ stats }) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
       {[
         {
           label: "Total Incidents",
@@ -30,11 +30,11 @@ export const DashboardStatsCards: React.FC<DashboardStatsCardsProps> = ({ stats 
           color: "text-risk-low",
         },
       ].map((stat, idx) => (
-        <div key={idx} className="card p-6 border-b-4 border-b-primary/10">
-          <p className="text-sm font-bold text-secondary mb-1 tracking-wide">
+        <div key={idx} className="card p-4 md:p-6 border-b-4 border-b-primary/10 text-center">
+          <p className="text-xs font-semibold text-secondary/40 mb-1">
             {stat.label}
           </p>
-          <h3 className={`text-3xl font-bold ${stat.color}`}>
+          <h3 className={`text-2xl md:text-3xl font-bold ${stat.color}`}>
             {stat.value}
           </h3>
         </div>

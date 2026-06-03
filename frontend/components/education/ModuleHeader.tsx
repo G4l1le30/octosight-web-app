@@ -8,7 +8,7 @@ interface ModuleHeaderProps {
 
 export const ModuleHeader: React.FC<ModuleHeaderProps> = ({ module }) => {
   return (
-    <div className="bg-white border border-neutral-border rounded-2xl p-6 shadow-sm mb-8">
+    <div className="bg-white border border-neutral-border rounded-2xl p-4 md:p-6 shadow-sm mb-6 md:mb-8">
       <p className="text-secondary-light leading-relaxed font-medium mb-6">
         {module.description}
       </p>

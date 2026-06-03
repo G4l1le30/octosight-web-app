@@ -15,7 +15,7 @@ export const RiskEducationPanel: React.FC<RiskEducationPanelProps> = ({
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
-        <h3 className="text-xl font-bold text-secondary">
+        <h3 className="text-lg md:text-xl font-bold text-secondary">
           Security Recommendations
         </h3>
         <div className="flex items-center gap-1.5 px-0 py-0 bg-transparent">
@@ -25,7 +25,7 @@ export const RiskEducationPanel: React.FC<RiskEducationPanelProps> = ({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
         {/* Warnings */}
         {recommendation.warnings && recommendation.warnings.length > 0 && (
           <div className="bg-white border border-neutral-border rounded-2xl p-4">
@@ -76,7 +76,7 @@ export const RiskEducationPanel: React.FC<RiskEducationPanelProps> = ({
               <Lightbulb className="size-5" />
               <h4 className="font-bold">Prevention Tips</h4>
             </div>
-            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-3">
               {recommendation.tips.map((tip, idx) => (
                 <li
                   key={idx}
@@ -107,7 +107,7 @@ export const RiskEducationPanel: React.FC<RiskEducationPanelProps> = ({
                 View all modules
               </Link>
             </div>
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-2 md:gap-3">
               {recommendation.relevant_modules.map((m: any, idx) => {
                 // Handle both legacy (number) and new (object) formats
                 const id = typeof m === "object" ? m.id : m;

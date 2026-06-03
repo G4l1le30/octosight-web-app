@@ -1,17 +1,69 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { Ticket, DashboardStats } from "@/types/ticket";
 import { ThreatTable } from "@/components/admin/ThreatTable";
 import { DashboardStatsCards } from "@/components/admin/dashboard/DashboardStatsCards";
-import { IncidentTrendChart } from "@/components/admin/dashboard/IncidentTrendChart";
+import { IncidentTrendChart, TimeRange } from "@/components/admin/dashboard/IncidentTrendChart";
 import { ThreatChannelChart } from "@/components/admin/dashboard/ThreatChannelChart";
 import { SecurityFlagAnalysis } from "@/components/admin/dashboard/SecurityFlagAnalysis";
+import { ActivityFeed } from "@/components/admin/dashboard/ActivityFeed";
+import { TeamPerformance } from "@/components/admin/dashboard/TeamPerformance";
+
+function buildTrendData(tickets: Ticket[], range: TimeRange) {
+  const now = new Date();
+  const buckets: { name: string; start: Date; end: Date }[] = [];
+
+  if (range === "7d") {
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - i);
+      d.setHours(0, 0, 0, 0);
+      const next = new Date(d);
+      next.setDate(next.getDate() + 1);
+      buckets.push({ name: d.toLocaleDateString("en-US", { weekday: "short" }), start: d, end: next });
+    }
+  } else if (range === "1m") {
+    for (let i = 3; i >= 0; i--) {
+      const end = new Date(now);
+      end.setDate(end.getDate() - i * 7);
+      const start = new Date(end);
+      start.setDate(start.getDate() - 7);
+      buckets.push({
+        name: `Week ${4 - i}`,
+        start,
+        end,
+      });
+    }
+  } else {
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now);
+      d.setMonth(d.getMonth() - i, 1);
+      d.setHours(0, 0, 0, 0);
+      const end = new Date(d);
+      end.setMonth(end.getMonth() + 1);
+      buckets.push({
+        name: d.toLocaleDateString("en-US", { month: "short" }),
+        start: d,
+        end,
+      });
+    }
+  }
+
+  return buckets.map((b) => ({
+    name: b.name,
+    incidents: tickets.filter((t) => {
+      const d = new Date(t.created_at);
+      return d >= b.start && d < b.end;
+    }).length,
+  }));
+}
 
 export default function AdminDashboard() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
+  const [timeRange, setTimeRange] = useState<TimeRange>("7d");
   const [stats, setStats] = useState<DashboardStats>({
     total: 0,
     avgScore: "0",
@@ -32,8 +84,9 @@ export default function AdminDashboard() {
         throw new Error(`Server returned an error (${response.status})`);
       }
 
-      const data = await response.json();
-      const sorted = data.sort((a: Ticket, b: Ticket) => 
+      const raw = await response.json();
+      const list: Ticket[] = Array.isArray(raw) ? raw : (raw.items ?? raw.tickets ?? []);
+      const sorted = list.sort((a: Ticket, b: Ticket) =>
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       );
       setTickets(sorted);
@@ -56,17 +109,13 @@ export default function AdminDashboard() {
     const avgScore = (
       data.reduce((acc, t) => acc + t.risk_score, 0) / total
     ).toFixed(1);
-    const highRisk = data.filter((t) => t.risk_score > 70).length;
+    const highRisk = data.filter((t) => t.risk_score >= 75).length;
 
-    // Type Distribution
     const types: Record<string, number> = {};
     const flags: Record<string, number> = {};
 
     data.forEach((t) => {
-      // Channel Distribution
       types[t.type] = (types[t.type] || 0) + 1;
-
-      // Flag Distribution
       if (t.flags) {
         t.flags.split(",").forEach((f) => {
           const cleanFlag = f.trim();
@@ -83,27 +132,10 @@ export default function AdminDashboard() {
       .map(([name, value]) => ({ name: name.replace(/_/g, " "), value }))
       .sort((a, b) => b.value - a.value);
 
-    // Simple Trend (by date)
-    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-    const trend: Record<string, number> = {};
-    // Init last 7 days
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      trend[days[d.getDay()]] = 0;
-    }
-    data.forEach((t) => {
-      const d = new Date(t.created_at);
-      const dayName = days[d.getDay()];
-      if (trend[dayName] !== undefined) trend[dayName]++;
-    });
-    const trendData = Object.entries(trend).map(([name, incidents]) => ({
-      name,
-      incidents,
-    }));
-
-    setStats({ total, avgScore, highRisk, typeDist, trendData, flagDist });
+    setStats({ total, avgScore, highRisk, typeDist, trendData: [], flagDist });
   };
+
+  const trendData = useMemo(() => buildTrendData(tickets, timeRange), [tickets, timeRange]);
 
   if (loading)
     return (
@@ -114,10 +146,10 @@ export default function AdminDashboard() {
 
   return (
     <div className="bg-neutral-page min-h-screen">
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+      <div className="container mx-auto px-4 py-6 md:py-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4 mb-6 md:mb-8">
           <div>
-            <h1 className="text-3xl font-bold mb-2">
+            <h1 className="text-2xl md:text-3xl font-bold mb-2">
               Threat Intelligence Dashboard
             </h1>
             <p className="text-secondary-light">
@@ -149,19 +181,35 @@ export default function AdminDashboard() {
 
         <DashboardStatsCards stats={stats} />
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          <IncidentTrendChart trendData={stats.trendData} />
+        {/* Row 1: Incident Trend + Threat Channel */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 mb-6 md:mb-8">
+          <IncidentTrendChart
+            trendData={trendData}
+            timeRange={timeRange}
+            onTimeRangeChange={setTimeRange}
+          />
           <ThreatChannelChart typeDist={stats.typeDist} />
         </div>
 
-        <div className="grid grid-cols-1 gap-8 mb-8">
-          <SecurityFlagAnalysis flagDist={stats.flagDist} />
+        {/* Row 2: Activity Feed (left) + Security Flag Analysis (right) */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 mb-6 md:mb-8">
+          <div className="order-1 md:order-1">
+            <ActivityFeed />
+          </div>
+          <div className="order-2 md:order-2">
+            <SecurityFlagAnalysis flagDist={stats.flagDist} />
+          </div>
+        </div>
+
+        {/* Row 3: Team Performance */}
+        <div className="mb-6 md:mb-8">
+          <TeamPerformance />
         </div>
 
         {/* Recent Alerts Table Preview */}
-        <div className="mb-8 card overflow-hidden">
-          <div className="px-8 py-5 border-b border-neutral-border flex items-center justify-between bg-white">
-            <h3 className="font-bold text-xl text-secondary">
+        <div className="mb-6 md:mb-8 card overflow-hidden">
+          <div className="px-6 md:px-8 py-4 md:py-5 border-b border-neutral-border flex items-center justify-between bg-white">
+            <h3 className="font-bold text-lg md:text-xl text-secondary">
               Live Threat Feed
             </h3>
             <Link
@@ -171,7 +219,7 @@ export default function AdminDashboard() {
               See Full Triage →
             </Link>
           </div>
-          <ThreatTable 
+          <ThreatTable
             tickets={tickets.slice(0, 5)}
             loading={loading}
           />

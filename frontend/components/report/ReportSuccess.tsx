@@ -26,7 +26,7 @@ export default function ReportSuccess({
   };
 
   return (
-    <div className="flex flex-col items-center justify-center py-8 px-4 sm:px-6 md:px-8 animate-in fade-in zoom-in duration-500">
+    <div className="flex flex-col items-center justify-center py-6 md:py-8 px-4 sm:px-6 md:px-8 animate-in fade-in zoom-in duration-500">
       {/* Main Success Card */}
       <div className="w-full max-w-2xl bg-white rounded-3xl shadow-xl border border-neutral-border flex flex-col items-center p-8 sm:p-10 md:p-12 relative overflow-hidden">
         {/* Success Icon Group */}
@@ -39,7 +39,7 @@ export default function ReportSuccess({
         </div>
 
         {/* Header Text */}
-        <div className="text-center space-y-4 mb-10">
+        <div className="text-center space-y-4 mb-8 md:mb-10">
           <h1 className="text-3xl md:text-4xl font-bold text-secondary">
             Report Submitted Successfully!
           </h1>
@@ -50,7 +50,7 @@ export default function ReportSuccess({
         </div>
 
         {/* Ticket Reference Card */}
-        <div className="w-full border-2 border-neutral-border rounded-3xl p-6 md:p-8 mb-10 relative group">
+        <div className="w-full border-2 border-neutral-border rounded-3xl p-6 md:p-8 mb-8 md:mb-10 relative group">
           <p className="text-md font-bold text-secondary mb-4 text-center">
             Ticket Reference
           </p>
@@ -59,7 +59,7 @@ export default function ReportSuccess({
               <h2 className="text-lg md:text-xl font-semibold text-secondary text-center">
                 Ticket ID:
               </h2>
-              <div className="flex items-center justify-center gap-3">
+              <div className="flex items-center justify-center gap-2 md:gap-3">
                 <span className="text-xl md:text-2xl font-bold text-primary break-all">
                   {ticketData.ticket_id}
                 </span>
@@ -109,7 +109,7 @@ export default function ReportSuccess({
         </div>
 
         {/* Footer Divider */}
-        <div className="w-full h-px bg-neutral-border my-10" />
+        <div className="w-full h-px bg-neutral-border my-8 md:my-10" />
 
         {/* Trust Badges */}
         <div className="flex flex-wrap justify-center gap-6 md:gap-10">

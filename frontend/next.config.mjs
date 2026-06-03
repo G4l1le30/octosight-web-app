@@ -1,6 +1,22 @@
 /** @type {import('next').NextConfig} */
+const internalApiUrl =
+  process.env.INTERNAL_API_URL ||
+  process.env.NEXT_PUBLIC_API_URL ||
+  "http://backend:8000";
+
 const nextConfig = {
-  output: 'standalone',
+  ...(process.env.NODE_ENV === 'production' ? { output: 'standalone' } : {}),
+  // Allow external images from Supabase Storage
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'tvhahvigtjlzwvmmfylb.supabase.co',
+        port: '',
+        pathname: '/storage/v1/object/sign/**',
+      },
+    ],
+  },
   // Allow the /api/analyze route to receive large image uploads (up to 20 MB)
   experimental: {
     serverActions: {
@@ -9,6 +25,15 @@ const nextConfig = {
   },
   async headers() {
     return [
+      {
+        source: '/(login|register)(/.*)?',
+        headers: [
+          {
+            key: 'Cross-Origin-Opener-Policy',
+            value: 'unsafe-none',
+          },
+        ],
+      },
       {
         source: '/(.*)',
         headers: [
@@ -44,11 +69,11 @@ const nextConfig = {
     return [
       {
         source: '/api/v1/:path*',
-        destination: `${process.env.NEXT_PUBLIC_API_URL || 'http://backend:8000'}/api/v1/:path*`,
+        destination: `${internalApiUrl}/api/v1/:path*`,
       },
       {
         source: '/uploads/:path*',
-        destination: `${process.env.NEXT_PUBLIC_API_URL || 'http://backend:8000'}/uploads/:path*`,
+        destination: `${internalApiUrl}/uploads/:path*`,
       },
     ];
   },

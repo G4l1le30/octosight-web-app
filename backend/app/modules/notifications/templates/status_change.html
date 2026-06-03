@@ -1,0 +1,218 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: #f9fafb;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .wrapper {
+      width: 100%;
+      table-layout: fixed;
+      background-color: #f9fafb;
+      padding-bottom: 40px;
+    }
+
+    .container {
+      max-width: 600px;
+      background-color: #ffffff;
+      margin: 40px auto;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      border: 1px solid #e5e7eb;
+    }
+
+    .header {
+      background-color: #ffffff;
+      padding: 40px 40px 20px 40px;
+      text-align: left;
+    }
+
+    .logo-text {
+      color: #e31e24;
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .content {
+      padding: 0 40px 40px 40px;
+      color: #374151;
+      line-height: 1.6;
+    }
+
+    .title {
+      font-size: 22px;
+      font-weight: 700;
+      color: #111827;
+      margin-bottom: 24px;
+    }
+
+    .message {
+      font-size: 16px;
+      color: #4b5563;
+      margin-bottom: 24px;
+    }
+
+    .status-box {
+      background-color: #f3f4f6;
+      padding: 24px;
+      border-radius: 8px;
+      margin: 24px 0;
+      border: 1px solid #e5e7eb;
+    }
+
+    .status-row {
+      display: block;
+      margin-bottom: 12px;
+      font-size: 15px;
+      color: #4b5563;
+    }
+
+    .label {
+      font-weight: 600;
+      color: #6b7280;
+      display: inline-block;
+      width: 150px;
+    }
+
+    .value {
+      color: #111827;
+      font-weight: 500;
+    }
+
+    .status-new {
+      font-size: 18px;
+      font-weight: 700;
+      color: #047857;
+      text-transform: uppercase;
+      display: inline-block;
+      padding-left: 8px;
+    }
+
+    .notes {
+      background-color: #ffffff;
+      padding: 16px;
+      border-radius: 6px;
+      margin-top: 20px;
+      border-left: 4px solid #e31e24;
+      font-size: 14px;
+      color: #374151;
+    }
+
+    .footer {
+      background-color: #f3f4f6;
+      padding: 32px 40px;
+      text-align: left;
+      border-top: 1px solid #e5e7eb;
+    }
+
+    .footer-text {
+      font-size: 13px;
+      color: #6b7280;
+      line-height: 1.5;
+    }
+
+    .footer-address {
+      margin-top: 16px;
+      font-size: 12px;
+      color: #9ca3af;
+    }
+
+    @media only screen and (max-width: 600px) {
+      .container {
+        margin: 0;
+        border-radius: 0;
+      }
+
+      .header,
+      .content,
+      .footer {
+        padding: 30px 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrapper">
+    <div class="container">
+      <div class="header">
+        <div class="logo-text">OCTOSIGHT</div>
+      </div>
+
+      <div class="content">
+        <h1 class="title">Status Update</h1>
+        <p class="message">
+          Hello,<br /><br />
+          Your report status for ticket ID <strong>{{ ticket_id }}</strong> has been updated by the OctoSight Admin.
+        </p>
+
+        <div class="status-box">
+          <div class="status-row">
+            <span class="label">Report Type:</span>
+            <span class="value">{{ type }}</span>
+          </div>
+          <div class="status-row">
+            <span class="label">URL/Indicator:</span>
+            <span class="value">{{ url }}</span>
+          </div>
+          <div class="status-row">
+            <span class="label">Sender:</span>
+            <span class="value">{{ sender_numbers }}</span>
+          </div>
+          {% if bank_name or bank_account %}
+          <div class="status-row">
+            <span class="label">Bank Account:</span>
+            <span class="value">{% if bank_name %}{{ bank_name }}{% endif %}{% if bank_name and bank_account %} / {% endif %}{% if bank_account %}{{ bank_account }}{% endif %}</span>
+          </div>
+          {% endif %}
+          {% if reference_number %}
+          <div class="status-row">
+            <span class="label">Reference No:</span>
+            <span class="value">{{ reference_number }}</span>
+          </div>
+          {% endif %}
+          <div class="status-row">
+            <span class="label">Risk Score:</span>
+            <span class="value">{{ risk_score }}% ({{ priority }})</span>
+          </div>
+          <div class="status-row">Previous status: <s>{{ old_status }}</s></div>
+          <div class="status-row" style="margin-bottom: 0;">Current status: <span class="status-new">{{ new_status
+              }}</span></div>
+
+          {% if notes %}
+          <div class="notes">
+            <strong style="color: #111827; display: block; margin-bottom: 4px;">Admin Notes:</strong>
+            {{ notes }}
+          </div>
+          {% endif %}
+        </div>
+
+        <p class="message" style="margin-bottom: 0">
+          Please visit the OctoSight dashboard to view further details.
+        </p>
+      </div>
+
+      <div class="footer">
+        <div class="footer-text">
+          <strong>OctoSight Anti-Phishing & Fraud System</strong><br />
+          Protecting your digital banking with AI and real-time analysis.
+        </div>
+        <div class="footer-address">
+          OctoSight Office, Jakarta, Indonesia
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>

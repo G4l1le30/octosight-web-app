@@ -4,8 +4,8 @@ import { useState, useEffect } from "react";
 import { SearchBar } from "@/components/ui/SearchBar";
 import { Ticket } from "@/types/ticket";
 import { useAuth } from "@/lib/auth-context";
-import { AlertTriangle, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { AuthRequired } from "@/components/auth/AuthRequired";
 import { ReportHistory } from "@/components/status/ReportHistory";
 
@@ -42,9 +42,8 @@ export default function StatusPage() {
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!ticketId) return;
-    
+
     setLoading(true);
-    setError("");
 
     try {
       const response = await fetch(`/api/v1/tickets/${ticketId}`);
@@ -55,7 +54,7 @@ export default function StatusPage() {
       const data = await response.json();
       router.push(`/report/${data.ticket_id}`);
     } catch (err: any) {
-      setError(err.message);
+      toast.error(err.message);
     } finally {
       setLoading(false);
     }
@@ -76,25 +75,25 @@ export default function StatusPage() {
 
   if (!user) {
     return (
-      <AuthRequired 
+      <AuthRequired
         description="Please log in to your account to track your report progress and view your submission history."
       />
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-12 max-w-6xl">
-      <div className="mb-12 text-center">
-        <h1 className="text-4xl font-bold mb-4 text-secondary">Track Your Reports</h1>
+    <div className="container mx-auto px-4 py-8 md:py-12 max-w-6xl">
+      <div className="mb-8 md:mb-12 text-center">
+        <h1 className="text-3xl md:text-4xl font-bold mb-4 text-secondary">Track Your Reports</h1>
         <p className="text-secondary opacity-70 font-medium max-w-xl mx-auto">
           Enter a Ticket ID manually or select from your recent submission history below.
         </p>
       </div>
 
-      <div className="grid gap-8">
+      <div className="grid gap-6 md:gap-8">
         {/* Search Section */}
-        <div className="card p-5 shadow-xl border-neutral-border">
-          <SearchBar 
+        <div className="card p-4 md:p-5 shadow-xl border-neutral-border">
+          <SearchBar
             value={ticketId}
             onChange={setTicketId}
             onSearch={handleSearch}
@@ -105,16 +104,8 @@ export default function StatusPage() {
           />
         </div>
 
-        {/* Error Message */}
-        {error && (
-          <div className="bg-risk-high/10 text-risk-high p-4 rounded-xl font-bold text-xs text-center border border-risk-high/20">
-            <AlertTriangle className="inline-block size-4 mr-2 -mt-0.5" />
-            {error}
-          </div>
-        )}
-
         {/* History Section */}
-        <ReportHistory 
+        <ReportHistory
           history={history}
           loading={historyLoading}
           onSelect={selectTicket}

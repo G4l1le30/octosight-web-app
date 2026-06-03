@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import ReportSuccess from "@/components/report/ReportSuccess";
@@ -8,8 +8,11 @@ import { ReportConfirmation } from "@/components/report/ReportConfirmation";
 import { Ticket, ReportFormData, IncidentType } from "@/types/ticket";
 import { IncidentSchemas } from "@/modules/report/schemas";
 import { useAuth } from "@/lib/auth-context";
-import { AuthRequired } from "@/components/auth/AuthRequired";
 import { ReportForm } from "@/components/report/ReportForm";
+import { ProcessingAnimation } from "@/components/ui/ProcessingAnimation";
+import { toast } from "sonner";
+import { sanitizeText } from "@/lib/sanitize";
+import { useRouter } from "next/navigation";
 
 const getLocalISOString = () => {
   const now = new Date();
@@ -19,57 +22,98 @@ const getLocalISOString = () => {
 
 const DYNAMIC_CONTENT = {
   SMS: {
-    urlLabel: "Link in SMS",
+    urlLabel: "Link in SMS (Optional)",
     urlPlaceholder: "https://bit.ly/claim-prize",
-    senderLabel: "Sender Phone Number",
+    senderLabel: "Sender Phone Number (Required)",
     senderPlaceholder: "e.g., +62 812..., 0812...",
-    summaryLabel: "Full Message Content",
+    summaryLabel: "Full Message Content (Required if no screenshot)",
     summaryPlaceholder: "Paste the exact SMS text you received here...",
-    fileLabel: "SMS Screenshot",
+    fileLabel: "SMS Screenshots",
   },
   WhatsApp: {
-    urlLabel: "Link in WhatsApp",
+    urlLabel: "Link in WhatsApp (Optional)",
     urlPlaceholder: "https://wa.me/message/...",
-    senderLabel: "WhatsApp Number / Group",
-    senderPlaceholder: "e.g., +62 812... or Phishing Group Name",
-    summaryLabel: "Full Message Content",
+    senderLabel: "WhatsApp Number (Required)",
+    senderPlaceholder: "e.g., +62 812...",
+    summaryLabel: "Full Message Content (Required if no screenshot)",
     summaryPlaceholder: "Paste the exact WhatsApp message here...",
-    fileLabel: "Chat Screenshot",
+    fileLabel: "Chat Screenshots",
   },
   Email: {
-    urlLabel: "Link in Email",
+    urlLabel: "Link in Email (Optional)",
     urlPlaceholder: "https://cimb-security-update.com",
-    senderLabel: "Sender Email Address",
+    senderLabel: "Sender Email Address (Required)",
     senderPlaceholder: "e.g., support@secure-cimb.xyz",
-    summaryLabel: "Full Message Content",
+    summaryLabel: "Full Message Content (Required if no screenshot)",
     summaryPlaceholder: "Paste the email body or sub-headers here...",
-    fileLabel: "Email Screenshot",
+    fileLabel: "Email Screenshots",
   },
   Website: {
-    urlLabel: "Suspicious URL / Link",
+    urlLabel: "Suspicious URL / Link (Required)",
     urlPlaceholder: "https://clmbniaga.com/login",
-    senderLabel: "Sender Information",
-    senderPlaceholder: "Optional info about the sender",
-    summaryLabel: "Full Message Content",
-    summaryPlaceholder: "Describe how you found this website or paste the referring message...",
-    fileLabel: "Evidence Screenshot",
+    senderLabel: "Source Information (Optional)",
+    senderPlaceholder: "e.g., Found on Facebook ad, pop-up, etc.",
+    summaryLabel: "Additional Context (Optional)",
+    summaryPlaceholder: "Describe how you found this website...",
+    fileLabel: "Evidence Screenshots",
+    urlRequired: true,
+  },
+  Transaction: {
+    urlLabel: "Transaction URL / Link (Optional)",
+    urlPlaceholder: "https://cimbniaga.co.id",
+    senderLabel: "Target Account Number (Required)",
+    senderPlaceholder: "e.g., 706123456789",
+    summaryLabel: "Transaction Context (Required if no screenshot)",
+    summaryPlaceholder: "Describe the transfer context here...",
+    fileLabel: "Evidence / Receipts",
   },
 };
 
 export default function ReportPage() {
+  const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [ticketData, setTicketData] = useState<Ticket | null>(null);
   const [isConfirming, setIsConfirming] = useState(false);
-  const [confirmedData, setConfirmedData] = useState<ReportFormData | null>(null);
+  const [confirmedData, setConfirmedData] = useState<ReportFormData | null>(
+    null,
+  );
   const [analysisResult, setAnalysisResult] = useState<any>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const [incidentType, setIncidentType] = useState<IncidentType>("Website");
-  const [screenshots, setScreenshots] = useState<File[]>([]);
+
+  // Restore pending report data from localStorage on initial load
+  useEffect(() => {
+    try {
+      const savedData = localStorage.getItem('pendingReportData');
+      if (savedData) {
+        const parsedData = JSON.parse(savedData);
+        if (parsedData.confirmedData) {
+          setConfirmedData(parsedData.confirmedData);
+          setAnalysisResult(parsedData.analysisResult);
+          setIncidentType(parsedData.incidentType);
+          // Note: File objects can't be stored in localStorage, so user will need to reselect them
+          setScreenshotFile(null);
+          setAttachmentFile(null);
+          setScreenshotError(parsedData.screenshotError || false);
+          setIsConfirming(true);
+          // Clear the saved data after restoring
+          localStorage.removeItem('pendingReportData');
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to restore report data from localStorage:', e);
+      localStorage.removeItem('pendingReportData');
+    }
+  }, []);
+
+  // Store raw File objects — no upload until final submit
+  const [screenshotFile, setScreenshotFile] = useState<File | null>(null);
+  const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
   const [screenshotError, setScreenshotError] = useState(false);
-  const [attachments, setAttachments] = useState<File[]>([]);
 
   const dynamic = DYNAMIC_CONTENT[incidentType];
 
@@ -91,11 +135,26 @@ export default function ReportPage() {
     } as any,
   });
 
+  /**
+   * Step 1 — Pre-analysis (no DB write).
+   * Sends files directly as multipart so the backend can OCR them.
+   */
   const onSubmit = async (data: ReportFormData) => {
-    if (!data.summary?.trim() && screenshots.length === 0) {
-      form.setError("summary", { 
-        type: "manual", 
-        message: "Required: Please provide message text or upload a screenshot." 
+    if (!data.summary?.trim() && !screenshotFile) {
+      form.setError("summary", {
+        type: "manual",
+        message:
+          "Required: Please provide message text or upload a screenshot.",
+      });
+      setScreenshotError(true);
+      return;
+    }
+
+    if (!screenshotFile && data.summary && data.summary.trim().length < 50) {
+      form.setError("summary", {
+        type: "manual",
+        message:
+          "Please describe the incident in at least 50 characters for accurate analysis.",
       });
       setScreenshotError(true);
       return;
@@ -103,21 +162,30 @@ export default function ReportPage() {
 
     setScreenshotError(false);
     setLoading(true);
-    setError("");
+
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     try {
       const payload = new FormData();
-      payload.append("report_type", incidentType);
-      payload.append("url", data.url || "");
-      payload.append("summary", data.summary || "");
-      payload.append("sender_numbers", data.senderNumbers || "");
-      payload.append("attachment_names", JSON.stringify(attachments.map((a) => a.name)));
-      // Include screenshots so OCR is factored into the preview score.
-      // Uses /api/analyze (Next.js proxy route) to correctly forward binary files.
-      screenshots.forEach((file) => payload.append("screenshots", file));
+      payload.append("report_type", sanitizeText(incidentType));
+      payload.append("url", sanitizeText(data.url || ""));
+      payload.append("summary", sanitizeText(data.summary || ""));
+      payload.append("sender_numbers", sanitizeText(data.senderNumbers || ""));
+      payload.append("bank_name", sanitizeText(data.bankName || ""));
+      payload.append("bank_account", sanitizeText(data.bankAccount || ""));
+      payload.append("reference_number", sanitizeText(data.referenceNumber || ""));
+
+      // Attach raw files — backend receives them as UploadFile (no Supabase yet)
+      if (screenshotFile)
+        payload.append("screenshots", screenshotFile, screenshotFile.name);
+      if (attachmentFile)
+        payload.append("attachments", attachmentFile, attachmentFile.name);
 
       const response = await fetch("/api/analyze", {
         method: "POST",
         body: payload,
+        signal: controller.signal,
       });
 
       if (!response.ok) throw new Error("Pre-analysis failed");
@@ -127,27 +195,54 @@ export default function ReportPage() {
       setConfirmedData(data);
       setIsConfirming(true);
     } catch (err: any) {
-      setError(err.message);
+      if (err.name === "AbortError") return;
+      toast.error(err.message);
     } finally {
       setLoading(false);
+      abortControllerRef.current = null;
     }
   };
 
-  const handleFinalSubmit = async () => {
-    if (!confirmedData) return;
-    setLoading(true);
-    setError("");
+  /**
+   * Step 2 — Final submit (writes to DB + uploads files to Supabase on backend).
+   * Files are sent as raw multipart; backend handles Supabase upload atomically.
+   */
+   const handleFinalSubmit = async () => {
+     if (!confirmedData) return;
+     if (!user) {
+       // Save form data to localStorage before redirecting to login (exclude File objects)
+       const reportData = {
+         confirmedData,
+         analysisResult,
+         incidentType,
+         screenshotError
+       };
+       try {
+         localStorage.setItem('pendingReportData', JSON.stringify(reportData));
+       } catch (e) {
+         console.warn('Failed to save report data to localStorage:', e);
+       }
+       router.push("/login?redirect=/report");
+       return;
+     }
+     setLoading(true);
 
-    try {
-      const payload = new FormData();
-      payload.append("report_type", incidentType);
-      payload.append("url", confirmedData.url ?? "");
-      payload.append("summary", confirmedData.summary ?? "");
-      payload.append("sender_numbers", confirmedData.senderNumbers ?? "");
-      payload.append("incident_date", confirmedData.incidentDate);
+     try {
+       const payload = new FormData();
+       payload.append("report_type", sanitizeText(incidentType));
+       payload.append("url", sanitizeText(confirmedData.url ?? ""));
+       payload.append("summary", sanitizeText(confirmedData.summary ?? ""));
+       payload.append("sender_numbers", sanitizeText(confirmedData.senderNumbers ?? ""));
+       payload.append("incident_date", sanitizeText(confirmedData.incidentDate));
+       payload.append("bank_name", sanitizeText(confirmedData.bankName ?? ""));
+       payload.append("bank_account", sanitizeText(confirmedData.bankAccount ?? ""));
+       payload.append("reference_number", sanitizeText(confirmedData.referenceNumber ?? ""));
 
-      screenshots.forEach((file) => payload.append("screenshots", file));
-      attachments.forEach((file) => payload.append("attachments", file));
+      // Attach raw files — backend uploads to Supabase then saves paths to DB
+      if (screenshotFile)
+        payload.append("screenshots", screenshotFile, screenshotFile.name);
+      if (attachmentFile)
+        payload.append("attachments", attachmentFile, attachmentFile.name);
 
       const response = await fetch("/api/v1/report", {
         method: "POST",
@@ -160,73 +255,92 @@ export default function ReportPage() {
       setTicketData(result);
       setSubmitted(true);
     } catch (err: any) {
-      setError(err.message);
+      toast.error(err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  if (authLoading) return (
-    <div className="container mx-auto px-4 py-32 text-center">
-      <div className="size-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-      <p className="text-secondary font-medium">Loading...</p>
-    </div>
-  );
+  const handleCancel = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+    setLoading(false);
+    setAnalysisResult(null);
+  };
 
-  if (!user) return (
-    <AuthRequired description="Please log in to your account to submit a phishing report and track its progress." />
-  );
+  const handleReset = () => {
+    setSubmitted(false);
+    setTicketData(null);
+    setIsConfirming(false);
+    setConfirmedData(null);
+    setScreenshotFile(null);
+    setAttachmentFile(null);
+    setScreenshotError(false);
+    form.reset();
+  };
 
-  if (submitted && ticketData) return (
-    <ReportSuccess
-      ticketData={ticketData}
-      onReset={() => {
-        setSubmitted(false);
-        setTicketData(null);
-        setIsConfirming(false);
-        setConfirmedData(null);
-        form.reset();
-      }}
-    />
-  );
+  if (authLoading)
+    return (
+      <div className="container mx-auto px-4 py-32 text-center">
+        <div className="size-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+        <p className="text-secondary font-medium">Loading...</p>
+      </div>
+    );
 
-  if (isConfirming && confirmedData) return (
-    <div className="container mx-auto px-4 py-12 max-w-5xl">
-      {error && <div className="bg-risk-high/10 text-risk-high p-4 rounded-lg mb-6 font-bold text-sm text-center border border-risk-high/20">Error: {error}</div>}
-      <ReportConfirmation
-        formData={confirmedData}
-        analysisResult={analysisResult}
-        onBack={() => setIsConfirming(false)}
-        onSubmit={handleFinalSubmit}
-        isSubmitting={loading}
-      />
-    </div>
-  );
+  if (submitted && ticketData)
+    return <ReportSuccess ticketData={ticketData} onReset={handleReset} />;
+
+  if (isConfirming && confirmedData)
+    return (
+      <div className="container mx-auto px-4 py-8 md:py-12 max-w-5xl">
+        <ReportConfirmation
+          formData={confirmedData}
+          analysisResult={analysisResult}
+          onBack={() => setIsConfirming(false)}
+          onSubmit={handleFinalSubmit}
+          isSubmitting={loading}
+        />
+      </div>
+    );
 
   return (
-    <div className="container mx-auto px-4 py-12 max-w-5xl">
-      <div className="mb-10 text-center">
-        <h1 className="text-4xl font-bold mb-4 text-secondary">Report Phishing Incident</h1>
-        <p className="text-secondary opacity-70 font-medium">Help us protect the community by reporting suspicious activities.</p>
+    <div className="container mx-auto px-4 py-8 md:py-12 max-w-5xl">
+      {/* Loading Overlay for Pre-analysis */}
+      {loading && !isConfirming && (
+        <div className="fixed inset-0 z-[100] bg-white/80 backdrop-blur-md flex items-center justify-center p-4 md:p-6">
+          <div className="max-w-md w-full">
+            <ProcessingAnimation title="Scanning Evidence" onCancel={handleCancel} />
+          </div>
+        </div>
+      )}
+
+      <div className="mb-8 md:mb-10 text-center">
+        <h1 className="text-3xl md:text-4xl font-bold text-secondary mb-3 flex items-center justify-center gap-2 md:gap-3 tracking-tight">
+          Report Phishing Incident
+        </h1>
+        <p className="text-secondary opacity-70 font-medium">
+          Help us protect the community by reporting suspicious activities.
+        </p>
       </div>
 
-      {error && <div className="bg-risk-high/10 text-risk-high p-4 rounded-lg mb-6 font-bold text-sm text-center border border-risk-high/20">Error: {error}. Is the backend running?</div>}
-
-      <ReportForm
-        form={form}
-        onSubmit={onSubmit}
-        loading={loading}
-        incidentType={incidentType}
-        setIncidentType={setIncidentType}
-        dynamic={dynamic}
-        screenshots={screenshots}
-        setScreenshots={setScreenshots}
-        screenshotError={screenshotError}
-        setScreenshotError={setScreenshotError}
-        attachments={attachments}
-        setAttachments={setAttachments}
-        getLocalISOString={getLocalISOString}
-      />
+        <ReportForm
+          form={form}
+          onSubmit={onSubmit}
+          loading={loading}
+          incidentType={incidentType}
+          setIncidentType={setIncidentType}
+          dynamic={dynamic}
+          screenshotFile={screenshotFile}
+          setScreenshotFile={setScreenshotFile}
+          screenshotError={screenshotError}
+          setScreenshotError={setScreenshotError}
+          attachmentFile={attachmentFile}
+          setAttachmentFile={setAttachmentFile}
+          getLocalISOString={getLocalISOString}
+          isConfirming={isConfirming}
+        />
     </div>
   );
 }

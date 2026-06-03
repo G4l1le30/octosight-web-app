@@ -4,8 +4,8 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { QuizResponse } from "@/types/education";
 import { useAuth } from "@/lib/auth-context";
-import { Loader2, AlertCircle, ArrowLeft, Sparkles, BookOpen, Brain, CheckCircle2 } from "lucide-react";
-import { Button } from "@/components/ui/Button";
+import { toast } from "sonner";
+import { Loader2, ArrowLeft } from "lucide-react";
 import { AuthRequired } from "@/components/auth/AuthRequired";
 
 import { QuizLoadingUI } from "@/components/education/quiz/QuizLoadingUI";
@@ -17,12 +17,11 @@ export default function QuizPage() {
   const router = useRouter();
   const moduleId = params.id as string;
   const { user, loading: authLoading } = useAuth();
-  
+
   const [quiz, setQuiz] = useState<QuizResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState("");
-  
+
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<number[]>([]);
   const [timeLeft, setTimeLeft] = useState(600); // 10 minutes in seconds
@@ -36,15 +35,15 @@ export default function QuizPage() {
       }
       const data = await response.json();
       setQuiz(data);
-      
+
       const savedAnswers = localStorage.getItem(`octo_quiz_${moduleId}_answers`);
       const savedStep = localStorage.getItem(`octo_quiz_${moduleId}_step`);
       let savedEndTime = localStorage.getItem(`octo_quiz_${moduleId}_end_time`);
-      
+
       if (savedAnswers) {
         const parsedAnswers = JSON.parse(savedAnswers);
         setAnswers(parsedAnswers);
-        
+
         const firstUnanswered = parsedAnswers.findIndex((a: number) => a === -1);
         if (firstUnanswered !== -1) {
           setCurrentStep(firstUnanswered);
@@ -54,18 +53,18 @@ export default function QuizPage() {
       } else {
         setAnswers(new Array(data.questions.length).fill(-1));
       }
-      
+
       if (!savedEndTime) {
         const endTime = Date.now() + 600000;
         localStorage.setItem(`octo_quiz_${moduleId}_end_time`, endTime.toString());
         savedEndTime = endTime.toString();
       }
-      
+
       const remaining = Math.max(0, Math.floor((parseInt(savedEndTime) - Date.now()) / 1000));
       setTimeLeft(remaining);
       setTimerActive(true);
     } catch (err: any) {
-      setError(err.message);
+      toast.error(err.message);
     } finally {
       setLoading(false);
     }
@@ -91,12 +90,11 @@ export default function QuizPage() {
 
   const handleSubmit = useCallback(async () => {
     if (answers.includes(-1) && timeLeft > 0) {
-      setError("Please answer all questions before submitting.");
+      toast.error("Please answer all questions before submitting.");
       return;
     }
 
     setSubmitting(true);
-    setError("");
     setTimerActive(false);
 
     try {
@@ -114,7 +112,7 @@ export default function QuizPage() {
       clearPersistence();
       router.push(`/edu/${moduleId}/result?attempt_id=${data.attempt_id}`);
     } catch (err: any) {
-      setError(err.message);
+      toast.error(err.message);
       setTimerActive(true);
       setSubmitting(false);
     }
@@ -165,27 +163,14 @@ export default function QuizPage() {
 
   if (loading) return <QuizLoadingUI />;
 
-  if (error && !quiz) return (
-    <div className="container mx-auto px-4 py-32 text-center max-w-md">
-      <div className="bg-risk-high/10 text-risk-high p-6 rounded-2xl border border-risk-high/20 mb-6">
-        <AlertCircle className="size-12 mx-auto mb-4" />
-        <h2 className="text-xl font-bold mb-2">Failed to Load Quiz</h2>
-        <p className="text-sm font-medium opacity-80">{error}</p>
-      </div>
-      <Button onClick={() => router.push(`/edu/${moduleId}`)} variant="outline" className="gap-2">
-        <ArrowLeft className="size-4" /> Back
-      </Button>
-    </div>
-  );
-
   const currentQuestion = quiz?.questions[currentStep];
   const totalQuestions = quiz?.questions.length || 0;
   const isLastStep = currentStep === totalQuestions - 1;
 
   return (
     <div className="container mx-auto px-4 py-16 max-w-5xl">
-      <div className="mb-8 flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      <div className="mb-6 md:mb-8 flex items-center justify-between">
+        <div className="flex items-center gap-3 md:gap-4">
           <button
             onClick={() => router.push(`/edu/${moduleId}`)}
             className="p-2 rounded-xl border border-neutral-border hover:bg-neutral-page transition-all text-secondary/60 hover:text-primary group shadow-sm"
@@ -193,13 +178,13 @@ export default function QuizPage() {
             <ArrowLeft className="size-6 group-hover:-translate-x-0.5 transition-transform" />
           </button>
           <div>
-            <h1 className="text-3xl font-bold text-secondary">Module Evaluation</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-secondary">Module Evaluation</h1>
             <p className="text-sm font-bold text-secondary mt-1">
               Question {currentStep + 1} of {totalQuestions}
             </p>
           </div>
         </div>
-        
+
         {timerActive && (
           <div className={`px-4 py-2 rounded-full font-bold border-2 ${timeLeft < 60 ? "bg-red-50 text-red-600 border-red-200 animate-pulse" : "bg-neutral-100 text-secondary border-neutral-border/50"}`}>
             Time Left: {formatTime(timeLeft)}
@@ -207,15 +192,9 @@ export default function QuizPage() {
         )}
       </div>
 
-      {error && (
-        <div className="mb-6 p-4 bg-risk-high/10 border border-risk-high/20 text-risk-high rounded-xl text-sm font-bold flex items-center gap-2">
-          <AlertCircle className="size-4" /> {error}
-        </div>
-      )}
-
       <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-500">
         {currentQuestion && (
-          <QuizQuestionCard 
+          <QuizQuestionCard
             question={currentQuestion.question}
             options={currentQuestion.options}
             selectedAnswer={answers[currentStep]}
@@ -223,7 +202,7 @@ export default function QuizPage() {
           />
         )}
 
-        <QuizControls 
+        <QuizControls
           currentStep={currentStep}
           totalQuestions={totalQuestions}
           isLastStep={isLastStep}

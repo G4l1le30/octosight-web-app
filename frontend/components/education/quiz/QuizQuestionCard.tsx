@@ -14,8 +14,8 @@ export const QuizQuestionCard: React.FC<QuizQuestionCardProps> = ({
   onSelectOption 
 }) => {
   return (
-    <div className="bg-white border border-neutral-border rounded-2xl p-8 shadow-sm">
-      <h3 className="text-xl font-bold text-secondary mb-6 leading-relaxed">
+    <div className="bg-white border border-neutral-border rounded-2xl p-6 md:p-8 shadow-sm">
+      <h3 className="text-lg md:text-xl font-bold text-secondary mb-4 md:mb-6 leading-relaxed">
         {question}
       </h3>
       
@@ -24,14 +24,14 @@ export const QuizQuestionCard: React.FC<QuizQuestionCardProps> = ({
           <button
             key={oIdx}
             onClick={() => onSelectOption(oIdx)}
-            className={`w-full text-left px-6 py-5 rounded-xl border-2 transition-all font-medium text-base ${
+            className={`w-full text-left px-4 md:px-6 py-4 md:py-5 rounded-xl border-2 transition-all font-medium text-base ${
               selectedAnswer === oIdx 
                 ? "border-primary bg-primary/5 text-primary shadow-sm" 
                 : "border-neutral-border hover:bg-neutral-page text-secondary group"
             }`}
           >
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-4 text-left">
+            <div className="flex items-center justify-between gap-3 md:gap-4">
+              <div className="flex items-center gap-3 md:gap-4 text-left">
                 <span className={`shrink-0 size-8 flex items-center justify-center rounded-lg font-bold text-sm transition-colors ${
                   selectedAnswer === oIdx 
                     ? "bg-primary text-white shadow-sm" 

@@ -5,9 +5,12 @@ import React, { useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { usePathname } from "next/navigation";
 import { ProfileDropdown } from "./ProfileDropdown";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
+import { usePermissions } from "@/hooks/usePermissions";
 
 const Navbar: React.FC = () => {
   const { user, loading, logout } = useAuth();
+  const { can } = usePermissions();
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
 
@@ -26,37 +29,80 @@ const Navbar: React.FC = () => {
     <header className="sticky top-0 z-50 bg-white border-b border-neutral-border shadow-sm">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between max-w-7xl">
         <Link href="/" className="flex items-center gap-2">
-          <span className="text-primary text-2xl font-black tracking-tight">
+          <span className="text-primary text-xl md:text-2xl font-black tracking-wide">
             OCTOSIGHT
           </span>
           {isAdminRoute && (
-            <span className="ml-1 px-1.5 py-0.5 bg-primary text-sm font-bold text-white rounded uppercase">
+            <span className="ml-1 px-1.5 py-0.5 bg-primary text-sm font-bold text-white rounded">
               ADMIN
             </span>
           )}
         </Link>
 
-        <nav className="hidden lg:flex items-stretch gap-6 h-full">
+        <nav className="hidden lg:flex items-stretch gap-4 md:gap-6 h-full">
           {isAdminRoute ? (
             <>
-              <Link href="/" className={getLinkClass("/")}>
-                Home
-              </Link>
-              <Link href="/admin" className={getLinkClass("/admin")}>
-                Dashboard
-              </Link>
-              <Link
-                href="/admin/triage"
-                className={getLinkClass("/admin/triage")}
-              >
-                Triage
-              </Link>
-              <Link
-                href="/admin/blacklist"
-                className={getLinkClass("/admin/blacklist")}
-              >
-                Blacklist
-              </Link>
+              {can("dashboard.view") && (
+                <Link href="/admin" className={getLinkClass("/admin")}>
+                  Dashboard
+                </Link>
+              )}
+              {can("tickets.view") && (
+                <>
+                  <Link
+                    href="/admin/triage"
+                    className={getLinkClass("/admin/triage")}
+                  >
+                    Triage
+                  </Link>
+                  <Link
+                    href="/admin/kanban"
+                    className={getLinkClass("/admin/kanban")}
+                  >
+                    Kanban
+                  </Link>
+                </>
+              )}
+              {can("blacklist.view") && (
+                <Link
+                  href="/admin/blacklist"
+                  className={getLinkClass("/admin/blacklist")}
+                >
+                  Blacklist
+                </Link>
+              )}
+              {can("rules.view") && (
+                <Link
+                  href="/admin/rule-config"
+                  className={getLinkClass("/admin/rule-config")}
+                >
+                  Rules
+                </Link>
+              )}
+              {can("transactions.view") && (
+                <>
+                  <Link
+                    href="/admin/transactions"
+                    className={getLinkClass("/admin/transactions")}
+                  >
+                    Transactions
+                  </Link>
+                  <Link
+                    href="/admin/transactions/anomalies"
+                    className={getLinkClass("/admin/transactions/anomalies")}
+                  >
+                    Anomalies
+                  </Link>
+                </>
+              )}
+              {can("users.view") && (
+                <Link
+                  href="/admin/users"
+                  className={getLinkClass("/admin/users")}
+                >
+                  Users
+                </Link>
+              )}
             </>
           ) : (
             <>
@@ -65,6 +111,9 @@ const Navbar: React.FC = () => {
               </Link>
               <Link href="/report" className={getLinkClass("/report")}>
                 Report Incident
+              </Link>
+              <Link href="/check" className={getLinkClass("/check")}>
+                Fraud Check
               </Link>
               <Link href="/status" className={getLinkClass("/status")}>
                 Check Status
@@ -77,14 +126,15 @@ const Navbar: React.FC = () => {
 
           <div className="self-center w-px h-4 bg-neutral-border mx-2"></div>
 
-          {loading ? (
-            <div className="w-20 h-8 bg-neutral-page rounded-lg animate-pulse"></div>
-          ) : user ? (
-            <ProfileDropdown 
-              user={user} 
-              logout={logout} 
-              isAdminRoute={isAdminRoute} 
-            />
+          {user && !loading ? (
+            <div className="self-center flex items-center gap-2">
+              <NotificationBell />
+              <ProfileDropdown 
+                user={user} 
+                logout={logout} 
+                isAdminRoute={isAdminRoute} 
+              />
+            </div>
           ) : (
             <div className="self-center flex items-center gap-2">
               <Link
@@ -130,34 +180,69 @@ const Navbar: React.FC = () => {
         <div className="lg:hidden bg-white border-t border-neutral-border px-4 py-4 space-y-2 animate-in slide-in-from-top-2 duration-200">
           {isAdminRoute ? (
             <>
-              <Link
-                href="/"
-                onClick={() => setMobileOpen(false)}
-                className="block py-2 text-sm font-medium hover:text-primary"
-              >
-                Home
-              </Link>
-              <Link
-                href="/admin"
-                onClick={() => setMobileOpen(false)}
-                className="block py-2 text-sm font-medium hover:text-primary"
-              >
-                Dashboard
-              </Link>
-              <Link
-                href="/admin/triage"
-                onClick={() => setMobileOpen(false)}
-                className="block py-2 text-sm font-medium hover:text-primary"
-              >
-                Triage
-              </Link>
-              <Link
-                href="/admin/blacklist"
-                onClick={() => setMobileOpen(false)}
-                className="block py-2 text-sm font-medium hover:text-primary"
-              >
-                Blacklist
-              </Link>
+              {can("dashboard.view") && (
+                <Link
+                  href="/admin"
+                  onClick={() => setMobileOpen(false)}
+                  className="block py-2 text-sm font-medium hover:text-primary"
+                >
+                  Dashboard
+                </Link>
+              )}
+              {can("tickets.view") && (
+                <>
+                  <Link
+                    href="/admin/triage"
+                    onClick={() => setMobileOpen(false)}
+                    className="block py-2 text-sm font-medium hover:text-primary"
+                  >
+                    Triage
+                  </Link>
+                  <Link
+                    href="/admin/kanban"
+                    onClick={() => setMobileOpen(false)}
+                    className="block py-2 text-sm font-medium hover:text-primary"
+                  >
+                    Kanban
+                  </Link>
+                </>
+              )}
+              {can("blacklist.view") && (
+                <Link
+                  href="/admin/blacklist"
+                  onClick={() => setMobileOpen(false)}
+                  className="block py-2 text-sm font-medium hover:text-primary"
+                >
+                  Blacklist
+                </Link>
+              )}
+              {can("rules.view") && (
+                <Link
+                  href="/admin/rule-config"
+                  onClick={() => setMobileOpen(false)}
+                  className="block py-2 text-sm font-medium hover:text-primary"
+                >
+                  Rules
+                </Link>
+              )}
+              {can("transactions.view") && (
+                <Link
+                  href="/admin/transactions"
+                  onClick={() => setMobileOpen(false)}
+                  className="block py-2 text-sm font-medium hover:text-primary"
+                >
+                  Transactions
+                </Link>
+              )}
+              {can("users.view") && (
+                <Link
+                  href="/admin/users"
+                  onClick={() => setMobileOpen(false)}
+                  className="block py-2 text-sm font-medium hover:text-primary"
+                >
+                  Users
+                </Link>
+              )}
             </>
           ) : (
             <>
@@ -174,6 +259,13 @@ const Navbar: React.FC = () => {
                 className="block py-2 text-sm font-medium hover:text-primary"
               >
                 Report Incident
+              </Link>
+              <Link
+                href="/check"
+                onClick={() => setMobileOpen(false)}
+                className="block py-2 text-sm font-medium hover:text-primary"
+              >
+                Fraud Check
               </Link>
               <Link
                 href="/status"
@@ -195,7 +287,7 @@ const Navbar: React.FC = () => {
           <div className="border-t border-neutral-border pt-3 mt-3">
             {user ? (
               <>
-                <div className="flex items-center gap-3 mb-3">
+                <div className="flex items-center gap-2 md:gap-3 mb-3">
                   <div className="w-8 h-8 bg-primary/10 text-primary rounded-full flex items-center justify-center text-xs font-bold">
                     {user.full_name.charAt(0).toUpperCase()}
                   </div>
@@ -204,7 +296,7 @@ const Navbar: React.FC = () => {
                     <p className="text-xs text-secondary/60">{user.email}</p>
                   </div>
                 </div>
-                {user.role === "admin" && (
+                {can("dashboard.view") && (
                   <Link
                     href={isAdminRoute ? "/" : "/admin"}
                     onClick={() => setMobileOpen(false)}

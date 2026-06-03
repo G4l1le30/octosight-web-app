@@ -1,9 +1,10 @@
 fastapi
-uvicorn
+uvicorn[standard]
 sqlalchemy
 pymysql
 cryptography
 pydantic
+email-validator
 python-dotenv
 python-multipart
 pytesseract
@@ -14,7 +15,12 @@ python-jose[cryptography]
 bcrypt==4.0.1
 joblib
 scikit-learn==1.6.1
+alembic
+google-auth
+slowapi
+fastapi-mail
+jinja2
+supabase==2.30.0
+google-genai
 torch
 sentence-transformers
-google-genai
-alembic

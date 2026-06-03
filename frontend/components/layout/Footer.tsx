@@ -18,9 +18,9 @@ const Footer: React.FC = () => {
       <div className="absolute bottom-0 left-0 w-48 sm:w-72 lg:w-96 h-48 sm:h-72 lg:h-96 bg-black/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/3 pointer-events-none"></div>
 
       <div className="container mx-auto max-w-6xl relative z-10">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 sm:gap-8 lg:gap-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 lg:gap-12">
           {/* Brand Column */}
-          <div className="col-span-1 sm:col-span-2 text-center sm:text-left">
+          <div className="col-span-1 sm:col-span-2 lg:col-span-1 text-center sm:text-left">
             <Link
               href="/"
               className="text-lg sm:text-2xl lg:text-3xl font-black text-white tracking-wide hover:opacity-80 transition-opacity mb-2 sm:mb-3 lg:mb-4 block"
@@ -50,100 +50,80 @@ const Footer: React.FC = () => {
               Navigation
             </h4>
             {!isAdminRoute ? (
-              <div className="grid grid-cols-2 gap-x-3 sm:gap-x-4 lg:gap-x-6 gap-y-2 sm:gap-y-3 lg:gap-y-4">
-                <ul className="space-y-2 sm:space-y-3 lg:space-y-4">
-                  <li>
-                    <Link
-                      href="/"
-                      className="text-white hover:opacity-80 text-xs sm:text-sm transition-colors font-medium"
-                    >
-                      Home
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/report"
-                      className="text-white hover:opacity-80 text-xs sm:text-sm transition-colors font-medium"
-                    >
-                      Report Incident
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/check"
-                      className="text-white hover:opacity-80 text-xs sm:text-sm transition-colors font-medium"
-                    >
-                      Fraud Check
-                    </Link>
-                  </li>
-                </ul>
-                <ul className="space-y-2 sm:space-y-3 lg:space-y-4">
-                  <li>
-                    <Link
-                      href="/status"
-                      className="text-white hover:opacity-80 text-xs sm:text-sm transition-colors font-medium"
-                    >
-                      Check Status
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/edu"
-                      className="text-white hover:opacity-80 text-xs sm:text-sm transition-colors font-medium"
-                    >
-                      E-Learning
-                    </Link>
-                  </li>
-                </ul>
-              </div>
+              <ul className="space-y-2 sm:space-y-3 lg:space-y-4">
+                <li>
+                  <Link href="/" className="text-white hover:opacity-80 text-xs sm:text-sm transition-colors font-medium">
+                    Home
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/report" className="text-white hover:opacity-80 text-xs sm:text-sm transition-colors font-medium">
+                    Report Incident
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/check" className="text-white hover:opacity-80 text-xs sm:text-sm transition-colors font-medium">
+                    Fraud Check
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/status" className="text-white hover:opacity-80 text-xs sm:text-sm transition-colors font-medium">
+                    Check Status
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/edu" className="text-white hover:opacity-80 text-xs sm:text-sm transition-colors font-medium">
+                    E-Learning
+                  </Link>
+                </li>
+              </ul>
             ) : (
               <ul className="space-y-2 sm:space-y-3 lg:space-y-4">
                 {can("dashboard.view") && (
                   <li>
-                    <Link
-                      href="/admin"
-                      className="text-white hover:opacity-80 text-xs sm:text-sm transition-colors font-medium"
-                    >
+                    <Link href="/admin" className="text-white hover:opacity-80 text-xs sm:text-sm transition-colors font-medium">
                       Dashboard
                     </Link>
                   </li>
                 )}
                 {can("tickets.view") && (
                   <li>
-                    <Link
-                      href="/admin/triage"
-                      className="text-white hover:opacity-80 text-xs sm:text-sm transition-colors font-medium"
-                    >
+                    <Link href="/admin/triage" className="text-white hover:opacity-80 text-xs sm:text-sm transition-colors font-medium">
                       Triage
+                    </Link>
+                  </li>
+                )}
+                {can("blacklist.view") && (
+                  <li>
+                    <Link href="/admin/blacklist" className="text-white hover:opacity-80 text-xs sm:text-sm transition-colors font-medium">
+                      Blacklist
+                    </Link>
+                  </li>
+                )}
+                {can("dashboard.view") && (
+                  <li>
+                    <Link href="/admin/rule-config" className="text-white hover:opacity-80 text-xs sm:text-sm transition-colors font-medium">
+                      Rules
+                    </Link>
+                  </li>
+                )}
+                {can("transactions.view") && (
+                  <li>
+                    <Link href="/admin/transactions" className="text-white hover:opacity-80 text-xs sm:text-sm transition-colors font-medium">
+                      Transactions
+                    </Link>
+                  </li>
+                )}
+                {can("users.view") && (
+                  <li>
+                    <Link href="/admin/users" className="text-white hover:opacity-80 text-xs sm:text-sm transition-colors font-medium">
+                      Users
                     </Link>
                   </li>
                 )}
               </ul>
             )}
           </div>
-
-          {/* Admin links */}
-          {isAdminRoute && (
-            <div className="text-center sm:text-left">
-              <h4 className="text-white font-bold mb-3 sm:mb-4 lg:mb-6 text-xs sm:text-sm tracking-wide lg:hidden">
-                Admin
-              </h4>
-              <ul className="space-y-2 sm:space-y-3 lg:space-y-4">
-                <li>
-                  <Link href="/admin/blacklist" className="text-white hover:opacity-80 text-xs sm:text-sm transition-colors font-medium">Blacklist</Link>
-                </li>
-                <li>
-                  <Link href="/admin/rule-config" className="text-white hover:opacity-80 text-xs sm:text-sm transition-colors font-medium">Rules</Link>
-                </li>
-                <li>
-                  <Link href="/admin/transactions" className="text-white hover:opacity-80 text-xs sm:text-sm transition-colors font-medium">Transactions</Link>
-                </li>
-                <li>
-                  <Link href="/admin/users" className="text-white hover:opacity-80 text-xs sm:text-sm transition-colors font-medium">Users</Link>
-                </li>
-              </ul>
-            </div>
-          )}
 
           {/* Contact & Social */}
           <div className="text-center sm:text-left">

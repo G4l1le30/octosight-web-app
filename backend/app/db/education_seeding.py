@@ -8,7 +8,7 @@ MODULE_IMAGES = {
     1: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=800&h=400&fit=crop",
     2: "https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=800&h=400&fit=crop",
     3: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=800&h=400&fit=crop",
-    4: "https://images.unsplash.com/photo-1553729459-afe8f7e50e0b?w=800&h=400&fit=crop",
+    4: "https://miro.medium.com/v2/resize:fit:720/format:webp/1*lnfzz7WfgdAcWfytLIoxeg.jpeg",
     5: "https://images.unsplash.com/photo-1614064641938-3bbee52942c7?w=800&h=400&fit=crop",
     6: "https://images.unsplash.com/photo-1551808525-51a94da548ce?w=800&h=400&fit=crop",
     7: "https://images.unsplash.com/photo-1553877522-43269d4ea984?w=800&h=400&fit=crop",
@@ -17,23 +17,23 @@ MODULE_IMAGES = {
 
 ARTICLE_IMAGES_ORDERED = [
     # Module 1 (Phishing Basics) — 3 articles
-    "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=400&h=300&fit=crop",
-    "https://images.unsplash.com/photo-1553729459-afe8f7e50e0b?w=400&h=300&fit=crop",
-    "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=400&h=300&fit=crop",
+    "https://miro.medium.com/v2/resize:fit:720/format:webp/1*HCQZIh2_yhQ4C4Syfwm_yA.jpeg",
+    "https://miro.medium.com/v2/resize:fit:720/format:webp/1*WyhdYdimlkA5fRU7zwdVjA.jpeg",
+    "https://miro.medium.com/v2/resize:fit:720/format:webp/1*1ITXpLonuJMgQcVOi3pmTA.jpeg",
     # Module 2 (Phishing Prevention) — 1 article
-    "https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=400&h=300&fit=crop",
+    "https://miro.medium.com/v2/resize:fit:720/format:webp/1*5nMx9o_PRjdJio7dzLlQcQ.png",
     # Module 3 (Social Engineering) — 1 article
-    "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=400&h=300&fit=crop",
+    "https://miro.medium.com/v2/resize:fit:720/format:webp/1*Tg6cfVp70NjtR2k15mhiqg.jpeg",
     # Module 4 (Spear Phishing & Whaling) — 1 article
-    "https://images.unsplash.com/photo-1510915228340-64c85a01a161?w=400&h=300&fit=crop",
+    "https://miro.medium.com/v2/resize:fit:720/format:webp/1*lnfzz7WfgdAcWfytLIoxeg.jpeg",
     # Module 5 (Advanced Threats) — 1 article
-    "https://images.unsplash.com/photo-1614064641938-3bbee52942c7?w=400&h=300&fit=crop",
+    "https://miro.medium.com/v2/resize:fit:640/0*OfzKYagUAj1q4vEX",
     # Module 6 (Ransomware) — 1 article
-    "https://images.unsplash.com/photo-1551808525-51a94da548ce?w=400&h=300&fit=crop",
+    "https://miro.medium.com/v2/resize:fit:720/format:webp/1*zA3mdqEqGxQKrfKjcSw2CA.jpeg",
     # Module 7 (Incident Response) — 1 article
-    "https://images.unsplash.com/photo-1553877522-43269d4ea984?w=400&h=300&fit=crop",
+    "https://miro.medium.com/v2/resize:fit:720/format:webp/1*7ttkIZTWLMg8i4fBiY9yTA.jpeg",
     # Module 8 (Advanced Detection & CTI) — 1 article
-    "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=400&h=300&fit=crop",
+    "https://miro.medium.com/v2/resize:fit:720/format:webp/0*QHmZ_of2E7jjUDq0",
 ]
 
 ARTICLE_IMAGES = iter(ARTICLE_IMAGES_ORDERED)

@@ -317,49 +317,52 @@ export default function ArticlePage() {
         )}
       </article>
 
-      {article.url && (
+      {(article.url || (user && !isRead)) && (
         <div className="mt-12 rounded-2xl p-6 md:p-8 text-center bg-neutral-page border border-neutral-border max-w-6xl">
-          <p className="text-base text-secondary-light mb-3">
-            Read the full article on the original source:
-          </p>
-          <a
-            href={article.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 text-base font-semibold text-primary hover:underline"
-          >
-            View Original Article
-          </a>
-        </div>
-      )}
-
-      {user && !isRead && (
-        <div className="mt-6 rounded-2xl p-6 md:p-8 text-center bg-neutral-page border border-neutral-border max-w-6xl">
-          <Button
-            onClick={() => {
-              if (marking) return;
-              setMarking(true);
-              fetch(`/api/v1/education/articles/${articleId}/read`, {
-                method: "POST",
-              })
-                .then(() => {
-                  setIsRead(true);
-                  localStorage.removeItem(`octo_read_${articleId}_end`);
-                  setReadingTimeLeft(null);
-                  toast.success("Marked as read");
-                })
-                .catch(() => toast.error("Failed to mark as read"))
-                .finally(() => setMarking(false));
-            }}
-            disabled={marking}
-            className="gap-2 text-base px-6 py-3"
-          >
-            <CheckCircle2 className="size-5" />
-            {marking ? "Marking..." : "Mark as Read"}
-          </Button>
-          <p className="text-sm text-secondary-light mt-2">
-            or wait 30 seconds for auto-mark
-          </p>
+          {article.url && (
+            <div className={user && !isRead ? "mb-5 pb-5 border-b border-neutral-border/60" : ""}>
+              <p className="text-base text-secondary-light mb-3">
+                Read the full article on the original source:
+              </p>
+              <a
+                href={article.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-base font-semibold text-primary hover:underline"
+              >
+                View Original Article
+              </a>
+            </div>
+          )}
+          {user && !isRead && (
+            <div>
+              <Button
+                onClick={() => {
+                  if (marking) return;
+                  setMarking(true);
+                  fetch(`/api/v1/education/articles/${articleId}/read`, {
+                    method: "POST",
+                  })
+                    .then(() => {
+                      setIsRead(true);
+                      localStorage.removeItem(`octo_read_${articleId}_end`);
+                      setReadingTimeLeft(null);
+                      toast.success("Marked as read");
+                    })
+                    .catch(() => toast.error("Failed to mark as read"))
+                    .finally(() => setMarking(false));
+                }}
+                disabled={marking}
+                className="gap-2 text-base px-6 py-3"
+              >
+                <CheckCircle2 className="size-5" />
+                {marking ? "Marking..." : "Mark as Read"}
+              </Button>
+              <p className="text-sm text-secondary-light mt-2">
+                or wait 30 seconds for auto-mark
+              </p>
+            </div>
+          )}
         </div>
       )}
 

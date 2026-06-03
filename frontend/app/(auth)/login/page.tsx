@@ -11,6 +11,7 @@ import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
 import { SecurityTips } from "@/components/auth/SecurityTips";
 import { Lock } from "lucide-react";
 import { toast } from "sonner";
+import Link from "next/link";
 
 function LoginForm() {
   const router = useRouter();
@@ -126,6 +127,15 @@ function LoginForm() {
           errorText={fieldErrors.password || undefined}
           disabled={loading}
         />
+
+        <div className="text-right -mt-3 md:-mt-4">
+          <Link
+            href="/forgot-password"
+            className="text-xs font-bold text-primary hover:underline"
+          >
+            Forgot Password?
+          </Link>
+        </div>
 
         <Button type="submit" loading={loading} className="w-full">
           Sign In

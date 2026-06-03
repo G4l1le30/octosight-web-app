@@ -389,15 +389,26 @@ export default function KanbanBoard({
       </div>
 
       <DragOverlay>
-        {activeTicket && (
-          <div className="bg-white rounded-md md:rounded-lg border-2 border-primary/40 shadow-xl opacity-90 overflow-hidden w-[250px] rotate-3">
-            <div className="h-1 md:h-1.5 bg-primary" />
+        {activeTicket && (() => {
+          const riskLvl = getRiskLevel(activeTicket.risk_score);
+          const riskClr = RISK[riskLvl];
+          const barColors: Record<string, string> = {
+            High: "bg-risk-high",
+            Medium: "bg-risk-medium",
+            Low: "bg-risk-low",
+          };
+          return (
+          <div className="bg-white rounded-md md:rounded-lg border-2 border-neutral-border shadow-xl opacity-90 overflow-hidden w-[250px] rotate-3">
+            <div className={cn("h-1 md:h-1.5", barColors[activeTicket.priority] || "bg-gray-300")} />
             <div className="p-2 md:p-3 space-y-1 md:space-y-1.5">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-primary">
+                <span className="text-xs font-bold text-secondary">
                   {activeTicket.ticket_id}
                 </span>
-                <span className="text-xs font-bold px-1 md:px-1.5 py-0.5 rounded bg-primary/10 text-primary">
+                <span
+                  className="text-xs font-bold px-1 md:px-1.5 py-0.5 rounded"
+                  style={{ backgroundColor: riskClr.hex + "20", color: riskClr.hex }}
+                >
                   {activeTicket.risk_score?.toFixed(0)}
                 </span>
               </div>
@@ -406,7 +417,8 @@ export default function KanbanBoard({
               </p>
             </div>
           </div>
-        )}
+          );
+        })()}
       </DragOverlay>
     </DndContext>
   );

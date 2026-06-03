@@ -337,14 +337,14 @@ export default function ArticlePage() {
         <div className="mt-12 rounded-2xl p-6 md:p-8 text-center bg-white border border-neutral-border max-w-6xl shadow-sm">
           {article.url && (
             <div className={user && !isRead ? "mb-5 pb-5 border-b border-neutral-border/60" : ""}>
-              <p className="text-base md:text-lg font-bold text-secondary/70 mb-3">
+              <p className="text-sm md:text-base font-bold text-secondary mb-3">
                 Read the full article on the original source:
               </p>
               <a
                 href={article.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-lg font-bold text-primary hover:underline"
+                className="inline-flex items-center gap-2 text-sm md:text-base font-bold text-primary hover:underline"
               >
                 View Original Article
               </a>

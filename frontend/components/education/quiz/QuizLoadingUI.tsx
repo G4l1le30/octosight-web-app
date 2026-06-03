@@ -63,7 +63,7 @@ export const QuizLoadingUI: React.FC = () => {
       <div className="mt-6 bg-neutral-page border border-neutral-border rounded-2xl p-5 w-full">
         <div className="flex items-center gap-2 mb-3">
           <Lightbulb className="size-4 text-primary" />
-          <span className="text-xs font-bold text-secondary uppercase tracking-wider">Security Tip</span>
+          <span className="text-sm font-bold text-secondary">Security Tip</span>
         </div>
         <p className="text-sm text-secondary leading-relaxed animate-fadeIn">
           {tips[tipIndex]}

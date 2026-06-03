@@ -119,7 +119,7 @@ export default function EducationPage() {
           </div>
           <p className="text-sm text-secondary-light mt-2 font-medium">
             {progressPercent < 100
-              ? `${progressPercent}% complete — keep going!`
+              ? `${progressPercent}% complete, keep going!`
               : "All modules completed! Great work!"}
           </p>
         </div>

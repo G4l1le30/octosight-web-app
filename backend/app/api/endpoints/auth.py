@@ -42,7 +42,7 @@ from app.core.security import (
 from app.db.session import get_db
 from app.models.models import User, PendingRegistration
 from app.models.permission import Permission, RolePermission
-from app.schemas.schemas import LoginRequest, RegisterRequest, UserResponse, GoogleLoginRequest
+from app.schemas.schemas import LoginRequest, RegisterRequest, UserResponse, GoogleLoginRequest, DeleteAccountRequest
 from fastapi import Request
 from app.modules.notifications.service import send_email_notification
 
@@ -330,6 +330,46 @@ def update_me(
         email=current_user.email,
         role=current_user.role,
     )
+
+
+@router.delete(
+    "/me",
+    summary="Delete own account — requires password confirmation",
+)
+def delete_me(
+    body: DeleteAccountRequest,
+    response: Response,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if not verify_password(body.password, current_user.hashed_password):
+        raise HTTPException(status_code=400, detail="Password is incorrect.")
+    """Permanently delete the current user's account and all associated data."""
+    from app.models.models import Ticket
+    from app.models.gamification import UserGamification, UserAchievement
+    from app.models.education import UserLearningProgress, UserArticleProgress, UserQuizAttempt
+    from app.models.notification import Notification
+    from app.models.feedback import MLFeedback
+    from app.models.activity import ActivityLog
+
+    user_id = current_user.id
+
+    db.query(Notification).filter(Notification.user_id == user_id).delete()
+    db.query(UserLearningProgress).filter(UserLearningProgress.user_id == user_id).delete()
+    db.query(UserArticleProgress).filter(UserArticleProgress.user_id == user_id).delete()
+    db.query(UserQuizAttempt).filter(UserQuizAttempt.user_id == user_id).delete()
+    db.query(UserAchievement).filter(UserAchievement.user_id == user_id).delete()
+    db.query(UserGamification).filter(UserGamification.user_id == user_id).delete()
+    db.query(MLFeedback).filter(MLFeedback.admin_id == user_id).update({MLFeedback.admin_id: None}, synchronize_session=False)
+    db.query(ActivityLog).filter(ActivityLog.actor_id == user_id).update({ActivityLog.actor_id: None}, synchronize_session=False)
+    db.query(Ticket).filter(Ticket.user_id == user_id).update({Ticket.user_id: None}, synchronize_session=False)
+    db.query(Ticket).filter(Ticket.assigned_to == user_id).update({Ticket.assigned_to: None}, synchronize_session=False)
+
+    db.delete(current_user)
+    db.commit()
+
+    _clear_auth_cookies(response)
+    return {"message": "Account deleted permanently"}
 
 
 @router.get("/my-permissions", summary="Get current user's effective permissions")

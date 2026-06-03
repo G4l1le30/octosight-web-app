@@ -117,7 +117,7 @@ export const QuizActionCard: React.FC<QuizActionCardProps> = ({
                   <Button
                     onClick={onResetQuiz}
                     variant="outline"
-                    className="gap-2 px-6 md:px-8 text-base md:text-lg border-risk-high/30 text-risk-high hover:bg-risk-high/5"
+                    className="gap-2 px-6 md:px-8 text-base  border-risk-high/30 text-risk-high hover:bg-risk-high/5"
                   >
                     Start Fresh
                   </Button>

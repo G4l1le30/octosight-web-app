@@ -44,6 +44,9 @@ class UserResponse(BaseModel):
         from_attributes = True
 
 
+class DeleteAccountRequest(BaseModel):
+    password: str
+
 class TokenResponse(BaseModel):
     access_token: str
     refresh_token: str

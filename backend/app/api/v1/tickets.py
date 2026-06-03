@@ -124,6 +124,11 @@ def update_ticket_status(
             },
         )
 
+    # Gamification: when a ticket is confirmed, check confirmed-ticket achievements
+    if status == "Confirmed" and ticket.user_id:
+        from app.modules.gamification.service import GamificationService
+        GamificationService.add_points_and_check_achievements(db, ticket.user_id, 15, "confirmed_report")
+
     return {"status": "updated", "ticket_id": ticket.ticket_id, "new_status": ticket.status}
 
 

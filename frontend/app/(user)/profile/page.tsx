@@ -2,7 +2,9 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { AlertTriangle } from "lucide-react";
 import PointsCounter from "@/components/gamification/PointsCounter";
 import StreakTracker from "@/components/gamification/StreakTracker";
 import BadgeCard from "@/components/gamification/BadgeCard";
@@ -27,7 +29,8 @@ const ACHIEVEMENT_ORDER: Record<string, number> = {
 };
 
 export default function ProfilePage() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const router = useRouter();
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [achievements, setAchievements] = useState<any[]>([]);
@@ -37,6 +40,9 @@ export default function ProfilePage() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [saving, setSaving] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletePassword, setDeletePassword] = useState("");
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     fetch("/api/v1/gamification/my-stats")
@@ -221,6 +227,90 @@ export default function ProfilePage() {
           </div>
         )}
       </div>
+
+      {/* Delete Account */}
+      <div className="rounded-3xl border border-red-200 bg-red-50/50 shadow-xl p-6 mt-8">
+        <div className="flex items-center justify-between gap-4 mb-4">
+          <div>
+            <p className="text-sm text-red-600 font-semibold">Danger Zone</p>
+            <h2 className="mt-1 text-2xl font-bold text-red-700">Delete Account</h2>
+            <p className="text-sm text-red-600/80 mt-1">
+              Permanently remove your account and all associated data. This action cannot be undone.
+            </p>
+          </div>
+          <Button
+            type="button"
+            onClick={() => setShowDeleteModal(true)}
+            className="shrink-0 bg-red-600 hover:bg-red-700 text-white gap-2"
+          >
+            <AlertTriangle className="size-4" /> Delete Account
+          </Button>
+        </div>
+      </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4">
+            <h3 className="text-xl font-bold text-red-700 flex items-center gap-2">
+              <AlertTriangle className="size-5" /> Delete Your Account?
+            </h3>
+            <p className="text-sm text-secondary/80">
+              This will permanently delete your profile, achievements, education progress,
+              and all associated data. Your submitted tickets will be anonymized.
+            </p>
+            <Input
+              label="Confirm your password"
+              type="password"
+              placeholder="Enter your password"
+              value={deletePassword}
+              onChange={(e) => setDeletePassword(e.target.value)}
+            />
+            <div className="flex gap-3 pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                className="flex-1"
+                onClick={() => { setShowDeleteModal(false); setDeletePassword(""); }}
+                disabled={deleting}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+                loading={deleting}
+                disabled={!deletePassword}
+                onClick={async () => {
+                  setDeleting(true);
+                  try {
+                    const res = await fetch("/api/v1/auth/me", {
+                      method: "DELETE",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ password: deletePassword }),
+                    });
+                    if (!res.ok) {
+                      const err = await res.json().catch(() => null);
+                      throw new Error(err?.detail || "Failed to delete account");
+                    }
+                    toast.success("Account deleted permanently.");
+                    logout();
+                    router.push("/");
+                  } catch (err: any) {
+                    toast.error(err.message);
+                  } finally {
+                    setDeleting(false);
+                    setShowDeleteModal(false);
+                    setDeletePassword("");
+                  }
+                }}
+              >
+                {deleting ? "Deleting..." : "Delete Forever"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="rounded-3xl border border-neutral-border bg-white shadow-xl p-6 mt-8">
         <div className="flex items-center justify-between gap-4 mb-6">

@@ -10,6 +10,7 @@ from app.schemas.auth import (
     LoginRequest,
     GoogleLoginRequest,
     UserResponse,
+    DeleteAccountRequest,
 )
 from app.schemas.ticket import (
     TicketUpdate,

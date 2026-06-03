@@ -12,7 +12,6 @@ import {
   XCircle,
   Bell,
   StickyNote,
-  Info,
 } from "lucide-react";
 
 interface AuditTrailProps {
@@ -165,8 +164,7 @@ export const AuditTrail: React.FC<AuditTrailProps> = ({
       })}
 
       {!submittedAt && logs.length === 0 && (
-        <div className="flex items-center w-full text-xs md:text-sm text-secondary/80 font-medium py-3 md:py-4">
-          <Info className="size-4 mr-1.5 md:mr-2" />
+        <div className="w-full text-center text-sm md:text-base font-medium text-secondary/50 py-4 md:py-5">
           No actions recorded yet.
         </div>
       )}

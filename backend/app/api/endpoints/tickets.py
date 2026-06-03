@@ -460,10 +460,10 @@ def report_accuracy(
         f"Report accuracy issue: {current_user.email}",
     )
     admin_users = _unique_admins(db, admin_email)
-    for admin in admin_users:
+    if admin_users:
         NotificationService.create_notification(
             db=db,
-            user_id=admin.id,
+            user_id=admin_users[0].id,
             notification_type="report_accuracy",
             title=f"Report accuracy issue from {current_user.email}",
             body=f"Ticket {ticket_id}: {data.message or 'No additional details provided.'}",
@@ -510,10 +510,10 @@ def notify_support(
         f"Support requested: {current_user.email}",
     )
     admin_users = _unique_admins(db, admin_email)
-    for admin in admin_users:
+    if admin_users:
         NotificationService.create_notification(
             db=db,
-            user_id=admin.id,
+            user_id=admin_users[0].id,
             notification_type="notify_support",
             title=f"Support request from {current_user.email}",
             body=f"Ticket {ticket_id}: {data.message or 'Requesting admin attention on this ticket.'}",

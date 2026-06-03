@@ -18,7 +18,7 @@ interface NotificationsResponse {
   unread_count: number;
 }
 
-const PER_PAGE = 20;
+const PER_PAGE = 10;
 
 export default function NotificationsPage() {
   const { user, loading: authLoading } = useAuth();
@@ -150,7 +150,7 @@ export default function NotificationsPage() {
 
               <div className="border-t border-neutral-border" />
 
-              <div className="flex items-center justify-between px-3 md:px-4 py-3rounded-b-3xl">
+              <div className="flex items-center justify-between px-3 md:px-4 py-3 rounded-b-3xl">
                 <button
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page <= 1}

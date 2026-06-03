@@ -355,10 +355,11 @@ def _notify_admin_report_submitted(
     body = f"{ticket.type or 'Report'} report from {reporter_email}: {indicator}"
     link = f"/admin/investigate/{ticket.ticket_id}"
 
-    for admin in _admin_notification_users(db):
+    admin_users = _admin_notification_users(db)
+    if admin_users:
         NotificationService.create_notification(
             db=db,
-            user_id=admin.id,
+            user_id=admin_users[0].id,
             notification_type="ticket_created",
             title=f"New report from {reporter_email}",
             body=body,

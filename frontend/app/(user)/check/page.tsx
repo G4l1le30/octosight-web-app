@@ -72,6 +72,9 @@ export default function FraudCheckPage() {
 
       if (!response.ok) throw new Error("Check failed. Please try again.");
       const analysis = await response.json();
+      if (analysis.ml_available === false) {
+        toast.warning("ML analysis unavailable — results are rule-based only");
+      }
       setResult(analysis);
     } catch (err: any) {
       toast.error(err.message || "Something went wrong");

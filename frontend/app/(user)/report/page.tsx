@@ -194,6 +194,10 @@ export default function ReportPage() {
       if (!response.ok) throw new Error("Pre-analysis failed");
       const analysis = await response.json();
 
+      if (analysis.ml_available === false) {
+        toast.warning("ML analysis unavailable — results are rule-based only");
+      }
+
       setAnalysisResult(analysis);
       setConfirmedData(data);
       setIsConfirming(true);

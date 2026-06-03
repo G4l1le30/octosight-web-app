@@ -1148,6 +1148,9 @@ async def analyze_preview(
         hybrid["ml_weight"] = 0
     # -----------------------------------------------
 
+    if not hybrid.get("ml_available", True):
+        rule_analysis.setdefault("flags", []).append("ml_engine_offline")
+
     return {
         **rule_analysis,
         "score": final_score,
@@ -1155,6 +1158,7 @@ async def analyze_preview(
         "ml_score": hybrid["ml_score"],
         "ml_category": hybrid["ml_category"],
         "ml_confidence": hybrid["ml_confidence"],
+        "ml_available": hybrid.get("ml_available", True),
         "rule_weight": hybrid.get("rule_weight", 35),
         "ml_weight": hybrid.get("ml_weight", 65),
         "hybrid_formula": hybrid.get("formula"),

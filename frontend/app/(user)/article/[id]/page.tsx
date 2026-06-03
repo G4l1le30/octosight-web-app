@@ -127,13 +127,17 @@ export default function ArticlePage() {
   const [isRead, setIsRead] = useState(false);
   const [readingTimeLeft, setReadingTimeLeft] = useState<number | null>(null);
   const [marking, setMarking] = useState(false);
+  const [forbidden, setForbidden] = useState(false);
 
   useEffect(() => {
+    setForbidden(false);
     (async () => {
       try {
         const response = await fetch(`/api/v1/education/articles/${articleId}`);
-        if (response.status === 403)
+        if (response.status === 403) {
+          setForbidden(true);
           throw new Error("Complete the previous article first");
+        }
         if (!response.ok) throw new Error("Article not found");
         const data = await response.json();
         setArticle(data);
@@ -212,15 +216,27 @@ export default function ArticlePage() {
   if (!article)
     return (
       <div className="container mx-auto px-4 py-32 text-center max-w-xl">
-        <div className="bg-risk-high/10 text-risk-high p-8 rounded-2xl border border-risk-high/20 mb-6">
-          <BookOpen className="size-14 mx-auto mb-4" />
-          <h2 className="text-xl md:text-2xl font-bold mb-2">
-            Article Not Found
-          </h2>
-          <p className="text-base font-medium opacity-80">
-            The article you are looking for could not be found.
-          </p>
-        </div>
+        {forbidden ? (
+          <div className="bg-amber-50 text-amber-800 p-8 rounded-2xl border border-amber-200 mb-6">
+            <BookOpen className="size-14 mx-auto mb-4" />
+            <h2 className="text-xl md:text-2xl font-bold mb-2">
+              Article Locked
+            </h2>
+            <p className="text-base font-medium opacity-80">
+              Complete the previous article in this module first.
+            </p>
+          </div>
+        ) : (
+          <div className="bg-risk-high/10 text-risk-high p-8 rounded-2xl border border-risk-high/20 mb-6">
+            <BookOpen className="size-14 mx-auto mb-4" />
+            <h2 className="text-xl md:text-2xl font-bold mb-2">
+              Article Not Found
+            </h2>
+            <p className="text-base font-medium opacity-80">
+              The article you are looking for could not be found.
+            </p>
+          </div>
+        )}
         <Button
           onClick={() => router.push("/edu")}
           variant="outline"

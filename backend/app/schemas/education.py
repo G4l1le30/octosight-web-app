@@ -16,6 +16,7 @@ class EducationArticleRead(BaseModel):
     description: Optional[str] = None
     image_url: Optional[str] = None
     content: Optional[Any] = None
+    order_index: int = 0
     is_read: bool = False
 
     class Config:

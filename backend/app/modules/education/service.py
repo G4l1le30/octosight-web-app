@@ -79,8 +79,9 @@ class EducationService:
                     progress.completed_at = datetime.now(timezone.utc)
                 db.commit()
 
+        sorted_articles = sorted(module.articles, key=lambda a: a.order_index or 0)
         articles_with_progress = []
-        for article in module.articles:
+        for article in sorted_articles:
             is_read = EducationRepository.get_article_progress(db, user_id, article.id) is not None if user_id else False
             articles_with_progress.append({
                 "id": article.id,
@@ -92,6 +93,7 @@ class EducationService:
                 "description": article.description,
                 "image_url": article.image_url,
                 "content": article.content,
+                "order_index": article.order_index,
                 "is_read": is_read
             })
 
@@ -157,6 +159,7 @@ class EducationService:
             "description": article.description,
             "image_url": article.image_url,
             "content": article.content,
+            "order_index": article.order_index,
             "is_read": is_read,
             "module_id": module_id,
             "module_title": module_title,

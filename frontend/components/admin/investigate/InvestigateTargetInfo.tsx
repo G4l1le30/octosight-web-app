@@ -16,7 +16,7 @@ export const InvestigateTargetInfo: React.FC<InvestigateTargetInfoProps> = ({
   return (
     <div className="card p-6 md:p-8 h-full flex flex-col">
       <div className="flex justify-between items-start mb-6 md:mb-8">
-        <div className="space-y-2">
+        <div className="space-y-1.5 md:space-y-2">
           <h3 className="text-lg md:text-xl font-bold text-secondary">
             Target Indicator
           </h3>
@@ -25,7 +25,7 @@ export const InvestigateTargetInfo: React.FC<InvestigateTargetInfoProps> = ({
           </p>
         </div>
         <div className="text-right">
-          <h3 className="text-lg font-bold text-secondary">Risk Score</h3>
+          <h3 className="text-base md:text-lg font-bold text-secondary">Risk Score</h3>
            <p
              className={`text-3xl md:text-4xl font-bold ${ticket.risk_score >= 75 ? "text-risk-high" : ticket.risk_score >= 35 ? "text-risk-medium" : "text-risk-low"}`}
            >
@@ -34,37 +34,37 @@ export const InvestigateTargetInfo: React.FC<InvestigateTargetInfoProps> = ({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-8 py-6 md:py-8 border-y border-neutral-border">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 md:gap-x-16 gap-y-6 md:gap-y-8 py-6 md:py-8 border-y border-neutral-border">
         {/* Left Column: Metadata */}
-        <div className="space-y-8">
-          <div className="space-y-1">
-            <span className="text-sm font-bold block text-secondary">
+        <div className="space-y-6 md:space-y-8">
+          <div className="space-y-0.5 md:space-y-1">
+            <span className="text-xs md:text-sm font-bold block text-secondary">
               Type
             </span>
-            <span className="text-base font-medium text-secondary">
+            <span className="text-sm md:text-base font-medium text-secondary">
               {ticket.type}
             </span>
           </div>
 
-          <div className="space-y-1">
-            <span className="text-sm font-bold block text-secondary">
+          <div className="space-y-0.5 md:space-y-1">
+            <span className="text-xs md:text-sm font-bold block text-secondary">
               Submitted
             </span>
-            <span className="text-base font-medium text-secondary">
+            <span className="text-sm md:text-base font-medium text-secondary">
               {formatDateTime(ticket.created_at).full}
             </span>
           </div>
 
           {ticket.sender_numbers && (
-            <div className="space-y-1">
-              <span className="text-sm font-bold block text-secondary">
+            <div className="space-y-0.5 md:space-y-1">
+              <span className="text-xs md:text-sm font-bold block text-secondary">
                 Sender Info
               </span>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1.5 md:gap-2">
                 {ticket.sender_numbers.split(",").map((num, i) => (
                   <span
                     key={i}
-                    className="bg-neutral-page border border-neutral-border px-3 py-1 rounded-lg font-medium text-sm text-secondary"
+                    className="bg-neutral-page border border-neutral-border px-2 md:px-3 py-0.5 md:py-1 rounded-md md:rounded-lg font-medium text-xs md:text-sm text-secondary"
                   >
                     {num.trim()}
                   </span>
@@ -75,9 +75,9 @@ export const InvestigateTargetInfo: React.FC<InvestigateTargetInfoProps> = ({
         </div>
 
         {/* Right Column: Status & Priority */}
-        <div className="space-y-8">
-          <div className="space-y-1">
-            <span className="text-sm font-bold block text-secondary">
+        <div className="space-y-6 md:space-y-8">
+          <div className="space-y-0.5 md:space-y-1">
+            <span className="text-xs md:text-sm font-bold block text-secondary">
               Priority
             </span>
             <span
@@ -91,14 +91,14 @@ export const InvestigateTargetInfo: React.FC<InvestigateTargetInfoProps> = ({
             </span>
           </div>
 
-          <div className="space-y-1">
-            <span className="text-sm font-bold block text-secondary">
+          <div className="space-y-0.5 md:space-y-1">
+            <span className="text-xs md:text-sm font-bold block text-secondary">
               Status
             </span>
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value)}
-              className="text-sm font-medium bg-neutral-page border border-neutral-border rounded-lg px-4 py-2 outline-none focus:border-primary text-secondary transition-all appearance-none pr-10 cursor-pointer w-full md:w-auto"
+              className="text-xs md:text-sm font-medium bg-neutral-page border border-neutral-border rounded-md md:rounded-lg px-3 md:px-4 py-1.5 md:py-2 outline-none focus:border-primary text-secondary transition-all appearance-none pr-8 md:pr-10 cursor-pointer w-full md:w-auto"
               style={{
                 backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
                 backgroundRepeat: "no-repeat",
@@ -117,22 +117,22 @@ export const InvestigateTargetInfo: React.FC<InvestigateTargetInfoProps> = ({
         </div>
       </div>
 
-      <div className="mt-auto pt-8">
-        <h3 className="text-lg font-bold mb-4 text-secondary">
+      <div className="mt-auto pt-6 md:pt-8">
+        <h3 className="text-base md:text-lg font-bold mb-3 md:mb-4 text-secondary">
           Detection Engine Flags
         </h3>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-1.5 md:gap-2">
           {ticket.flags ? (
             ticket.flags.split(",").map((flag, idx) => (
               <span
                 key={idx}
-                className="bg-secondary text-white text-xs font-bold px-3 py-1.5 rounded-full"
+                className="bg-secondary text-white text-xs font-bold px-2 md:px-3 py-1 md:py-1.5 rounded-full"
               >
                 {flag.replace(/_/g, " ")}
               </span>
             ))
           ) : (
-            <span className="text-sm font-normal opacity-60 text-secondary">
+            <span className="text-xs md:text-sm font-normal opacity-60 text-secondary">
               No specific rule flags triggered.
             </span>
           )}

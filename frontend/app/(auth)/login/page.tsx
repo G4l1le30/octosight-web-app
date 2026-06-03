@@ -87,13 +87,13 @@ function LoginForm() {
     <AuthCard
       title="Welcome Back"
       subtitle="Sign in to your OctoSight account"
-      icon={<Lock className="h-7 w-7" />}
+      icon={<Lock className="h-5 md:h-7 w-5 md:w-7" />}
       success={isRegistered ? "Registration link sent! Please check your email inbox and spam folder to verify your account." : undefined}
       footerText="Don't have an account?"
       footerLinkText="Create Account"
       footerLinkHref="/register"
     >
-      <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+      <form onSubmit={handleSubmit} className="space-y-4 md:space-y-5" noValidate>
         <AuthInput
           id="login-email"
           label="Email Address"
@@ -132,12 +132,12 @@ function LoginForm() {
       </form>
 
       {/* Divider */}
-      <div className="relative my-6">
+      <div className="relative my-4 md:my-6">
         <div className="absolute inset-0 flex items-center">
           <div className="w-full border-t border-neutral-border"></div>
         </div>
         <div className="relative flex justify-center text-xs">
-          <span className="bg-neutral-page px-2 text-secondary/60">
+          <span className="bg-neutral-page px-1.5 md:px-2 text-secondary/60">
             Or continue with
           </span>
         </div>

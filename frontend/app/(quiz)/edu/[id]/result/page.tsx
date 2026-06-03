@@ -66,7 +66,7 @@ export default function QuizResultPage() {
       });
 
     } catch (err: any) {
-      toast.error(err.message);
+      toast.error(err.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -79,40 +79,40 @@ export default function QuizResultPage() {
   }, [user, moduleId, fetchData]);
 
   if (authLoading) return (
-    <div className="container mx-auto px-4 py-32 text-center">
-      <Loader2 className="animate-spin size-12 text-primary mx-auto mb-4" />
+    <div className="container mx-auto px-3 md:px-4 py-24 md:py-32 text-center">
+      <Loader2 className="animate-spin size-12 text-primary mx-auto mb-3 md:mb-4" />
     </div>
   );
 
   if (!user) return <AuthRequired description="Please log in to view results." />;
 
   if (loading) return (
-    <div className="container mx-auto px-4 py-32 text-center">
-      <Loader2 className="animate-spin size-12 text-primary mx-auto mb-4" />
+    <div className="container mx-auto px-3 md:px-4 py-24 md:py-32 text-center">
+      <Loader2 className="animate-spin size-12 text-primary mx-auto mb-3 md:mb-4" />
       <p className="text-secondary font-medium">Loading evaluation results...</p>
     </div>
   );
 
   if (!quiz || !result) return (
-    <div className="container mx-auto px-4 py-32 text-center max-w-md">
-      <div className="bg-risk-high/10 text-risk-high p-6 rounded-2xl border border-risk-high/20 mb-4 md:mb-6">
-        <AlertCircle className="size-12 mx-auto mb-4" />
-        <h2 className="text-lg md:text-xl font-bold mb-2">Failed to Load Result</h2>
-        <p className="text-sm font-medium opacity-80">Result not found</p>
+    <div className="container mx-auto px-3 md:px-4 py-24 md:py-32 text-center max-w-md">
+      <div className="bg-risk-high/10 text-risk-high p-4 md:p-6 rounded-xl md:rounded-2xl border border-risk-high/20 mb-4 md:mb-6">
+        <AlertCircle className="size-12 mx-auto mb-3 md:mb-4" />
+        <h2 className="text-lg md:text-xl font-bold mb-1.5 md:mb-2">Failed to Load Result</h2>
+        <p className="text-xs md:text-sm font-medium opacity-80">Result not found</p>
       </div>
-      <Button onClick={() => router.push(`/edu/${moduleId}`)} variant="outline" className="gap-2">
+      <Button onClick={() => router.push(`/edu/${moduleId}`)} variant="outline" className="gap-1.5 md:gap-2">
         <ArrowLeft className="size-4" /> Back to Module
       </Button>
     </div>
   );
 
   return (
-    <div className="container mx-auto px-4 py-8 md:py-12 max-w-6xl">
-      <div className="mb-8 flex items-center justify-between">
+    <div className="container mx-auto px-3 md:px-4 py-8 md:py-12 max-w-6xl">
+      <div className="mb-6 md:mb-8 flex items-center justify-between">
         <div className="flex items-center gap-3 md:gap-4">
           <button
             onClick={() => router.push(`/edu/${moduleId}`)}
-            className="p-2 rounded-xl border border-neutral-border hover:bg-neutral-page transition-all text-secondary/60 hover:text-primary group shadow-sm"
+            className="p-1.5 md:p-2 rounded-lg md:rounded-xl border border-neutral-border hover:bg-neutral-page transition-all text-secondary/60 hover:text-primary group shadow-sm"
           >
             <ArrowLeft className="size-6 group-hover:-translate-x-0.5 transition-transform" />
           </button>
@@ -126,11 +126,11 @@ export default function QuizResultPage() {
         <div className={`mb-8 md:mb-10 p-6 md:p-8 rounded-2xl border text-center ${result.passed ? "bg-green-50 border-green-200 shadow-sm" : "bg-red-50 border-red-200 shadow-sm"
           }`}>
           {result.passed ? (
-            <CheckCircle2 className="size-16 text-green-500 mx-auto mb-4" />
+            <CheckCircle2 className="size-16 text-green-500 mx-auto mb-3 md:mb-4" />
           ) : (
-            <XCircle className="size-16 text-red-500 mx-auto mb-4" />
+            <XCircle className="size-16 text-red-500 mx-auto mb-3 md:mb-4" />
           )}
-          <h2 className="text-5xl font-bold mb-2 text-secondary">
+          <h2 className="text-4xl md:text-5xl font-bold mb-1.5 md:mb-2 text-secondary">
             {Math.round(result.score / 10)}
           </h2>
           <p className={`font-bold mb-4 md:mb-6 ${result.passed ? "text-green-700" : "text-red-700"}`}>
@@ -144,7 +144,7 @@ export default function QuizResultPage() {
                 {nextModuleId && (
                   <Button
                     onClick={() => router.push(`/edu/${nextModuleId}`)}
-                    className="bg-green-600 hover:bg-green-700 text-white gap-2 px-6 md:px-8text-lg shadow-sm"
+                    className="bg-green-600 hover:bg-green-700 text-white gap-1.5 md:gap-2 px-6 md:px-8text-lg shadow-sm"
                   >
                     Next Module <ArrowRight className="size-5" />
                   </Button>
@@ -152,7 +152,7 @@ export default function QuizResultPage() {
                 <Button
                   onClick={() => router.push("/edu")}
                   variant="outline"
-                  className="bg-white border-neutral-border text-secondary hover:border-green-500 gap-2 px-6 md:px-8text-lg shadow-sm transition-colors"
+                  className="bg-white border-neutral-border text-secondary hover:border-green-500 gap-1.5 md:gap-2 px-6 md:px-8text-lg shadow-sm transition-colors"
                 >
                   Back to Modules
                 </Button>
@@ -174,16 +174,16 @@ export default function QuizResultPage() {
         </div>
 
         <h3 className="text-lg md:text-xl font-bold text-secondary mb-4 md:mb-6">Review Your Answers</h3>
-        <div className="space-y-6">
+        <div className="space-y-4 md:space-y-6">
           {quiz.questions.map((q, idx) => {
             const res = result.questions_with_explanations[idx];
             return (
               <div key={idx} className={`p-6 rounded-2xl border-2 ${res.is_correct ? "bg-green-50/30 border-green-100" : "bg-red-50/30 border-red-100"}`}>
-                <h4 className="font-bold text-secondary mb-4 text-lg">
+                <h4 className="font-bold text-secondary mb-3 md:mb-4 text-base md:text-lg">
                   <span className={`mr-2 ${res.is_correct ? "text-green-600" : "text-red-600"}`}>{idx + 1}.</span>
                   {q.question}
                 </h4>
-                <div className="space-y-3">
+                <div className="space-y-2 md:space-y-3">
                   {q.options.map((opt, oIdx) => {
                     const isSelected = oIdx === res.selected_answer_index;
                     if (!isSelected) return null;

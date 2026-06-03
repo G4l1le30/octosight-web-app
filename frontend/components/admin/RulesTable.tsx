@@ -55,7 +55,7 @@ export const RulesTable: React.FC<RulesTableProps> = ({
 }) => {
   if (loading) {
     return (
-      <div className="py-20 text-center opacity-40 font-semibold">
+      <div className="py-14 md:py-20 text-center opacity-40 font-semibold">
         Loading rule configurations...
       </div>
     );
@@ -64,25 +64,25 @@ export const RulesTable: React.FC<RulesTableProps> = ({
   return (
     <div className={cn("overflow-x-auto", className)}>
       <table className="w-full text-left">
-        <thead className="bg-neutral-page text-sm font-bold text-secondary border-b border-neutral-border">
+        <thead className="bg-neutral-page text-xs md:text-sm font-bold text-secondary border-b border-neutral-border">
           <tr>
-            <th className="px-4 md:px-6 py-4 cursor-pointer select-none" onClick={() => onSort?.("config_type")}>
+            <th className="px-4 md:px-6 py-3 md:py-4 cursor-pointer select-none" onClick={() => onSort?.("config_type")}>
               Type {sortBy === "config_type" && (sortDir === "asc" ? "↑" : "↓")}
             </th>
-            <th className="px-4 md:px-6 py-4 cursor-pointer select-none" onClick={() => onSort?.("key")}>
+            <th className="px-4 md:px-6 py-3 md:py-4 cursor-pointer select-none" onClick={() => onSort?.("key")}>
               Key {sortBy === "key" && (sortDir === "asc" ? "↑" : "↓")}
             </th>
-            <th className="px-4 md:px-6 py-4 cursor-pointer select-none" onClick={() => onSort?.("group")}>
+            <th className="px-4 md:px-6 py-3 md:py-4 cursor-pointer select-none" onClick={() => onSort?.("group")}>
               Group {sortBy === "group" && (sortDir === "asc" ? "↑" : "↓")}
             </th>
-            <th className="px-4 md:px-6 py-4 text-center cursor-pointer select-none" onClick={() => onSort?.("score")}>
+            <th className="px-4 md:px-6 py-3 md:py-4 text-center cursor-pointer select-none" onClick={() => onSort?.("score")}>
               Score {sortBy === "score" && (sortDir === "asc" ? "↑" : "↓")}
             </th>
-            <th className="px-4 md:px-6 py-4">Description</th>
-            <th className="px-4 md:px-6 py-4 text-center cursor-pointer select-none" onClick={() => onSort?.("is_active")}>
+            <th className="px-4 md:px-6 py-3 md:py-4">Description</th>
+            <th className="px-4 md:px-6 py-3 md:py-4 text-center cursor-pointer select-none" onClick={() => onSort?.("is_active")}>
               Active {sortBy === "is_active" && (sortDir === "asc" ? "↑" : "↓")}
             </th>
-            <th className="px-4 md:px-6 py-4 text-right">Actions</th>
+            <th className="px-4 md:px-6 py-3 md:py-4 text-right">Actions</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-neutral-border">
@@ -102,17 +102,17 @@ export const RulesTable: React.FC<RulesTableProps> = ({
                 className="hover:bg-neutral-page/50 transition-colors group"
               >
                 <td className="px-4 md:px-6 py-4 md:py-5">
-                  <span className="inline-flex items-center px-2.5 py-1 bg-neutral-page text-xs font-bold text-secondary rounded-lg">
+                  <span className="inline-flex items-center px-2 md:px-2.5 py-0.5 md:py-1 bg-neutral-page text-xs font-bold text-secondary rounded-md md:rounded-lg">
                     {formatType(rule.config_type)}
                   </span>
                 </td>
                 <td className="px-4 md:px-6 py-4 md:py-5">
-                  <span className="font-bold text-sm text-secondary break-all">
+                  <span className="font-bold text-xs md:text-sm text-secondary break-all">
                     {rule.key}
                   </span>
                 </td>
                 <td className="px-4 md:px-6 py-4 md:py-5">
-                  <span className="text-sm font-semibold text-secondary/80">
+                  <span className="text-xs md:text-sm font-semibold text-secondary/80">
                     {rule.group || (
                       <span className="text-secondary/60 font-medium">
                         None
@@ -123,7 +123,7 @@ export const RulesTable: React.FC<RulesTableProps> = ({
                 <td className="px-4 md:px-6 py-4 md:py-5 text-center">
                   <span
                     className={cn(
-                      "inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold",
+                      "inline-flex items-center px-2 md:px-2.5 py-0.5 md:py-1 rounded-md md:rounded-lg text-xs font-bold",
                       rule.score >= 70
                         ? "bg-risk-high/10 text-risk-high"
                         : rule.score >= 40
@@ -135,7 +135,7 @@ export const RulesTable: React.FC<RulesTableProps> = ({
                   </span>
                 </td>
                 <td className="px-4 md:px-6 py-4 md:py-5">
-                  <p className="text-sm font-semibold text-secondary/80 max-w-xs break-words">
+                  <p className="text-xs md:text-sm font-semibold text-secondary/80 max-w-xs break-words">
                     {rule.description || (
                       <span className="text-secondary/60 font-medium">
                         None
@@ -161,10 +161,10 @@ export const RulesTable: React.FC<RulesTableProps> = ({
                   </label>
                 </td>
                 <td className="px-4 md:px-6 py-4 md:py-5 text-right">
-                  <div className="flex items-center justify-end gap-1">
+                  <div className="flex items-center justify-end gap-0.5 md:gap-1">
                     <button
                       onClick={() => onEdit(rule)}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-secondary/80 hover:text-primary hover:bg-primary/5 rounded-lg transition-all"
+                      className="inline-flex items-center gap-1 md:gap-1.5 px-2 md:px-3 py-1 md:py-1.5 text-xs font-bold text-secondary/80 hover:text-primary hover:bg-primary/5 rounded-md md:rounded-lg transition-all"
                       title="Edit rule"
                     >
                       <Edit2 className="size-3.5" />

@@ -68,7 +68,7 @@ export const InvestigateNotes: React.FC<InvestigateNotesProps> = ({
           onClick={handleGenerateSuggestion}
           disabled={loadingAI}
           title="Generate AI suggestion for investigation notes"
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg text-secondary/70 hover:text-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
+          className="flex items-center gap-1 md:gap-1.5 px-2 md:px-3 py-1 md:py-1.5 text-xs font-bold rounded-md md:rounded-lg text-secondary/70 hover:text-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
         >
           {loadingAI ? (
             <Loader2 className="size-3.5 animate-spin" />
@@ -93,18 +93,18 @@ export const InvestigateNotes: React.FC<InvestigateNotesProps> = ({
 
       {/* Undo / Keep buttons — only visible after AI fills the textarea */}
       {aiActive && (
-        <div className="flex items-center justify-end gap-2 px-1">
-          <div className="flex gap-2">
+        <div className="flex items-center justify-end gap-1.5 md:gap-2 px-0.5 md:px-1">
+          <div className="flex gap-1.5 md:gap-2">
             <button
               onClick={handleUndo}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-secondary/70 hover:text-secondary border border-neutral-border hover:border-secondary/30 transition-all"
+              className="flex items-center gap-0.5 md:gap-1 px-2 md:px-3 py-1 md:py-1.5 rounded-md md:rounded-lg text-xs font-bold text-secondary/70 hover:text-secondary border border-neutral-border hover:border-secondary/30 transition-all"
             >
               <RotateCcw className="size-3" />
               Undo
             </button>
             <button
               onClick={handleKeep}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-primary hover:bg-primary/90 transition-all"
+              className="flex items-center gap-0.5 md:gap-1 px-2 md:px-3 py-1 md:py-1.5 rounded-md md:rounded-lg text-xs font-bold text-white bg-primary hover:bg-primary/90 transition-all"
             >
               <Check className="size-3" />
               Keep

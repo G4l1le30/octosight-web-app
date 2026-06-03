@@ -42,7 +42,7 @@ from app.core.security import (
 from app.db.session import get_db
 from app.models.models import User, PendingRegistration
 from app.models.permission import Permission, RolePermission
-from app.schemas.schemas import LoginRequest, RegisterRequest, UserResponse, GoogleLoginRequest, DeleteAccountRequest
+from app.schemas.schemas import LoginRequest, RegisterRequest, UserResponse, GoogleLoginRequest, DeleteAccountRequest, ForgotPasswordRequest, ResetPasswordRequest
 from fastapi import Request
 from app.modules.notifications.service import send_email_notification
 
@@ -390,6 +390,70 @@ def get_my_permissions(
         .all()
     )
     return {"role": current_user.role, "permissions": [p.code for p in role_perms]}
+
+
+@router.post("/forgot-password", summary="Request password reset email")
+@limiter.limit("3/minute")
+def forgot_password(
+    request: Request,
+    data: ForgotPasswordRequest,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+):
+    """Generate a password reset token and send it via email."""
+    from app.core.security import hash_password as _unused
+    normalized_email = _validated_email_or_http_error(data.email)
+    user = db.query(User).filter(User.email == normalized_email).first()
+    if not user:
+        return {"status": "sent", "message": "If the email exists, a reset link has been sent."}
+
+    raw_token, token_hash = _generate_verification_token()
+    user.reset_token_hash = token_hash
+    user.reset_token_expires_at = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(minutes=30)
+    db.commit()
+
+    frontend_url = os.getenv("FRONTEND_URL", "http://localhost:3000").rstrip("/")
+    reset_url = f"{frontend_url}/reset-password?token={raw_token}"
+
+    send_email_notification(
+        background_tasks=background_tasks,
+        subject="OctoSight — Password Reset Request",
+        email_to=normalized_email,
+        template_name="reset_password.html",
+        template_body={
+            "user_name": user.full_name,
+            "reset_url": reset_url,
+            "expiry_minutes": 30,
+        },
+    )
+    return {"status": "sent", "message": "If the email exists, a reset link has been sent."}
+
+
+@router.post("/reset-password", summary="Reset password using reset token")
+@limiter.limit("3/minute")
+def reset_password(
+    request: Request,
+    data: ResetPasswordRequest,
+    db: Session = Depends(get_db),
+):
+    """Validate reset token and update password."""
+    token_hash = _hash_verification_token(data.token)
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
+
+    user = db.query(User).filter(
+        User.reset_token_hash == token_hash,
+        User.reset_token_expires_at > now,
+    ).first()
+    if not user:
+        raise HTTPException(status_code=400, detail="Reset link is invalid or has expired.")
+
+    user.hashed_password = hash_password(data.password)
+    user.reset_token_hash = None
+    user.reset_token_expires_at = None
+    user.failed_login_attempts = 0
+    user.locked_until = None
+    db.commit()
+    return {"status": "success", "message": "Password has been reset successfully."}
 
 
 @router.post("/logout", summary="Clear auth cookie")

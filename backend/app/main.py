@@ -9,13 +9,23 @@ Uses the refactored architecture:
 """
 
 import os
+import sys
 import time
 import uuid
+import logging
 from datetime import datetime, timedelta, timezone
 from contextlib import asynccontextmanager
 from dotenv import load_dotenv
 
 load_dotenv()
+
+logging.basicConfig(
+    level=getattr(logging, os.getenv("LOG_LEVEL", "INFO"), logging.INFO),
+    format="%(asctime)s [%(levelname)s] %(name)s — %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+    stream=sys.stdout,
+)
+logger = logging.getLogger("octosight")
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -45,6 +55,21 @@ from app.models import (
 
 from app.core.security import hash_password, limiter
 from app.core.error_handlers import register_error_handlers
+from slowapi.middleware import SlowAPIMiddleware
+
+# Optional Sentry SDK
+SENTRY_DSN = os.getenv("SENTRY_DSN", "")
+if SENTRY_DSN:
+    try:
+        import sentry_sdk
+        sentry_sdk.init(
+            dsn=SENTRY_DSN,
+            environment=settings.environment,
+            traces_sample_rate=0.1,
+        )
+        logger.info("Sentry SDK initialized (env=%s)", settings.environment)
+    except Exception as exc:
+        logger.warning("Sentry SDK init failed: %s", exc)
 from app.modules.rule_config.service import RuleConfigService
 
 # Backward-compat routers (migrating to api/v1/)
@@ -721,11 +746,11 @@ async def lifespan(app: FastAPI):
             break
         except Exception as exc:
             retries -= 1
-            print(f"[Startup] DB not ready, retrying... ({retries} left) — {exc}")
+            logger.warning("DB not ready, retrying... (%s left) — %s", retries, exc)
             time.sleep(5)
 
     if retries == 0:
-        print("[Startup] ERROR: Could not connect to database after 10 retries.")
+        logger.error("Could not connect to database after 10 retries.")
 
     yield
 
@@ -751,18 +776,33 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.allowed_origins_list,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization", "X-Requested-With"],
 )
+
+app.add_middleware(SlowAPIMiddleware)
 
 
 @app.middleware("http")
-async def add_security_headers(request, call_next):
+async def metrics_and_security(request, call_next):
+    start = time.time()
     response = await call_next(request)
+    duration = time.time() - start
+
+    # Security headers
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["X-XSS-Protection"] = "1; mode=block"
     response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+
+    # Basic request metrics logging
+    status_code = response.status_code
+    if status_code >= 500:
+        logger.error("Request: %s %s -> %d (%.3fs)", request.method, request.url.path, status_code, duration)
+    elif status_code >= 400:
+        logger.warning("Request: %s %s -> %d (%.3fs)", request.method, request.url.path, status_code, duration)
+    else:
+        logger.debug("Request: %s %s -> %d (%.3fs)", request.method, request.url.path, status_code, duration)
     return response
 
 

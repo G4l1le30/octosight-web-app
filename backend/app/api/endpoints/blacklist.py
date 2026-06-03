@@ -12,11 +12,11 @@ from urllib.parse import urlparse
 from datetime import datetime, timezone
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from app.core.security import get_current_user, require_admin
+from app.core.security import get_current_user, require_admin, limiter
 from app.db.session import get_db
 from app.models.models import BlacklistedURL, BlacklistedAccount, BlacklistedPhone, BlacklistedEmail
 from app.modules.activity.service import ActivityService
@@ -137,7 +137,9 @@ def _extract_domain(url: str) -> str:
 # ── Endpoints ─────────────────────────────────────────────────────────────────
 
 @router.post("", response_model=BlacklistResponse, summary="Add URL to blacklist (admin only)")
+@limiter.limit("10/minute")
 def add_to_blacklist(
+    request: Request,
     body: BlacklistAddRequest,
     db: Session = Depends(get_db),
     admin=Depends(require_admin),
@@ -269,7 +271,9 @@ def check_url(
 # ── Account Endpoints ─────────────────────────────────────────────────────────
 
 @router.post("/accounts", response_model=AccountBlacklistResponse, summary="Add bank account to blacklist")
+@limiter.limit("10/minute")
 def add_account_to_blacklist(
+    request: Request,
     body: AccountBlacklistAddRequest,
     db: Session = Depends(get_db),
     admin=Depends(require_admin),

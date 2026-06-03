@@ -46,12 +46,12 @@ export const Pagination: React.FC<PaginationProps> = ({
   return (
     <div
       className={cn(
-        "flex flex-col md:flex-row items-center justify-between gap-3 md:gap-4 px-4 md:px-6 py-4 bg-white border-t border-neutral-border",
+        "flex flex-col md:flex-row items-center justify-between gap-3 md:gap-4 px-4 md:px-6 py-3 md:py-4 bg-white border-t border-neutral-border",
         className,
       )}
     >
       <div className="flex items-center gap-6 md:gap-8">
-        <span className="text-sm text-secondary/80 font-medium">
+        <span className="text-xs md:text-sm text-secondary/80 font-medium">
           Showing{" "}
           <span className="text-secondary font-bold">
             {startItem}-{endItem}
@@ -59,14 +59,14 @@ export const Pagination: React.FC<PaginationProps> = ({
           of <span className="text-secondary font-bold">{totalItems}</span>{" "}
           reports
         </span>
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-bold text-secondary/80 tracking-wide">
+        <div className="flex items-center gap-1.5 md:gap-2">
+          <span className="text-xs md:text-sm font-bold text-secondary/80 tracking-wide">
             Show
           </span>
           <select
             value={itemsPerPage}
             onChange={(e) => onItemsPerPageChange(Number(e.target.value))}
-            className="text-sm font-bold bg-neutral-page border border-neutral-border rounded-lg px-2 py-1 outline-none focus:border-primary transition-all cursor-pointer"
+            className="text-xs md:text-sm font-bold bg-neutral-page border border-neutral-border rounded-md md:rounded-lg px-1.5 md:px-2 py-0.5 md:py-1 outline-none focus:border-primary transition-all cursor-pointer"
           >
             {[10, 20, 50].map((val) => (
               <option key={val} value={val}>
@@ -77,13 +77,13 @@ export const Pagination: React.FC<PaginationProps> = ({
         </div>
       </div>
 
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-0.5 md:gap-1">
         <button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          className="p-2 rounded-lg border border-neutral-border hover:bg-neutral-page disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+          className="p-1.5 md:p-2 rounded-md md:rounded-lg border border-neutral-border hover:bg-neutral-page disabled:opacity-30 disabled:cursor-not-allowed transition-all"
         >
-          <ChevronLeft className="h-4 w-4" />
+          <ChevronLeft className="h-3 md:h-4 w-3 md:w-4" />
         </button>
 
         {getPageNumbers().map((page, idx) => (
@@ -92,7 +92,7 @@ export const Pagination: React.FC<PaginationProps> = ({
             onClick={() => typeof page === "number" && onPageChange(page)}
             disabled={page === "..."}
             className={cn(
-              "min-w-[36px] h-9 flex items-center justify-center rounded-lg text-sm font-bold transition-all border",
+              "min-w-[36px] h-7 md:h-9 flex items-center justify-center rounded-md md:rounded-lg text-xs md:text-sm font-bold transition-all border",
               page === currentPage
                 ? "bg-primary text-white border-primary shadow-lg shadow-primary/20"
                 : page === "..."
@@ -107,9 +107,9 @@ export const Pagination: React.FC<PaginationProps> = ({
         <button
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
-          className="p-2 rounded-lg border border-neutral-border hover:bg-neutral-page disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+          className="p-1.5 md:p-2 rounded-md md:rounded-lg border border-neutral-border hover:bg-neutral-page disabled:opacity-30 disabled:cursor-not-allowed transition-all"
         >
-          <ChevronRight className="h-4 w-4" />
+          <ChevronRight className="h-3 md:h-4 w-3 md:w-4" />
         </button>
       </div>
     </div>

@@ -60,14 +60,17 @@ export default function BlacklistPage() {
   const [sortBy, setSortBy] = useState("created_at");
   const [sortDir, setSortDir] = useState("desc");
 
-  const toggleSort = useCallback((col: string) => {
-    if (col === sortBy) {
-      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
-    } else {
-      setSortBy(col);
-      setSortDir("desc");
-    }
-  }, [sortBy]);
+  const toggleSort = useCallback(
+    (col: string) => {
+      if (col === sortBy) {
+        setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+      } else {
+        setSortBy(col);
+        setSortDir("desc");
+      }
+    },
+    [sortBy],
+  );
 
   const showToast = (type: "success" | "error", message: string) => {
     setToast({ type, message });
@@ -94,18 +97,21 @@ export default function BlacklistPage() {
     setCurrentPage(1);
   }, [fetchEntries]);
 
-  const getEntryValue = useCallback((entry: BlacklistEntry) => {
-    switch (activeTab) {
-      case "url":
-        return entry.url;
-      case "account":
-        return `${entry.bank_name}: ${entry.account_number}`;
-      case "phone":
-        return entry.phone_number;
-      case "email":
-        return entry.email;
-    }
-  }, [activeTab]);
+  const getEntryValue = useCallback(
+    (entry: BlacklistEntry) => {
+      switch (activeTab) {
+        case "url":
+          return entry.url;
+        case "account":
+          return `${entry.bank_name}: ${entry.account_number}`;
+        case "phone":
+          return entry.phone_number;
+        case "email":
+          return entry.email;
+      }
+    },
+    [activeTab],
+  );
 
   const sortedEntries = useMemo(() => {
     const sorted = [...entries];
@@ -169,19 +175,19 @@ export default function BlacklistPage() {
   ];
 
   return (
-    <div className="container mx-auto px-4 py-6 md:py-8">
+    <div className="container mx-auto px-3 md:px-4 pb-6 md:pb-8">
       {/* Toast */}
       {toast && (
         <div
           className={cn(
-            "fixed top-6 right-6 z-50 flex items-center gap-2 px-6 py-4 rounded-xl shadow-lg font-semibold text-white text-sm transition-all animate-in slide-in-from-right-4",
+            "fixed top-6 right-6 z-50 flex items-center gap-1.5 md:gap-2 px-4 md:px-6 py-3 md:py-4 rounded-lg md:rounded-xl shadow-lg font-semibold text-white text-xs md:text-sm transition-all animate-in slide-in-from-right-4",
             toast.type === "success" ? "bg-green-600" : "bg-red-600",
           )}
         >
           {toast.type === "success" ? (
-            <CheckCircle2 className="w-5 h-5" />
+            <CheckCircle2 className="w-4 md:w-5 h-4 md:h-5" />
           ) : (
-            <XCircle className="w-5 h-5" />
+            <XCircle className="w-4 md:w-5 h-4 md:h-5" />
           )}
           <span>{toast.message}</span>
         </div>
@@ -194,7 +200,7 @@ export default function BlacklistPage() {
       />
 
       {/* Tabs */}
-      <div className="flex flex-wrap gap-2 mb-6">
+      <div className="flex flex-wrap gap-1.5 md:gap-2 mb-4 md:mb-6">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           return (
@@ -202,7 +208,7 @@ export default function BlacklistPage() {
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={cn(
-                "flex items-center gap-4 px-5 py-3 rounded-xl font-bold text-sm transition-all",
+                "flex items-center gap-3 md:gap-4 px-4 md:px-5 py-2 md:py-3 rounded-lg md:rounded-xl font-bold text-xs md:text-sm transition-all",
                 activeTab === tab.id
                   ? "bg-secondary text-white shadow-md scale-105"
                   : "bg-white text-secondary/80 border border-neutral-border hover:border-secondary/40 hover:bg-neutral-page",
@@ -216,23 +222,23 @@ export default function BlacklistPage() {
       </div>
 
       {/* Table */}
-      <div className="card bg-white border border-neutral-border shadow-sm rounded-3xl overflow-hidden">
+      <div className="card bg-white border border-neutral-border shadow-sm rounded-2xl md:rounded-3xl overflow-hidden">
         {loading ? (
-          <div className="p-20 text-center flex flex-col items-center gap-3">
+          <div className="p-14 md:p-20 text-center flex flex-col items-center gap-2 md:gap-3">
             <div className="size-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-            <p className="text-sm font-bold text-secondary/60">
+            <p className="text-xs md:text-sm font-bold text-secondary/60">
               Syncing with blacklist database...
             </p>
           </div>
         ) : entries.length === 0 ? (
-          <div className="p-20 text-center max-w-md mx-auto">
-            <div className="size-16 bg-neutral-page rounded-2xl flex items-center justify-center mx-auto mb-6">
+          <div className="p-14 md:p-20 text-center max-w-md mx-auto">
+            <div className="size-16 bg-neutral-page rounded-xl md:rounded-2xl flex items-center justify-center mx-auto mb-4 md:mb-6">
               <ShieldOff className="size-8 text-secondary/20" />
             </div>
             <p className="text-secondary font-bold text-base md:text-lg">
               No {activeTab}s blocked yet
             </p>
-            <p className="text-secondary/60 text-sm mt-2 font-medium">
+            <p className="text-secondary/60 text-xs md:text-sm mt-1.5 md:mt-2 font-medium">
               You can add new entries during ticket investigation or through the
               API.
             </p>
@@ -240,19 +246,31 @@ export default function BlacklistPage() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left">
-              <thead className="bg-neutral-page/50 text-sm font-bold text-secondary border-b border-neutral-border">
+              <thead className="bg-neutral-page/50 text-xs md:text-sm font-bold text-secondary border-b border-neutral-border">
                 <tr>
-                  <th className="px-6 md:px-8 py-4 md:py-5 cursor-pointer select-none" onClick={() => toggleSort("value")}>
-                    Blocked {activeTab} {sortBy === "value" && (sortDir === "asc" ? "↑" : "↓")}
+                  <th
+                    className="px-6 md:px-8 py-4 md:py-5 cursor-pointer select-none"
+                    onClick={() => toggleSort("value")}
+                  >
+                    Blocked {activeTab}{" "}
+                    {sortBy === "value" && (sortDir === "asc" ? "↑" : "↓")}
                   </th>
-                  <th className="px-6 md:px-8 py-4 md:py-5 text-center cursor-pointer select-none" onClick={() => toggleSort("reason")}>
-                    Reason / Modus {sortBy === "reason" && (sortDir === "asc" ? "↑" : "↓")}
+                  <th
+                    className="px-6 md:px-8 py-4 md:py-5 text-center cursor-pointer select-none"
+                    onClick={() => toggleSort("reason")}
+                  >
+                    Reason / Modus{" "}
+                    {sortBy === "reason" && (sortDir === "asc" ? "↑" : "↓")}
                   </th>
                   <th className="px-6 md:px-8 py-4 md:py-5 text-center">
                     Source Ticket
                   </th>
-                  <th className="px-6 md:px-8 py-4 md:py-5 text-center cursor-pointer select-none" onClick={() => toggleSort("created_at")}>
-                    Date Added {sortBy === "created_at" && (sortDir === "asc" ? "↑" : "↓")}
+                  <th
+                    className="px-6 md:px-8 py-4 md:py-5 text-center cursor-pointer select-none"
+                    onClick={() => toggleSort("created_at")}
+                  >
+                    Date Added{" "}
+                    {sortBy === "created_at" && (sortDir === "asc" ? "↑" : "↓")}
                   </th>
                   <th className="px-6 md:px-8 py-4 md:py-5 text-center">
                     Actions
@@ -265,23 +283,23 @@ export default function BlacklistPage() {
                     key={entry.id}
                     className="hover:bg-neutral-page/30 transition-colors group"
                   >
-                    <td className="px-6 py-4">
+                    <td className="px-4 md:px-6 py-3 md:py-4">
                       <div className="flex flex-col">
                         <span
-                          className="font-semibold text-secondary text-sm break-all"
+                          className="font-semibold text-secondary text-xs md:text-sm break-all"
                           title={getEntryValue(entry)}
                         >
                           {getEntryValue(entry)}
                         </span>
                         {activeTab === "url" && (
-                          <span className="text-xs font-semibold text-secondary/60 mt-1">
+                          <span className="text-xs font-semibold text-secondary/60 mt-0.5 md:mt-1">
                             {entry.domain}
                           </span>
                         )}
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-center">
-                      <p className="text-sm font-semibold text-secondary/80 max-w-xs break-words inline-block text-left">
+                    <td className="px-4 md:px-6 py-3 md:py-4 text-center">
+                      <p className="text-xs md:text-sm font-semibold text-secondary/80 max-w-xs break-words inline-block text-left">
                         {entry.reason || (
                           <span className="text-secondary/60 font-medium">
                             No details provided
@@ -289,11 +307,11 @@ export default function BlacklistPage() {
                         )}
                       </p>
                     </td>
-                    <td className="px-6 py-4 text-center">
+                    <td className="px-4 md:px-6 py-3 md:py-4 text-center">
                       {entry.ticket_id ? (
                         <Link
                           href={`/admin/investigate/${entry.ticket_id}`}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary/5 text-primary text-xs font-semibold rounded-lg hover:bg-primary hover:text-white transition-all border border-primary/10"
+                          className="inline-flex items-center gap-1 md:gap-1.5 px-2 md:px-3 py-1 md:py-1.5 bg-primary/5 text-primary text-xs font-semibold rounded-md md:rounded-lg hover:bg-primary hover:text-white transition-all border border-primary/10"
                         >
                           {entry.ticket_id}
                         </Link>
@@ -303,12 +321,12 @@ export default function BlacklistPage() {
                         </span>
                       )}
                     </td>
-                    <td className="px-6 py-4 text-center">
+                    <td className="px-4 md:px-6 py-3 md:py-4 text-center">
                       <span className="text-xs font-semibold text-secondary/80">
                         {formatDateTime(entry.created_at).date}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-center">
+                    <td className="px-4 md:px-6 py-3 md:py-4 text-center">
                       <button
                         onClick={() =>
                           handleRemoveClick(
@@ -317,7 +335,7 @@ export default function BlacklistPage() {
                           )
                         }
                         disabled={removing === entry.id}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-risk-high hover:bg-risk-high/5 rounded-lg transition-all disabled:opacity-50"
+                        className="inline-flex items-center gap-1 md:gap-1.5 px-2 md:px-3 py-1 md:py-1.5 text-xs font-bold text-risk-high hover:bg-risk-high/5 rounded-md md:rounded-lg transition-all disabled:opacity-50"
                       >
                         <Trash2 className="size-3.5" />
                         Delete

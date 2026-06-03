@@ -64,16 +64,16 @@ export const AuditTrail: React.FC<AuditTrailProps> = ({
     if (variant === "card") {
       return (
         <div className="card p-6 md:p-8 h-full flex flex-col">
-          <h3 className="text-lg md:text-xl font-bold text-secondary mb-4 md:mb-6 flex items-center gap-2">
+          <h3 className="text-lg md:text-xl font-bold text-secondary mb-4 md:mb-6 flex items-center gap-1.5 md:gap-2">
             Audit Trail
           </h3>
-          <div className="space-y-3 flex-1">
+          <div className="space-y-2 md:space-y-3 flex-1">
             {[...Array(3)].map((_, i) => (
-              <div key={i} className="flex gap-3 animate-pulse">
+              <div key={i} className="flex gap-2 md:gap-3 animate-pulse">
                 <div className="size-8 rounded-full bg-neutral-border flex-shrink-0" />
-                <div className="flex-1 space-y-1.5 pt-1">
-                  <div className="h-3 bg-neutral-border rounded w-3/4" />
-                  <div className="h-2 bg-neutral-border/60 rounded w-1/2" />
+                <div className="flex-1 space-y-1 md:space-y-1.5 pt-0.5 md:pt-1">
+                  <div className="h-2 md:h-3 bg-neutral-border rounded w-2 md:w-3" />
+                  <div className="h-1.5 md:h-2 bg-neutral-border/60 rounded w-0.5 md:w-1" />
                 </div>
               </div>
             ))}
@@ -82,14 +82,14 @@ export const AuditTrail: React.FC<AuditTrailProps> = ({
       );
     }
     return (
-      <div className="space-y-3 animate-pulse">
-        <div className="h-4 bg-neutral-border rounded w-32 mb-4" />
+      <div className="space-y-2 md:space-y-3 animate-pulse">
+        <div className="h-3 md:h-4 bg-neutral-border rounded w-24 md:w-32 mb-3 md:mb-4" />
         {[...Array(3)].map((_, i) => (
-          <div key={i} className="flex gap-3">
+          <div key={i} className="flex gap-2 md:gap-3">
             <div className="size-8 rounded-full bg-neutral-border flex-shrink-0" />
-            <div className="flex-1 space-y-1.5 pt-1">
-              <div className="h-3 bg-neutral-border rounded w-3/4" />
-              <div className="h-2 bg-neutral-border/60 rounded w-1/2" />
+            <div className="flex-1 space-y-1 md:space-y-1.5 pt-0.5 md:pt-1">
+              <div className="h-2 md:h-3 bg-neutral-border rounded w-2 md:w-3" />
+              <div className="h-1.5 md:h-2 bg-neutral-border/60 rounded w-0.5 md:w-1" />
             </div>
           </div>
         ))}
@@ -101,7 +101,7 @@ export const AuditTrail: React.FC<AuditTrailProps> = ({
     <div className="space-y-0">
       {/* Ticket Submitted (always first if provided) */}
       {submittedAt && (
-        <div className="flex gap-3">
+        <div className="flex gap-2 md:gap-3">
           <div className="flex flex-col items-center">
             <div className="size-8 rounded-full bg-white border-2 border-neutral-border flex items-center justify-center text-secondary shrink-0 z-10 relative">
               <FileText className="size-4" />
@@ -110,9 +110,9 @@ export const AuditTrail: React.FC<AuditTrailProps> = ({
               <div className="w-0.5 grow bg-neutral-border/60" />
             )}
           </div>
-          <div className="pb-6 min-w-0 flex-1 pt-1.5 flex justify-between items-start gap-3 md:gap-4">
+          <div className="pb-4 md:pb-6 min-w-0 flex-1 pt-1 md:pt-1.5 flex justify-between items-start gap-3 md:gap-4">
             <div>
-              <p className="text-sm font-bold text-secondary leading-snug">
+              <p className="text-xs md:text-sm font-bold text-secondary leading-snug">
                 Report submitted
               </p>
               <p className="text-xs text-secondary/60 font-medium mt-0.5">
@@ -129,23 +129,23 @@ export const AuditTrail: React.FC<AuditTrailProps> = ({
         const Icon = getActionIcon(log);
 
         return (
-          <div key={log.id} className="flex gap-3">
+          <div key={log.id} className="flex gap-2 md:gap-3">
             <div className="flex flex-col items-center">
               <div className="size-8 rounded-full bg-white border-2 border-neutral-border flex items-center justify-center text-secondary shrink-0 z-10 relative">
                 <Icon className="size-4" />
               </div>
               {!isLast && <div className="w-0.5 grow bg-neutral-border/60" />}
             </div>
-            <div className="pb-6 min-w-0 flex-1 pt-1.5 flex justify-between items-start gap-3 md:gap-4">
+            <div className="pb-4 md:pb-6 min-w-0 flex-1 pt-1 md:pt-1.5 flex justify-between items-start gap-3 md:gap-4">
               <div>
-                <p className="text-sm font-bold text-secondary leading-snug">
+                <p className="text-xs md:text-sm font-bold text-secondary leading-snug">
                   {log.action_taken}
                 </p>
                 <p className="text-xs text-secondary/60 font-medium mt-0.5">
                   {log.admin_name} · {formatDateTime(log.created_at).full}
                 </p>
                 {log.notes && (
-                  <div className="mt-2 p-2.5 bg-neutral-page/60 rounded-lg border border-neutral-border/60">
+                  <div className="mt-1.5 md:mt-2 p-2 md:p-2.5 bg-neutral-page/60 rounded-md md:rounded-lg border border-neutral-border/60">
                     <p className="text-xs font-medium text-secondary/70 leading-relaxed">
                       &quot;{log.notes}&quot;
                     </p>
@@ -165,8 +165,8 @@ export const AuditTrail: React.FC<AuditTrailProps> = ({
       })}
 
       {!submittedAt && logs.length === 0 && (
-        <div className="flex items-center w-full text-sm text-secondary/80 font-medium py-4">
-          <Info className="size-4 mr-2" />
+        <div className="flex items-center w-full text-xs md:text-sm text-secondary/80 font-medium py-3 md:py-4">
+          <Info className="size-4 mr-1.5 md:mr-2" />
           No actions recorded yet.
         </div>
       )}
@@ -176,11 +176,11 @@ export const AuditTrail: React.FC<AuditTrailProps> = ({
   if (variant === "card") {
     return (
       <div className="card p-6 md:p-8 h-full flex flex-col">
-        <div className="flex items-center justify-between mb-5">
-          <h3 className="text-lg md:text-xl font-bold text-secondary flex items-center gap-2">
+        <div className="flex items-center justify-between mb-4 md:mb-5">
+          <h3 className="text-lg md:text-xl font-bold text-secondary flex items-center gap-1.5 md:gap-2">
             Audit Trail
           </h3>
-          <span className="text-xs font-bold text-secondary/60 bg-neutral-page px-2 py-1 rounded-full border border-neutral-border">
+          <span className="text-xs font-bold text-secondary/60 bg-neutral-page px-1.5 md:px-2 py-0.5 md:py-1 rounded-full border border-neutral-border">
             {logs.length + (submittedAt ? 1 : 0)}{" "}
             {logs.length + (submittedAt ? 1 : 0) === 1 ? "entry" : "entries"}
           </span>
@@ -191,8 +191,8 @@ export const AuditTrail: React.FC<AuditTrailProps> = ({
   }
 
   return (
-    <div className="space-y-3 mt-6">
-      <h4 className="text-base font-bold text-secondary">Audit Trail</h4>
+    <div className="space-y-2 md:space-y-3 mt-4 md:mt-6">
+      <h4 className="text-sm md:text-base font-bold text-secondary">Audit Trail</h4>
       {content}
     </div>
   );

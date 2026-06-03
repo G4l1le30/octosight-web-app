@@ -11,6 +11,8 @@ from app.schemas.auth import (
     GoogleLoginRequest,
     UserResponse,
     DeleteAccountRequest,
+    ForgotPasswordRequest,
+    ResetPasswordRequest,
 )
 from app.schemas.ticket import (
     TicketUpdate,

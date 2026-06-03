@@ -27,13 +27,13 @@ const Navbar: React.FC = () => {
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-neutral-border shadow-sm">
-      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2">
+      <div className="container mx-auto px-3 md:px-4 h-12 md:h-16 flex items-center justify-between">
+        <Link href="/" className="flex items-center gap-1.5 md:gap-2">
           <span className="text-primary text-xl md:text-2xl font-black tracking-wide">
             OCTOSIGHT
           </span>
           {isAdminRoute && (
-            <span className="ml-1 px-1.5 py-0.5 bg-primary text-sm font-bold text-white rounded">
+            <span className="ml-0.5 md:ml-1 px-1 md:px-1.5 py-0.5 bg-primary text-xs md:text-sm font-bold text-white rounded">
               ADMIN
             </span>
           )}
@@ -117,10 +117,10 @@ const Navbar: React.FC = () => {
             </>
           )}
 
-          <div className="self-center w-px h-4 bg-neutral-border mx-2"></div>
+          <div className="self-center w-px h-3 md:h-4 bg-neutral-border mx-1.5 md:mx-2"></div>
 
           {user && !loading ? (
-            <div className="self-center flex items-center gap-2">
+            <div className="self-center flex items-center gap-1.5 md:gap-2">
               <NotificationBell />
               <ProfileDropdown
                 user={user}
@@ -129,16 +129,16 @@ const Navbar: React.FC = () => {
               />
             </div>
           ) : (
-            <div className="self-center flex items-center gap-2">
+            <div className="self-center flex items-center gap-1.5 md:gap-2">
               <Link
                 href="/login"
-                className="text-sm font-bold text-secondary hover:text-primary px-3 py-1.5 transition-colors"
+                className="text-xs md:text-sm font-bold text-secondary hover:text-primary px-2 md:px-3 py-1 md:py-1.5 transition-colors"
               >
                 Sign In
               </Link>
               <Link
                 href="/register"
-                className="text-sm font-bold text-white bg-primary hover:bg-primary-dark px-4 py-1.5 rounded-lg transition-all"
+                className="text-xs md:text-sm font-bold text-white bg-primary hover:bg-primary-dark px-3 md:px-4 py-1 md:py-1.5 rounded-md md:rounded-lg transition-all"
               >
                 Register
               </Link>
@@ -148,12 +148,12 @@ const Navbar: React.FC = () => {
 
         {/* Mobile menu button */}
         <button
-          className="lg:hidden text-secondary p-2"
+          className="lg:hidden text-secondary p-1.5 md:p-2"
           onClick={() => setMobileOpen(!mobileOpen)}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="h-6 w-6"
+            className="h-4 md:h-6 w-4 md:w-6"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -170,14 +170,14 @@ const Navbar: React.FC = () => {
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="lg:hidden bg-white border-t border-neutral-border px-4 py-4 space-y-2 animate-in slide-in-from-top-2 duration-200">
+        <div className="lg:hidden bg-white border-t border-neutral-border px-3 md:px-4 py-3 md:py-4 space-y-1.5 md:space-y-2 animate-in slide-in-from-top-2 duration-200">
           {isAdminRoute ? (
             <>
               {can("dashboard.view") && (
                 <Link
                   href="/admin"
                   onClick={() => setMobileOpen(false)}
-                  className="block py-2 text-sm font-medium hover:text-primary"
+                  className="block py-1.5 md:py-2 text-xs md:text-sm font-medium hover:text-primary"
                 >
                   Dashboard
                 </Link>
@@ -187,14 +187,14 @@ const Navbar: React.FC = () => {
                   <Link
                     href="/admin/triage"
                     onClick={() => setMobileOpen(false)}
-                    className="block py-2 text-sm font-medium hover:text-primary"
+                    className="block py-1.5 md:py-2 text-xs md:text-sm font-medium hover:text-primary"
                   >
                     Triage
                   </Link>
                   <Link
                     href="/admin/kanban"
                     onClick={() => setMobileOpen(false)}
-                    className="block py-2 text-sm font-medium hover:text-primary"
+                    className="block py-1.5 md:py-2 text-xs md:text-sm font-medium hover:text-primary"
                   >
                     Kanban
                   </Link>
@@ -204,7 +204,7 @@ const Navbar: React.FC = () => {
                 <Link
                   href="/admin/blacklist"
                   onClick={() => setMobileOpen(false)}
-                  className="block py-2 text-sm font-medium hover:text-primary"
+                  className="block py-1.5 md:py-2 text-xs md:text-sm font-medium hover:text-primary"
                 >
                   Blacklist
                 </Link>
@@ -213,7 +213,7 @@ const Navbar: React.FC = () => {
                 <Link
                   href="/admin/rule-config"
                   onClick={() => setMobileOpen(false)}
-                  className="block py-2 text-sm font-medium hover:text-primary"
+                  className="block py-1.5 md:py-2 text-xs md:text-sm font-medium hover:text-primary"
                 >
                   Rules
                 </Link>
@@ -222,7 +222,7 @@ const Navbar: React.FC = () => {
                 <Link
                   href="/admin/transactions"
                   onClick={() => setMobileOpen(false)}
-                  className="block py-2 text-sm font-medium hover:text-primary"
+                  className="block py-1.5 md:py-2 text-xs md:text-sm font-medium hover:text-primary"
                 >
                   Transactions
                 </Link>
@@ -231,7 +231,7 @@ const Navbar: React.FC = () => {
                 <Link
                   href="/admin/users"
                   onClick={() => setMobileOpen(false)}
-                  className="block py-2 text-sm font-medium hover:text-primary"
+                  className="block py-1.5 md:py-2 text-xs md:text-sm font-medium hover:text-primary"
                 >
                   Users
                 </Link>
@@ -242,21 +242,21 @@ const Navbar: React.FC = () => {
               <Link
                 href="/"
                 onClick={() => setMobileOpen(false)}
-                className="block py-2 text-sm font-medium hover:text-primary"
+                className="block py-1.5 md:py-2 text-xs md:text-sm font-medium hover:text-primary"
               >
                 Home
               </Link>
               <Link
                 href="/report"
                 onClick={() => setMobileOpen(false)}
-                className="block py-2 text-sm font-medium hover:text-primary"
+                className="block py-1.5 md:py-2 text-xs md:text-sm font-medium hover:text-primary"
               >
                 Report Incident
               </Link>
               <Link
                 href="/check"
                 onClick={() => setMobileOpen(false)}
-                className="block py-2 text-sm font-medium hover:text-primary"
+                className="block py-1.5 md:py-2 text-xs md:text-sm font-medium hover:text-primary"
               >
                 Fraud Check
               </Link>
@@ -264,7 +264,7 @@ const Navbar: React.FC = () => {
                 <Link
                   href="/status"
                   onClick={() => setMobileOpen(false)}
-                  className="block py-2 text-sm font-medium hover:text-primary"
+                  className="block py-1.5 md:py-2 text-xs md:text-sm font-medium hover:text-primary"
                 >
                   Check Status
                 </Link>
@@ -272,29 +272,29 @@ const Navbar: React.FC = () => {
               <Link
                 href="/edu"
                 onClick={() => setMobileOpen(false)}
-                className="block py-2 text-sm font-medium hover:text-primary"
+                className="block py-1.5 md:py-2 text-xs md:text-sm font-medium hover:text-primary"
               >
                 E-Learning
               </Link>
             </>
           )}
 
-          <div className="border-t border-neutral-border pt-3 mt-3">
+          <div className="border-t border-neutral-border pt-2 md:pt-3 mt-2 md:mt-3">
             {user ? (
               <>
-                <div className="flex items-center gap-2 md:gap-3 mb-3">
-                  <div className="w-8 h-8 bg-primary/10 text-primary rounded-full flex items-center justify-center text-xs font-bold">
+                <div className="flex items-center gap-2 md:gap-3 mb-2 md:mb-3">
+                  <div className="w-6 md:w-8 h-6 md:h-8 bg-primary/10 text-primary rounded-full flex items-center justify-center text-xs font-bold">
                     {user.full_name.charAt(0).toUpperCase()}
                   </div>
                   <div>
-                    <p className="text-sm font-bold">{user.full_name}</p>
+                    <p className="text-xs md:text-sm font-bold">{user.full_name}</p>
                     <p className="text-xs text-secondary/60">{user.email}</p>
                   </div>
                 </div>
                   <Link
                     href="/profile"
                     onClick={() => setMobileOpen(false)}
-                    className="block py-2 text-sm font-bold text-primary"
+                    className="block py-1.5 md:py-2 text-xs md:text-sm font-bold text-primary"
                   >
                     Profile
                   </Link>
@@ -302,7 +302,7 @@ const Navbar: React.FC = () => {
                     <Link
                       href={isAdminRoute ? "/" : "/admin"}
                       onClick={() => setMobileOpen(false)}
-                      className="block py-2 text-sm font-bold text-primary"
+                      className="block py-1.5 md:py-2 text-xs md:text-sm font-bold text-primary"
                     >
                       {isAdminRoute ? "User Page" : "Admin Dashboard"}
                     </Link>
@@ -313,24 +313,24 @@ const Navbar: React.FC = () => {
                     setMobileOpen(false);
                     window.location.href = "/";
                   }}
-                  className="block w-full text-left py-2 text-sm font-bold text-risk-high"
+                  className="block w-full text-left py-1.5 md:py-2 text-xs md:text-sm font-bold text-risk-high"
                 >
                   Sign Out
                 </button>
               </>
             ) : (
-              <div className="flex gap-2">
+              <div className="flex gap-1.5 md:gap-2">
                 <Link
                   href="/login"
                   onClick={() => setMobileOpen(false)}
-                  className="flex-1 text-center py-2 text-sm font-bold border border-neutral-border rounded-lg"
+                  className="flex-1 text-center py-1.5 md:py-2 text-xs md:text-sm font-bold border border-neutral-border rounded-md md:rounded-lg"
                 >
                   Sign In
                 </Link>
                 <Link
                   href="/register"
                   onClick={() => setMobileOpen(false)}
-                  className="flex-1 text-center py-2 text-sm font-bold bg-primary text-white rounded-lg"
+                  className="flex-1 text-center py-1.5 md:py-2 text-xs md:text-sm font-bold bg-primary text-white rounded-md md:rounded-lg"
                 >
                   Register
                 </Link>

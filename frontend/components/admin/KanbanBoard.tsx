@@ -73,7 +73,7 @@ function PriorityLabel({ priority }: { priority: string }) {
   return (
     <span
       className={cn(
-        "text-xs font-bold px-2 py-1 rounded-full border",
+        "text-xs font-bold px-1.5 md:px-2 py-0.5 md:py-1 rounded-full border",
         colors[priority] || "bg-gray-100 text-gray-600 border-gray-200",
       )}
     >
@@ -92,7 +92,7 @@ function TypeBadge({ type }: { type: string }) {
   return (
     <span
       className={cn(
-        "text-[10px] font-semibold px-2 py-1 rounded-full",
+        "text-xs font-semibold px-1.5 md:px-2 py-0.5 md:py-1 rounded-full",
         colors[type] || "bg-gray-100 text-gray-600",
       )}
     >
@@ -131,18 +131,18 @@ function KanbanCard({ ticket }: { ticket: KanbanTicket }) {
     <div
       ref={setNodeRef}
       style={style}
-      className="bg-white rounded-xl border border-neutral-border shadow-sm hover:shadow-md transition-all cursor-grab active:cursor-grabbing overflow-hidden"
+      className="bg-white rounded-lg md:rounded-xl border border-neutral-border shadow-sm hover:shadow-md transition-all cursor-grab active:cursor-grabbing overflow-hidden"
       {...attributes}
       {...listeners}
     >
       <div
         className={cn(
-          "h-1.5",
+          "h-1 md:h-1.5",
           priorityColors[ticket.priority] || "bg-gray-300",
         )}
       />
-      <div className="p-3 space-y-2">
-        <div className="flex items-start justify-between gap-3">
+      <div className="p-2 md:p-3 space-y-1.5 md:space-y-2">
+        <div className="flex items-start justify-between gap-2 md:gap-3">
           <Link
             href={`/admin/investigate/${ticket.ticket_id}`}
             className="text-xs font-bold text-secondary hover:text-primary hover:underline truncate"
@@ -151,7 +151,7 @@ function KanbanCard({ ticket }: { ticket: KanbanTicket }) {
             {ticket.ticket_id}
           </Link>
           <span
-            className="text-xs font-bold px-2 py-1 rounded-full shrink-0"
+            className="text-xs font-bold px-1.5 md:px-2 py-0.5 md:py-1 rounded-full shrink-0"
             style={{
               backgroundColor: riskColor.hex + "20",
               color: riskColor.hex,
@@ -160,13 +160,13 @@ function KanbanCard({ ticket }: { ticket: KanbanTicket }) {
             {ticket.risk_score?.toFixed(0) || "0"}
           </span>
         </div>
-        <p className="text-sm text-secondary/70 line-clamp-2 leading-normal">
+        <p className="text-xs md:text-sm text-secondary/70 line-clamp-2 leading-normal">
           {ticket.summary || "No summary"}
         </p>
-        <div className="flex flex-wrap items-center gap-2 pt-1">
+        <div className="flex flex-wrap items-center gap-1.5 md:gap-2 pt-0.5 md:pt-1">
           <TypeBadge type={ticket.type || ""} />
           <PriorityLabel priority={ticket.priority} />
-          <span className="text-xs font-semibold px-2 py-1 rounded-full bg-neutral-page text-secondary border border-neutral-border">
+          <span className="text-xs font-semibold px-1.5 md:px-2 py-0.5 md:py-1 rounded-full bg-neutral-page text-secondary border border-neutral-border">
             {ticket.status}
           </span>
         </div>
@@ -206,21 +206,22 @@ function KanbanColumn({
     <div
       ref={setNodeRef}
       className={cn(
-        "flex flex-col rounded-xl border border-neutral-border min-w-[250px] max-w-[280px] flex-shrink-0 bg-white",
+        "flex flex-col rounded-lg md:rounded-xl border border-neutral-border min-w-[250px] max-w-[280px] flex-shrink-0 bg-white",
         columnColors[status] ? "" : "border-gray-300",
       )}
     >
-      <div className="px-3 py-2.5 flex items-center gap-2 border-b border-neutral-border/50 bg-neutral-page/60">
+      <div className="px-2 md:px-3 py-2 md:py-2.5 flex items-center gap-1.5 md:gap-2 border-b border-neutral-border/50 bg-neutral-page/60">
         <div
-          className={cn("w-2.5 h-2.5 rounded-full shrink-0", headerBg[status])}
+          className={cn("w-2 md:w-2.5 h-2 md:h-2.5 rounded-full shrink-0", headerBg[status])}
         />
-        <h3 className="text-sm font-bold text-secondary">{status}</h3>
-        <span className="text-xs font-bold text-secondary/60 bg-gray-100 px-1.5 py-0.5 rounded-full ml-auto">
+        <h3 className="text-xs md:text-sm font-bold text-secondary">{status}</h3>
+        <span className="text-xs font-bold text-secondary/60 bg-gray-100 px-1 md:px-1.5 py-0.5 rounded-full ml-auto">
           {tickets.length}
         </span>
       </div>
-      <div className="flex-1 p-3 space-y-3 overflow-y-auto min-h-[150px] max-h-[calc(100vh-200px)]">
+      <div className="flex-1 p-2 md:p-3 space-y-2 md:space-y-3 overflow-y-auto min-h-[150px] max-h-[calc(100vh-200px)]">
         <SortableContext
+          id={status}
           items={tickets.map((t) => t.ticket_id)}
           strategy={verticalListSortingStrategy}
         >
@@ -229,7 +230,7 @@ function KanbanColumn({
           ))}
         </SortableContext>
         {tickets.length === 0 && (
-          <p className="text-xs text-secondary/60 text-center py-10 font-medium">
+          <p className="text-xs text-secondary/60 text-center py-8 md:py-10 font-medium">
             No tickets
           </p>
         )}
@@ -366,17 +367,17 @@ export default function KanbanBoard({
     >
       <div
         className={cn(
-          "flex gap-4 overflow-x-auto pb-4",
+          "flex gap-3 md:gap-4 overflow-x-auto pb-3 md:pb-4",
           compact && "max-h-[420px]",
         )}
       >
         {loading && (
-          <div className="text-sm font-semibold text-secondary/60 p-4">
+          <div className="text-xs md:text-sm font-semibold text-secondary/60 p-3 md:p-4">
             Loading tickets...
           </div>
         )}
         {!loading && error && (
-          <div className="text-sm font-semibold text-risk-high p-4">
+          <div className="text-xs md:text-sm font-semibold text-risk-high p-3 md:p-4">
             {error}
           </div>
         )}
@@ -389,18 +390,18 @@ export default function KanbanBoard({
 
       <DragOverlay>
         {activeTicket && (
-          <div className="bg-white rounded-lg border-2 border-primary/40 shadow-xl opacity-90 overflow-hidden w-[250px] rotate-3">
-            <div className="h-1.5 bg-primary" />
-            <div className="p-3 space-y-1.5">
+          <div className="bg-white rounded-md md:rounded-lg border-2 border-primary/40 shadow-xl opacity-90 overflow-hidden w-[250px] rotate-3">
+            <div className="h-1 md:h-1.5 bg-primary" />
+            <div className="p-2 md:p-3 space-y-1 md:space-y-1.5">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-primary">
                   {activeTicket.ticket_id}
                 </span>
-                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-primary/10 text-primary">
+                <span className="text-xs font-bold px-1 md:px-1.5 py-0.5 rounded bg-primary/10 text-primary">
                   {activeTicket.risk_score?.toFixed(0)}
                 </span>
               </div>
-              <p className="text-[11px] text-secondary/70 line-clamp-2">
+              <p className="text-xs text-secondary/70 line-clamp-2">
                 {activeTicket.summary}
               </p>
             </div>

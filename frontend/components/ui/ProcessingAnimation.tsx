@@ -42,11 +42,11 @@ export const ProcessingAnimation: React.FC<{
   }, []);
 
   return (
-    <div className="relative flex flex-col items-center justify-center p-12 text-center space-y-10 animate-in fade-in duration-500">
+    <div className="relative flex flex-col items-center justify-center p-10 md:p-12 text-center space-y-8 md:space-y-10 animate-in fade-in duration-500">
       {onCancel && (
         <button
           onClick={onCancel}
-          className="absolute top-0 right-0 p-2 rounded-full text-secondary/60 hover:text-secondary hover:bg-neutral-border/30 transition-colors"
+          className="absolute top-0 right-0 p-1.5 md:p-2 rounded-full text-secondary/60 hover:text-secondary hover:bg-neutral-border/30 transition-colors"
           aria-label="Cancel"
         >
           <X className="size-5" />
@@ -60,23 +60,23 @@ export const ProcessingAnimation: React.FC<{
         />
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-1.5 md:space-y-2">
         <h2 className="text-lg md:text-xl font-bold text-secondary tracking-tight">
           {title}
         </h2>
-        <p className="text-sm text-secondary/60 font-medium tracking-wide">
+        <p className="text-xs md:text-sm text-secondary/60 font-medium tracking-wide">
           {processingSteps[step]}
         </p>
       </div>
 
       {/* Progress Bar */}
-      <div className="w-full max-w-xs h-1 bg-neutral-border/50 rounded-full overflow-hidden">
+      <div className="w-full max-w-xs h-0.5 md:h-1 bg-neutral-border/50 rounded-full overflow-hidden">
         <div
           className="h-full bg-primary transition-all duration-1000 ease-out"
           style={{ width: `${((step + 1) / processingSteps.length) * 100}%` }}
         />
       </div>
-      <p className="text-xs text-secondary/50 italic tracking-wide max-w-xs">
+      <p className="text-xs md:text-sm font-medium text-secondary/80 tracking-wide max-w-xs">
         Tip: {tip}
       </p>
     </div>

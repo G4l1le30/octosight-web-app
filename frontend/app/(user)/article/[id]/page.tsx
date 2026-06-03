@@ -48,14 +48,14 @@ function renderContent(content?: any) {
 
   if (Array.isArray(content)) {
     return content.map((section, i) => (
-      <div key={i} className="mb-8">
+      <div key={i} className="mb-6 md:mb-8">
         {section.heading && (
-          <h2 className="text-xl md:text-2xl font-bold mt-0 mb-3">
+          <h2 className="text-xl md:text-2xl font-bold mt-0 mb-2 md:mb-3">
             {section.heading}
           </h2>
         )}
         {section.body && (
-          <p className="text-base md:text-lg leading-relaxed mb-3 text-secondary text-justify">
+          <p className="text-base md:text-lg leading-relaxed mb-2 md:mb-3 text-secondary text-justify">
             {renderBoldInline(section.body)}
           </p>
         )}
@@ -68,14 +68,14 @@ function renderContent(content?: any) {
     const trimmed = line.trim();
     if (trimmed.startsWith("## ")) {
       return (
-        <h2 key={i} className="text-xl md:text-2xl font-bold mt-8 mb-3">
+        <h2 key={i} className="text-xl md:text-2xl font-bold mt-6 md:mt-8 mb-2 md:mb-3">
           {renderBoldInline(trimmed.replace("## ", ""))}
         </h2>
       );
     }
     if (trimmed.startsWith("**") && trimmed.endsWith("**")) {
       return (
-        <h3 key={i} className="text-lg font-bold mt-6 mb-2 text-primary">
+        <h3 key={i} className="text-base md:text-lg font-bold mt-4 md:mt-6 mb-1.5 md:mb-2 text-primary">
           {renderBoldInline(trimmed.replace(/\*\*/g, ""))}
         </h3>
       );
@@ -84,7 +84,7 @@ function renderContent(content?: any) {
       return (
         <li
           key={i}
-          className="ml-5 list-decimal text-base md:text-lg leading-relaxed mb-1.5 text-secondary"
+          className="ml-4 md:ml-5 list-decimal text-base md:text-lg leading-relaxed mb-1 md:mb-1.5 text-secondary"
         >
           {renderBoldInline(trimmed.replace(/^\d+\.\s*/, ""))}
         </li>
@@ -95,17 +95,17 @@ function renderContent(content?: any) {
       return (
         <li
           key={i}
-          className="ml-5 list-disc text-base md:text-lg leading-relaxed mb-1.5 text-secondary"
+          className="ml-4 md:ml-5 list-disc text-base md:text-lg leading-relaxed mb-1 md:mb-1.5 text-secondary"
         >
           {renderBoldInline(c)}
         </li>
       );
     }
-    if (trimmed === "") return <div key={i} className="h-3" />;
+    if (trimmed === "") return <div key={i} className="h-2 md:h-3" />;
     return (
       <p
         key={i}
-        className="text-base md:text-lg leading-relaxed mb-3 text-secondary text-justify"
+        className="text-base md:text-lg leading-relaxed mb-2 md:mb-3 text-secondary text-justify"
       >
         {renderBoldInline(trimmed)}
       </p>
@@ -146,7 +146,7 @@ export default function ArticlePage() {
         setRelatedArticles(data.related_articles || []);
         setIsRead(data.is_read || false);
       } catch (err: any) {
-        toast.error(err.message);
+        toast.error(err.message || "Something went wrong loading the article");
       } finally {
         setLoading(false);
       }
@@ -205,9 +205,9 @@ export default function ArticlePage() {
 
   if (authLoading || loading)
     return (
-      <div className="container mx-auto px-4 py-32 text-center">
-        <Loader2 className="animate-spin size-12 text-primary mx-auto mb-4" />
-        <p className="text-secondary font-semibold text-lg">
+      <div className="container mx-auto px-3 md:px-4 py-24 md:py-32 text-center">
+        <Loader2 className="animate-spin size-12 text-primary mx-auto mb-3 md:mb-4" />
+        <p className="text-secondary font-semibold text-base md:text-lg">
           Loading article...
         </p>
       </div>
@@ -215,24 +215,24 @@ export default function ArticlePage() {
 
   if (!article)
     return (
-      <div className="container mx-auto px-4 py-32 text-center max-w-xl">
+      <div className="container mx-auto px-3 md:px-4 py-24 md:py-32 text-center max-w-xl">
         {forbidden ? (
-          <div className="bg-amber-50 text-amber-800 p-8 rounded-2xl border border-amber-200 mb-6">
-            <BookOpen className="size-14 mx-auto mb-4" />
-            <h2 className="text-xl md:text-2xl font-bold mb-2">
+          <div className="bg-amber-50 text-amber-800 p-6 md:p-8 rounded-xl md:rounded-2xl border border-amber-200 mb-4 md:mb-6">
+            <BookOpen className="size-14 mx-auto mb-3 md:mb-4" />
+            <h2 className="text-xl md:text-2xl font-bold mb-1.5 md:mb-2">
               Article Locked
             </h2>
-            <p className="text-base font-medium opacity-80">
+            <p className="text-sm md:text-base font-medium opacity-80">
               Complete the previous article in this module first.
             </p>
           </div>
         ) : (
-          <div className="bg-risk-high/10 text-risk-high p-8 rounded-2xl border border-risk-high/20 mb-6">
-            <BookOpen className="size-14 mx-auto mb-4" />
-            <h2 className="text-xl md:text-2xl font-bold mb-2">
+          <div className="bg-risk-high/10 text-risk-high p-6 md:p-8 rounded-xl md:rounded-2xl border border-risk-high/20 mb-4 md:mb-6">
+            <BookOpen className="size-14 mx-auto mb-3 md:mb-4" />
+            <h2 className="text-xl md:text-2xl font-bold mb-1.5 md:mb-2">
               Article Not Found
             </h2>
-            <p className="text-base font-medium opacity-80">
+            <p className="text-sm md:text-base font-medium opacity-80">
               The article you are looking for could not be found.
             </p>
           </div>
@@ -240,7 +240,7 @@ export default function ArticlePage() {
         <Button
           onClick={() => router.push("/edu")}
           variant="outline"
-          className="gap-2 text-base"
+          className="gap-1.5 md:gap-2 text-sm md:text-base"
         >
           <ArrowLeft className="size-4" /> Back to Learning Hub
         </Button>
@@ -248,12 +248,12 @@ export default function ArticlePage() {
     );
 
   return (
-    <div className="container mx-auto px-4 py-8 md:py-12 max-w-6xl">
+    <div className="container mx-auto px-3 md:px-4 py-8 md:py-12 max-w-6xl">
       {/* Breadcrumb */}
-      <nav className="flex items-center gap-2 text-sm md:text-base font-semibold text-secondary-light mb-8">
+      <nav className="flex items-center gap-1.5 md:gap-2 text-sm md:text-base font-semibold text-secondary-light mb-6 md:mb-8">
         <button
           onClick={() => router.push("/edu")}
-          className="hover:text-primary transition-colors flex items-center gap-1"
+          className="hover:text-primary transition-colors flex items-center gap-0.5 md:gap-1"
         >
           <span className="hidden sm:inline">Learning Hub</span>
         </button>
@@ -271,30 +271,30 @@ export default function ArticlePage() {
       </nav>
 
       {/* Header — title, author, date, description (image comes after) */}
-      <header className="mb-8 max-w-6xl">
-        <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight mb-5">
+      <header className="mb-6 md:mb-8 max-w-6xl">
+        <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight mb-4 md:mb-5">
           {article.title}
         </h1>
-        <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-base text-secondary-light mb-5">
-          <span className="flex items-center gap-1.5 font-medium">
+        <div className="flex flex-wrap items-center gap-x-4 md:gap-x-5 gap-y-1.5 md:gap-y-2 text-sm md:text-base text-secondary-light mb-4 md:mb-5">
+          <span className="flex items-center gap-1 md:gap-1.5 font-medium">
             <User className="size-4" /> {article.author}
           </span>
           {article.publication_date && (
-            <span className="flex items-center gap-1.5 font-medium">
+            <span className="flex items-center gap-1 md:gap-1.5 font-medium">
               <CalendarDays className="size-4" />{" "}
               {formatDate(article.publication_date)}
             </span>
           )}
-          <span className="flex items-center gap-1.5 font-medium">
+          <span className="flex items-center gap-1 md:gap-1.5 font-medium">
             <Clock className="size-4" /> {article.duration_mins} min read
           </span>
           {readingTimeLeft !== null && readingTimeLeft > 0 && (
-            <span className="text-primary bg-primary/10 px-3 py-1 rounded-full text-sm font-semibold animate-pulse">
+            <span className="text-primary bg-primary/10 px-2 md:px-3 py-0.5 md:py-1 rounded-full text-xs md:text-sm font-semibold animate-pulse">
               Reading... {readingTimeLeft}s
             </span>
           )}
           {isRead && (
-            <span className="flex items-center gap-1 text-green-600 bg-green-50 px-3 py-1 rounded-full text-sm font-semibold border border-green-200">
+            <span className="flex items-center gap-0.5 md:gap-1 text-green-600 bg-green-50 px-2 md:px-3 py-0.5 md:py-1 rounded-full text-xs md:text-sm font-semibold border border-green-200">
               <CheckCircle2 className="size-4" /> Read
             </span>
           )}
@@ -303,7 +303,7 @@ export default function ArticlePage() {
 
       {/* Hero Image — after headline */}
       {article.image_url && (
-        <div className="rounded-2xl overflow-hidden mb-10 bg-neutral-page shadow-sm max-w-6xl relative h-72 md:h-96 lg:h-[28rem]">
+        <div className="rounded-xl md:rounded-2xl overflow-hidden mb-8 md:mb-10 bg-neutral-page shadow-sm max-w-6xl relative h-72 md:h-96 lg:h-[28rem]">
           <Image
             src={article.image_url}
             alt={article.title}
@@ -317,7 +317,7 @@ export default function ArticlePage() {
 
       {/* Description */}
       {article.description && (
-        <p className="text-base md:text-lg text-secondary-light leading-relaxed mb-8 pb-8 border-b border-neutral-border italic max-w-6xl text-justify">
+        <p className="text-base md:text-lg text-secondary-light leading-relaxed mb-6 md:mb-8 pb-6 md:pb-8 border-b border-neutral-border italic max-w-6xl text-justify">
           {article.description}
         </p>
       )}
@@ -327,24 +327,24 @@ export default function ArticlePage() {
         {article.content ? (
           renderContent(article.content)
         ) : (
-          <p className="text-secondary-light text-lg">
+          <p className="text-secondary-light text-base md:text-lg">
             Full content is not available for this article.
           </p>
         )}
       </article>
 
       {(article.url || (user && !isRead)) && (
-        <div className="mt-12 rounded-2xl p-6 md:p-8 text-center bg-white border border-neutral-border max-w-6xl shadow-sm">
+        <div className="mt-10 md:mt-12 rounded-xl md:rounded-2xl p-6 md:p-8 text-center bg-white border border-neutral-border max-w-6xl shadow-sm">
           {article.url && (
             <div className={user && !isRead ? "mb-5 pb-5 border-b border-neutral-border/60" : ""}>
-              <p className="text-sm md:text-base font-bold text-secondary mb-3">
+              <p className="text-sm md:text-base font-bold text-secondary mb-2 md:mb-3">
                 Read the full article on the original source:
               </p>
               <a
                 href={article.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-sm md:text-base font-bold text-primary hover:underline"
+                className="inline-flex items-center gap-1.5 md:gap-2 text-sm md:text-base font-bold text-primary hover:underline"
               >
                 View Original Article
               </a>
@@ -352,7 +352,7 @@ export default function ArticlePage() {
           )}
           {user && !isRead && (
             <div>
-              <h3 className="text-base font-bold text-secondary mb-3">Finished Reading?</h3>
+              <h3 className="text-sm md:text-base font-bold text-secondary mb-2 md:mb-3">Finished Reading?</h3>
               <Button
                 onClick={() => {
                   if (marking) return;
@@ -370,12 +370,12 @@ export default function ArticlePage() {
                     .finally(() => setMarking(false));
                 }}
                 disabled={marking}
-                className="gap-2 text-base px-6 py-3"
+                className="gap-1.5 md:gap-2 text-sm md:text-base px-4 md:px-6 py-2 md:py-3"
               >
                 <CheckCircle2 className="size-5" />
                 {marking ? "Marking..." : "Mark as Read"}
               </Button>
-              <p className="text-sm text-secondary-light mt-2">
+              <p className="text-xs md:text-sm text-secondary-light mt-1.5 md:mt-2">
                 or wait 30 seconds for auto-mark
               </p>
             </div>
@@ -385,45 +385,39 @@ export default function ArticlePage() {
 
       {/* Next article or quiz — only after reading */}
       {user && isRead && (
-        <section className="mt-10 pt-8 border-t border-neutral-border max-w-6xl">
-          {article.next_article ? (
-            <div className="flex flex-col sm:flex-row gap-4">
-              <button
-                onClick={() => router.push(`/article/${article.next_article!.id}`)}
-                className="flex-1 flex items-center justify-between p-5 rounded-xl border border-neutral-border hover:border-primary/30 hover:bg-neutral-page/50 transition-all group bg-white shadow-sm"
-              >
-                <div className="text-left">
-                  <span className="text-sm font-medium text-primary mb-1 block">Next Article</span>
-                  <span className="text-base font-semibold text-secondary group-hover:text-primary transition-colors">
-                    {article.next_article.title}
-                  </span>
-                  <span className="text-sm text-secondary-light ml-2">{article.next_article.duration_mins} min</span>
-                </div>
-                <ChevronRight className="size-6 text-secondary-light group-hover:text-primary shrink-0" />
-              </button>
-              <button
-                onClick={() => router.push(`/edu/${article.module_id}`)}
-                className="flex items-center justify-center gap-2 p-5 rounded-xl border border-primary/20 hover:border-primary/50 hover:bg-primary/5 transition-all group bg-white shadow-sm"
-              >
-                <GraduationCap className="size-5 text-primary" />
-                <span className="text-sm font-semibold text-primary">Quiz</span>
-              </button>
-            </div>
-          ) : (
+        <section className="mt-8 md:mt-10 pt-6 md:pt-8 border-t border-neutral-border max-w-6xl">
+          {(() => {
+            const nextArticle = article.next_article;
+            return nextArticle ? (
             <button
-              onClick={() => router.push(`/edu/${article.module_id}`)}
-              className="w-full flex items-center justify-between p-5 rounded-xl border border-neutral-border hover:border-primary/30 hover:bg-neutral-page/50 transition-all group bg-white shadow-sm"
+              onClick={() => router.push(`/article/${nextArticle.id}`)}
+              className="w-full flex items-center justify-between p-4 md:p-5 rounded-lg md:rounded-xl border border-neutral-border hover:border-primary/30 hover:bg-neutral-page/50 transition-all group bg-white shadow-sm"
             >
               <div className="text-left">
-                <span className="text-sm font-medium text-primary mb-1 block">Complete Module</span>
-                <span className="text-base font-semibold text-secondary group-hover:text-primary transition-colors flex items-center gap-2">
+                <span className="text-xs md:text-sm font-medium text-primary mb-0.5 md:mb-1 block">Next Article</span>
+                <span className="text-sm md:text-base font-semibold text-secondary group-hover:text-primary transition-colors">
+                  {nextArticle.title}
+                </span>
+                <span className="text-xs md:text-sm text-secondary-light ml-1.5 md:ml-2">{nextArticle.duration_mins} min</span>
+              </div>
+              <ChevronRight className="size-6 text-secondary-light group-hover:text-primary shrink-0" />
+            </button>
+            ) : (
+            <button
+              onClick={() => router.push(`/edu/${article.module_id}`)}
+              className="w-full flex items-center justify-between p-4 md:p-5 rounded-lg md:rounded-xl border border-neutral-border hover:border-primary/30 hover:bg-neutral-page/50 transition-all group bg-white shadow-sm"
+            >
+              <div className="text-left">
+                <span className="text-xs md:text-sm font-medium text-primary mb-0.5 md:mb-1 block">Complete Module</span>
+                <span className="text-sm md:text-base font-semibold text-secondary group-hover:text-primary transition-colors flex items-center gap-1.5 md:gap-2">
                   <GraduationCap className="size-5" />
                   Take Quiz to Complete Module
                 </span>
               </div>
               <ChevronRight className="size-6 text-secondary-light group-hover:text-primary shrink-0" />
             </button>
-          )}
+            );
+          })()}
         </section>
       )}
     </div>

@@ -139,8 +139,8 @@
         </p>
 
         <div class="warning-box">
-          <div class="message-text">
-            {{ warning_message | e | replace('\n', '<br>') | safe }}
+          <div class="message-text" style="white-space: pre-line;">
+            {{ warning_message | e }}
           </div>
           {% if ticket_id %}
           <div class="ticket-ref">

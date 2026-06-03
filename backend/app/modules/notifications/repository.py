@@ -13,10 +13,13 @@ class NotificationRepository:
 
     @staticmethod
     def get_unread_count(
-        db: Session, user_id: str | None = None, all_users: bool = False
+        db: Session, user_id: str | None = None, all_users: bool = False,
+        allowed_user_ids: Optional[list[str]] = None,
     ) -> int:
         query = db.query(Notification).filter(Notification.is_read == False)
-        if not all_users and user_id is not None:
+        if all_users and allowed_user_ids is not None:
+            query = query.filter(Notification.user_id.in_(allowed_user_ids))
+        elif not all_users and user_id is not None:
             query = query.filter(Notification.user_id == user_id)
         return query.count()
 
@@ -27,9 +30,12 @@ class NotificationRepository:
         page: int = 1,
         per_page: int = 20,
         all_users: bool = False,
+        allowed_user_ids: Optional[list[str]] = None,
     ) -> tuple[list[Notification], int]:
         query = db.query(Notification)
-        if not all_users and user_id is not None:
+        if all_users and allowed_user_ids is not None:
+            query = query.filter(Notification.user_id.in_(allowed_user_ids))
+        elif not all_users and user_id is not None:
             query = query.filter(Notification.user_id == user_id)
         query = query.order_by(desc(Notification.created_at))
         total = query.count()

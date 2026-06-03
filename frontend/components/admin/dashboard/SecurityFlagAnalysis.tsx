@@ -80,7 +80,7 @@ export const SecurityFlagAnalysis: React.FC<SecurityFlagAnalysisProps> = ({
           </ResponsiveContainer>
         </div>
       ) : (
-        <div className="py-8 text-center opacity-40 font-semibold text-sm">
+        <div className="py-6 md:py-8 text-center opacity-40 font-semibold text-xs md:text-sm">
           No detection flags triggered yet.
         </div>
       )}

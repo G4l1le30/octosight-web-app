@@ -107,9 +107,9 @@ export default function TransactionsPage() {
         stat={{ label: "Total", value: total }}
       />
 
-      <div className="container mx-auto px-4 pb-6 md:pb-8 space-y-6">
+      <div className="container mx-auto px-3 md:px-4 pb-6 md:pb-8 space-y-4 md:space-y-6">
         {/* Filters */}
-        <div className="flex flex-wrap gap-3 items-center">
+        <div className="flex flex-wrap gap-2 md:gap-3 items-center">
           <div className="relative flex-1 min-w-[200px] max-w-xs">
             <Search
               size={16}
@@ -120,7 +120,7 @@ export default function TransactionsPage() {
               placeholder="Search ref, sender, merchant..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-3 py-2.5 text-sm border-2 border-neutral-border rounded-xl focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all font-medium"
+              className="w-full pl-7 md:pl-9 pr-2 md:pr-3 py-2 md:py-2.5 text-xs md:text-sm border-2 border-neutral-border rounded-lg md:rounded-xl focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all font-medium"
             />
           </div>
 
@@ -130,7 +130,7 @@ export default function TransactionsPage() {
               setTypeFilter(e.target.value);
               setCurrentPage(1);
             }}
-            className="px-4 py-2.5 pr-10 text-sm border-2 border-neutral-border rounded-lg outline-none transition-all font-medium focus:border-primary focus:ring-4 focus:ring-primary/5 bg-white appearance-none"
+            className="px-3 md:px-4 py-2 md:py-2.5 pr-8 md:pr-10 text-xs md:text-sm border-2 border-neutral-border rounded-md md:rounded-lg outline-none transition-all font-medium focus:border-primary focus:ring-4 focus:ring-primary/5 bg-white appearance-none"
             style={{
               backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
               backgroundRepeat: "no-repeat",
@@ -150,7 +150,7 @@ export default function TransactionsPage() {
               setStatusFilter(e.target.value);
               setCurrentPage(1);
             }}
-            className="px-4 py-2.5 pr-10 text-sm border-2 border-neutral-border rounded-lg outline-none transition-all font-medium focus:border-primary focus:ring-4 focus:ring-primary/5 bg-white appearance-none"
+            className="px-3 md:px-4 py-2 md:py-2.5 pr-8 md:pr-10 text-xs md:text-sm border-2 border-neutral-border rounded-md md:rounded-lg outline-none transition-all font-medium focus:border-primary focus:ring-4 focus:ring-primary/5 bg-white appearance-none"
             style={{
               backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
               backgroundRepeat: "no-repeat",
@@ -165,7 +165,7 @@ export default function TransactionsPage() {
             <option value="REVERSED">Reversed</option>
           </select>
 
-          <label className="flex items-center gap-2 text-sm cursor-pointer select-none font-medium">
+          <label className="flex items-center gap-1.5 md:gap-2 text-xs md:text-sm cursor-pointer select-none font-medium">
             <input
               type="checkbox"
               checked={flaggedOnly}
@@ -173,14 +173,14 @@ export default function TransactionsPage() {
                 setFlaggedOnly(!flaggedOnly);
                 setCurrentPage(1);
               }}
-              className="rounded text-sm border-neutral-border"
+              className="rounded text-xs md:text-sm border-neutral-border"
             />
             Flagged only
           </label>
         </div>
 
         {/* Table */}
-        <div className="card bg-white border border-neutral-border shadow-sm rounded-3xl overflow-hidden">
+        <div className="card bg-white border border-neutral-border shadow-sm rounded-2xl md:rounded-3xl overflow-hidden">
           <TransactionsTable
             transactions={filtered}
             loading={loading}

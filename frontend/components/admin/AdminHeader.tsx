@@ -16,18 +16,18 @@ interface AdminHeaderProps {
 
 export const AdminHeader: React.FC<AdminHeaderProps> = ({ title, subtitle, stat }) => {
   return (
-    <div className="container mx-auto px-4 py-6 md:py-8">
+    <div className="container mx-auto px-3 md:px-4 py-6 md:py-8">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl md:text-2xl font-bold text-secondary">{title}</h1>
           {subtitle && (
-            <p className="text-sm text-secondary/80 font-medium mt-1">{subtitle}</p>
+            <p className="text-xs md:text-sm text-secondary/80 font-medium mt-0.5 md:mt-1">{subtitle}</p>
           )}
         </div>
         {stat && (
-          <div className="flex items-center gap-2.5 bg-neutral-page border border-neutral-border rounded-xl px-4 py-2.5">
+          <div className="flex items-center gap-2 md:gap-2.5 bg-neutral-page border border-neutral-border rounded-lg md:rounded-xl px-3 md:px-4 py-2 md:py-2.5">
             <span className="text-xs font-semibold text-secondary/70 uppercase tracking-wide">{stat.label}</span>
-            <span className="text-lg font-bold text-secondary">{stat.value}</span>
+            <span className="text-base md:text-lg font-bold text-secondary">{stat.value}</span>
           </div>
         )}
       </div>

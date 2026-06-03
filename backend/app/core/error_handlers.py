@@ -4,6 +4,7 @@ error_handlers.py — Global exception handler registration.
 Keeps main.py clean by moving all exception handler definitions here.
 """
 
+import logging
 import traceback
 
 from fastapi import FastAPI, Request, status
@@ -12,6 +13,8 @@ from fastapi.responses import JSONResponse
 from slowapi.errors import RateLimitExceeded
 
 from app.core.exceptions import AppException
+
+logger = logging.getLogger("octosight")
 
 
 def register_error_handlers(app: FastAPI) -> None:
@@ -50,10 +53,7 @@ def register_error_handlers(app: FastAPI) -> None:
                 err_dict["ctx"]["error"] = str(err_dict["ctx"]["error"])
             errors.append(err_dict)
 
-        print(f"--- Request Validation Error ---")
-        print(f"Path: {request.url.path}")
-        print(f"Errors: {errors}")
-        print(f"-------------------------------")
+        logger.warning("Request validation error — path=%s errors=%s", request.url.path, errors)
 
         return JSONResponse(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -62,11 +62,8 @@ def register_error_handlers(app: FastAPI) -> None:
 
     @app.exception_handler(Exception)
     async def global_exception_handler(request: Request, exc: Exception):
-        print("=== Unhandled Exception ===")
-        print(f"Path: {request.url.path}")
-        print(f"Method: {request.method}")
+        logger.error("Unhandled exception — path=%s method=%s", request.url.path, request.method)
         traceback.print_exc()
-        print("===========================")
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={

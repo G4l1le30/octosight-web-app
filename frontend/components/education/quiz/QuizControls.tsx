@@ -43,7 +43,7 @@ export const QuizControls: React.FC<QuizControlsProps> = ({
           <Button
             onClick={onSubmit}
             disabled={!canSubmit || submitting}
-            className="px-8 md:px-10 font-bold text-base md:text-lg gap-2"
+            className="px-8 md:px-10 font-bold text-base md:text-lg gap-1.5 md:gap-2"
           >
             {submitting && <Loader2 className="size-5 animate-spin" />}
             {submitting ? "Submitting..." : "Submit Quiz"}
@@ -59,7 +59,7 @@ export const QuizControls: React.FC<QuizControlsProps> = ({
         )}
       </div>
 
-      <div className="flex gap-2 justify-center py-4">
+      <div className="flex gap-1.5 md:gap-2 justify-center py-3 md:py-4">
         {new Array(totalQuestions).fill(0).map((_, i) => (
           <div
             key={i}

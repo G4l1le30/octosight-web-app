@@ -125,8 +125,9 @@ class NotificationService:
         db: Session,
         user_id: str,
         include_all: bool = False,
+        allowed_user_ids: Optional[list[str]] = None,
     ) -> int:
-        return NotificationRepository.get_unread_count(db, user_id, all_users=include_all)
+        return NotificationRepository.get_unread_count(db, user_id, all_users=include_all, allowed_user_ids=allowed_user_ids)
 
     @staticmethod
     def list_notifications(
@@ -135,9 +136,10 @@ class NotificationService:
         page: int = 1,
         per_page: int = 20,
         include_all: bool = False,
+        allowed_user_ids: Optional[list[str]] = None,
     ) -> tuple[list[Notification], int]:
         return NotificationRepository.list_for_user(
-            db, user_id, page, per_page, all_users=include_all
+            db, user_id, page, per_page, all_users=include_all, allowed_user_ids=allowed_user_ids
         )
 
     @staticmethod

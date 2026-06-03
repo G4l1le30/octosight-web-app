@@ -45,8 +45,8 @@ export const QuizActionCard: React.FC<QuizActionCardProps> = ({
       <div className="relative z-10">
         {isCompleted ? (
           <>
-            <CheckCircle2 className="size-16 text-green-500 mx-auto mb-4" />
-            <h3 className="text-xl md:text-2xl font-bold text-green-800 mb-2">
+            <CheckCircle2 className="size-16 text-green-500 mx-auto mb-3 md:mb-4" />
+            <h3 className="text-xl md:text-2xl font-bold text-green-800 mb-1.5 md:mb-2">
               Module Completed!
             </h3>
             <p className="text-green-700 font-medium mb-4 md:mb-6">
@@ -55,7 +55,7 @@ export const QuizActionCard: React.FC<QuizActionCardProps> = ({
             <div className="flex justify-center gap-3 md:gap-4">
               <Button
                 onClick={onStartQuiz}
-                className="bg-green-600 hover:bg-green-700 text-white gap-2 px-6 md:px-8 text-base md:text-lg"
+                className="bg-green-600 hover:bg-green-700 text-white gap-1.5 md:gap-2 px-6 md:px-8 text-base md:text-lg"
               >
                 <Play className="size-5" /> Retake Quiz
               </Button>
@@ -64,7 +64,7 @@ export const QuizActionCard: React.FC<QuizActionCardProps> = ({
                 <Button
                   onClick={onNextModule}
                   variant="outline"
-                  className="bg-white border-neutral-border text-secondary hover:border-green-500 gap-2 px-6 md:px-8 text-base md:text-lg shadow-sm transition-colors"
+                  className="bg-white border-neutral-border text-secondary hover:border-green-500 gap-1.5 md:gap-2 px-6 md:px-8 text-base md:text-lg shadow-sm transition-colors"
                 >
                   Next Module <ArrowRight className="size-5" />
                 </Button>
@@ -73,7 +73,7 @@ export const QuizActionCard: React.FC<QuizActionCardProps> = ({
           </>
         ) : !allMaterialsFinished ? (
           <>
-            <h3 className="text-xl md:text-2xl font-bold text-secondary mb-2">
+            <h3 className="text-xl md:text-2xl font-bold text-secondary mb-1.5 md:mb-2">
               Quiz Locked
             </h3>
             <p className="text-secondary-light font-medium mb-4 md:mb-6 max-w-lg mx-auto">
@@ -82,14 +82,14 @@ export const QuizActionCard: React.FC<QuizActionCardProps> = ({
             </p>
             <Button
               disabled
-              className="gap-2 px-6 md:px-8 text-base md:text-lg bg-neutral-border text-secondary/60 border-none pointer-events-none shadow-none"
+              className="gap-1.5 md:gap-2 px-6 md:px-8 text-base md:text-lg bg-neutral-border text-secondary/60 border-none pointer-events-none shadow-none"
             >
               <Lock className="size-5" /> Finish Materials First
             </Button>
           </>
         ) : (
           <>
-            <h3 className="text-xl md:text-2xl font-bold text-secondary mb-2">
+            <h3 className="text-xl md:text-2xl font-bold text-secondary mb-1.5 md:mb-2">
               Test Your Knowledge
             </h3>
             <p className="text-secondary-light font-medium mb-4 md:mb-6 max-w-lg mx-auto">
@@ -103,7 +103,7 @@ export const QuizActionCard: React.FC<QuizActionCardProps> = ({
               <div className="flex flex-wrap justify-center gap-3 md:gap-4">
                 <Button
                   onClick={onStartQuiz}
-                  className="gap-2 px-8 md:px-10 text-xl shadow-lg shadow-black/10"
+                  className="gap-1.5 md:gap-2 px-8 md:px-10 text-lg md:text-xl shadow-lg shadow-black/10"
                 >
                   <Play className="size-5" />{" "}
                   {savedQuiz
@@ -117,7 +117,7 @@ export const QuizActionCard: React.FC<QuizActionCardProps> = ({
                   <Button
                     onClick={onResetQuiz}
                     variant="outline"
-                    className="gap-2 px-6 md:px-8 text-base  border-risk-high/30 text-risk-high hover:bg-risk-high/5"
+                    className="gap-1.5 md:gap-2 px-6 md:px-8 text-sm md:text-base border-risk-high/30 text-risk-high hover:bg-risk-high/5"
                   >
                     Start Fresh
                   </Button>
@@ -125,7 +125,7 @@ export const QuizActionCard: React.FC<QuizActionCardProps> = ({
               </div>
 
               {savedQuiz && (
-                <div className="flex gap-3 md:gap-4 text-md font-medium text-secondary mt-2">
+                <div className="flex gap-3 md:gap-4 text-md font-medium text-secondary mt-1.5 md:mt-2">
                   <span>{savedQuiz.answeredCount} answered</span>
                   <span>•</span>
                   <span

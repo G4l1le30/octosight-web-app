@@ -149,54 +149,54 @@ export const ActivityFeed: React.FC = () => {
 
   return (
     <div className="card p-6 md:p-8 h-full flex flex-col">
-      <div className="mb-6">
-        <h3 className="font-bold text-xl text-secondary">Activity Feed</h3>
+      <div className="mb-4 md:mb-6">
+        <h3 className="font-bold text-lg md:text-xl text-secondary">Activity Feed</h3>
       </div>
 
       <div className="flex-1 overflow-y-auto min-h-0">
         {loading ? (
-          <div className="space-y-3">
+          <div className="space-y-2 md:space-y-3">
             {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="flex items-center gap-3 animate-pulse">
-                <div className="size-9 rounded-xl bg-neutral-border shrink-0" />
-                <div className="flex-1 space-y-2 min-w-0">
-                  <div className="h-3 bg-neutral-border rounded w-2/3" />
-                  <div className="h-2 bg-neutral-border rounded w-1/4" />
+              <div key={i} className="flex items-center gap-2 md:gap-3 animate-pulse">
+                <div className="size-9 rounded-lg md:rounded-xl bg-neutral-border shrink-0" />
+                <div className="flex-1 space-y-1.5 md:space-y-2 min-w-0">
+                  <div className="h-2 md:h-3 bg-neutral-border rounded w-1.5 md:w-2" />
+                  <div className="h-1.5 md:h-2 bg-neutral-border rounded w-0.5 md:w-1" />
                 </div>
               </div>
             ))}
           </div>
         ) : error ? (
-          <div className="flex flex-col items-center gap-4 py-8">
+          <div className="flex flex-col items-center gap-3 md:gap-4 py-6 md:py-8">
             <AlertCircle className="size-8 text-risk-high" />
-            <p className="text-sm font-bold text-risk-high">{error}</p>
-            <button onClick={fetchActivities} className="btn-primary text-sm">
+            <p className="text-xs md:text-sm font-bold text-risk-high">{error}</p>
+            <button onClick={fetchActivities} className="btn-primary text-xs md:text-sm">
               Retry
             </button>
           </div>
         ) : activities.length === 0 ? (
           <div className="flex-1 flex items-center justify-center">
-            <p className="text-sm text-secondary/60 font-semibold">
+            <p className="text-xs md:text-sm text-secondary/60 font-semibold">
               No recent activity
             </p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-2 md:space-y-3">
             {activities.map((item) => {
               const Icon = getActivityIcon(item.activity_type);
               const colors = getActivityColors(item.activity_type);
               const content = (
-                <div className="flex items-center gap-3 p-3">
+                <div className="flex items-center gap-2 md:gap-3 p-2 md:p-3">
                   <div
                     className={`p-2 rounded-xl shrink-0 ${colors.bg} ${colors.icon}`}
                   >
                     <Icon className="size-5" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm font-semibold text-secondary">
+                    <div className="text-xs md:text-sm font-semibold text-secondary">
                       {getActivityLabel(item.activity_type)}
                     </div>
-                    <p className="text-sm text-secondary/70 mt-1 leading-snug">
+                    <p className="text-xs md:text-sm text-secondary/70 mt-0.5 md:mt-1 leading-snug">
                       {sanitizeActivityText(item.description)}
                     </p>
                   </div>
@@ -211,7 +211,7 @@ export const ActivityFeed: React.FC = () => {
                   <Link
                     key={item.id}
                     href={`/admin/investigate/${item.ticket_id}`}
-                    className="block rounded-xl border border-neutral-border bg-white shadow-sm transition-all hover:border-primary/40 hover:shadow-md"
+                    className="block rounded-lg md:rounded-xl border border-neutral-border bg-white shadow-sm transition-all hover:border-primary/40 hover:shadow-md"
                   >
                     {content}
                   </Link>
@@ -221,7 +221,7 @@ export const ActivityFeed: React.FC = () => {
               return (
                 <div
                   key={item.id}
-                  className="rounded-xl border border-neutral-border bg-white shadow-sm transition-all"
+                  className="rounded-lg md:rounded-xl border border-neutral-border bg-white shadow-sm transition-all"
                 >
                   {content}
                 </div>

@@ -141,31 +141,31 @@ export default function AdminDashboard() {
 
   if (loading)
     return (
-      <div className="p-20 text-center font-bold opacity-40">
+      <div className="p-14 md:p-20 text-center font-bold opacity-40">
         Loading Analytics...
       </div>
     );
 
   return (
     <div className="bg-neutral-page min-h-screen">
-      <div className="container mx-auto px-4 py-6 md:py-8">
+      <div className="container mx-auto px-3 md:px-4 py-6 md:py-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4 mb-6 md:mb-8">
           <div>
-            <h1 className="text-xl md:text-2xl font-bold text-secondary mb-1">
+            <h1 className="text-xl md:text-2xl font-bold text-secondary mb-0.5 md:mb-1">
               Threat Intelligence Dashboard
             </h1>
-            <p className="text-sm text-secondary/80 font-medium">
+            <p className="text-xs md:text-sm text-secondary/80 font-medium">
               Unified monitoring for Website, SMS, WhatsApp, and Email threats.
             </p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-2 md:gap-3">
             <Link
               href="/admin/triage"
-              className="btn-primary flex items-center gap-2"
+              className="btn-primary flex items-center gap-1.5 md:gap-2"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5"
+                className="h-4 md:h-5 w-4 md:w-5"
                 viewBox="0 0 20 20"
                 fill="currentColor"
               >
@@ -211,7 +211,7 @@ export default function AdminDashboard() {
             </h3>
             <Link
               href="/admin/triage"
-              className="text-sm font-bold text-primary hover:underline px-3 py-1 bg-primary/5 rounded-full"
+              className="text-xs md:text-sm font-bold text-primary hover:underline px-2 md:px-3 py-0.5 md:py-1 bg-primary/5 rounded-full"
             >
               See Full Triage →
             </Link>
@@ -224,11 +224,11 @@ export default function AdminDashboard() {
 
         {/* Kanban Board */}
         <div className="mb-6 md:mb-8">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-3 md:mb-4">
             <h3 className="font-bold text-lg md:text-xl text-secondary">Kanban Board</h3>
             <Link
               href="/admin/kanban"
-              className="text-sm font-bold text-primary hover:underline px-3 py-1 bg-primary/5 rounded-full"
+              className="text-xs md:text-sm font-bold text-primary hover:underline px-2 md:px-3 py-0.5 md:py-1 bg-primary/5 rounded-full"
             >
               Full Board →
             </Link>

@@ -57,7 +57,7 @@ export default function StatusPage() {
       const data = await response.json();
       router.push(`/report/${data.ticket_id}`);
     } catch (err: any) {
-      toast.error(err.message);
+      toast.error(err.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -69,8 +69,8 @@ export default function StatusPage() {
 
   if (authLoading) {
     return (
-      <div className="container mx-auto px-4 py-32 text-center">
-        <div className="size-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+      <div className="container mx-auto px-3 md:px-4 py-24 md:py-32 text-center">
+        <div className="size-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-3 md:mb-4" />
         <p className="text-secondary font-medium">Loading...</p>
       </div>
     );
@@ -85,9 +85,9 @@ export default function StatusPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 md:py-12 max-w-6xl">
+    <div className="container mx-auto px-3 md:px-4 py-8 md:py-12 max-w-6xl">
       <div className="mb-8 md:mb-12 text-center">
-        <h1 className="text-3xl md:text-4xl font-bold mb-4 text-secondary">Track Your Reports</h1>
+        <h1 className="text-3xl md:text-4xl font-bold mb-3 md:mb-4 text-secondary">Track Your Reports</h1>
         <p className="text-secondary opacity-70 font-medium max-w-xl mx-auto">
           Enter a Ticket ID manually or select from your recent submission history below.
         </p>
@@ -113,54 +113,54 @@ export default function StatusPage() {
           };
           return (
             <Link href={`/report/${latest.ticket_id}`} className="card p-5 md:p-6 shadow-xl border-neutral-border hover:border-primary/30 transition-all block group">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="p-1.5 rounded-lg bg-primary/5 text-primary">
+              <div className="flex items-center gap-1.5 md:gap-2 mb-3 md:mb-4">
+                <div className="p-1 md:p-1.5 rounded-md md:rounded-lg bg-primary/5 text-primary">
                   <AlertTriangle className="size-4" />
                 </div>
                 <span className="text-xs font-bold text-secondary/60 tracking-wide">LATEST SUBMISSION</span>
                 <ChevronRight className="size-4 text-secondary/20 ml-auto group-hover:text-primary group-hover:translate-x-1 transition-all" />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-4 md:mb-5">
                 <div>
-                  <p className="text-xs font-semibold text-secondary/60 mb-1">Ticket ID</p>
-                  <p className="text-base font-bold text-secondary">{latest.ticket_id}</p>
-                  <p className="text-xs font-medium text-secondary/70 flex items-center gap-1 mt-0.5">
+                  <p className="text-xs font-semibold text-secondary/60 mb-0.5 md:mb-1">Ticket ID</p>
+                  <p className="text-sm md:text-base font-bold text-secondary">{latest.ticket_id}</p>
+                  <p className="text-xs font-medium text-secondary/70 flex items-center gap-0.5 md:gap-1 mt-0.5">
                     <Clock className="size-3" />
                     {formatDateTime(latest.created_at).full}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs font-semibold text-secondary/60 mb-1">Type</p>
-                  <div className="flex items-center gap-1.5">
-                    <div className="p-1 rounded bg-neutral-page border border-neutral-border text-primary">
+                  <p className="text-xs font-semibold text-secondary/60 mb-0.5 md:mb-1">Type</p>
+                  <div className="flex items-center gap-1 md:gap-1.5">
+                    <div className="p-0.5 md:p-1 rounded bg-neutral-page border border-neutral-border text-primary">
                       {getTypeIcon(latest.type)}
                     </div>
-                    <span className="text-sm font-bold text-secondary">{latest.type}</span>
+                    <span className="text-xs md:text-sm font-bold text-secondary">{latest.type}</span>
                   </div>
                 </div>
                 <div>
-                  <p className="text-xs font-semibold text-secondary/60 mb-1">Indicator</p>
-                  <p className="text-sm font-bold text-secondary break-all line-clamp-1">{latest.url || latest.sender_numbers || "N/A"}</p>
+                  <p className="text-xs font-semibold text-secondary/60 mb-0.5 md:mb-1">Indicator</p>
+                  <p className="text-xs md:text-sm font-bold text-secondary break-all line-clamp-1">{latest.url || latest.sender_numbers || "N/A"}</p>
                 </div>
                 <div>
-                  <p className="text-xs font-semibold text-secondary/60 mb-1">Risk Score</p>
-                  <p className={cn("text-lg font-bold", latest.risk_score >= 75 ? "text-risk-high" : latest.risk_score >= 35 ? "text-risk-medium" : "text-risk-low")}>
+                  <p className="text-xs font-semibold text-secondary/60 mb-0.5 md:mb-1">Risk Score</p>
+                  <p className={cn("text-base md:text-lg font-bold", latest.risk_score >= 75 ? "text-risk-high" : latest.risk_score >= 35 ? "text-risk-medium" : "text-risk-low")}>
                     {latest.risk_score}
-                    <span className="text-xs font-semibold text-secondary/60 ml-1">/ 100</span>
+                    <span className="text-xs font-semibold text-secondary/60 ml-0.5 md:ml-1">/ 100</span>
                   </p>
                 </div>
               </div>
 
               {/* Status Timeline */}
-              <div className="pt-4 border-t border-neutral-border">
+              <div className="pt-3 md:pt-4 border-t border-neutral-border">
                 <div className="flex items-center gap-0.5 md:gap-1">
                   {isFalsePositive ? (
                     <>
                       {statusFlow.slice(0, 3).map((s, i) => (
                         <div key={s} className="flex items-center gap-0.5 md:gap-1 flex-1 min-w-0">
                           <span className={cn(
-                            "text-[10px] md:text-xs font-bold px-2 py-1 rounded-md border whitespace-nowrap truncate transition-all",
+                            "text-[10px] md:text-xs font-bold px-1.5 md:px-2 py-0.5 md:py-1 rounded-sm md:rounded-md border whitespace-nowrap truncate transition-all",
                             i < currentIdx
                               ? "bg-green-50 text-green-700 border-green-200"
                               : i === currentIdx
@@ -174,7 +174,7 @@ export default function StatusPage() {
                           )}
                         </div>
                       ))}
-                      <span className="text-[10px] md:text-xs font-bold px-2 py-1 rounded-md border whitespace-nowrap truncate bg-red-50 text-red-700 border-red-200 ring-2 ring-red-200">
+                      <span className="text-[10px] md:text-xs font-bold px-1.5 md:px-2 py-0.5 md:py-1 rounded-sm md:rounded-md border whitespace-nowrap truncate bg-red-50 text-red-700 border-red-200 ring-2 ring-red-200">
                         False Positive
                       </span>
                     </>
@@ -182,7 +182,7 @@ export default function StatusPage() {
                     statusFlow.map((s, i) => (
                       <div key={s} className="flex items-center gap-0.5 md:gap-1 flex-1 min-w-0">
                         <span className={cn(
-                          "text-[10px] md:text-xs font-bold px-2 py-1 rounded-md border whitespace-nowrap truncate transition-all",
+                          "text-[10px] md:text-xs font-bold px-1.5 md:px-2 py-0.5 md:py-1 rounded-sm md:rounded-md border whitespace-nowrap truncate transition-all",
                           i < currentIdx
                             ? "bg-green-50 text-green-700 border-green-200"
                             : i === currentIdx

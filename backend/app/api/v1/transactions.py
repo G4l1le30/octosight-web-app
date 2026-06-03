@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session
 
 from app.core.security import require_permission
 from app.db.session import get_db
+from app.schemas.transaction import CreateTransactionRequest, FlagTransactionRequest
 from app.modules.transactions.service import TransactionService
 
 router = APIRouter(prefix="/transactions", tags=["transactions"])
@@ -51,24 +52,22 @@ def get_transaction(
 
 @router.post("", status_code=201)
 def create_transaction(
-    body: dict,
+    body: CreateTransactionRequest,
     db: Session = Depends(get_db),
     _=Depends(require_permission("tickets.create")),
 ):
-    tx = TransactionService.create_transaction(db, **body)
+    tx = TransactionService.create_transaction(db, **body.model_dump())
     return tx
 
 
 @router.patch("/{transaction_id}/flag")
 def flag_transaction(
     transaction_id: str,
-    body: dict,
+    body: FlagTransactionRequest,
     db: Session = Depends(get_db),
     _=Depends(require_permission("tickets.edit")),
 ):
-    reason = body.get("reason", "Flagged by admin")
-    score = body.get("anomaly_score", 0.0)
-    tx = TransactionService.flag_transaction(db, transaction_id, reason, score)
+    tx = TransactionService.flag_transaction(db, transaction_id, body.reason, body.anomaly_score)
     if not tx:
         raise HTTPException(status_code=404, detail="Transaction not found")
     return tx

@@ -4,12 +4,12 @@ Handles secure file uploads to Supabase Storage.
 """
 
 import uuid
-from fastapi import APIRouter, UploadFile, File, HTTPException, status, Depends
+from fastapi import APIRouter, Request, UploadFile, File, HTTPException, status, Depends
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from app.services.supabase_service import get_supabase_service, SupabaseStorageService
-from app.core.security import get_current_user, require_admin
+from app.core.security import get_current_user, require_admin, limiter
 
 router = APIRouter(prefix="/api/v1/evidence", tags=["evidence"])
 
@@ -32,7 +32,9 @@ def get_file_extension(filename: str) -> str:
 
 
 @router.post("/upload", response_model=EvidenceUploadResponse)
+@limiter.limit("10/minute")
 async def upload_evidence(
+    request: Request,
     file: UploadFile = File(...),
     supabase_service=Depends(get_supabase_service),
     current_user=Depends(get_current_user),

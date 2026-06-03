@@ -32,8 +32,8 @@ export const TriageFilters: React.FC<TriageFiltersProps> = ({
 }) => {
   return (
     <div className="card p-4 md:p-6 mb-6 md:mb-8 bg-white border-primary/10 border-t-4 shadow-xl overflow-visible">
-      <div className="flex items-center gap-2 mb-6 border-b border-neutral-border pb-4">
-        <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="flex items-center gap-1.5 md:gap-2 mb-4 md:mb-6 border-b border-neutral-border pb-3 md:pb-4">
+        <svg className="w-4 md:w-5 h-4 md:h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 8.293A1 1 0 013 7.586V4z"></path>
         </svg>
         <h2 className="font-bold text-slgm text-secondary">Advanced Search Filters</h2>
@@ -108,13 +108,13 @@ export const TriageFilters: React.FC<TriageFiltersProps> = ({
         />
       </div>
 
-      <div className="mt-6 pt-4 border-t border-dashed border-neutral-border flex items-center justify-between">
-        <p className="text-sm font-medium opacity-60">
+      <div className="mt-4 md:mt-6 pt-3 md:pt-4 border-t border-dashed border-neutral-border flex items-center justify-between">
+        <p className="text-xs md:text-sm font-medium opacity-60">
           Found <span className="text-secondary opacity-100">{filteredCount}</span> matching reports out of {totalCount} total
         </p>
         <button 
           onClick={onReset}
-          className="text-sm font-bold text-risk-high px-3 py-1 rounded transition-all hover:underline hover:underline-offset-4"
+          className="text-xs md:text-sm font-bold text-risk-high px-2 md:px-3 py-0.5 md:py-1 rounded transition-all hover:underline hover:underline-offset-4"
         >
           Clear All Filters
         </button>

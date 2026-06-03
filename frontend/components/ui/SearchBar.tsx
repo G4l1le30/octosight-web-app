@@ -34,14 +34,14 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           type="text" 
           placeholder={placeholder} 
           className={cn(
-            "w-full pl-11 pr-4 py-3 border-2 border-neutral-border rounded-xl focus:border-primary outline-none transition-all font-medium text-sm text-secondary",
+            "w-full pl-8 md:pl-11 pr-3 md:pr-4 py-2 md:py-3 border-2 border-neutral-border rounded-lg md:rounded-xl focus:border-primary outline-none transition-all font-medium text-xs md:text-sm text-secondary",
             inputClassName
           )}
           value={value}
           onChange={(e) => onChange(e.target.value)}
         />
       </div>
-      <Button type="submit" disabled={loading} size="md" className="px-6 md:px-8 text-sm h-[48px]">
+      <Button type="submit" disabled={loading} size="md" className="px-6 md:px-8 text-xs md:text-sm h-[48px]">
         {loading ? <Loader2 className="animate-spin size-4" /> : buttonText}
       </Button>
     </form>

@@ -1,5 +1,7 @@
 """notifications.py — In-app notification API endpoints (v1)."""
 
+from typing import Optional
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
@@ -11,6 +13,12 @@ from app.modules.notifications.service import NotificationService
 router = APIRouter(prefix="/notifications", tags=["notifications"])
 
 
+def _admin_user_ids(db: Session) -> Optional[list[str]]:
+    """Return IDs of all admin users for notification filtering."""
+    admins = db.query(User.id).filter(User.role == "admin").all()
+    return [a[0] for a in admins] if admins else None
+
+
 @router.get("")
 def list_notifications(
     page: int = 1,
@@ -19,11 +27,12 @@ def list_notifications(
     current_user: User = Depends(get_current_user),
 ):
     is_admin = current_user.role == "admin"
+    admin_ids = _admin_user_ids(db) if is_admin else None
     items, total = NotificationService.list_notifications(
-        db, current_user.id, page, per_page, include_all=is_admin
+        db, current_user.id, page, per_page, include_all=is_admin, allowed_user_ids=admin_ids
     )
     unread_count = NotificationService.get_unread_count(
-        db, current_user.id, include_all=is_admin
+        db, current_user.id, include_all=is_admin, allowed_user_ids=admin_ids
     )
     return {
         "items": items,
@@ -40,8 +49,9 @@ def get_unread_count(
     current_user: User = Depends(get_current_user),
 ):
     is_admin = current_user.role == "admin"
+    admin_ids = _admin_user_ids(db) if is_admin else None
     count = NotificationService.get_unread_count(
-        db, current_user.id, include_all=is_admin
+        db, current_user.id, include_all=is_admin, allowed_user_ids=admin_ids
     )
     return {"unread_count": count}
 

@@ -64,7 +64,7 @@ export default function QuizPage() {
       setTimeLeft(remaining);
       setTimerActive(true);
     } catch (err: any) {
-      toast.error(err.message);
+      toast.error(err.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -112,7 +112,7 @@ export default function QuizPage() {
       clearPersistence();
       router.push(`/edu/${moduleId}/result?attempt_id=${data.attempt_id}`);
     } catch (err: any) {
-      toast.error(err.message);
+      toast.error(err.message || "Something went wrong");
       setTimerActive(true);
       setSubmitting(false);
     }
@@ -154,8 +154,8 @@ export default function QuizPage() {
   };
 
   if (authLoading) return (
-    <div className="container mx-auto px-4 py-32 text-center">
-      <Loader2 className="animate-spin size-12 text-primary mx-auto mb-4" />
+    <div className="container mx-auto px-3 md:px-4 py-24 md:py-32 text-center">
+      <Loader2 className="animate-spin size-12 text-primary mx-auto mb-3 md:mb-4" />
     </div>
   );
 
@@ -168,18 +168,18 @@ export default function QuizPage() {
   const isLastStep = currentStep === totalQuestions - 1;
 
   return (
-    <div className="container mx-auto px-4 py-16 max-w-6xl">
+    <div className="container mx-auto px-3 md:px-4 py-12 md:py-16 max-w-6xl">
       <div className="mb-6 md:mb-8 flex items-center justify-between">
         <div className="flex items-center gap-3 md:gap-4">
           <button
             onClick={() => router.push(`/edu/${moduleId}`)}
-            className="p-2 rounded-xl border border-neutral-border hover:bg-neutral-page transition-all text-secondary/60 hover:text-primary group shadow-sm"
+            className="p-1.5 md:p-2 rounded-lg md:rounded-xl border border-neutral-border hover:bg-neutral-page transition-all text-secondary/60 hover:text-primary group shadow-sm"
           >
             <ArrowLeft className="size-6 group-hover:-translate-x-0.5 transition-transform" />
           </button>
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-secondary">Module Evaluation</h1>
-            <p className="text-sm font-bold text-secondary mt-1">
+            <p className="text-xs md:text-sm font-bold text-secondary mt-0.5 md:mt-1">
               Question {currentStep + 1} of {totalQuestions}
             </p>
           </div>
@@ -192,7 +192,7 @@ export default function QuizPage() {
         )}
       </div>
 
-      <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-500">
+      <div className="space-y-6 md:space-y-8 animate-in slide-in-from-bottom-4 duration-500">
         {currentQuestion && (
           <QuizQuestionCard
             question={currentQuestion.question}

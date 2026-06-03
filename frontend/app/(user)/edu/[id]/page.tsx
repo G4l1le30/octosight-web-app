@@ -7,6 +7,7 @@ import { useAuth } from "@/lib/auth-context";
 import { Loader2, ArrowLeft, AlertCircle, Home, ChevronRight, BarChart3 } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/Button";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { ModuleHeader } from "@/components/education/ModuleHeader";
 import { MaterialList } from "@/components/education/MaterialList";
 import { QuizActionCard } from "@/components/education/QuizActionCard";
@@ -32,6 +33,7 @@ export default function ModuleDetailPage() {
   } | null>(null);
 
   const [nextModuleId, setNextModuleId] = useState<string | null>(null);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   const fetchModule = useCallback(async () => {
     try {
@@ -89,30 +91,32 @@ export default function ModuleDetailPage() {
     router.push(`/article/${articleId}`);
   };
 
-  const completedModulesCount = allModules.filter((m) => m.status === "COMPLETED").length;
+  const completedModulesCount = allModules.filter((m) =>
+    m.status === "COMPLETED" || (m.quiz_score !== null && m.quiz_score !== undefined && m.quiz_score >= 70)
+  ).length;
   const totalModulesCount = allModules.length;
 
   if (authLoading) return (
-    <div className="container mx-auto px-4 py-32 text-center">
-      <Loader2 className="animate-spin size-12 text-primary mx-auto mb-4" />
+    <div className="container mx-auto px-3 md:px-4 py-24 md:py-32 text-center">
+      <Loader2 className="animate-spin size-12 text-primary mx-auto mb-3 md:mb-4" />
     </div>
   );
 
   if (loading) return (
-    <div className="container mx-auto px-4 py-32 text-center">
-      <Loader2 className="animate-spin size-10 text-primary mx-auto mb-3" />
-      <p className="text-secondary font-semibold text-lg">Loading module...</p>
+    <div className="container mx-auto px-3 md:px-4 py-24 md:py-32 text-center">
+      <Loader2 className="animate-spin size-10 text-primary mx-auto mb-2 md:mb-3" />
+      <p className="text-secondary font-semibold text-base md:text-lg">Loading module...</p>
     </div>
   );
 
   if (error || !mod) return (
-    <div className="container mx-auto px-4 py-32 text-center max-w-xl">
-      <div className="bg-neutral-page text-secondary p-6 md:p-8 rounded-2xl border border-neutral-border mb-6">
-        <AlertCircle className="size-14 mx-auto mb-4 text-secondary-light" />
-        <h2 className="text-xl md:text-2xl font-bold mb-2">Module Not Found</h2>
-        <p className="text-base font-medium opacity-80">{error}</p>
+    <div className="container mx-auto px-3 md:px-4 py-24 md:py-32 text-center max-w-xl">
+      <div className="bg-neutral-page text-secondary p-6 md:p-8 rounded-xl md:rounded-2xl border border-neutral-border mb-4 md:mb-6">
+        <AlertCircle className="size-14 mx-auto mb-3 md:mb-4 text-secondary-light" />
+        <h2 className="text-xl md:text-2xl font-bold mb-1.5 md:mb-2">Module Not Found</h2>
+        <p className="text-sm md:text-base font-medium opacity-80">{error}</p>
       </div>
-      <Button onClick={() => router.push("/edu")} variant="outline" className="gap-2 text-base">
+      <Button onClick={() => router.push("/edu")} variant="outline" className="gap-1.5 md:gap-2 text-sm md:text-base">
         <ArrowLeft className="size-4" /> Back to Learning Hub
       </Button>
     </div>
@@ -126,10 +130,10 @@ export default function ModuleDetailPage() {
   const hasAttempted = (mod.quiz_attempts_history || []).length > 0;
 
   return (
-    <div className="container mx-auto px-4 py-8 md:py-12 max-w-6xl">
+    <div className="container mx-auto px-3 md:px-4 py-8 md:py-12 max-w-6xl">
       {/* Breadcrumb */}
-      <nav className="flex items-center gap-2 text-sm md:text-base font-semibold text-secondary-light mb-8">
-        <button onClick={() => router.push("/edu")} className="hover:text-primary transition-colors flex items-center gap-1">
+      <nav className="flex items-center gap-1.5 md:gap-2 text-sm md:text-base font-semibold text-secondary-light mb-6 md:mb-8">
+        <button onClick={() => router.push("/edu")} className="hover:text-primary transition-colors flex items-center gap-0.5 md:gap-1">
           <span className="hidden sm:inline">Learning Hub</span>
         </button>
         <ChevronRight className="size-4" />
@@ -138,25 +142,25 @@ export default function ModuleDetailPage() {
 
       {/* Learning Progress Overview */}
       {user && totalModulesCount > 0 && (
-        <div className="bg-white rounded-2xl border border-neutral-border p-5 md:p-6 mb-8 md:mb-10 shadow-sm">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
+        <div className="bg-white rounded-xl md:rounded-2xl border border-neutral-border p-5 md:p-6 mb-8 md:mb-10 shadow-sm">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 md:gap-4">
+            <div className="flex items-center gap-2 md:gap-3">
               <div className="size-12 rounded-full bg-neutral-page flex items-center justify-center">
                 <BarChart3 className="size-6 text-secondary" />
               </div>
               <div>
-                <p className="font-bold text-base text-secondary">Your Learning Progress</p>
-                <p className="text-sm text-secondary-light">{completedModulesCount} of {totalModulesCount} modules completed</p>
+                <p className="font-bold text-sm md:text-base text-secondary">Your Learning Progress</p>
+                <p className="text-xs md:text-sm text-secondary-light">{completedModulesCount} of {totalModulesCount} modules completed</p>
               </div>
             </div>
-            <div className="flex items-center gap-3 w-full md:w-auto">
-              <div className="flex-1 md:w-48 h-2.5 bg-neutral-border rounded-full overflow-hidden">
+            <div className="flex items-center gap-2 md:gap-3 w-full md:w-auto">
+              <div className="flex-1 w-36 md:w-48 h-2 md:h-2.5 bg-neutral-border rounded-full overflow-hidden">
                 <div
                   className="h-full bg-secondary transition-all duration-500 rounded-full"
                   style={{ width: `${totalModulesCount > 0 ? (completedModulesCount / totalModulesCount) * 100 : 0}%` }}
                 />
               </div>
-              <span className="text-lg font-bold text-secondary shrink-0">
+              <span className="text-base md:text-lg font-bold text-secondary shrink-0">
                 {totalModulesCount > 0 ? Math.round((completedModulesCount / totalModulesCount) * 100) : 0}%
               </span>
             </div>
@@ -166,7 +170,7 @@ export default function ModuleDetailPage() {
 
       {/* Hero Image */}
       {mod.image_url && (
-        <div className="rounded-2xl overflow-hidden mb-6 md:mb-8 bg-neutral-page shadow-sm relative h-56 md:h-72 lg:h-80">
+        <div className="rounded-xl md:rounded-2xl overflow-hidden mb-6 md:mb-8 bg-neutral-page shadow-sm relative h-56 md:h-72 lg:h-80">
           <Image
             src={mod.image_url}
             alt={mod.title}
@@ -215,13 +219,7 @@ export default function ModuleDetailPage() {
         }}
         onResetQuiz={() => {
           if (!user) { router.push(`/login?redirect=/edu/${mod.id}`); return; }
-          if (confirm("Are you sure you want to discard your current progress and start fresh?")) {
-            localStorage.removeItem(`octo_quiz_${mod.id}_answers`);
-            localStorage.removeItem(`octo_quiz_${mod.id}_step`);
-            localStorage.removeItem(`octo_quiz_${mod.id}_end_time`);
-            setSavedQuiz(null);
-            router.push(`/edu/${mod.id}/quiz`);
-          }
+          setShowResetConfirm(true);
         }}
         onNextModule={nextModuleId ? () => router.push(`/edu/${nextModuleId}`) : undefined}
       />
@@ -229,6 +227,23 @@ export default function ModuleDetailPage() {
       <QuizHistory
         history={mod.quiz_attempts_history || []}
         onViewAttempt={(attemptId) => router.push(`/edu/${mod.id}/result?attempt_id=${attemptId}`)}
+      />
+
+      <ConfirmModal
+        isOpen={showResetConfirm}
+        onClose={() => setShowResetConfirm(false)}
+        onConfirm={() => {
+          localStorage.removeItem(`octo_quiz_${mod.id}_answers`);
+          localStorage.removeItem(`octo_quiz_${mod.id}_step`);
+          localStorage.removeItem(`octo_quiz_${mod.id}_end_time`);
+          setSavedQuiz(null);
+          setShowResetConfirm(false);
+          router.push(`/edu/${mod.id}/quiz`);
+        }}
+        title="Reset Quiz?"
+        message="Are you sure you want to discard your current progress and start fresh?"
+        confirmText="Reset"
+        type="danger"
       />
     </div>
   );

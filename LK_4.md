@@ -51,7 +51,7 @@
 
 Sistem perbankan digital saat ini menghadapi permasalahan utama berupa meningkatnya kasus phishing dan fraud yang masih ditangani secara reaktif, sehingga sering menimbulkan kerugian finansial dan menurunkan kepercayaan pengguna. Untuk mengatasi hal tersebut, dibangun sistem OctoSight, yaitu platform anti-phishing dan fraud berbasis risk scoring dan machine learning yang mampu mendeteksi, menganalisis, serta menangani laporan secara terintegrasi.
 
-Sistem ini menyediakan fitur pelaporan insiden bagi nasabah, deteksi otomatis menggunakan hybrid engine (Rule-based 35% + Machine Learning 65%), workflow penanganan tiket bagi admin (triase, investigasi, blacklist management), serta modul edukasi pengguna berbasis microlearning. Sistem juga dilengkapi dengan sistem otorisasi berbasis peran (RBAC) dengan 7 tingkatan akses, notifikasi in-app dan email, SLA monitoring, serta dashboard analitik real-time. Tujuan dari sistem ini adalah meningkatkan kemampuan deteksi secara proaktif, mempercepat proses penanganan kasus, serta meningkatkan literasi keamanan digital pengguna.
+Sistem ini menyediakan fitur pelaporan insiden bagi nasabah, deteksi otomatis menggunakan hybrid engine (Rule-based 35% + Machine Learning 65%), workflow penanganan tiket bagi admin (triase, investigasi, blacklist management), serta modul edukasi pengguna berbasis microlearning. Sistem juga dilengkapi Google OAuth, notifikasi email via Gmail SMTP, gamifikasi profil (poin, streak, badge), sistem otorisasi berbasis peran (RBAC) dengan 7 tingkatan akses, notifikasi in-app dan email, SLA monitoring, serta dashboard analitik real-time. Tujuan dari sistem ini adalah meningkatkan kemampuan deteksi secara proaktif, mempercepat proses penanganan kasus, serta meningkatkan literasi keamanan digital pengguna.
 
 ---
 
@@ -81,6 +81,10 @@ Sistem ini menyediakan fitur pelaporan insiden bagi nasabah, deteksi otomatis me
 | 18 | Sistem menyediakan audit trail | Activity Log & Audit Trail | Ya | `backend/app/modules/activity/` + tabel `ticket_audit_logs` immutable |
 | 19 | Nasabah mendapat rekomendasi edukasi personal | AI-generated Recommendations | Ya | Integrasi Gemini AI — rekomendasi berdasarkan tipe laporan dan tingkat risiko |
 | 20 | Admin dapat memberikan feedback model ML | ML Feedback | Ya | `backend/app/api/v1/tickets.py` — endpoint feedback (TP/FP/TN/FN) |
+| 21 | User dapat login dengan Google | Google OAuth Sign-In | Ya | Integrasi `@react-oauth/google` + `backend/app/api/endpoints/auth.py` — endpoint `/api/v1/auth/google` |
+| 22 | User mendapat notifikasi via email | Gmail SMTP Notification | Ya | `backend/app/core/email.py` — template email (confirmed, resolved, password reset, user submission confirmation) dikirim via Gmail SMTP |
+| 23 | User mendapat gamification (poin, streak, badge) | Profile Gamification | Ya | `frontend/app/(user)/profile/page.tsx` — PointsCounter, StreakTracker, BadgeCard, 14 jenis achievement |
+| 24 | Admin dapat melihat aktivitas audit trail | Activity Log | Ya | `backend/app/modules/activity/` + frontend di halaman investigasi — immutable log perubahan tiket |
 
 #### 2. Fitur Utama yang Berhasil Diselesaikan
 
@@ -96,6 +100,10 @@ Sistem ini menyediakan fitur pelaporan insiden bagi nasabah, deteksi otomatis me
 | 8 | **Rule Configuration** | Editor aturan deteksi dinamis real-time | Aturan baru langsung mempengaruhi skoring | 5 kategori aturan (keyword, TLD, shortener, scam scenario, brand term) |
 | 9 | **Education Modules** | 8 modul pembelajaran dengan artikel dan kuis interaktif | Progress belajar per pengguna, skor kuis | 4 level kesulitan (Basic → Expert) |
 | 10 | **In-App Notifications** | Sistem notifikasi real-time dengan 12 tipe notifikasi | Notifikasi push-style dengan bell icon | Notifikasi edukasi khusus HIGH priority |
+| 11 | **Google OAuth Sign-In** | Login satu klik dengan akun Google | Autentikasi via Google, akun otomatis terdaftar | Endpoint `/api/v1/auth/google` |
+| 12 | **Email Notification Service** | Notifikasi via Gmail SMTP untuk perubahan status dan reset password | Email terkirim untuk confirmed, resolved, forgot/reset password, konfirmasi laporan | Template Jinja2 dengan desain responsif |
+| 13 | **Profile Gamification** | Poin, streak harian, badge, dan 14 jenis achievement | Profil user dengan statistik dan pencapaian | PointsCounter, StreakTracker, BadgeCard komponen |
+| 14 | **Activity & Audit Trail** | Log immutable untuk setiap perubahan status tiket | Riwayat audit tampil di halaman investigasi | Forward-only `ticket_audit_logs` |
 
 #### 3. Fitur yang Belum Selesai atau Perlu Pengembangan
 
@@ -208,7 +216,7 @@ Sistem ini menyediakan fitur pelaporan insiden bagi nasabah, deteksi otomatis me
 | Kemudahan penggunaan | 3 | Form sederhana dan intuitif, namun beberapa pengguna perlu adaptasi di halaman investigasi | Observasi penggunaan: rata-rata 2 menit untuk tugas dasar |
 | Performa sistem | 3 | Response API cepat (<200ms untuk analisis), dashboard agak lambat (2.1s) karena banyak query | Pengukuran Chrome DevTools |
 | Keamanan sistem | 4 | RBAC menyeluruh, password terhash, JWT httpOnly, rate limiting, input sanitization | Audit kode: require_permission() di semua route |
-| Kelengkapan fitur | 4 | Seluruh 20 fitur utama berfungsi penuh, termasuk forgot/reset password end-to-end | Tabel capaian fitur di bagian C.2 |
+| Kelengkapan fitur | 4 | Seluruh 24 fitur utama berfungsi penuh, termasuk forgot/reset password, Google OAuth, notifikasi email, dan gamifikasi profil | Tabel capaian fitur di bagian C.2 |
 
 ---
 
@@ -220,8 +228,7 @@ Sistem ini menyediakan fitur pelaporan insiden bagi nasabah, deteksi otomatis me
 |---|---|
 | **Link repository** | `https://github.com/G4l1le30/octosight-web-app` |
 | **Link demo/deployment** | Production: `https://octosight.vercel.app` |
-| **Akun uji coba** | Admin: `octosight.admin@gmail.com` / `octosight123` |
-| | User: `user@octosight.id` / `user123` |
+| **Akun uji coba** | Tersedia di seed data (`backend/seeds/`) |
 | **Link video demo** | [Video Demo OctoSight](#) |
 
 #### 2. Skenario Demo
@@ -342,7 +349,7 @@ Proyek ini mengintegrasikan capaian pembelajaran dari beberapa mata kuliah: (1) 
 
 #### 1. Kesimpulan Akhir
 
-Proyek OctoSight berhasil membangun prototipe sistem deteksi phishing dan fraud yang mengintegrasikan rule-based engine (40+ aturan) dan machine learning (Logistic Regression + TF-IDF) dengan hybrid scoring formula. Sistem ini menjawab permasalahan utama deteksi phishing dengan menyediakan platform end-to-end mulai dari pelaporan insiden oleh nasabah, analisis risiko otomatis, workflow penanganan oleh admin, hingga edukasi pengguna. Seluruh 20 kebutuhan fungsional yang direncanakan telah terpenuhi sepenuhnya, didukung oleh sistem RBAC dengan 7 roles dan 37+ permissions yang diterapkan baik di backend maupun frontend. Pengujian fungsional menunjukkan seluruh fitur inti berjalan sesuai spesifikasi, dengan response API di bawah 200ms rata-rata dan tampilan responsif di berbagai ukuran layar.
+Proyek OctoSight berhasil membangun prototipe sistem deteksi phishing dan fraud yang mengintegrasikan rule-based engine (40+ aturan) dan machine learning (Logistic Regression + TF-IDF) dengan hybrid scoring formula. Sistem ini menjawab permasalahan utama deteksi phishing dengan menyediakan platform end-to-end mulai dari pelaporan insiden oleh nasabah, analisis risiko otomatis, workflow penanganan oleh admin, hingga edukasi pengguna. Seluruh kebutuhan fungsional yang direncanakan telah terpenuhi sepenuhnya (24 fitur, termasuk Google OAuth, notifikasi email, gamifikasi profil, dan audit trail), didukung oleh sistem RBAC dengan 7 roles dan 37+ permissions yang diterapkan baik di backend maupun frontend. Pengujian fungsional menunjukkan seluruh fitur inti berjalan sesuai spesifikasi, dengan response API di bawah 200ms rata-rata dan tampilan responsif di berbagai ukuran layar.
 
 #### 2. Rekomendasi Pengembangan
 

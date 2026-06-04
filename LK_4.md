@@ -219,7 +219,7 @@ Sistem ini menyediakan fitur pelaporan insiden bagi nasabah, deteksi otomatis me
 | Aspek | Detail |
 |---|---|
 | **Link repository** | `https://github.com/G4l1le30/octosight-web-app` |
-| **Link demo/deployment** | Local: `http://localhost:3000` |
+| **Link demo/deployment** | Production: `https://octosight.vercel.app` |
 | **Akun uji coba** | Admin: `octosight.admin@gmail.com` / `octosight123` |
 | | User: `user@octosight.id` / `user123` |
 | **Link video demo** | [Video Demo OctoSight](#) |

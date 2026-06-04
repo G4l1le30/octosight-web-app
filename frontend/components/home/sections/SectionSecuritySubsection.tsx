@@ -1,0 +1,197 @@
+"use client";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/Button";
+import { Card, CardContent } from "@/components/ui/card";
+import { BarChart2, FileSearch, Signal } from "lucide-react";
+import Link from "next/link";
+import { useAuth } from "@/lib/auth-context";
+
+const evidenceBadges = ["ENCRYPTED", "COMPLIANT"];
+
+export const SectionSecuritySubsection = () => {
+  const { user } = useAuth();
+
+  return (
+    <section className="w-full bg-gray-50 px-0 py-24">
+      <div className="mx-auto flex w-full max-w-screen-xl flex-col items-start gap-16 px-8 py-0">
+
+        <header className="flex w-full flex-col items-center gap-2">
+          <p className="flex w-fit items-center justify-center whitespace-nowrap text-center text-[10px] font-bold leading-[15px] tracking-[2.00px] text-[#e11d2e]">
+            ADVANCED PROTECTION
+          </p>
+          <h2 className="flex w-fit items-center justify-center whitespace-nowrap text-center text-3xl font-bold leading-9 tracking-[0] text-gray-900">
+            Comprehensive Security Features
+          </h2>
+          <div className="h-1 w-16 rounded-full bg-[#e11d2e]" />
+        </header>
+
+        <div className="flex w-full flex-col gap-5">
+
+          <div className="flex w-full flex-col items-stretch gap-5 lg:flex-row">
+
+            <Card
+              className="group relative w-full min-h-[340px] overflow-hidden rounded-3xl border-0 shadow-none lg:flex-[2] cursor-pointer"
+              style={{
+                backgroundImage: "url('/bg-ai-analysis.jpg')",
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+              }}
+            >
+              <CardContent className="relative flex h-full flex-col justify-end p-0">
+                <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(0deg,rgba(10,15,28,0.95)_0%,rgba(10,15,28,0.4)_50%,rgba(10,15,28,0.1)_100%)]" />
+                <div className="relative flex w-full flex-col items-start gap-3 p-8">
+                  <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-[#e11d2e]">
+                    <Signal className="h-4 w-4 text-white" />
+                  </span>
+                  <h3 className="flex w-fit items-center whitespace-nowrap text-2xl font-bold leading-8 tracking-[0] text-white">
+                    AI-Powered Analysis
+                  </h3>
+                  <p className="w-fit max-w-md text-sm font-normal leading-5 tracking-[0] text-gray-300">
+                    Utilizing advanced machine learning models to identify complex
+                    phishing patterns in real-time.
+                  </p>
+                  <div className="grid w-full grid-rows-[0fr] transition-all duration-300 ease-out group-hover:grid-rows-[1fr] group-hover:pt-3">
+                    <div className="overflow-hidden">
+                      <Link href="/report" className="block w-full">
+                        <Button className="h-auto w-full rounded-xl bg-white px-0 py-3 text-base font-bold leading-6 tracking-[0] text-[#e11d2e] hover:bg-white/90">
+                          Report Incident
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="flex w-full flex-col gap-5 lg:flex-[1]">
+
+              <Card className="flex-1 rounded-3xl border border-solid border-gray-100 bg-white shadow-none">
+                <CardContent className="flex h-full flex-col items-start gap-3 p-8">
+                  <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-red-50">
+                    <Signal className="h-4 w-4 text-[#e11d2e]" />
+                  </span>
+                  <h3 className="text-xl font-bold leading-7 tracking-[0] text-gray-900">
+                    Official Reporting
+                  </h3>
+                  <p className="text-sm font-normal leading-5 tracking-[0] text-gray-500">
+                    Seamlessly submit threats directly to banking authorities.
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="flex-1 rounded-3xl border border-solid border-gray-100 bg-white shadow-none">
+                <CardContent className="flex h-full flex-col items-start gap-3 p-8">
+                  <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-red-50">
+                    <BarChart2 className="h-4 w-4 text-[#e11d2e]" />
+                  </span>
+                  <h3 className="text-xl font-bold leading-7 tracking-[0] text-gray-900">
+                    Admin Triage Tools
+                  </h3>
+                  <p className="text-sm font-normal leading-5 tracking-[0] text-gray-500">
+                    Investigation dashboard for in-depth security analysis.
+                  </p>
+                </CardContent>
+              </Card>
+
+            </div>
+          </div>
+
+          <div className="flex w-full flex-col gap-5 lg:flex-row">
+
+            <Card
+              className="group relative h-[300px] w-full overflow-hidden rounded-3xl border-0 shadow-none lg:flex-1 cursor-pointer"
+              style={{
+                backgroundImage: "url('/bg-realtime-notifications.jpg')",
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+              }}
+            >
+              <CardContent className="relative flex h-full flex-col justify-end p-0">
+                <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(0deg,rgba(0,0,0,0.88)_0%,rgba(0,0,0,0.35)_55%,rgba(0,0,0,0.05)_100%)]" />
+                <div className="relative flex w-full flex-col items-start gap-2 p-8">
+                  <h3 className="flex w-fit items-center whitespace-nowrap text-xl font-bold leading-7 tracking-[0] text-white">
+                    Real-time Notifications
+                  </h3>
+                  <p className="w-fit text-sm font-normal leading-5 tracking-[0] text-gray-300">
+                    Instant alerts for new threats detected in your ecosystem.
+                  </p>
+                  <div className="grid w-full grid-rows-[0fr] transition-all duration-300 ease-out group-hover:grid-rows-[1fr] group-hover:pt-3">
+                    <div className="overflow-hidden">
+                      <Link href={user ? "/status" : "/login"} className="block w-full">
+                        <Button className="h-auto w-full rounded-xl bg-white px-0 py-3 text-base font-bold leading-6 tracking-[0] text-[#e11d2e] hover:bg-white/90">
+                          Check Status
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card
+              className="group relative h-[300px] w-full overflow-hidden rounded-3xl border-0 shadow-none lg:flex-1 cursor-pointer"
+              style={{
+                backgroundImage: "url('/bg-microlearning.jpg')",
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+              }}
+            >
+              <CardContent className="relative flex h-full w-full flex-col justify-end p-0">
+                <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(0deg,rgba(0,0,0,0.85)_0%,rgba(0,0,0,0.4)_50%,rgba(225,29,46,0.15)_100%)]" />
+                <div className="relative flex w-full flex-col items-start gap-3 p-8">
+                  <h3 className="flex w-fit items-center whitespace-nowrap text-2xl font-bold leading-8 tracking-[0] text-white">
+                    Microlearning Modules
+                  </h3>
+                  <p className="w-fit text-sm font-normal leading-5 tracking-[0] text-red-100">
+                    Educational content designed to boost long-term vigilance and
+                    security awareness.
+                  </p>
+                  <div className="grid w-full grid-rows-[0fr] transition-all duration-300 ease-out group-hover:grid-rows-[1fr] group-hover:pt-3">
+                    <div className="overflow-hidden">
+                      <Link href="/edu" className="block w-full">
+                        <Button className="h-auto w-full rounded-xl bg-white px-0 py-3 text-base font-bold leading-6 tracking-[0] text-[#e11d2e] hover:bg-white/90">
+                          Start Learning
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="h-[300px] w-full rounded-3xl border border-solid border-gray-100 bg-white shadow-none lg:flex-1">
+              <CardContent className="flex h-full w-full flex-col items-center justify-center gap-4 px-8 py-10">
+                <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-red-50">
+                  <FileSearch className="h-4 w-4 text-[#e11d2e]" />
+                </span>
+                <h3 className="flex w-fit items-center justify-center whitespace-nowrap text-center text-xl font-bold leading-7 tracking-[0] text-gray-900">
+                  Evidence Management
+                </h3>
+                <p className="w-fit text-center text-sm font-normal leading-[22px] tracking-[0] text-gray-500">
+                  Securely upload and store screenshots or transaction logs for
+                  triage. Our encrypted vault ensures chain of custody for legal
+                  and banking requirements.
+                </p>
+                <div className="inline-flex items-center gap-2">
+                  {evidenceBadges.map((item) => (
+                    <Badge
+                      key={item}
+                      variant="secondary"
+                      className="rounded-md bg-gray-100 px-3 py-1 text-[10px] font-bold leading-[15px] tracking-[0] text-gray-500 hover:bg-gray-100"
+                    >
+                      {item}
+                    </Badge>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+          </div>
+        </div>
+
+      </div>
+    </section>
+  );
+};
+

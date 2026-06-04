@@ -1,0 +1,57 @@
+const stats = [
+  { value: "10M+", label: "THREATS DETECTED" },
+  { value: "250k", label: "USERS PROTECTED" },
+  { value: "99.9%", label: "DETECTION ACCURACY" },
+  { value: "24/7", label: "REAL-TIME TRIAGE" },
+];
+
+const marqueeItems = [...stats, ...stats, ...stats, ...stats];
+
+export const SectionStatsRowSubsection = () => {
+  return (
+    <section className="w-full bg-white border-t border-gray-100 py-12 overflow-hidden">
+      <style>{`
+        @keyframes marquee-slide {
+          from { transform: translateX(0); }
+          to   { transform: translateX(-50%); }
+        }
+        @keyframes dot-blink {
+          0%, 100% { opacity: 0.25; transform: scale(0.85); }
+          50%       { opacity: 1;    transform: scale(1); }
+        }
+        .marquee-track {
+          display: flex;
+          width: max-content;
+          will-change: transform;
+          animation: marquee-slide 20s linear infinite;
+        }
+        .marquee-track:hover {
+          animation-play-state: paused;
+        }
+        .blink-dot {
+          animation: dot-blink 1.4s ease-in-out infinite;
+        }
+      `}</style>
+
+      <div className="marquee-track">
+        {marqueeItems.map((stat, index) => (
+          <div key={index} className="flex items-center shrink-0">
+            <div className="flex flex-col items-center gap-1 text-center px-14">
+              <p className="whitespace-nowrap text-4xl leading-10 tracking-[0] text-gray-900 font-bold">
+                {stat.value}
+              </p>
+              <p className="whitespace-nowrap text-[10px] leading-[15px] tracking-[1.20px] text-gray-400 font-bold">
+                {stat.label}
+              </p>
+            </div>
+            <span
+              className="blink-dot shrink-0 h-1.5 w-1.5 rounded-full bg-[#e11d2e]"
+              style={{ animationDelay: `${(index % 4) * 0.35}s` }}
+            />
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+};
+

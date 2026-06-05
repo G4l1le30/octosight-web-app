@@ -36,6 +36,20 @@ class NotifySupportRequest(BaseModel):
 class NotifyRequest(BaseModel):
     message: str
 
+def _unique_admins(db, admin_email: str):
+    """Return deduplicated admin users for in-app notifications."""
+    users = db.query(User).filter(
+        (User.email == admin_email) | (User.role == "admin")
+    ).all()
+    seen: set[str] = set()
+    unique: list[User] = []
+    for u in users:
+        if u.id in seen:
+            continue
+        seen.add(u.id)
+        unique.append(u)
+    return unique
+
 router = APIRouter(prefix="/api/v1", tags=["tickets"])
 
 UPLOAD_DIR = os.getenv("UPLOAD_DIR", "uploads")
@@ -417,9 +431,13 @@ def report_accuracy(
     current_user: User = Depends(get_current_user),
 ):
     """Send email to admin reporting an accuracy issue with the analysis."""
-    admin_email = "octosight.id@gmail.com"
     ticket = db.query(Ticket).filter(Ticket.ticket_id == ticket_id).first()
-    ticket_info = f"{ticket.type} - {ticket.url or ticket.sender_numbers or 'N/A'}" if ticket else "Unknown"
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+    if current_user.role != "admin" and ticket.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Access denied")
+    admin_email = "octosight.id@gmail.com"
+    ticket_info = f"{ticket.type} - {ticket.url or ticket.sender_numbers or 'N/A'}"
     send_email_notification(
         background_tasks=background_tasks,
         subject=f"OctoSight - Accuracy Issue Reported [{ticket_id}]",
@@ -441,11 +459,11 @@ def report_accuracy(
         ticket_id,
         f"Report accuracy issue: {current_user.email}",
     )
-    admin_users = db.query(User).filter((User.email == admin_email) | (User.role == "admin")).all()
-    for admin in admin_users:
+    admin_users = _unique_admins(db, admin_email)
+    if admin_users:
         NotificationService.create_notification(
             db=db,
-            user_id=admin.id,
+            user_id=admin_users[0].id,
             notification_type="report_accuracy",
             title=f"Report accuracy issue from {current_user.email}",
             body=f"Ticket {ticket_id}: {data.message or 'No additional details provided.'}",
@@ -463,9 +481,13 @@ def notify_support(
     current_user: User = Depends(get_current_user),
 ):
     """Send email to admin requesting support/intervention."""
-    admin_email = "octosight.id@gmail.com"
     ticket = db.query(Ticket).filter(Ticket.ticket_id == ticket_id).first()
-    ticket_info = f"{ticket.type} - {ticket.url or ticket.sender_numbers or 'N/A'}" if ticket else "Unknown"
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+    if current_user.role != "admin" and ticket.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Access denied")
+    admin_email = "octosight.id@gmail.com"
+    ticket_info = f"{ticket.type} - {ticket.url or ticket.sender_numbers or 'N/A'}"
     send_email_notification(
         background_tasks=background_tasks,
         subject=f"OctoSight - Support Request [{ticket_id}]",
@@ -487,11 +509,11 @@ def notify_support(
         ticket_id,
         f"Support requested: {current_user.email}",
     )
-    admin_users = db.query(User).filter((User.email == admin_email) | (User.role == "admin")).all()
-    for admin in admin_users:
+    admin_users = _unique_admins(db, admin_email)
+    if admin_users:
         NotificationService.create_notification(
             db=db,
-            user_id=admin.id,
+            user_id=admin_users[0].id,
             notification_type="notify_support",
             title=f"Support request from {current_user.email}",
             body=f"Ticket {ticket_id}: {data.message or 'Requesting admin attention on this ticket.'}",
@@ -504,14 +526,17 @@ def notify_support(
 def download_file(filename: str, _admin=Depends(require_admin)):
     """
     Stream an evidence file (screenshot or attachment) to the admin.
-    Admin only.
+    Admin only. Path traversal is prevented by normalizing and prefix-checking.
     """
-    file_path = os.path.join(UPLOAD_DIR, filename)
-    if not os.path.exists(file_path):
+    safe_path = os.path.normpath(os.path.join(UPLOAD_DIR, filename))
+    upload_dir_real = os.path.normpath(os.path.abspath(UPLOAD_DIR))
+    if not safe_path.startswith(upload_dir_real):
+        raise HTTPException(status_code=400, detail="Invalid file path")
+    if not os.path.exists(safe_path):
         raise HTTPException(status_code=404, detail="File not found")
     return FileResponse(
-        path=file_path,
-        filename=filename,
+        path=safe_path,
+        filename=os.path.basename(filename),
         media_type="application/octet-stream",
-        headers={"Content-Disposition": f"attachment; filename={filename}"},
+        headers={"Content-Disposition": f"attachment; filename={os.path.basename(filename)}"},
     )

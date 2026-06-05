@@ -2,7 +2,9 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { AlertTriangle } from "lucide-react";
 import PointsCounter from "@/components/gamification/PointsCounter";
 import StreakTracker from "@/components/gamification/StreakTracker";
 import BadgeCard from "@/components/gamification/BadgeCard";
@@ -27,7 +29,8 @@ const ACHIEVEMENT_ORDER: Record<string, number> = {
 };
 
 export default function ProfilePage() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const router = useRouter();
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [achievements, setAchievements] = useState<any[]>([]);
@@ -37,6 +40,9 @@ export default function ProfilePage() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [saving, setSaving] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletePassword, setDeletePassword] = useState("");
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     fetch("/api/v1/gamification/my-stats")
@@ -157,17 +163,17 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-32 text-center">
-        <div className="size-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+      <div className="container mx-auto px-3 md:px-4 py-24 md:py-32 text-center">
+        <div className="size-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-3 md:mb-4" />
         <p className="text-secondary font-medium">Loading profile...</p>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 md:py-12 max-w-6xl">
+    <div className="container mx-auto px-3 md:px-4 py-8 md:py-12 max-w-6xl">
       <div className="mb-8 md:mb-12 text-center">
-        <h1 className="text-3xl md:text-4xl font-bold mb-4 text-secondary">
+        <h1 className="text-3xl md:text-4xl font-bold mb-3 md:mb-4 text-secondary">
           My Profile
         </h1>
         <p className="text-secondary opacity-70 font-medium max-w-2xl mx-auto">
@@ -175,7 +181,7 @@ export default function ProfilePage() {
         </p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 mb-8">
+      <div className="grid gap-4 md:gap-6 md:grid-cols-2 mb-6 md:mb-8">
         <PointsCounter
           points={stats?.total_points || 0}
           level={stats?.level || 1}
@@ -186,28 +192,28 @@ export default function ProfilePage() {
         />
       </div>
 
-      <div className="rounded-3xl border border-neutral-border bg-white shadow-xl p-6">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between mb-6">
+      <div className="rounded-2xl md:rounded-3xl border border-neutral-border bg-white shadow-xl p-4 md:p-6">
+        <div className="flex flex-col gap-2 md:gap-3 sm:flex-row sm:items-end sm:justify-between mb-4 md:mb-6">
           <div>
-            <p className="text-sm text-secondary/60 font-semibold">
+            <p className="text-xs md:text-sm text-secondary/60 font-semibold">
               Achievements
             </p>
-            <h2 className="mt-2 text-2xl font-bold text-secondary">
+            <h2 className="mt-1.5 md:mt-2 text-xl md:text-2xl font-bold text-secondary">
               Your Badge Collection
             </h2>
           </div>
-          <p className="text-sm text-secondary/80">
+          <p className="text-xs md:text-sm text-secondary/80">
             {achievements.filter((a) => a.earned).length} of{" "}
             {achievements.length} earned
           </p>
         </div>
 
         {achLoading ? (
-          <div className="flex items-center justify-center py-16 text-secondary/70">
+          <div className="flex items-center justify-center py-12 md:py-16 text-secondary/70">
             Loading achievements...
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4">
             {sortedAchievements.map((ach) => (
               <BadgeCard
                 key={ach.code}
@@ -222,23 +228,107 @@ export default function ProfilePage() {
         )}
       </div>
 
-      <div className="rounded-3xl border border-neutral-border bg-white shadow-xl p-6 mt-8">
-        <div className="flex items-center justify-between gap-4 mb-6">
+      {/* Delete Account */}
+      <div className="rounded-2xl md:rounded-3xl border border-red-200 bg-red-50/50 shadow-xl p-4 md:p-6 mt-6 md:mt-8">
+        <div className="flex items-center justify-between gap-3 md:gap-4 mb-3 md:mb-4">
           <div>
-            <p className="text-sm text-secondary/60 font-semibold">
+            <p className="text-xs md:text-sm text-red-600 font-semibold">Danger Zone</p>
+            <h2 className="mt-0.5 md:mt-1 text-xl md:text-2xl font-bold text-red-700">Delete Account</h2>
+            <p className="text-xs md:text-sm text-red-600/80 mt-0.5 md:mt-1">
+              Permanently remove your account and all associated data. This action cannot be undone.
+            </p>
+          </div>
+          <Button
+            type="button"
+            onClick={() => setShowDeleteModal(true)}
+            className="shrink-0 bg-red-600 hover:bg-red-700 text-white gap-1.5 md:gap-2"
+          >
+            <AlertTriangle className="size-4" /> Delete Account
+          </Button>
+        </div>
+      </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-3 md:px-4">
+          <div className="bg-white rounded-xl md:rounded-2xl shadow-2xl max-w-md w-full p-4 md:p-6 space-y-3 md:space-y-4">
+            <h3 className="text-lg md:text-xl font-bold text-red-700 flex items-center gap-1.5 md:gap-2">
+              <AlertTriangle className="size-5" /> Delete Your Account?
+            </h3>
+            <p className="text-xs md:text-sm text-secondary/80">
+              This will permanently delete your profile, achievements, education progress,
+              and all associated data. Your submitted tickets will be anonymized.
+            </p>
+            <Input
+              label="Confirm your password"
+              type="password"
+              placeholder="Enter your password"
+              value={deletePassword}
+              onChange={(e) => setDeletePassword(e.target.value)}
+            />
+            <div className="flex gap-2 md:gap-3 pt-1.5 md:pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                className="flex-1"
+                onClick={() => { setShowDeleteModal(false); setDeletePassword(""); }}
+                disabled={deleting}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+                loading={deleting}
+                disabled={!deletePassword}
+                onClick={async () => {
+                  setDeleting(true);
+                  try {
+                    const res = await fetch("/api/v1/auth/me", {
+                      method: "DELETE",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ password: deletePassword }),
+                    });
+                    if (!res.ok) {
+                      const err = await res.json().catch(() => null);
+                      throw new Error(err?.detail || "Failed to delete account");
+                    }
+                    toast.success("Account deleted permanently.");
+                    logout();
+                    router.push("/");
+                  } catch (err: any) {
+                    toast.error(err.message || "Something went wrong");
+                  } finally {
+                    setDeleting(false);
+                    setShowDeleteModal(false);
+                    setDeletePassword("");
+                  }
+                }}
+              >
+                {deleting ? "Deleting..." : "Delete Forever"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="rounded-2xl md:rounded-3xl border border-neutral-border bg-white shadow-xl p-4 md:p-6 mt-6 md:mt-8">
+        <div className="flex items-center justify-between gap-3 md:gap-4 mb-4 md:mb-6">
+          <div>
+            <p className="text-xs md:text-sm text-secondary/60 font-semibold">
               User Settings
             </p>
-            <h2 className="mt-2 text-2xl font-bold text-secondary">
+            <h2 className="mt-1.5 md:mt-2 text-xl md:text-2xl font-bold text-secondary">
               Account Preferences
             </h2>
           </div>
-          <span className="text-sm font-semibold text-secondary/80">
+          <span className="text-xs md:text-sm font-semibold text-secondary/80">
             {user?.role === "admin" ? "Admin" : "User"}
           </span>
         </div>
 
-        <form onSubmit={handleSaveSettings} className="space-y-6">
-          <div className="grid gap-4 md:grid-cols-2">
+        <form onSubmit={handleSaveSettings} className="space-y-4 md:space-y-6">
+          <div className="grid gap-3 md:gap-4 md:grid-cols-2">
             <Input label="Email Address" value={user?.email || ""} disabled />
             <Input
               label="Full Name"
@@ -247,7 +337,7 @@ export default function ProfilePage() {
             />
           </div>
 
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-3 md:gap-4 md:grid-cols-3">
             <Input
               label="Old Password"
               type="password"
@@ -286,12 +376,12 @@ export default function ProfilePage() {
             />
           </div>
 
-          <div className="grid gap-3 md:grid-cols-2 items-end">
+          <div className="grid gap-2 md:gap-3 md:grid-cols-2 items-end">
             <div>
-              <p className="text-sm font-semibold text-secondary">
+              <p className="text-xs md:text-sm font-semibold text-secondary">
                 Authentication Method
               </p>
-              <p className="text-sm text-secondary/70">Email &amp; password</p>
+              <p className="text-xs md:text-sm text-secondary/70">Email &amp; password</p>
             </div>
             <Button type="submit" loading={saving} className="w-full md:w-auto">
               Save Settings

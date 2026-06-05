@@ -31,6 +31,7 @@ from app.schemas.ticket import (
     TicketAssign,
     BulkTicketUpdate,
     TicketFeedbackCreate,
+    TicketStatusUpdate,
 )
 from app.modules.tickets.service import TicketService
 
@@ -59,16 +60,13 @@ def list_tickets(
 @router.patch("/{ticket_id}/status")
 def update_ticket_status(
     ticket_id: str,
-    data: dict,
+    data: TicketStatusUpdate,
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_permission("tickets.update_status")),
 ):
     """Update ticket status (used by Kanban drag-and-drop)."""
-    status = data.get("status")
-    if not status:
-        from fastapi import HTTPException
-        raise HTTPException(status_code=400, detail="status is required")
+    status = data.status
 
     ticket = db.query(Ticket).filter(Ticket.ticket_id == ticket_id).first()
     if not ticket:
@@ -124,6 +122,11 @@ def update_ticket_status(
             },
         )
 
+    # Gamification: when a ticket is confirmed, check confirmed-ticket achievements
+    if status == "Confirmed" and ticket.user_id:
+        from app.modules.gamification.service import GamificationService
+        GamificationService.add_points_and_check_achievements(db, ticket.user_id, 15, "confirmed_report")
+
     return {"status": "updated", "ticket_id": ticket.ticket_id, "new_status": ticket.status}
 
 
@@ -142,7 +145,7 @@ def assign_ticket(
 
     assignee_user = db.query(User).filter(User.email == data.assigned_to).first()
     if assignee_user and assignee_user.email:
-        frontend_url = os.getenv("NEXT_PUBLIC_API_URL", "http://localhost:3000").rstrip("/")
+        frontend_url = os.getenv("FRONTEND_URL", "http://localhost:3000").rstrip("/")
         send_email_notification(
             background_tasks=background_tasks,
             subject=f"OctoSight - Ticket Assigned [{ticket.ticket_id}]",

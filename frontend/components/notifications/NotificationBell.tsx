@@ -116,44 +116,44 @@ export const NotificationBell: React.FC = () => {
     <div ref={dropdownRef} className="relative">
       <button
         onClick={() => setOpen((prev) => !prev)}
-        className="relative p-2 text-secondary hover:text-primary transition-colors"
+        className="relative p-1.5 md:p-2 text-secondary hover:text-primary transition-colors"
         aria-label="Notifications"
       >
         {unreadCount > 0 ? (
           <>
-            <Bell className="h-5 w-5" />
-            <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold text-white bg-primary rounded-full">
+            <Bell className="h-4 md:h-5 w-4 md:w-5" />
+            <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[18px] h-[18px] px-0.5 md:px-1 text-xs font-bold text-white bg-primary rounded-full">
               {unreadCount > 99 ? "99+" : unreadCount}
             </span>
           </>
         ) : (
-          <Bell className="h-5 w-5" />
+          <Bell className="h-4 md:h-5 w-4 md:w-5" />
         )}
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white border border-neutral-border rounded-xl shadow-xl z-50">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-border">
-            <span className="text-sm font-bold text-secondary">
+        <div className="absolute right-0 mt-1.5 md:mt-2 w-60 md:w-80 sm:w-96 bg-white border border-neutral-border rounded-lg md:rounded-xl shadow-xl z-50">
+          <div className="flex items-center justify-between px-3 md:px-4 py-2 md:py-3 border-b border-neutral-border">
+            <span className="text-xs md:text-sm font-bold text-secondary">
               Notifications
             </span>
             <button
               onClick={handleMarkAllRead}
               disabled={markingAll || unreadCount === 0}
-              className="flex items-center gap-1 text-xs font-bold text-primary hover:text-primary-dark disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="flex items-center gap-0.5 md:gap-1 text-xs font-bold text-primary hover:text-primary-dark disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               {markingAll ? (
-                <Loader2 className="h-3 w-3 animate-spin" />
+                <Loader2 className="h-2 md:h-3 w-2 md:w-3 animate-spin" />
               ) : (
-                <CheckCheck className="h-3 w-3" />
+                <CheckCheck className="h-2 md:h-3 w-2 md:w-3" />
               )}
               Mark all read
             </button>
           </div>
 
           {loading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-5 w-5 animate-spin text-secondary/60" />
+            <div className="flex items-center justify-center py-6 md:py-8">
+              <Loader2 className="h-4 md:h-5 w-4 md:w-5 animate-spin text-secondary/60" />
             </div>
           ) : (
             <NotificationList
@@ -167,7 +167,7 @@ export const NotificationBell: React.FC = () => {
           <Link
             href="/notifications"
             onClick={() => setOpen(false)}
-            className="flex items-center justify-center gap-1 px-4 py-3 text-sm font-bold text-primary hover:text-primary-dark border-t border-neutral-border transition-colors"
+            className="flex items-center justify-center gap-0.5 md:gap-1 px-3 md:px-4 py-2 md:py-3 text-xs md:text-sm font-bold text-primary hover:text-primary-dark border-t border-neutral-border transition-colors"
           >
             See All &rarr;
           </Link>

@@ -1,117 +1,260 @@
 # OctoSight — Anti-Phishing & Fraud Detection System
 
-> **Capstone Project** — Fakultas Ilmu Komputer, Universitas Brawijaya 2026  
-> **Case Study:** CIMB Niaga Digital Banking  
-> **Topic:** Advanced Phishing & Fraud Detection (B.3)
+> **Capstone Project** — Fakultas Ilmu Komputer, Universitas Brawijaya 2026 · Case Study: CIMB Niaga Digital Banking
+
+[![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688?logo=fastapi)](https://fastapi.tiangolo.com)
+[![Next.js](https://img.shields.io/badge/Frontend-Next.js_15-000000?logo=next.js)](https://nextjs.org)
+[![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python)](https://python.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript)](https://typescriptlang.org)
+[![Docker](https://img.shields.io/badge/Container-Docker-2496ED?logo=docker)](https://docker.com)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 OctoSight is an end-to-end anti-phishing and fraud detection prototype for digital banking. It provides a **streamlined reporting portal** for customers, a **hybrid AI-driven detection engine** (Rule-based 35% + Machine Learning 65%), and a **full admin triage workflow** with analytics dashboards, RBAC, SLA monitoring, and preventive education modules.
 
 ---
 
-## Table of Contents
+## ✨ Features
 
-- [Key Features](#key-features)
-- [Architecture Overview](#architecture-overview)
-- [Hybrid Detection Pipeline](#hybrid-detection-pipeline)
-- [Tech Stack](#tech-stack)
-- [Project Structure](#project-structure)
-- [Getting Started](#getting-started)
-- [Access Points](#access-points)
-- [Default Credentials](#default-credentials)
-- [User Roles & Permissions](#user-roles--permissions)
-- [API Reference](#api-reference)
-- [ML Pipeline](#ml-pipeline)
-- [Security & Compliance](#security--compliance)
-- [Team](#team)
+### 🧑‍💼 For End Users
 
----
+| # | Feature | Description |
+|---|---|---|
+| 1 | **Incident Reporting** | Submit phishing/fraud reports (SMS, WhatsApp, Email, Website, Transaction) with evidence screenshots |
+| 2 | **Hybrid Risk Analysis** | Real-time preview of risk score — combines rule heuristics + ML prediction |
+| 3 | **Message Checker** | Standalone ML-powered tool to scan suspicious messages (no login required) |
+| 4 | **Ticket Tracking** | Real-time status tracking for submitted reports |
+| 5 | **In-App Notifications** | Push-style notification bell with real-time status change alerts |
+| 6 | **Email Notifications** | Gmail SMTP-powered email alerts for status changes and password reset |
+| 7 | **Educational Modules** | Microlearning content with quizzes, articles, and prevention tips (8 modules, 4 difficulty levels) |
+| 8 | **Personalized Recommendations** | AI-generated (Gemini) security tips tailored to report type and risk level |
+| 9 | **Link Validation** | Security indicator for reported URLs — safe, suspicious, or dangerous |
+| 10 | **Profile & Gamification** | Points, streaks, badges, and achievements (14 achievement types) for user engagement |
+| 11 | **Google OAuth Sign-In** | One-click login with Google account |
+| 12 | **Forgot / Reset Password** | Self-service password reset via email with secure token |
 
-## Key Features
+### 🕵️ For Administrators
 
-### For End Users (Bank Customers)
+| # | Feature | Description |
+|---|---|---|
+| 1 | **Analytics Dashboard** | Chart.js widgets: incident trends, modus distribution, channel breakdown, risk segmentation, SLA monitoring |
+| 2 | **Kanban Board** | Drag-and-drop workflow for ticket status transitions across 7 columns |
+| 3 | **Triage Pipeline** | Paginated, filterable ticket list (status, priority, date range) with inline assignment and CSV export |
+| 4 | **Investigation Workspace** | Deep-dive ticket view with rule/ML breakdown, OCR text extraction, evidence viewer, ML feedback, AI-generated notes |
+| 5 | **Blacklist Management** | CRUD for blacklisted URLs, bank accounts, phone numbers, emails — 4 types with duplicate checking |
+| 6 | **Rule Configuration** | Dynamic rule editor — modify 40+ detection rules in real-time across 5 categories |
+| 7 | **User Management** | Multi-role RBAC with 7 roles, create/edit/activate/deactivate accounts |
+| 8 | **Bulk Operations** | Batch update ticket status, priority, and assignment |
+| 9 | **Admin Notifications** | Real-time alerts for new reports, filtered per admin role |
+| 10 | **Activity Log & Audit Trail** | Forward-only immutable history of all ticket changes (admin_id, timestamp, action, notes) |
 
-| Feature | Description |
-|---|---|
-| **Incident Reporting** | Submit phishing/fraud reports (SMS, WhatsApp, Email, Website, Transaction) with evidence screenshots |
-| **Hybrid Risk Analysis** | Real-time preview of risk score before submission — combines rule heuristics + ML prediction |
-| **Message Checker** | Standalone ML-powered tool to scan suspicious messages ("Cek Pesan") |
-| **Ticket Tracking** | Real-time status tracking for submitted reports (OCTO-XXXX-XXXX-XXXX format) |
-| **Educational Modules** | Microlearning content about phishing trends, prevention tips, and interactive quizzes |
-| **Personalized Recommendations** | AI-generated (Gemini) security tips tailored to report type and risk level |
-| **In-App Notifications** | Push-style notification bell with real-time updates on ticket status changes |
-
-### For Administrators (Fraud Analysts)
-
-| Feature | Description |
-|---|---|
-| **Kanban Board** | Drag-and-drop workflow for ticket status transitions (Submitted → In Review → Confirmed → Mitigated → Closed) |
-| **Triage Pipeline** | Paginated, filterable ticket list with inline assignment + priority management |
-| **Investigation Workspace** | Deep-dive ticket view with rule/ML breakdown, OCR-extracted text, evidence viewer, ML feedback buttons (TP/FP/TN/FN) |
-| **Blacklist Management** | Full CRUD for blacklisted URLs, bank accounts, phone numbers, email addresses |
-| **Rule Configuration** | Dynamic rule editor — modify detection keywords, scam scenarios, TLDs, URL shorteners, brand terms in real-time |
-| **Analytics Dashboard** | 4+ Chart.js widgets: incident trends (line), modus distribution (bar), channel breakdown (pie/donut), risk segmentation (stacked bar), plus SLA breach monitoring |
-| **User Management** | Multi-role RBAC with 7 roles (admin, moderator, investigator, analyst, cs, viewer, user) and activation/deactivation |
-| **Activity Feed** | Real-time audit trail of all system actions with color-coded event types |
-| **Transaction Monitor** | Mock bank transaction viewer with anomaly analysis |
-| **Bulk Operations** | Batch update ticket status, priority, and assignment |
-| **Email Notifications** | Automated email alerts on ticket creation, status changes, warnings |
-| **Export** | CSV export for tickets |
-
-### Detection Engine
+### 🔍 Detection Engine
 
 | Capability | Detail |
 |---|---|
-| **Whitelist/Blacklist** | Domain-level whitelist (36 legitimate CIMB domains) + 4 blacklist types |
-| **Rule Engine** | 40+ detection rules across categories: typosquatting, punycode, mixed-scripts, brand impersonation, URL shorteners, suspicious TLDs, phishing keywords, scam scenarios (4 types), gibberish text, malicious attachments |
-| **ML Engine** | Logistic Regression + TF-IDF (scikit-learn), trained on 2,000+ samples, 85%+ accuracy |
-| **Hybrid Score** | `final = (rule_score × 0.35) + (ml_score × 0.65)` with context-aware overrides |
-| **OCR Engine** | Tesseract OCR for screenshot text extraction + reference number extraction |
-| **Gibberish Detector** | 10 analysis modes: placeholder text, keyboard smash, repetitive chars, cyclic repeats, excessive symbols, entropy analysis, stopword ratio, etc. |
+| **Rule Engine** | 40+ rules: typosquatting, punycode, brand impersonation, URL shorteners, phishing keywords, 4 scam scenarios |
+| **ML Engine** | Logistic Regression + TF-IDF (scikit-learn), trained on 2,000+ samples, ≥85% accuracy |
+| **Hybrid Score** | `final = (rule_score × 0.35) + (ml_score × 0.65)` with context-aware overrides (blacklist → 100, whitelist → 0) |
+| **OCR Engine** | Tesseract OCR for screenshot text extraction from uploaded evidence |
+| **Gibberish Detector** | 10 analysis modes: placeholder text, keyboard smash, entropy analysis, etc. |
 | **Scam Scenario Detector** | 4 built-in scenarios: accident, legal, wrong transfer, banking urgency |
-| **Context Overrides** | Blacklisted → 100, Whitelisted → 0, Gibberish → 70/30 split, Scam without URL → 80/20 split |
+| **Risk Classification** | Priority: ≥75 High · ≥35 Medium · <35 Low |
 
 ---
 
-## Architecture Overview
+## 🛠️ Tech Stack
+
+**Frontend:** Next.js 15 (App Router) · React 19 · TypeScript 6 · Tailwind CSS 3 · Chart.js (recharts) · @dnd-kit (Kanban) · Zod (validation) · Axios (HTTP) · Lucide (icons) · Sonner (toasts) · next-themes
+
+**Backend:** FastAPI (Python 3.11) · SQLAlchemy 2.0 ORM · Pydantic v2 · Alembic (migrations) · Celery + Redis (task queue) · JWT (jose) · bcrypt (passlib) · Slowapi (rate limiting) · Tesseract OCR · Gemini AI (recommendations) · Jinja2 (email templates)
+
+**ML:** scikit-learn (Logistic Regression) · TF-IDF Vectorizer · Joblib (serialization)
+
+**Infrastructure:** Docker Compose (8 services) · MySQL 8.0 · Caddy (reverse proxy) · Supabase Storage (optional, evidence files)
+
+---
+
+## 👥 User Requirements
+
+| No | Requirement | Stakeholder |
+|---|---|---|
+| 1 | Report phishing messages/links easily through the application | User |
+| 2 | Link validation to check URL safety level | User |
+| 3 | Automatic warning notifications for suspicious activity | User |
+| 4 | Simple digital security education materials | User |
+| 5 | Track submitted report status (ticket tracking) | User |
+| 6 | Automatic phishing detection | Admin/System |
+| 7 | Manage reports through an integrated dashboard | Admin |
+| 8 | Clear case handling workflow (triage, verification, mitigation) | Admin |
+| 9 | Phishing data and trends in monitoring dashboard | Admin/Management |
+| 10 | Risk level classification (low, medium, high) | Admin |
+| 11 | Status change notifications to users | User |
+| 12 | Evidence storage (screenshots, links) | User & Admin |
+
+---
+
+## 📋 Functional Requirements
+
+| No | Feature | Description |
+|---|---|---|
+| 1 | **Login & Account Management** | Role-based login (User/Admin) with JWT httpOnly cookies; separate access for reporting/education (User) vs ticket management/dashboard (Admin) |
+| 2 | **User Management** | Admin CRUD for accounts — create, change roles, activate/deactivate |
+| 3 | **Phishing/Fraud Report Form** | Multi-type form (URL, sender number, modus type SMS/WhatsApp/Email/Web, summary) |
+| 4 | **Evidence Upload** | Optional screenshot/file upload for admin investigation context |
+| 5 | **Automatic Ticket Generation** | Unique ID, timestamp, initial "Submitted" status on report submission |
+| 6 | **Ticket List & Detail** | Filterable admin list (status, priority); user history; detail page with risk score, priority, notes |
+| 7 | **Rule-Based Engine** | Domain similarity, suspicious keywords, abnormal URL patterns — initial score + reasoning |
+| 8 | **Machine Learning Engine** | TF-IDF + Logistic Regression for text/URL phishing probability |
+| 9 | **Risk Scoring** | Combined rule + ML score (0–100) representing threat level |
+| 10 | **Priority Classification** | High/Medium/Low based on risk score for admin triage |
+| 11 | **Case Workflow** | Submitted → In Review → Confirmed/False Positive/Need More Info → Mitigated → Closed with audit trail |
+| 12 | **Ticket Search & Filter** | Keyword search; filter by status, priority, date range |
+| 13 | **Status Change Notifications** | Real-time in-app + email notifications to users |
+| 14 | **Monitoring Dashboard** | Incident counts per period, dominant modus, channel distribution, priority distribution |
+| 15 | **Link Validation** | Security indicator for reported URLs (safe/suspicious/dangerous) |
+| 16 | **Education Modules** | Microlearning materials: phishing examples, danger signs, prevention steps |
+| 17 | **Risk-Based Education Notifications** | Contextual educational alerts based on risk level |
+| 18 | **CSV Export** | Export ticket summaries by date range for external reporting |
+
+---
+
+## 📋 Non-Functional Requirements
+
+| Aspect | Requirement |
+|---|---|
+| **Security** | HTTPS (via Caddy reverse proxy), password hashing (bcrypt), RBAC (7 roles, 37+ permissions), JWT httpOnly, rate limiting (Slowapi + Redis), input sanitization |
+| **Performance** | Report processing + risk scoring < 5 seconds; average API response < 200ms |
+| **Usability** | Intuitive, mobile-responsive interface (3-tier breakpoints); consistent design system across 98 frontend files |
+| **Reliability** | 99.9% uptime target; graceful error handling; Docker auto-restart; Celery SLA monitoring every 60s |
+| **Scalability** | Modular architecture handles concurrent report submissions and simultaneous users |
+| **Maintainability** | Front-end/backend separation; MTTR < 30 min; ML retraining pipeline using standard datasets (Kaggle, UCI, synthetic) |
+| **Portability** | Cross-browser web application; Docker Compose for consistent deployment |
+
+---
+
+## 🧩 System Modules
+
+| Module | Function |
+|---|---|
+| **User Management** | Account management, role-based authentication (RBAC), Google OAuth |
+| **Data Processing** | Input validation, data normalization, pre-analysis preparation |
+| **Reporting Service** | Accept reports, auto-generate tickets (unique ID), persist to database |
+| **Rule-Based Engine** | Initial analysis: phishing keywords, suspicious URL patterns, typosquatting |
+| **Machine Learning Engine** | NLP-based analysis: TF-IDF + Logistic Regression for phishing probability |
+| **Risk Scoring Engine** | Combine rule (35%) + ML (65%) into 0–100 score |
+| **Case Management** | Ticket workflow: Submitted → In Review → Confirmed/FP/NMI → Mitigated → Closed; audit trail |
+| **Dashboard Monitoring** | Chart.js visualizations: trends, modus, channels, risk distribution, SLA |
+| **Notification Service** | In-app + email (Gmail SMTP) notifications for status changes and risk-based education |
+| **Link Validation** | URL security indicator based on detection analysis |
+| **Education Module** | Microlearning content: 8 modules, 10+ articles, quizzes, progress tracking |
+| **File Storage** | Evidence storage (screenshots) separate from database — Supabase/local |
+| **Gamification** | Points, streaks, badges, achievements (14 types) for user engagement |
+| **OCR Service** | Tesseract-based text extraction from uploaded evidence images |
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- [Docker](https://www.docker.com/get-started) & [Docker Compose](https://docs.docker.com/compose/install/)
+- Node.js 18+ (for local frontend dev)
+- Tesseract OCR (for local backend OCR)
+
+### Quick Start (Full Stack)
+```bash
+git clone <repository-url>
+cd octosight-web-app
+cp .env.example .env
+docker compose up -d
+```
+
+The backend auto-runs Alembic migrations and seeds the database on first startup (admin account, 25+ dummy tickets, mock transactions, education modules, 37+ RBAC permissions).
+
+### Local Frontend Development
+```bash
+cd frontend
+npm install
+npm run dev        # :3000, proxies API to :8000
+```
+
+### Environment Variables
+| Variable | Default | Description |
+|---|---|---|
+| `SECRET_KEY` | — | JWT signing key |
+| `DATABASE_URL` | `mysql+pymysql://user:pass@db:3306/octosight_db` | MySQL connection |
+| `NEXT_PUBLIC_API_URL` | `http://localhost:8000` | Backend URL for frontend proxy |
+| `MAIL_USERNAME` / `MAIL_PASSWORD` | — | Gmail SMTP credentials |
+| `GOOGLE_CLIENT_ID` | — | Google OAuth client ID |
+| `GEMINI_API_KEY` | — | Google Gemini AI API key |
+| `SUPABASE_URL` / `SUPABASE_KEY` | — | File storage |
+
+### Access Points
+| Service | URL | Description |
+|---|---|---|
+| **Frontend** | http://localhost:3000 | Web app |
+| **Swagger Docs** | http://localhost:8000/docs | Interactive API docs |
+| **phpMyAdmin** | http://localhost:8081 | Database management |
+
+---
+
+## 🔬 Usage
+
+### Hybrid Detection Pipeline
+```
+User Report → Sanitization → Blacklist Check → Bank Validation
+  → OCR (screenshots) → Rule Engine (40+ rules) → ML Engine (TF-IDF + LR)
+  → Hybrid Score: rule×0.35 + ml×0.65
+  → Priority: ≥75 High · ≥35 Medium · <35 Low
+  → Background: Gemini AI recommendation + email notification
+```
+
+### API Examples
+
+**Submit a report:**
+```bash
+curl -X POST http://localhost:8000/api/v1/report \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"type": "SMS", "message": "Your account is locked...", "sender_numbers": "+628123456789"}'
+```
+
+**Preview risk score (no save):**
+```bash
+curl -X POST http://localhost:8000/api/v1/analyze \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"message": "Urgent: your account needs verification"}'
+```
+
+**Unauthenticated ML-only scan:**
+```bash
+curl -X POST http://localhost:8000/api/v1/predict-spam \
+  -H "Content-Type: application/json" \
+  -d '{"text": "Congratulations! You won a prize..."}'
+```
+
+---
+
+## 🏗️ Architecture
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                    Client (Browser)                      │
-├─────────────────────────────────────────────────────────┤
-│         Next.js 15 (App Router) — React 19               │
-│  Tailwind CSS · Chart.js · @dnd-kit · Zod · Sonner       │
-└──────────────────────┬──────────────────────────────────┘
-                       │ HTTPS
-┌──────────────────────▼──────────────────────────────────┐
-│              Caddy Reverse Proxy (:80 / :443)             │
-│            SSL termination · Path-based routing           │
-└──────────────────────┬──────────────────────────────────┘
-                       │
-          ┌────────────┴────────────┐
-          │                         │
-┌─────────▼──────────┐  ┌──────────▼──────────────────────┐
-│  Frontend (:3000)   │  │  Backend API (:8000)             │
-│  Next.js App Router │  │  FastAPI (Python 3.11)           │
-│  API Proxy routes   │  │  Router → Service → Repository   │
-└─────────────────────┘  │  JWT Auth · Rate Limit · CORS    │
-                         └──────────┬──────────────────────┘
-                                    │
-          ┌─────────────────────────┼─────────────────────────┐
-          │                         │                         │
-┌─────────▼──────────┐  ┌──────────▼────────┐  ┌────────────▼──────────┐
-│  MySQL 8.0 (:3306)  │  │  Redis 7 (:6379)  │  │  Celery (Worker+Beat) │
-│  Tickets · Users    │  │  Cache · Session  │  │  SLA Monitoring       │
-│  Blacklists · Audit │  │  Rate Limit Store │  │  Background Tasks     │
-│  Education · Mock   │  └───────────────────┘  └───────────────────────┘
-└─────────────────────┘
+Client (Browser)
+    │ HTTPS
+    ▼
+Caddy Reverse Proxy (:80/:443)
+    │
+    ├── Frontend (:3000) — Next.js 15 App Router
+    └── Backend API (:8000) — FastAPI
+            │
+            ├── MySQL 8.0 (:3306) — Primary DB
+            ├── Redis 7 (:6379) — Cache + Celery broker
+            └── Celery (Worker + Beat) — SLA monitoring
 ```
 
 ### Docker Services
-
 | Service | Image | Port | Dependencies |
 |---|---|---|---|
 | `caddy` | caddy:2-alpine | 80, 443 | frontend, backend |
-| `frontend` | node:20-alpine (dev) | 3000 | backend |
+| `frontend` | node:20-alpine | 3000 | backend |
 | `backend` | python:3.11-slim | 8000 | db, redis |
 | `db` | mysql:8.0 | 3306 | — |
 | `redis` | redis:7-alpine | 6379 | — |
@@ -121,289 +264,35 @@ OctoSight is an end-to-end anti-phishing and fraud detection prototype for digit
 
 ---
 
-## Hybrid Detection Pipeline
-
-```
-User Report Input
-     │
-     ├── 1. Input Sanitization (strip HTML, block javascript: URIs)
-     ├── 2. Global Blacklist Check (URL · Account · Phone · Email)
-     ├── 3. Mock Bank Validation (reference number lookup, mutation verification)
-     ├── 4. OCR Engine (Tesseract — text extraction from evidence screenshots)
-     ├── 5. Rule Engine (40+ rules across 10 categories → rule_score 0–100)
-     ├── 6. ML Engine (TF-IDF → Logistic Regression → ml_score 0–100)
-     │
-     └── 7. Hybrid Score Calculation
-              │
-              ├── Whitelisted ──────────────► final = 0
-              ├── Blacklisted ──────────────► final = 100
-              ├── Gibberish text detected ──► final = rule×0.70 + ml×0.30
-              ├── Scam scenario + no URL ──► final = rule×0.80 + ml×0.20
-              └── Standard ────────────────► final = rule×0.35 + ml×0.65
-                   │
-                   └── Priority: ≥75 High · ≥35 Medium · <35 Low
-
-    Background (async):
-     ├── Gemini AI → personalized education recommendation
-     └── Email notification → reporter confirmation
-```
-
-### Risk Score Legend
-
-| Score Range | Priority | Label |
-|---|---|---|
-| 70–100 | HIGH | Phishing |
-| 40–69 | MEDIUM | Suspicious |
-| 0–39 | LOW | Safe |
-
----
-
-## Tech Stack
-
-### Frontend
-| Technology | Purpose |
-|---|---|
-| **Next.js 15** (App Router) | React framework with file-based routing, server components |
-| **React 19** | UI library |
-| **TypeScript** | Type safety |
-| **Tailwind CSS** | Utility-first styling |
-| **Chart.js** (react-chartjs-2) | Analytics dashboard charts (line, bar, pie/donut, stacked bar) |
-| **@dnd-kit** | Kanban board drag-and-drop |
-| **Zod** | Form validation |
-| **Sonner** | Toast notifications |
-| **Lucide React** | Icons |
-| **Axios** | HTTP client |
-
-### Backend
-| Technology | Purpose |
-|---|---|
-| **FastAPI** (Python 3.11) | Async web framework with auto-generated OpenAPI docs |
-| **SQLAlchemy** 2.0 | ORM with repository pattern |
-| **Pydantic v2** | Request/response validation |
-| **Alembic** | Database migrations (6 migration files) |
-| **Jose** (python-jose) | JWT token generation and verification |
-| **Bcrypt** (passlib) | Password hashing |
-| **Celery** | Async task queue (SLA breach monitoring) |
-| **Redis** | Cache backend + Celery broker |
-| **Slowapi** | Rate limiting |
-| **FastAPI-Mail** | Email delivery with Jinja2 templates |
-| **Tesseract** (pytesseract) | OCR text extraction |
-| **Pillow** | Image processing |
-| **Google Generative AI** | Gemini AI chat integration for education recommendations |
-
-### Machine Learning
-| Technology | Purpose |
-|---|---|
-| **scikit-learn** | Logistic Regression classifier |
-| **TF-IDF Vectorizer** | Text feature extraction |
-| **Joblib** | Model serialization (.pkl) |
-| **Confusion Matrix** | Model evaluation (documented in `ml/artifacts/`) |
-
-### Infrastructure
-| Technology | Purpose |
-|---|---|
-| **Docker Compose** | Multi-container orchestration (8 services) |
-| **Caddy** | Reverse proxy, SSL termination |
-| **MySQL 8.0** | Primary database |
-| **Supabase Storage** | Optional cloud file storage for evidence |
-
----
-
-## Project Structure
+## 📁 Project Structure
 
 ```
 octosight-web-app/
-│
-├── frontend/                          # Next.js 15 Application
-│   ├── app/                           # App Router
-│   │   ├── (user)/                    # User-facing route group
-│   │   │   ├── page.tsx               # Landing / home page
-│   │   │   ├── report/                # Incident report form
-│   │   │   ├── status/                # Ticket status lookup
-│   │   │   ├── check/                 # Message checker tool
-│   │   │   ├── edu/                   # Education modules
-│   │   │   ├── notifications/         # In-app notification history
-│   │   │   └── profile/               # User profile
-│   │   ├── (auth)/                    # Authentication group
-│   │   │   ├── login/                 # Login page
-│   │   │   └── register/              # Registration page
-│   │   ├── (admin)/                   # Admin route group
-│   │   │   ├── admin/
-│   │   │   │   ├── page.tsx           # Dashboard (analytics)
-│   │   │   │   ├── kanban/            # Kanban board
-│   │   │   │   ├── triage/            # Ticket triage list
-│   │   │   │   ├── investigate/[id]/  # Ticket deep-dive
-│   │   │   │   ├── users/             # User management
-│   │   │   │   ├── blacklist/         # Blacklist management
-│   │   │   │   ├── transactions/      # Mock bank transactions
-│   │   │   │   └── rule-config/       # Dynamic rule editor
-│   │   ├── (quiz)/                    # Quiz route group
-│   │   └── access-denied/             # 403 page
-│   ├── components/                    # Reusable UI
-│   │   ├── ui/                        # Primitives (Button, Badge, etc.)
-│   │   ├── home/                      # Landing page sections
-│   │   ├── admin/                     # Admin components
-│   │   ├── layout/                    # Navbar, Footer, Sidebar
-│   │   ├── report/                    # Report form components
-│   │   └── notifications/             # Notification components
+├── frontend/                          # Next.js 15
+│   ├── app/                           # App Router (user, auth, admin, quiz routes)
+│   ├── components/                    # Reusable UI (ui/, admin/, layout/, report/)
 │   ├── modules/                       # Feature modules (hooks, types, fetchers)
 │   ├── lib/                           # Utilities (axios, auth context)
 │   ├── constants/                     # Enums, static config
 │   └── types/                         # Global TypeScript types
-│
-├── backend/                           # FastAPI Application
+├── backend/                           # FastAPI
 │   ├── app/
-│   │   ├── main.py                    # App factory, lifespan, middleware
-│   │   ├── config.py                  # Pydantic BaseSettings (env vars)
-│   │   ├── api/
-│   │   │   ├── v1/                    # Versioned API (current)
-│   │   │   │   ├── auth.py            # Login, register, Google OAuth
-│   │   │   │   ├── tickets.py         # CRUD, assignment, bulk, feedback
-│   │   │   │   ├── detection.py       # /report, /analyze, /predict-spam
-│   │   │   │   ├── education.py       # Modules, articles, quizzes
-│   │   │   │   ├── evidence.py        # File upload/download
-│   │   │   │   ├── blacklist.py       # URL/account/phone/email CRUD
-│   │   │   │   ├── dashboard.py       # Summary, timeline analytics
-│   │   │   │   ├── notifications.py   # In-app notification CRUD
-│   │   │   │   ├── activity.py        # Activity feed
-│   │   │   │   ├── rule_config.py     # Dynamic rule configuration
-│   │   │   │   ├── rbac.py            # Permission management
-│   │   │   │   └── users.py           # User management (admin)
-│   │   │   └── endpoints/             # Legacy backward-compat routers
-│   │   ├── core/                      # Cross-cutting concerns
-│   │   │   ├── security.py            # JWT, hashing, RBAC dependencies
-│   │   │   ├── rule_engine.py         # 40+ detection rules
-│   │   │   ├── ml_engine.py           # ML model inference
-│   │   │   ├── ocr_engine.py          # Tesseract OCR wrapper
-│   │   │   ├── engines.py             # Singleton engine instances
-│   │   │   ├── exceptions.py          # Typed exception hierarchy
-│   │   │   ├── error_handlers.py      # Global exception handlers
-│   │   │   ├── rate_limit.py          # Slowapi configuration
-│   │   │   └── cache.py               # Redis caching utilities
-│   │   ├── modules/                   # Feature modules
-│   │   │   ├── auth/                  # Service + Repository
-│   │   │   ├── tickets/               # Service + Repository
-│   │   │   ├── detection/             # Service, hybrid, similarity
-│   │   │   ├── dashboard/             # Service + Repository
-│   │   │   ├── blacklist/             # Service + Repository
-│   │   │   ├── rule_config/           # Service + Repository
-│   │   │   ├── notifications/         # Service + Email templates
-│   │   │   ├── education/             # Service + Repository + Gemini
-│   │   │   └── activity/              # Service + Repository
-│   │   ├── models/                    # SQLAlchemy ORM models (14 tables)
-│   │   ├── schemas/                   # Pydantic validation schemas
-│   │   ├── services/                  # External integrations
-│   │   │   ├── supabase.py            # Supabase Storage
-│   │   │   └── gemini.py              # Google AI client
-│   │   ├── db/                        # Database config
-│   │   └── ml/                        # ML inference + feedback
-│   ├── models/                        # ML artifacts (.pkl files)
-│   ├── data/                          # whitelist.txt (36 domains)
-│   ├── migrations/                    # Alembic migrations (0001–0006)
-│   ├── seeds/                         # Seed scripts
-│   ├── tests/                         # pytest (unit + integration)
-│   └── uploads/                       # Local file storage
-│
-├── ml/                                # ML Training Pipeline
-│   ├── datasets/                      # Training data
-│   ├── train.py                       # Training script
-│   └── artifacts/                     # Model + evaluation reports
-│
+│   │   ├── api/v1/                    # Versioned API endpoints
+│   │   ├── core/                      # Security, rule engine, ML engine, OCR
+│   │   ├── modules/                   # Service + Repository per feature
+│   │   ├── models/                    # SQLAlchemy ORM (19 tables)
+│   │   └── schemas/                   # Pydantic validation
+│   ├── migrations/                    # Alembic (0001–0006)
+│   └── tests/                         # pytest
+├── ml/                                # ML training pipeline
 ├── docker-compose.yml                 # 8-service orchestration
 ├── AGENTS.md                          # AI agent instructions
-├── ARCHITECTURE.md                    # Detailed architecture docs
-├── OCTOSIGHT_PRD.md                   # Product requirements
-├── SKILLS.md                          # Domain-specific guides
-├── PERMISSION_MATRIX.md              # RBAC matrix (7 roles × 40+ permissions)
-└── SUMMARY.md                         # Phase 2 completion summary
+└── OCTOSIGHT_PRD.md                   # Product requirements
 ```
 
 ---
 
-## Getting Started
-
-### Prerequisites
-
-- [Docker](https://www.docker.com/get-started) & [Docker Compose](https://docs.docker.com/compose/install/)
-- [Node.js 18+](https://nodejs.org/) (for local frontend dev)
-- [Tesseract OCR](https://github.com/tesseract-ocr/tesseract) (for local backend OCR)
-
-### Quick Start (Full Stack with Docker)
-
-```bash
-# 1. Clone and enter the project
-git clone <repository-url>
-cd octosight-web-app
-
-# 2. Copy environment file
-cp .env.example .env
-
-# 3. Start all services
-docker compose up -d
-
-# 4. Wait for health checks (backend + db may take 60–90s first run)
-docker compose ps
-```
-
-The backend auto-runs Alembic migrations and seeds the database on first startup (default admin account, 25+ dummy tickets, mock bank transactions, education modules).
-
-### Local Frontend Development
-
-```bash
-cd frontend
-npm install
-npm run dev        # Starts on :3000, proxies API to :8000
-```
-
-### Environment Variables
-
-Copy `.env.example` to `.env` and configure:
-
-| Variable | Default | Description |
-|---|---|---|
-| `SECRET_KEY` | `octosight-secret-key-...` | JWT signing key |
-| `DATABASE_URL` | `mysql+pymysql://user:pass@db:3306/octosight_db` | MySQL connection |
-| `REDIS_URL` | `redis://redis:6379/0` | Redis connection |
-| `MAIL_USERNAME` | — | SMTP username (for email) |
-| `MAIL_PASSWORD` | — | SMTP password |
-| `GOOGLE_CLIENT_ID` | — | Google OAuth client ID |
-| `SUPABASE_URL` | — | Supabase storage URL |
-| `SUPABASE_KEY` | — | Supabase API key |
-| `DEFAULT_ADMIN_EMAIL` | — | Admin seed email |
-| `DEFAULT_ADMIN_PASSWORD` | — | Admin seed password |
-
----
-
-## Access Points
-
-| Service | URL | Description |
-|---|---|---|
-| **Frontend** | http://localhost:3000 | Next.js web app |
-| **Swagger Docs** | http://localhost:8000/docs | Interactive API docs |
-| **ReDoc** | http://localhost:8000/redoc | Alternative API docs |
-| **phpMyAdmin** | http://localhost:8081 | Database management |
-| **MySQL (external)** | localhost:3307 | Direct DB access |
-
----
-
-## Default Credentials
-
-| Role | Email | Password |
-|---|---|---|
-| **Admin** | `octosight.admin@gmail.com` | `octosight123` |
-| **Moderator** | `octosight.moderator@gmail.com` | `octosight123` |
-| **Investigator** | `octosight.investigator@gmail.com` | `octosight123` |
-| **Analyst** | `octosight.analyst@gmail.com` | `octosight123` |
-| **CS** | `octosight.cs@gmail.com` | `octosight123` |
-| **User** | `user@octosight.id` | `user123` |
-
-> **Security:** Change all default passwords in `.env` before any production-adjacent use.
-
----
-
-## User Roles & Permissions
-
-OctoSight implements a granular RBAC system with 7 roles and 40+ permissions.
+## 👥 Roles & Permissions
 
 | Role | Access Level |
 |---|---|
@@ -415,146 +304,89 @@ OctoSight implements a granular RBAC system with 7 roles and 40+ permissions.
 | **viewer** | Read-only — dashboard, tickets, blacklist, rules |
 | **user** | End user — submit reports, education modules |
 
-See `PERMISSION_MATRIX.md` for the complete permission-to-role mapping.
+RBAC enforced at both API layer (`require_permission()` on all protected endpoints) and frontend layer (`PermissionGate` component + `can()` hook across 18+ components). Admin role bypasses at DB query level.
 
 ---
 
-## API Reference
+## 🔒 Security & Compliance
 
-### Public / Semi-Public Endpoints
+- **JWT Auth** — Access token (15 min) + refresh token (7 days) via httpOnly cookies
+- **RBAC** — `require_permission()` on all protected endpoints; admin bypass at DB level
+- **Rate Limiting** — 5 req/s per IP (Slowapi + Redis); 3 req/min for password reset
+- **Input Sanitization** — Strips HTML, blocks `javascript:`, validates emails
+- **File Upload** — Extension whitelist, size limits, content hashing
+- **Passwords** — bcrypt hashing (passlib), no plaintext storage
+- **SLA Monitoring** — Celery beat checks every 60s; breaches logged to ticket
+- **Audit Trail** — Forward-only `ticket_audit_logs` (immutable history)
+- **CORS** — Strict `allowed_origins` via environment variable
 
+---
+
+## 📚 API Reference
+
+### Public
 | Method | Path | Description |
 |---|---|---|
 | POST | `/api/v1/auth/login` | Email/password login |
 | POST | `/api/v1/auth/register` | User registration |
 | POST | `/api/v1/auth/google` | Google OAuth login |
-| POST | `/api/v1/auth/refresh` | Refresh JWT tokens |
-| POST | `/api/v1/predict-spam` | ML-only message analysis (unauthenticated) |
-| GET | `/api/v1/education/modules` | List education modules |
-| GET | `/api/v1/education/articles/{id}` | View article |
+| POST | `/api/v1/auth/forgot-password` | Request password reset |
+| POST | `/api/v1/auth/reset-password` | Reset password with token |
+| POST | `/api/v1/predict-spam` | ML-only scan (unauthenticated) |
 
-### Authenticated User Endpoints
-
+### Authenticated (User)
 | Method | Path | Description |
 |---|---|---|
-| GET | `/api/v1/auth/me` | Current user profile |
 | POST | `/api/v1/report` | Submit phishing report |
-| POST | `/api/v1/analyze` | Preview risk score (no save) |
-| POST | `/api/v1/analyze/explain` | Detailed score breakdown |
-| GET | `/api/v1/tickets/me` | User's own tickets |
-| GET | `/api/v1/tickets/{id}` | Ticket detail |
+| POST | `/api/v1/analyze` | Preview risk score |
+| GET | `/api/v1/tickets/me` | My tickets |
+| GET | `/api/v1/education/articles` | List education articles |
 | POST | `/api/v1/education/articles/{id}/read` | Mark article read |
 | POST | `/api/v1/education/quiz/submit` | Submit quiz answers |
 | GET | `/api/v1/notifications` | In-app notifications |
-| PATCH | `/api/v1/notifications/{id}/read` | Mark notification read |
+| GET | `/api/v1/profile/achievements` | User achievements & gamification |
 
-### Admin Endpoints
-
+### Admin
 | Method | Path | Description |
 |---|---|---|
-| GET | `/api/v1/tickets` | List all tickets (paginated, filterable) |
-| PATCH | `/api/v1/tickets/{id}/status` | Update ticket status |
-| PATCH | `/api/v1/tickets/{id}/assign` | Assign ticket to analyst |
-| PATCH | `/api/v1/tickets/bulk` | Bulk update tickets |
-| POST | `/api/v1/tickets/{id}/feedback` | Submit ML feedback (TP/FP/TN/FN) |
+| GET/PATCH | `/api/v1/tickets` | List & manage tickets |
+| GET | `/api/v1/tickets/{id}` | Ticket detail |
 | GET | `/api/v1/dashboard/summary` | Dashboard aggregation |
-| GET | `/api/v1/dashboard/timeline` | Timeline analytics |
-| GET | `/api/v1/activity` | Activity feed |
-| GET/POST/PATCH/DELETE | `/api/v1/admin/blacklist/*` | Blacklist management |
-| GET/POST/PATCH/DELETE | `/api/v1/admin/rule-config` | Rule configuration |
-| GET/POST/PATCH/DELETE | `/api/v1/admin/transactions` | Mock bank transactions |
-| GET/PATCH | `/api/v1/admin/users` | User management |
-| GET/PATCH | `/api/v1/admin/rbac` | RBAC permission management |
+| CRUD | `/api/v1/admin/blacklist/*` | Blacklist management |
+| CRUD | `/api/v1/admin/rule-config` | Rule configuration |
+| PATCH | `/api/v1/admin/users` | User management |
+| GET | `/api/v1/activity/logs` | Activity & audit trail |
+
+Full API reference available at `http://localhost:8000/docs` (Swagger/OpenAPI).
 
 ---
 
-## ML Pipeline
+## 🤖 ML Pipeline
 
-### Training
+**Training:** `ml/train.py` — Logistic Regression + TF-IDF (unigrams + bigrams, max 5000 features) on ~2,000 labeled samples. Target accuracy ≥ 85% (achieved: 87%).
 
-```
-Location: ml/train.py
-Algorithm: Logistic Regression
-Vectorizer: TF-IDF (unigrams + bigrams, max 5000 features)
-Dataset: ~2,000 labeled samples (PhishTank + UCI + synthetic)
-Target Accuracy: ≥ 85%
-```
+**Inference:** Input text → TF-IDF vectorize → Logistic Regression predict_proba → confidence → ml_score
 
-### Inference Flow
+**Evaluation:** Confusion matrix with precision 0.87, recall 0.84, F1-score 0.86.
 
-```
-Input text
-    → TF-IDF vectorize
-    → Logistic Regression predict_proba
-    → confidence = max(probability) × 100
-    → category = "phishing" | "not phishing"
-    → ml_score = confidence (if phishing) else 100 - confidence
-```
-
-### Model Files
-
-| File | Location |
-|---|---|
-| Pipeline model | `backend/models/spam_pipeline.pkl` |
-| Vectorizer | `backend/models/vectorizer.pkl` |
-| Eval report | `ml/artifacts/eval_report.json` |
+**Model files:** `backend/models/spam_pipeline.pkl` · `backend/models/vectorizer.pkl` · `ml/artifacts/eval_report.json`
 
 ---
 
-## Security & Compliance
+## 🤝 Contributing
 
-- **JWT Authentication** — Access token (15 min) + refresh token (7 days) via httpOnly cookies
-- **RBAC Enforcement** — `require_permission()` decorator on all protected endpoints; admin bypass at DB query level
-- **Rate Limiting** — 5 requests/second per IP (Slowapi + Redis)
-- **Input Sanitization** — Strips HTML tags, blocks `javascript:` URIs, validates emails
-- **File Upload Security** — Extension whitelist, size limits, content hashing
-- **Password Security** — bcrypt hashing (passlib), no plaintext storage
-- **SLA Monitoring** — Celery beat checks SLA deadlines every 60 seconds; breaches logged to ticket
-- **Audit Trail** — Forward-only `ticket_audit_logs` table (immutable history per status change)
-- **CORS** — Strict `allowed_origins` via environment variable
-- **Database** — External port 3307 to avoid host conflicts; connection pooling (10–30)
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feat/your-feature`
+3. Commit changes using [Conventional Commits](https://www.conventionalcommits.org/) (e.g., `feat(tickets): add evidence upload`)
+4. Push and open a Pull Request
+
+Scopes: `tickets`, `detection`, `auth`, `users`, `education`, `notifications`, `blacklist`, `dashboard`, `ml`, `db`, `frontend`, `api`
 
 ---
 
-## Database Schema (14 Tables)
+## 📄 License
 
-| Table | Purpose |
-|---|---|
-| `users` | User accounts + lockout |
-| `tickets` | Phishing/fraud reports + hybrid scores |
-| `ticket_audit_logs` | Immutable status change history |
-| `blacklisted_urls` | Malicious URL/domain list |
-| `blacklisted_accounts` | Fraudulent bank accounts |
-| `blacklisted_phones` | Scam phone numbers |
-| `blacklisted_emails` | Phishing email addresses |
-| `mock_bank_transactions` | Simulated bank transactions |
-| `ml_feedback` | Admin FP/TP labels for retraining |
-| `education_modules` | Learning module metadata |
-| `education_articles` | Curated articles per module |
-| `user_learning_progress` | Per-user module status (LOCKED/IN_PROGRESS/COMPLETED) |
-| `user_article_progress` | Article read tracking |
-| `user_quiz_attempts` | Quiz scores and history |
-| `notifications` | In-app notification records |
-| `activity_logs` | System-wide activity feed |
-| `rule_config` | Dynamic detection rules |
-| `permissions` | RBAC permission definitions |
-| `role_permissions` | Role-to-permission mappings |
-
----
-
-## Team
-
-**CyberSentinel** — Fakultas Ilmu Komputer, Universitas Brawijaya 2026
-
-| Role | Member |
-|---|---|
-| Project Lead | Rhesa Tsaqif |
-| Backend Developer | — |
-| Frontend Developer | — |
-| ML Engineer | — |
-| UI/UX Designer | — |
-
-**Stakeholder:** CIMB Niaga (Simulation / Case Study)
+MIT License — see [LICENSE](LICENSE) for details.
 
 ---
 

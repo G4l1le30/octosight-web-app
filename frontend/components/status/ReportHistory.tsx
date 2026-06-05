@@ -78,26 +78,26 @@ export function ReportHistory({
   return (
     <div className="card p-6 md:p-8 border-neutral-border shadow-xl">
       <div className="flex items-center justify-between mb-6 md:mb-8">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-primary/5 text-primary">
+        <div className="flex items-center gap-2 md:gap-3">
+          <div className="p-1.5 md:p-2 rounded-md md:rounded-lg bg-primary/5 text-primary">
             <History className="size-6" />
           </div>
           <h2 className="text-lg md:text-xl font-bold text-secondary">
             Submission History
           </h2>
         </div>
-        <span className="text-sm font-bold text-secondary/80">
+        <span className="text-xs md:text-sm font-bold text-secondary/80">
           {history.length} Reports Found
         </span>
       </div>
 
       {loading ? (
         <div className="py-8 md:py-12 text-center">
-          <Loader2 className="animate-spin size-8 text-primary mx-auto mb-4" />
+          <Loader2 className="animate-spin size-8 text-primary mx-auto mb-3 md:mb-4" />
           <p className="text-secondary/80 font-medium">Loading history...</p>
         </div>
       ) : history.length > 0 ? (
-        <div className="space-y-3">
+        <div className="space-y-2 md:space-y-3">
           {history.slice(0, visibleCount).map((ticket) => (
             <button
               key={ticket.id}
@@ -109,20 +109,20 @@ export function ReportHistory({
               }`}
             >
               <div className="col-span-3">
-                <p className="text-sm font-bold text-secondary">
+                <p className="text-xs md:text-sm font-bold text-secondary">
                   {ticket.ticket_id}
                 </p>
-                <p className="text-xs font-medium text-secondary/80 flex items-center gap-1 mt-0.5">
+                <p className="text-xs font-medium text-secondary/80 flex items-center gap-0.5 md:gap-1 mt-0.5">
                   <Clock className="size-3" />
                   {formatDate(ticket.created_at)}
                 </p>
               </div>
 
-              <div className="col-span-5 flex items-center gap-3">
-                <div className="p-1.5 rounded bg-neutral-page border border-neutral-border text-primary">
+              <div className="col-span-5 flex items-center gap-2 md:gap-3">
+                <div className="p-1 md:p-1.5 rounded bg-neutral-page border border-neutral-border text-primary">
                   {getTypeIcon(ticket.type)}
                 </div>
-                <p className="text-sm font-bold text-secondary truncate max-w-full">
+                <p className="text-xs md:text-sm font-bold text-secondary truncate max-w-full">
                   {ticket.url || ticket.sender_numbers || "No data"}
                 </p>
               </div>
@@ -141,7 +141,7 @@ export function ReportHistory({
                  </span>
                </div>
 
-              <div className="col-span-2 flex justify-end items-center gap-2">
+              <div className="col-span-2 flex justify-end items-center gap-1.5 md:gap-2">
                 <span
                   className={`px-2.5 py-1 rounded-lg text-xs font-bold border whitespace-nowrap ${getStatusColor(ticket.status)}`}
                 >
@@ -153,7 +153,7 @@ export function ReportHistory({
           ))}
 
           {visibleCount < history.length && (
-            <div className="pt-4 text-center">
+            <div className="pt-3 md:pt-4 text-center">
               <Button
                 variant="outline"
                 size="sm"
@@ -166,13 +166,13 @@ export function ReportHistory({
           )}
         </div>
       ) : (
-        <div className="py-8 md:py-12 text-center bg-neutral-page rounded-xl border-2 border-dashed border-neutral-border">
-          <p className="text-secondary/80 font-medium text-sm">
+        <div className="py-8 md:py-12 text-center bg-neutral-page rounded-lg md:rounded-xl border-2 border-dashed border-neutral-border">
+          <p className="text-secondary/80 font-medium text-xs md:text-sm">
             You haven&apos;t submitted any reports yet.
           </p>
           <Link
             href="/report"
-            className="text-primary font-bold text-sm hover:underline mt-2 inline-block"
+            className="text-primary font-bold text-xs md:text-sm hover:underline mt-1.5 md:mt-2 inline-block"
           >
             Submit your first report
           </Link>

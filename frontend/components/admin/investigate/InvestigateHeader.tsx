@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
+import { usePermissions } from "@/hooks/usePermissions";
 
 interface InvestigateHeaderProps {
   ticketId: string;
@@ -15,16 +16,17 @@ export const InvestigateHeader: React.FC<InvestigateHeaderProps> = ({
   saving,
   disabled,
 }) => {
+  const { can } = usePermissions();
   return (
     <div className="flex items-center justify-between mb-6 md:mb-8">
       <div className="flex items-center gap-3 md:gap-4">
         <Link
           href="/admin/triage"
-          className="p-2 hover:bg-neutral-border rounded-full transition-all"
+          className="p-1.5 md:p-2 hover:bg-neutral-border rounded-full transition-all"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="h-6 w-6"
+            className="h-4 md:h-6 w-4 md:w-6"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -41,15 +43,17 @@ export const InvestigateHeader: React.FC<InvestigateHeaderProps> = ({
           Investigate {ticketId}
         </h1>
       </div>
-      <div className="flex gap-3">
-        <Button
-          onClick={onSave}
-          loading={saving}
-          disabled={disabled}
-          className="px-6 md:px-8"
-        >
-          Save Changes
-        </Button>
+      <div className="flex gap-2 md:gap-3">
+        {can("investigate.update_status") && (
+          <Button
+            onClick={onSave}
+            loading={saving}
+            disabled={disabled}
+            className="px-6 md:px-8"
+          >
+            Save Changes
+          </Button>
+        )}
       </div>
     </div>
   );

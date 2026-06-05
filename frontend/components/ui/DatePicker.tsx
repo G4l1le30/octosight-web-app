@@ -214,7 +214,7 @@ export const DatePicker = ({
     const startDay = startDayOfMonth(year, month);
 
     for (let i = 0; i < startDay; i++) {
-      days.push(<div key={`pad-${i}`} className="p-1.5" />);
+      days.push(<div key={`pad-${i}`} className="p-1 md:p-1.5" />);
     }
 
     const now = new Date();
@@ -242,7 +242,7 @@ export const DatePicker = ({
             updateDate(day);
           }}
           className={cn(
-            "p-1.5 text-xs rounded-lg transition-all font-bold relative",
+            "p-1 md:p-1.5 text-xs rounded-md md:rounded-lg transition-all font-bold relative",
             isSelected
               ? "bg-primary text-white shadow-md"
               : "text-secondary hover:bg-neutral-page",
@@ -268,7 +268,7 @@ export const DatePicker = ({
   return (
     <div className={cn("w-full relative", className)} ref={containerRef}>
       {label && (
-        <label className="block text-sm font-medium text-black mb-2">
+        <label className="block text-xs md:text-sm font-medium text-black mb-1.5 md:mb-2">
           {label}
         </label>
       )}
@@ -280,7 +280,7 @@ export const DatePicker = ({
         onClick={() => setIsOpen(!isOpen)}
         onKeyDown={(e) => e.key === "Enter" && setIsOpen(!isOpen)}
         className={cn(
-          "w-full bg-white border-2 border-neutral-border rounded-lg px-4 py-4 text-left transition-all cursor-pointer flex items-center justify-between",
+          "w-full bg-white border-2 border-neutral-border rounded-md md:rounded-lg px-3 md:px-4 py-3 md:py-4 text-left transition-all cursor-pointer flex items-center justify-between",
           triggerClassName,
           isOpen && "border-primary ring-4 ring-primary/5 shadow-sm",
           error && "border-risk-high",
@@ -289,7 +289,7 @@ export const DatePicker = ({
             : "text-secondary font-medium",
         )}
       >
-        <span className="truncate text-base">{formatDisplayDate(value)}</span>
+        <span className="truncate text-sm md:text-base">{formatDisplayDate(value)}</span>
         <CalendarIcon className="size-5 text-secondary/60 shrink-0" />
       </div>
 
@@ -298,22 +298,22 @@ export const DatePicker = ({
         <div
           onClick={(e) => e.stopPropagation()}
           className={cn(
-            "absolute z-50 w-72 bg-white rounded-2xl shadow-2xl border border-neutral-border overflow-hidden animate-in fade-in zoom-in duration-200",
+            "absolute z-50 w-56 md:w-72 bg-white rounded-xl md:rounded-2xl shadow-2xl border border-neutral-border overflow-hidden animate-in fade-in zoom-in duration-200",
             dropdownPosition === "bottom"
-              ? "top-full mt-2"
-              : "bottom-full mb-2",
+              ? "top-full mt-1.5 md:mt-2"
+              : "bottom-full mb-1.5 md:mb-2",
           )}
         >
           {/* Header */}
-          <div className="p-3 border-b border-neutral-border flex items-center justify-between bg-neutral-page">
-            <h4 className="font-bold text-secondary text-sm">
+          <div className="p-2 md:p-3 border-b border-neutral-border flex items-center justify-between bg-neutral-page">
+            <h4 className="font-bold text-secondary text-xs md:text-sm">
               {months[viewDate.getMonth()]} {viewDate.getFullYear()}
             </h4>
-            <div className="flex gap-1">
+            <div className="flex gap-0.5 md:gap-1">
               <button
                 type="button"
                 onClick={handlePrevMonth}
-                className="p-1 hover:bg-white hover:shadow-sm rounded-lg transition-all"
+                className="p-0.5 md:p-1 hover:bg-white hover:shadow-sm rounded-md md:rounded-lg transition-all"
               >
                 <ChevronLeft className="size-4 text-secondary" />
               </button>
@@ -322,7 +322,7 @@ export const DatePicker = ({
                 disabled={isViewingCurrentMonth}
                 onClick={handleNextMonth}
                 className={cn(
-                  "p-1 transition-all rounded-lg",
+                  "p-0.5 md:p-1 transition-all rounded-md md:rounded-lg",
                   isViewingCurrentMonth
                     ? "opacity-20 cursor-not-allowed"
                     : "hover:bg-white hover:shadow-sm",
@@ -334,8 +334,8 @@ export const DatePicker = ({
           </div>
 
           {/* Calendar Body */}
-          <div className="p-3">
-            <div className="grid grid-cols-7 mb-1">
+          <div className="p-2 md:p-3">
+            <div className="grid grid-cols-7 mb-0.5 md:mb-1">
               {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
                 <div
                   key={d}
@@ -345,21 +345,21 @@ export const DatePicker = ({
                 </div>
               ))}
             </div>
-            <div className="grid grid-cols-7 gap-1">{renderDays()}</div>
+            <div className="grid grid-cols-7 gap-0.5 md:gap-1">{renderDays()}</div>
           </div>
 
           {/* Footer - Time Picker */}
-          <div className="p-3 bg-neutral-page border-t border-neutral-border">
-            <div className="flex items-center gap-2">
+          <div className="p-2 md:p-3 bg-neutral-page border-t border-neutral-border">
+            <div className="flex items-center gap-1.5 md:gap-2">
               <Clock className="size-4 text-secondary/60" />
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1 md:gap-1.5">
                 <input
                   type="text"
                   value={tempHours}
                   onChange={(e) => handleTimeChange("h", e.target.value)}
                   onBlur={() => handleTimeBlur("h")}
                   placeholder="HH"
-                  className="w-14 bg-white border border-neutral-border rounded-lg p-1.5 text-center font-bold text-sm focus:outline-none focus:border-primary transition-colors"
+                  className="w-10 md:w-14 bg-white border border-neutral-border rounded-md md:rounded-lg p-1 md:p-1.5 text-center font-bold text-xs md:text-sm focus:outline-none focus:border-primary transition-colors"
                 />
                 <span className="font-bold text-secondary/60">:</span>
                 <input
@@ -368,7 +368,7 @@ export const DatePicker = ({
                   onChange={(e) => handleTimeChange("m", e.target.value)}
                   onBlur={() => handleTimeBlur("m")}
                   placeholder="MM"
-                  className="w-14 bg-white border border-neutral-border rounded-lg p-1.5 text-center font-bold text-sm focus:outline-none focus:border-primary transition-colors"
+                  className="w-10 md:w-14 bg-white border border-neutral-border rounded-md md:rounded-lg p-1 md:p-1.5 text-center font-bold text-xs md:text-sm focus:outline-none focus:border-primary transition-colors"
                 />
               </div>
               <button
@@ -377,7 +377,7 @@ export const DatePicker = ({
                   const now = new Date();
                   updateParent(now);
                 }}
-                className="ml-auto text-xs font-bold text-primary hover:underline px-2"
+                className="ml-auto text-xs font-bold text-primary hover:underline px-1.5 md:px-2"
               >
                 Today
               </button>
@@ -387,7 +387,7 @@ export const DatePicker = ({
       )}
 
       {error && (
-        <span className="text-sm text-risk-high font-bold mt-1 animate-in fade-in slide-in-from-top-1 duration-200 block">
+        <span className="text-xs md:text-sm text-risk-high font-bold mt-0.5 md:mt-1 animate-in fade-in slide-in-from-top-1 duration-200 block">
           {error}
         </span>
       )}

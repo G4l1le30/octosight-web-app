@@ -198,7 +198,7 @@ class TicketService:
             db,
             ticket_id=ticket.ticket_id,
             admin_id=admin.id,
-            action_taken=f"Assigned to user {assigned_to}",
+            action_taken=f"Assigned to {assigned_to}",
         )
         ActivityService.log_ticket_updated(
             db, admin.id, ticket.ticket_id,

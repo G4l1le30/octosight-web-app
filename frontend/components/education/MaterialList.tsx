@@ -30,12 +30,12 @@ export const MaterialList: React.FC<MaterialListProps> = ({
         <h2 className="text-xl md:text-2xl font-bold text-secondary">
           Learning Materials
         </h2>
-        <div className="w-48">
-          <p className="text-sm font-bold text-secondary mb-1">
+        <div className="w-36 md:w-48">
+          <p className="text-xs md:text-sm font-bold text-secondary mb-0.5 md:mb-1">
             Progress: {completedArticles + (isCompleted ? 1 : 0)} /{" "}
             {totalArticles + 1} completed
           </p>
-          <div className="w-full h-1.5 bg-neutral-border rounded-full overflow-hidden">
+          <div className="w-full h-1 md:h-1.5 bg-neutral-border rounded-full overflow-hidden">
             <div
               className="h-full bg-primary transition-all duration-500"
               style={{
@@ -46,7 +46,7 @@ export const MaterialList: React.FC<MaterialListProps> = ({
         </div>
       </div>
 
-      <div className="space-y-4 mb-8 md:mb-12">
+      <div className="space-y-3 md:space-y-4 mb-8 md:mb-12">
         {articles.map((article, idx) => {
           // Article is locked if the module is locked, OR if it's not the first article and the previous one isn't read yet
           const isArticleLocked =
@@ -58,7 +58,7 @@ export const MaterialList: React.FC<MaterialListProps> = ({
               className={`flex items-start gap-3 md:gap-4 ${isArticleLocked ? "opacity-60" : ""}`}
             >
               {article.image_url && (
-                <div className="shrink-0 w-20 h-20 md:w-24 md:h-24 rounded-xl overflow-hidden bg-neutral-page relative">
+                <div className="shrink-0 w-20 h-20 md:w-24 md:h-24 rounded-lg md:rounded-xl overflow-hidden bg-neutral-page relative">
                   <Image
                     src={article.image_url}
                     alt={article.title}
@@ -92,7 +92,7 @@ export const MaterialList: React.FC<MaterialListProps> = ({
                     >
                       {article.title}
                     </h3>
-                    <p className="text-sm text-secondary-light font-medium mb-3 line-clamp-2">
+                    <p className="text-xs md:text-sm text-secondary-light font-medium mb-2 md:mb-3 line-clamp-2">
                       {article.description}
                     </p>
                     <div className="flex items-center gap-3 md:gap-4 text-xs font-bold text-secondary/60">
@@ -102,7 +102,7 @@ export const MaterialList: React.FC<MaterialListProps> = ({
                       {isReadingThis &&
                         readingTimeLeft !== undefined &&
                         readingTimeLeft > 0 && (
-                          <span className="text-primary bg-primary/10 px-2 py-0.5 rounded animate-pulse">
+                          <span className="text-primary bg-primary/10 px-1.5 md:px-2 py-0.5 rounded animate-pulse">
                             Reading... {readingTimeLeft}s
                           </span>
                         )}
@@ -110,9 +110,9 @@ export const MaterialList: React.FC<MaterialListProps> = ({
                   </div>
                 </div>
                 {isArticleLocked ? (
-                  <Lock className="size-5 text-secondary/60 shrink-0 mt-1" />
+                  <Lock className="size-5 text-secondary/60 shrink-0 mt-0.5 md:mt-1" />
                 ) : (
-                  <ChevronRight className="size-5 text-secondary/40 group-hover:text-primary transition-colors shrink-0 mt-1" />
+                  <ChevronRight className="size-5 text-secondary/40 group-hover:text-primary transition-colors shrink-0 mt-0.5 md:mt-1" />
                 )}
               </div>
             </div>
@@ -122,7 +122,7 @@ export const MaterialList: React.FC<MaterialListProps> = ({
             return (
               <div
                 key={article.id}
-                className="block bg-neutral-page border border-neutral-border rounded-xl p-4 md:p-6 cursor-not-allowed"
+                className="block bg-neutral-page border border-neutral-border rounded-lg md:rounded-xl p-4 md:p-6 cursor-not-allowed"
               >
                 {content}
               </div>

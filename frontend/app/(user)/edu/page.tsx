@@ -44,8 +44,8 @@ export default function EducationPage() {
 
   if (authLoading) {
     return (
-      <div className="container mx-auto px-4 py-32 text-center">
-        <Loader2 className="animate-spin size-12 text-primary mx-auto mb-4" />
+      <div className="container mx-auto px-3 md:px-4 py-24 md:py-32 text-center">
+        <Loader2 className="animate-spin size-12 text-primary mx-auto mb-3 md:mb-4" />
       </div>
     );
   }
@@ -75,11 +75,11 @@ export default function EducationPage() {
   const totalModulesCount = modules.length;
 
   return (
-    <div className="container mx-auto px-4 py-8 md:py-12 max-w-6xl">
+    <div className="container mx-auto px-3 md:px-4 py-8 md:py-12 max-w-6xl">
       {/* Header */}
-      <div className="flex flex-col md:flex-row items-end justify-between gap-6 mb-8 md:mb-12">
+      <div className="flex flex-col md:flex-row items-end justify-between gap-4 md:gap-6 mb-8 md:mb-12">
         <div className="max-w-2xl">
-          <h1 className="text-3xl md:text-4xl font-bold mb-3">
+          <h1 className="text-3xl md:text-4xl font-bold mb-2 md:mb-3">
             Security Microlearning
           </h1>
           <p className="text-sm md:text-base text-secondary-light leading-relaxed">
@@ -88,16 +88,16 @@ export default function EducationPage() {
           </p>
         </div>
         {user && (
-          <div className="bg-gradient-to-r from-primary/5 to-primary/10 p-5 rounded-2xl border border-primary/10 flex items-center gap-4 shrink-0">
+          <div className="bg-gradient-to-r from-primary/5 to-primary/10 p-4 md:p-5 rounded-xl md:rounded-2xl border border-primary/10 flex items-center gap-3 md:gap-4 shrink-0">
             <div className="text-right">
               <p className="text-xs font-semibold text-secondary uppercase tracking-wider">
                 Learning Progress
               </p>
-              <p className="text-xl font-bold text-primary">
+              <p className="text-lg md:text-xl font-bold text-primary">
                 {completedModulesCount} / {totalModulesCount} Modules
               </p>
             </div>
-            <div className="size-14 rounded-full border-[3px] border-primary/20 flex items-center justify-center text-lg font-bold text-primary relative overflow-hidden bg-white">
+            <div className="size-14 rounded-full border-[3px] border-primary/20 flex items-center justify-center text-base md:text-lg font-bold text-primary relative overflow-hidden bg-white">
               <div
                 className="absolute bottom-0 left-0 right-0 bg-primary/15"
                 style={{ height: `${progressPercent}%` }}
@@ -111,15 +111,15 @@ export default function EducationPage() {
       {/* Overall progress bar */}
       {user && totalModulesCount > 0 && (
         <div className="mb-10 md:mb-14">
-          <div className="w-full h-2.5 bg-neutral-border rounded-full overflow-hidden">
+          <div className="w-full h-2 md:h-2.5 bg-neutral-border rounded-full overflow-hidden">
             <div
               className="h-full bg-gradient-to-r from-primary to-primary/70 transition-all duration-700 rounded-full"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
-          <p className="text-sm text-secondary-light mt-2 font-medium">
+          <p className="text-xs md:text-sm text-secondary-light mt-1.5 md:mt-2 font-medium">
             {progressPercent < 100
-              ? `${progressPercent}% complete — keep going!`
+              ? `${progressPercent}% complete, keep going!`
               : "All modules completed! Great work!"}
           </p>
         </div>
@@ -135,9 +135,9 @@ export default function EducationPage() {
 
           <div className="space-y-12 md:space-y-16">
             {loading ? (
-              <div className="py-20 text-center">
-                <Loader2 className="size-10 text-primary animate-spin mx-auto mb-4" />
-                <p className="text-secondary font-semibold text-lg">
+              <div className="py-14 md:py-20 text-center">
+                <Loader2 className="size-10 text-primary animate-spin mx-auto mb-3 md:mb-4" />
+                <p className="text-secondary font-semibold text-base md:text-lg">
                   Loading timeline...
                 </p>
               </div>
@@ -162,7 +162,7 @@ export default function EducationPage() {
                     className="relative flex flex-col md:flex-row items-center group"
                   >
                     {/* Left Column: Card */}
-                    <div className="w-full md:w-1/2 md:pr-12 z-10">
+                    <div className="w-full md:w-1/2 pr-10 md:pr-12 z-10">
                       <div
                         onClick={
                           isLocked
@@ -203,8 +203,8 @@ export default function EducationPage() {
                         )}
 
                         <div className="p-5 md:p-6">
-                          <div className="flex items-start justify-between mb-4">
-                            <div className="flex items-center gap-2">
+                          <div className="flex items-start justify-between mb-3 md:mb-4">
+                            <div className="flex items-center gap-1.5 md:gap-2">
                               <BookOpen className="size-4 text-primary" />
                               <span className="text-xs font-bold text-secondary">
                                 Step {mod.order_index}
@@ -227,18 +227,18 @@ export default function EducationPage() {
                             {mod.title}
                           </h3>
 
-                          <div className="flex items-center justify-between mt-auto pt-4 border-t border-neutral-border/50">
-                            <div className="flex flex-wrap items-center gap-4 text-xs font-bold">
-                              <div className="flex items-center gap-1.5 text-secondary">
+                          <div className="flex items-center justify-between mt-auto pt-3 md:pt-4 border-t border-neutral-border/50">
+                            <div className="flex flex-wrap items-center gap-3 md:gap-4 text-xs font-bold">
+                              <div className="flex items-center gap-1 md:gap-1.5 text-secondary">
                                 <Clock className="size-4 text-primary" />
                                 <span>{mod.duration_mins} Mins</span>
                               </div>
-                              <div className="flex items-center gap-1.5 text-secondary">
+                              <div className="flex items-center gap-1 md:gap-1.5 text-secondary">
                                 <BookOpen className="size-4 text-primary" />
                                 <span>{totalArticles} articles</span>
                               </div>
                               {isCompleted && mod.quiz_score !== undefined && (
-                                <div className="flex items-center gap-1.5 text-secondary">
+                                <div className="flex items-center gap-1 md:gap-1.5 text-secondary">
                                   <Trophy className="size-4 text-primary" />
                                   <span>{mod.quiz_score.toFixed(0)}%</span>
                                 </div>
@@ -266,7 +266,7 @@ export default function EducationPage() {
 
                         {/* Progress strip at bottom */}
                         {user && !isLocked && (
-                          <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-neutral-border/50">
+                          <div className="absolute bottom-0 left-0 right-0 h-1 md:h-1.5 bg-neutral-border/50">
                             {(() => {
                               const totalItems =
                                 (mod.articles?.length || 0) + 1;
@@ -303,7 +303,7 @@ export default function EducationPage() {
                         ) : isLocked ? (
                           <Lock className="size-4" />
                         ) : (
-                          <span className="font-bold text-sm">
+                          <span className="font-bold text-xs md:text-sm">
                             {mod.order_index}
                           </span>
                         )}
@@ -311,7 +311,7 @@ export default function EducationPage() {
                     </div>
 
                     {/* Right Column: Description */}
-                    <div className="w-full md:w-1/2 md:pl-12 hidden md:flex flex-col justify-center py-4">
+                    <div className="w-full md:w-1/2 pl-10 md:pl-12 hidden md:flex flex-col justify-center py-3 md:py-4">
                       <h3
                         className={`text-xl font-bold mb-3 ${isLocked ? "text-secondary/50" : "text-secondary"}`}
                       >
@@ -333,10 +333,10 @@ export default function EducationPage() {
         {/* Continue Learning CTA */}
         {!loading && modules.length > 0 && (
           <div className="mt-12 md:mt-16 mb-6 md:mb-10 text-center border-t border-neutral-border pt-10 md:pt-12">
-            <h3 className="text-2xl md:text-3xl font-bold mb-3">
+            <h3 className="text-2xl md:text-3xl font-bold mb-2 md:mb-3">
               Ready to continue your journey?
             </h3>
-            <p className="text-secondary-light text-base mb-8 max-w-xl mx-auto">
+            <p className="text-secondary-light text-sm md:text-base mb-6 md:mb-8 max-w-xl mx-auto">
               Pick up where you left off and keep improving your security
               awareness.
             </p>
@@ -356,7 +356,7 @@ export default function EducationPage() {
                   modules[0];
                 if (targetMod) router.push(`/edu/${targetMod.id}`);
               }}
-              className="px-12 text-lg"
+              className="px-10 md:px-12 text-base md:text-lg"
             >
               Continue Learning <ChevronRight className="size-5" />
             </Button>
@@ -367,16 +367,16 @@ export default function EducationPage() {
         {!loading &&
           completedModulesCount === totalModulesCount &&
           totalModulesCount > 0 && (
-            <div className="mt-8 text-center bg-gradient-to-r from-primary/5 to-primary/10 rounded-2xl border border-primary/10 p-8 md:p-10">
-              <Award className="size-14 text-primary mx-auto mb-4" />
-              <h3 className="text-2xl md:text-3xl font-bold mb-2">
+            <div className="mt-6 md:mt-8 text-center bg-gradient-to-r from-primary/5 to-primary/10 rounded-xl md:rounded-2xl border border-primary/10 p-8 md:p-10">
+              <Award className="size-14 text-primary mx-auto mb-3 md:mb-4" />
+              <h3 className="text-2xl md:text-3xl font-bold mb-1.5 md:mb-2">
                 Congratulations!
               </h3>
-              <p className="text-secondary-light text-base max-w-lg mx-auto mb-6">
+              <p className="text-secondary-light text-sm md:text-base max-w-lg mx-auto mb-4 md:mb-6">
                 You have completed all learning modules. You now have a strong
                 foundation in digital security awareness.
               </p>
-              <div className="flex items-center justify-center gap-1 text-primary font-semibold">
+              <div className="flex items-center justify-center gap-0.5 md:gap-1 text-primary font-semibold">
                 <Sparkles className="size-5" />
                 <span>Stay safe online!</span>
               </div>

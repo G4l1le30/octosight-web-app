@@ -27,19 +27,19 @@ const Navbar: React.FC = () => {
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-neutral-border shadow-sm">
-      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2">
-          <span className="text-primary text-xl md:text-2xl font-black tracking-wide">
+      <div className="container mx-auto px-2 sm:px-3 lg:px-6 h-10 sm:h-12 lg:h-16 flex items-center justify-between">
+        <Link href="/" className="flex items-center gap-1 sm:gap-1.5 lg:gap-2">
+          <span className="text-primary text-base sm:text-lg lg:text-2xl font-black tracking-wide">
             OCTOSIGHT
           </span>
           {isAdminRoute && (
-            <span className="ml-1 px-1.5 py-0.5 bg-primary text-sm font-bold text-white rounded">
+            <span className="ml-0.5 sm:ml-1 px-1 sm:px-1.5 py-0.5 bg-primary text-[10px] sm:text-xs lg:text-sm font-bold text-white rounded">
               ADMIN
             </span>
           )}
         </Link>
 
-        <nav className="hidden lg:flex items-stretch gap-4 md:gap-6 h-full">
+        <nav className="hidden lg:flex items-stretch gap-4 lg:gap-6 h-full">
           {isAdminRoute ? (
             <>
               {can("dashboard.view") && (
@@ -117,10 +117,10 @@ const Navbar: React.FC = () => {
             </>
           )}
 
-          <div className="self-center w-px h-4 bg-neutral-border mx-2"></div>
+          <div className="self-center w-px h-3 sm:h-4 bg-neutral-border mx-1 sm:mx-1.5 lg:mx-2"></div>
 
           {user && !loading ? (
-            <div className="self-center flex items-center gap-2">
+            <div className="self-center flex items-center gap-1 sm:gap-1.5 lg:gap-2">
               <NotificationBell />
               <ProfileDropdown
                 user={user}
@@ -129,16 +129,16 @@ const Navbar: React.FC = () => {
               />
             </div>
           ) : (
-            <div className="self-center flex items-center gap-2">
+            <div className="self-center flex items-center gap-1 sm:gap-1.5 lg:gap-2">
               <Link
                 href="/login"
-                className="text-sm font-bold text-secondary hover:text-primary px-3 py-1.5 transition-colors"
+                className="text-[11px] sm:text-xs lg:text-sm font-bold text-secondary hover:text-primary px-1.5 sm:px-2 lg:px-3 py-0.5 sm:py-1 lg:py-1.5 transition-colors"
               >
                 Sign In
               </Link>
               <Link
                 href="/register"
-                className="text-sm font-bold text-white bg-primary hover:bg-primary-dark px-4 py-1.5 rounded-lg transition-all"
+                className="text-[11px] sm:text-xs lg:text-sm font-bold text-white bg-primary hover:bg-primary-dark px-2 sm:px-3 lg:px-4 py-0.5 sm:py-1 lg:py-1.5 rounded sm:rounded-md lg:rounded-lg transition-all"
               >
                 Register
               </Link>
@@ -148,12 +148,12 @@ const Navbar: React.FC = () => {
 
         {/* Mobile menu button */}
         <button
-          className="lg:hidden text-secondary p-2"
+          className="lg:hidden text-secondary p-1 sm:p-1.5 lg:p-2"
           onClick={() => setMobileOpen(!mobileOpen)}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="h-6 w-6"
+            className="h-3.5 sm:h-4 lg:h-6 w-3.5 sm:w-4 lg:w-6"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -170,14 +170,14 @@ const Navbar: React.FC = () => {
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="lg:hidden bg-white border-t border-neutral-border px-4 py-4 space-y-2 animate-in slide-in-from-top-2 duration-200">
+        <div className="lg:hidden bg-white border-t border-neutral-border px-2 sm:px-3 lg:px-6 py-2 sm:py-3 lg:py-4 space-y-1 sm:space-y-1.5 lg:space-y-2 animate-in slide-in-from-top-2 duration-200">
           {isAdminRoute ? (
             <>
               {can("dashboard.view") && (
                 <Link
                   href="/admin"
                   onClick={() => setMobileOpen(false)}
-                  className="block py-2 text-sm font-medium hover:text-primary"
+                  className="block py-1 sm:py-1.5 lg:py-2 text-xs sm:text-sm font-medium hover:text-primary"
                 >
                   Dashboard
                 </Link>
@@ -187,14 +187,14 @@ const Navbar: React.FC = () => {
                   <Link
                     href="/admin/triage"
                     onClick={() => setMobileOpen(false)}
-                    className="block py-2 text-sm font-medium hover:text-primary"
+                    className="block py-1 sm:py-1.5 lg:py-2 text-xs sm:text-sm font-medium hover:text-primary"
                   >
                     Triage
                   </Link>
                   <Link
                     href="/admin/kanban"
                     onClick={() => setMobileOpen(false)}
-                    className="block py-2 text-sm font-medium hover:text-primary"
+                    className="block py-1 sm:py-1.5 lg:py-2 text-xs sm:text-sm font-medium hover:text-primary"
                   >
                     Kanban
                   </Link>
@@ -204,7 +204,7 @@ const Navbar: React.FC = () => {
                 <Link
                   href="/admin/blacklist"
                   onClick={() => setMobileOpen(false)}
-                  className="block py-2 text-sm font-medium hover:text-primary"
+                  className="block py-1 sm:py-1.5 lg:py-2 text-xs sm:text-sm font-medium hover:text-primary"
                 >
                   Blacklist
                 </Link>
@@ -213,7 +213,7 @@ const Navbar: React.FC = () => {
                 <Link
                   href="/admin/rule-config"
                   onClick={() => setMobileOpen(false)}
-                  className="block py-2 text-sm font-medium hover:text-primary"
+                  className="block py-1 sm:py-1.5 lg:py-2 text-xs sm:text-sm font-medium hover:text-primary"
                 >
                   Rules
                 </Link>
@@ -222,7 +222,7 @@ const Navbar: React.FC = () => {
                 <Link
                   href="/admin/transactions"
                   onClick={() => setMobileOpen(false)}
-                  className="block py-2 text-sm font-medium hover:text-primary"
+                  className="block py-1 sm:py-1.5 lg:py-2 text-xs sm:text-sm font-medium hover:text-primary"
                 >
                   Transactions
                 </Link>
@@ -231,7 +231,7 @@ const Navbar: React.FC = () => {
                 <Link
                   href="/admin/users"
                   onClick={() => setMobileOpen(false)}
-                  className="block py-2 text-sm font-medium hover:text-primary"
+                  className="block py-1 sm:py-1.5 lg:py-2 text-xs sm:text-sm font-medium hover:text-primary"
                 >
                   Users
                 </Link>
@@ -242,21 +242,21 @@ const Navbar: React.FC = () => {
               <Link
                 href="/"
                 onClick={() => setMobileOpen(false)}
-                className="block py-2 text-sm font-medium hover:text-primary"
+                className="block py-1 sm:py-1.5 lg:py-2 text-xs sm:text-sm font-medium hover:text-primary"
               >
                 Home
               </Link>
               <Link
                 href="/report"
                 onClick={() => setMobileOpen(false)}
-                className="block py-2 text-sm font-medium hover:text-primary"
+                className="block py-1 sm:py-1.5 lg:py-2 text-xs sm:text-sm font-medium hover:text-primary"
               >
                 Report Incident
               </Link>
               <Link
                 href="/check"
                 onClick={() => setMobileOpen(false)}
-                className="block py-2 text-sm font-medium hover:text-primary"
+                className="block py-1 sm:py-1.5 lg:py-2 text-xs sm:text-sm font-medium hover:text-primary"
               >
                 Fraud Check
               </Link>
@@ -264,7 +264,7 @@ const Navbar: React.FC = () => {
                 <Link
                   href="/status"
                   onClick={() => setMobileOpen(false)}
-                  className="block py-2 text-sm font-medium hover:text-primary"
+                  className="block py-1 sm:py-1.5 lg:py-2 text-xs sm:text-sm font-medium hover:text-primary"
                 >
                   Check Status
                 </Link>
@@ -272,65 +272,68 @@ const Navbar: React.FC = () => {
               <Link
                 href="/edu"
                 onClick={() => setMobileOpen(false)}
-                className="block py-2 text-sm font-medium hover:text-primary"
+                className="block py-1 sm:py-1.5 lg:py-2 text-xs sm:text-sm font-medium hover:text-primary"
               >
                 E-Learning
               </Link>
             </>
           )}
 
-          <div className="border-t border-neutral-border pt-3 mt-3">
+          <div className="border-t border-neutral-border pt-1.5 sm:pt-2 lg:pt-3 mt-1.5 sm:mt-2 lg:mt-3">
             {user ? (
               <>
-                <div className="flex items-center gap-2 md:gap-3 mb-3">
-                  <div className="w-8 h-8 bg-primary/10 text-primary rounded-full flex items-center justify-center text-xs font-bold">
-                    {user.full_name.charAt(0).toUpperCase()}
+                <div className="flex items-center justify-between gap-2 sm:gap-3 mb-1.5 sm:mb-2 lg:mb-3">
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <div className="w-5 sm:w-6 lg:w-8 h-5 sm:h-6 lg:h-8 bg-primary/10 text-primary rounded-full flex items-center justify-center text-[10px] sm:text-xs lg:text-sm font-bold">
+                      {user.full_name.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <p className="text-xs sm:text-sm lg:text-sm font-bold">{user.full_name}</p>
+                      <p className="text-[10px] sm:text-xs text-secondary/60">{user.email}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-bold">{user.full_name}</p>
-                    <p className="text-xs text-secondary/60">{user.email}</p>
-                  </div>
+                  <NotificationBell />
                 </div>
+                <Link
+                  href="/profile"
+                  onClick={() => setMobileOpen(false)}
+                  className="block py-1 sm:py-1.5 lg:py-2 text-xs sm:text-sm lg:text-sm font-bold text-primary"
+                >
+                  Profile
+                </Link>
+                {can("dashboard.view") && (
                   <Link
-                    href="/profile"
+                    href={isAdminRoute ? "/" : "/admin"}
                     onClick={() => setMobileOpen(false)}
-                    className="block py-2 text-sm font-bold text-primary"
+                    className="block py-1 sm:py-1.5 lg:py-2 text-xs sm:text-sm lg:text-sm font-bold text-primary"
                   >
-                    Profile
+                    {isAdminRoute ? "User Page" : "Admin Dashboard"}
                   </Link>
-                  {can("dashboard.view") && (
-                    <Link
-                      href={isAdminRoute ? "/" : "/admin"}
-                      onClick={() => setMobileOpen(false)}
-                      className="block py-2 text-sm font-bold text-primary"
-                    >
-                      {isAdminRoute ? "User Page" : "Admin Dashboard"}
-                    </Link>
-                  )}
-                  <button
+                )}
+                <button
                   onClick={async () => {
                     await logout();
                     setMobileOpen(false);
                     window.location.href = "/";
                   }}
-                  className="block w-full text-left py-2 text-sm font-bold text-risk-high"
+                  className="block w-full text-left py-1 sm:py-1.5 lg:py-2 text-xs sm:text-sm lg:text-sm font-bold text-risk-high"
                 >
                   Sign Out
                 </button>
               </>
             ) : (
-              <div className="flex gap-2">
+              <div className="flex gap-1 sm:gap-1.5 lg:gap-2">
                 <Link
                   href="/login"
                   onClick={() => setMobileOpen(false)}
-                  className="flex-1 text-center py-2 text-sm font-bold border border-neutral-border rounded-lg"
+                  className="flex-1 text-center py-1 sm:py-1.5 lg:py-2 text-xs sm:text-sm lg:text-sm font-bold border border-neutral-border rounded sm:rounded-md lg:rounded-lg"
                 >
                   Sign In
                 </Link>
                 <Link
                   href="/register"
                   onClick={() => setMobileOpen(false)}
-                  className="flex-1 text-center py-2 text-sm font-bold bg-primary text-white rounded-lg"
+                  className="flex-1 text-center py-1 sm:py-1.5 lg:py-2 text-xs sm:text-sm lg:text-sm font-bold bg-primary text-white rounded sm:rounded-md lg:rounded-lg"
                 >
                   Register
                 </Link>

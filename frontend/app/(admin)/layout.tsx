@@ -15,7 +15,7 @@ function RedirectToHome() {
   }, [router]);
   return (
     <div className="min-h-screen bg-neutral-page flex items-center justify-center">
-      <p className="text-sm font-bold text-secondary/60">Redirecting...</p>
+      <p className="text-xs md:text-sm font-bold text-secondary/60">Redirecting...</p>
     </div>
   );
 }
@@ -34,8 +34,8 @@ export default function AdminLayout({
     return (
       <div className="min-h-screen bg-neutral-page flex items-center justify-center">
         <div className="text-center">
-          <div className="w-8 h-8 md:w-12 md:h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-sm font-bold text-secondary/60">
+          <div className="w-8 h-8 md:w-12 md:h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto mb-3 md:mb-4"></div>
+          <p className="text-xs md:text-sm font-bold text-secondary/60">
             Verifying access...
           </p>
         </div>
@@ -46,12 +46,12 @@ export default function AdminLayout({
   // Not authenticated — redirect to login
   if (!user) {
     return (
-      <div className="min-h-screen bg-neutral-page flex items-center justify-center px-4">
-        <div className="max-w-md w-full bg-white rounded-2xl shadow-2xl p-10 text-center">
-          <div className="w-8 h-8 md:w-16 md:h-16 bg-risk-high/10 text-risk-high rounded-full flex items-center justify-center mx-auto mb-4">
+      <div className="min-h-screen bg-neutral-page flex items-center justify-center px-3 md:px-4">
+        <div className="max-w-md w-full bg-white rounded-xl md:rounded-2xl shadow-2xl p-8 md:p-10 text-center">
+          <div className="w-8 h-8 md:w-16 md:h-16 bg-risk-high/10 text-risk-high rounded-full flex items-center justify-center mx-auto mb-3 md:mb-4">
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="h-8 w-8"
+              className="h-6 md:h-8 w-6 md:w-8"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -64,19 +64,19 @@ export default function AdminLayout({
               />
             </svg>
           </div>
-          <h1 className="text-xl md:text-2xl font-bold text-secondary mb-2">
+          <h1 className="text-xl md:text-2xl font-bold text-secondary mb-1.5 md:mb-2">
             Authentication Required
           </h1>
-          <p className="text-secondary-light text-sm mb-4 md:mb-6">
+          <p className="text-secondary-light text-xs md:text-sm mb-4 md:mb-6">
             You need to sign in to access the Admin Portal.
           </p>
-          <Link href="/login" className="btn-primary px-6 md:px-8 py-3 text-sm">
+          <Link href="/login" className="btn-primary px-6 md:px-8 py-2 md:py-3 text-xs md:text-sm">
             Sign In
           </Link>
-          <div className="mt-4">
+          <div className="mt-3 md:mt-4">
             <Link
               href="/"
-              className="text-sm font-semibold text-secondary/60 hover:text-primary transition-colors"
+              className="text-xs md:text-sm font-semibold text-secondary/60 hover:text-primary transition-colors"
             >
               Return to Public Site
             </Link>

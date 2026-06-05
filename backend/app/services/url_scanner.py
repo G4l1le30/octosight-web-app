@@ -39,7 +39,10 @@ def _check_url_live(url: str, timeout: int = 10) -> tuple[bool, Optional[int]]:
 def _reanalyze(url: str) -> dict:
     """Re-run detection on a URL. Returns {risk_score, priority, label, explanation, rule_score, ml_score}."""
     rule_score = rule_engine.score(url)
-    ml_result = analyze_spam(url)
+    try:
+        ml_result = analyze_spam(url)
+    except Exception:
+        ml_result = {"error": "ML engine unavailable"}
     ml_score = ml_result.get("confidence", 0) if ml_result.get("category") == "phishing" else 0
     ml_score = ml_score if not ml_result.get("error") else 0
 

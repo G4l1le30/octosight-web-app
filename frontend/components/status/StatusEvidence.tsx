@@ -38,23 +38,23 @@ export const StatusEvidence: React.FC<StatusEvidenceProps> = ({ result }) => {
   const attachmentPaths = result.attachment_paths?.split(",").filter(Boolean) ?? [];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       {/* Evidence Screenshots */}
       {screenshotPaths.length > 0 && (
         <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 delay-150">
-          <p className="text-sm font-bold text-secondary tracking-wide mb-3">
+          <p className="text-xs md:text-sm font-bold text-secondary tracking-wide mb-2 md:mb-3">
             Evidence Screenshots
           </p>
-          <div className="space-y-3">
+          <div className="space-y-2 md:space-y-3">
             {screenshotPaths.map((path, i) => {
               const filename = path.split("/").pop() || path;
               return (
                 <div
                   key={i}
-                  className="flex items-center justify-between p-3 md:p-4 bg-neutral-page/50 border border-neutral-border/50 rounded-xl group transition-all"
+                  className="flex items-center justify-between p-3 md:p-4 bg-neutral-page/50 border border-neutral-border/50 rounded-lg md:rounded-xl group transition-all"
                 >
                   <div className="flex items-center gap-2 md:gap-3">
-                    <div className="p-2 bg-white rounded-lg border border-neutral-border text-secondary">
+                    <div className="p-1.5 md:p-2 bg-white rounded-md md:rounded-lg border border-neutral-border text-secondary">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         className="size-5"
@@ -70,13 +70,13 @@ export const StatusEvidence: React.FC<StatusEvidenceProps> = ({ result }) => {
                         <polyline points="21 15 16 10 5 21" />
                       </svg>
                     </div>
-                    <span className="text-sm font-bold text-secondary truncate max-w-[150px] sm:max-w-[200px]">
+                    <span className="text-xs md:text-sm font-bold text-secondary truncate max-w-[150px] sm:max-w-[200px]">
                       {filename}
                     </span>
                   </div>
                   <button
                     onClick={() => openEvidenceFile(path)}
-                    className="text-xs font-bold text-secondary hover:underline hover:text-secondary/80 transition-colors px-2 py-1"
+                    className="text-xs font-bold text-secondary hover:underline hover:text-secondary/80 transition-colors px-1.5 md:px-2 py-0.5 md:py-1"
                   >
                     Open
                   </button>
@@ -90,19 +90,19 @@ export const StatusEvidence: React.FC<StatusEvidenceProps> = ({ result }) => {
       {/* Attachments */}
       {attachmentPaths.length > 0 && (
         <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 delay-300">
-          <p className="text-sm font-bold text-secondary tracking-wide mb-3">
+          <p className="text-xs md:text-sm font-bold text-secondary tracking-wide mb-2 md:mb-3">
             Attachments
           </p>
-          <div className="space-y-3">
+          <div className="space-y-2 md:space-y-3">
             {attachmentPaths.map((path, i) => {
               const filename = path.split("/").pop() || path;
               return (
                 <div
                   key={i}
-                  className="flex items-center justify-between p-3 md:p-4 bg-neutral-page/50 border border-neutral-border/50 rounded-xl group transition-all"
+                  className="flex items-center justify-between p-3 md:p-4 bg-neutral-page/50 border border-neutral-border/50 rounded-lg md:rounded-xl group transition-all"
                 >
                   <div className="flex items-center gap-2 md:gap-3">
-                    <div className="p-2 bg-white rounded-lg border border-neutral-border text-secondary">
+                    <div className="p-1.5 md:p-2 bg-white rounded-md md:rounded-lg border border-neutral-border text-secondary">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         className="size-5"
@@ -117,13 +117,13 @@ export const StatusEvidence: React.FC<StatusEvidenceProps> = ({ result }) => {
                         <polyline points="13 2 13 9 20 9" />
                       </svg>
                     </div>
-                    <span className="text-sm font-bold text-secondary truncate max-w-[150px] sm:max-w-[200px]">
+                    <span className="text-xs md:text-sm font-bold text-secondary truncate max-w-[150px] sm:max-w-[200px]">
                       {filename}
                     </span>
                   </div>
                   <button
                     onClick={() => openEvidenceFile(path)}
-                    className="text-xs font-bold text-secondary hover:underline hover:text-secondary/80 transition-colors px-2 py-1"
+                    className="text-xs font-bold text-secondary hover:underline hover:text-secondary/80 transition-colors px-1.5 md:px-2 py-0.5 md:py-1"
                   >
                     Open
                   </button>

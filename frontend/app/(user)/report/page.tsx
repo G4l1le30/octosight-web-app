@@ -194,12 +194,16 @@ export default function ReportPage() {
       if (!response.ok) throw new Error("Pre-analysis failed");
       const analysis = await response.json();
 
+      if (analysis.ml_available === false) {
+        toast.warning("ML analysis unavailable — results are rule-based only");
+      }
+
       setAnalysisResult(analysis);
       setConfirmedData(data);
       setIsConfirming(true);
     } catch (err: any) {
       if (err.name === "AbortError") return;
-      toast.error(err.message);
+      toast.error(err.message || "Something went wrong");
     } finally {
       setLoading(false);
       abortControllerRef.current = null;
@@ -267,7 +271,7 @@ export default function ReportPage() {
       setTicketData(result);
       setSubmitted(true);
     } catch (err: any) {
-      toast.error(err.message);
+      toast.error(err.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -295,8 +299,8 @@ export default function ReportPage() {
 
   if (authLoading)
     return (
-      <div className="container mx-auto px-4 py-32 text-center">
-        <div className="size-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+      <div className="container mx-auto px-3 md:px-4 py-24 md:py-32 text-center">
+        <div className="size-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-3 md:mb-4" />
         <p className="text-secondary font-medium">Loading...</p>
       </div>
     );
@@ -306,7 +310,7 @@ export default function ReportPage() {
 
   if (isConfirming && confirmedData)
     return (
-      <div className="container mx-auto px-4 py-8 md:py-12 max-w-6xl">
+      <div className="container mx-auto px-3 md:px-4 py-8 md:py-12 max-w-6xl">
         <ReportConfirmation
           formData={confirmedData}
           analysisResult={analysisResult}
@@ -318,7 +322,7 @@ export default function ReportPage() {
     );
 
   return (
-    <div className="container mx-auto px-4 py-8 md:py-12 max-w-6xl">
+    <div className="container mx-auto px-3 md:px-4 py-8 md:py-12 max-w-6xl">
       {/* Loading Overlay for Pre-analysis */}
       {loading && !isConfirming && (
         <div className="fixed inset-0 z-[100] bg-white/80 backdrop-blur-md flex items-center justify-center p-4 md:p-6">
@@ -332,7 +336,7 @@ export default function ReportPage() {
       )}
 
       <div className="mb-8 md:mb-10 text-center">
-        <h1 className="text-3xl md:text-4xl font-bold text-secondary mb-3 flex items-center justify-center gap-2 md:gap-3 tracking-tight">
+        <h1 className="text-3xl md:text-4xl font-bold text-secondary mb-2 md:mb-3 flex items-center justify-center gap-2 md:gap-3 tracking-tight">
           Report Phishing Incident
         </h1>
         <p className="text-secondary opacity-70 font-medium">

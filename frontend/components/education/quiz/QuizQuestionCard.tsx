@@ -14,12 +14,12 @@ export const QuizQuestionCard: React.FC<QuizQuestionCardProps> = ({
   onSelectOption 
 }) => {
   return (
-    <div className="bg-white border border-neutral-border rounded-2xl p-6 md:p-8 shadow-sm">
+    <div className="bg-white border border-neutral-border rounded-xl md:rounded-2xl p-6 md:p-8 shadow-sm">
       <h3 className="text-lg md:text-xl font-bold text-secondary mb-4 md:mb-6 leading-relaxed">
         {question}
       </h3>
       
-      <div className="space-y-4">
+      <div className="space-y-3 md:space-y-4">
         {options.map((opt, oIdx) => (
           <button
             key={oIdx}

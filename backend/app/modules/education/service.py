@@ -79,8 +79,9 @@ class EducationService:
                     progress.completed_at = datetime.now(timezone.utc)
                 db.commit()
 
+        sorted_articles = sorted(module.articles, key=lambda a: a.order_index or 0)
         articles_with_progress = []
-        for article in module.articles:
+        for article in sorted_articles:
             is_read = EducationRepository.get_article_progress(db, user_id, article.id) is not None if user_id else False
             articles_with_progress.append({
                 "id": article.id,
@@ -92,6 +93,7 @@ class EducationService:
                 "description": article.description,
                 "image_url": article.image_url,
                 "content": article.content,
+                "order_index": article.order_index,
                 "is_read": is_read
             })
 
@@ -157,6 +159,7 @@ class EducationService:
             "description": article.description,
             "image_url": article.image_url,
             "content": article.content,
+            "order_index": article.order_index,
             "is_read": is_read,
             "module_id": module_id,
             "module_title": module_title,
@@ -174,6 +177,8 @@ class EducationService:
         progress = EducationRepository.get_article_progress(db, user_id, article_id)
         if not progress:
             EducationRepository.mark_article_as_read(db, user_id, article_id)
+            from app.modules.gamification.service import GamificationService
+            GamificationService.add_points_and_check_achievements(db, user_id, 5, "article_read")
             
         return {"message": "Article marked as read", "article_id": article_id}
 
@@ -266,6 +271,10 @@ class EducationService:
                     next_progress.status = "IN_PROGRESS"
         
         db.commit()
+
+        # Gamification: points for quiz attempt + triggers quiz_ace / module achievements
+        from app.modules.gamification.service import GamificationService
+        GamificationService.add_points_and_check_achievements(db, user_id, 10, "quiz")
         
         return {
             "score": score,

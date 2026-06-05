@@ -30,16 +30,26 @@ export function AuthCard({
   return (
     <div className="min-h-[calc(100vh-8rem)] flex items-center justify-center px-4 py-8 md:py-12 animate-in fade-in zoom-in duration-300">
       <div className="max-w-lg w-full">
-        <div className="p-10">
+        <div className="p-6 md:p-10">
           {/* Header */}
-          <div className="mb-6 md:mb-8">
+          <div className="text-left mb-6 md:mb-8">
+            {icon && (
+              <div
+                className={cn(
+                  "w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex items-center justify-center mb-3 md:mb-4",
+                  iconBgClass
+                )}
+              >
+                {icon}
+              </div>
+            )}
             <h1 className="text-2xl md:text-3xl font-bold text-secondary mb-2">{title}</h1>
-            <p className="text-secondary-light text-sm">{subtitle}</p>
+            <p className="text-secondary-light text-xs md:text-sm">{subtitle}</p>
           </div>
 
           {/* Success Banner */}
           {success && (
-            <div className="bg-risk-low/10 text-risk-low p-3 rounded-lg text-xs font-bold text-center mb-6 border border-risk-low/20 animate-in fade-in slide-in-from-top-1 duration-200">
+            <div className="bg-risk-low/10 text-risk-low p-2 md:p-3 rounded-md md:rounded-lg text-xs font-bold text-left mb-4 md:mb-6 border border-risk-low/20 animate-in fade-in slide-in-from-top-1 duration-200">
               {success}
             </div>
           )}
@@ -49,7 +59,7 @@ export function AuthCard({
 
           {/* Footer */}
           <div className="mt-8 text-left">
-            <p className="text-sm text-secondary/80">
+            <p className="text-xs md:text-sm text-secondary/80">
               {footerText}{" "}
               <Link
                 href={footerLinkHref}

@@ -8,6 +8,7 @@ import { useGoogleLogin } from "@react-oauth/google";
 import { AuthCard } from "@/components/auth/AuthCard";
 import { AuthInput } from "@/components/auth/AuthInput";
 import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
+import { SecurityTips } from "@/components/auth/SecurityTips";
 import { UserPlus, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -124,13 +125,13 @@ export default function RegisterPage() {
         <AuthCard
           title="Create Account"
           subtitle="Join OctoSight to report phishing incidents"
-          icon={<UserPlus className="h-7 w-7" />}
+          icon={<UserPlus className="h-5 md:h-7 w-5 md:w-7" />}
           iconBgClass="bg-risk-low/10 text-risk-low"
           footerText="Already have an account?"
           footerLinkText="Sign In"
           footerLinkHref="/login"
         >
-          <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+          <form onSubmit={handleSubmit} className="space-y-4 md:space-y-5" noValidate>
             <AuthInput
               id="register-name"
               label="Full Name"
@@ -205,12 +206,12 @@ export default function RegisterPage() {
           </form>
 
           {/* Divider */}
-          <div className="relative my-6">
+          <div className="relative my-4 md:my-6">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-neutral-border"></div>
             </div>
             <div className="relative flex justify-center text-xs">
-              <span className="bg-neutral-page px-2 text-secondary/60">
+              <span className="bg-neutral-page px-1.5 md:px-2 text-secondary/60">
                 Or continue with
               </span>
             </div>
@@ -218,22 +219,24 @@ export default function RegisterPage() {
 
           <GoogleAuthButton onClick={() => loginWithGoogleAction()} loading={loading} type="register" />
 
+          <SecurityTips />
+
           {showGoogleSuccess && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-3 md:p-4">
               <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
-              <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 text-center animate-in fade-in zoom-in-95 duration-200">
-                <div className="size-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="relative bg-white rounded-2xl md:rounded-3xl shadow-2xl w-full max-w-md p-6 md:p-8 text-center animate-in fade-in zoom-in-95 duration-200">
+                <div className="size-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3 md:mb-4">
                   <CheckCircle2 className="size-8 text-green-600" />
                 </div>
-                <h2 className="text-xl font-bold text-secondary mb-2">
+                <h2 className="text-lg md:text-xl font-bold text-secondary mb-1.5 md:mb-2">
                   Registration Successful!
                 </h2>
-                <p className="text-sm text-secondary/70 mb-6">
+                <p className="text-xs md:text-sm text-secondary/70 mb-4 md:mb-6">
                   Your account has been created and verified. Welcome to OctoSight!
                 </p>
                 <button
                   onClick={() => router.push("/")}
-                  className="w-full px-6 py-3 bg-primary text-white font-bold text-sm rounded-xl hover:opacity-90 transition-all"
+                  className="w-full px-4 md:px-6 py-2 md:py-3 bg-primary text-white font-bold text-xs md:text-sm rounded-lg md:rounded-xl hover:opacity-90 transition-all"
                 >
                   Continue to Home
                 </button>

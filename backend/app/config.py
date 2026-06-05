@@ -60,6 +60,9 @@ class Settings(BaseSettings):
     default_admin_email: Optional[str] = None
     default_admin_password: Optional[str] = None
 
+    # Logging
+    log_level: str = "INFO"
+
     # Redis
     redis_url: str = ""
 

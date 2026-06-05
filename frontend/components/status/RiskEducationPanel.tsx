@@ -13,7 +13,7 @@ export const RiskEducationPanel: React.FC<RiskEducationPanelProps> = ({
   if (!recommendation) return null;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 md:space-y-8">
       <div className="flex items-center justify-between">
         <h3 className="text-lg md:text-xl font-bold text-secondary">
           Security Recommendations
@@ -23,16 +23,16 @@ export const RiskEducationPanel: React.FC<RiskEducationPanelProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
         {/* Warnings */}
         {recommendation.warnings && recommendation.warnings.length > 0 && (
-          <div className="bg-white border border-neutral-border rounded-2xl p-4">
-            <div className="flex items-center gap-2 mb-4 text-risk-high">
+          <div className="bg-white border border-neutral-border rounded-xl md:rounded-2xl p-3 md:p-4">
+            <div className="flex items-center gap-1.5 md:gap-2 mb-3 md:mb-4 text-risk-high">
               <AlertCircle className="size-5" />
               <h4 className="font-bold">Risk Warnings</h4>
             </div>
-            <ul className="space-y-1">
+            <ul className="space-y-0.5 md:space-y-1">
               {recommendation.warnings.map((warning, idx) => (
                 <li
                   key={idx}
-                  className="text-sm font-medium text-secondary flex items-start gap-2"
+                  className="text-xs md:text-sm font-medium text-secondary flex items-start gap-1.5 md:gap-2"
                 >
                   <span className="mt-0.5">•</span>
                   <span>{warning}</span>
@@ -45,16 +45,16 @@ export const RiskEducationPanel: React.FC<RiskEducationPanelProps> = ({
         {/* Suggested Actions */}
         {recommendation.suggested_actions &&
           recommendation.suggested_actions.length > 0 && (
-            <div className="bg-white border border-neutral-border rounded-2xl p-4">
-              <div className="flex items-center gap-2 mb-4 text-blue-600">
+            <div className="bg-white border border-neutral-border rounded-xl md:rounded-2xl p-3 md:p-4">
+              <div className="flex items-center gap-1.5 md:gap-2 mb-3 md:mb-4 text-blue-600">
                 <CheckCircle2 className="size-5" />
                 <h4 className="font-bold">Suggested Actions</h4>
               </div>
-              <ul className="space-y-1">
+              <ul className="space-y-0.5 md:space-y-1">
                 {recommendation.suggested_actions.map((action, idx) => (
                   <li
                     key={idx}
-                    className="text-sm font-medium text-secondary flex items-start gap-2"
+                    className="text-xs md:text-sm font-medium text-secondary flex items-start gap-1.5 md:gap-2"
                   >
                     <span className="mt-0.5">•</span>
                     <span>{action}</span>
@@ -66,8 +66,8 @@ export const RiskEducationPanel: React.FC<RiskEducationPanelProps> = ({
 
         {/* Tips */}
         {recommendation.tips && recommendation.tips.length > 0 && (
-          <div className="bg-white border border-neutral-border rounded-2xl p-4 md:col-span-2">
-            <div className="flex items-center gap-2 mb-4 text-green-600">
+          <div className="bg-white border border-neutral-border rounded-xl md:rounded-2xl p-3 md:p-4 md:col-span-2">
+            <div className="flex items-center gap-1.5 md:gap-2 mb-3 md:mb-4 text-green-600">
               <Lightbulb className="size-5" />
               <h4 className="font-bold">Prevention Tips</h4>
             </div>
@@ -75,7 +75,7 @@ export const RiskEducationPanel: React.FC<RiskEducationPanelProps> = ({
               {recommendation.tips.map((tip, idx) => (
                 <li
                   key={idx}
-                  className="text-sm font-medium text-secondary flex items-start gap-2"
+                  className="text-xs md:text-sm font-medium text-secondary flex items-start gap-1.5 md:gap-2"
                 >
                   <span className="mt-0.5">•</span>
                   <span>{tip}</span>
@@ -89,15 +89,15 @@ export const RiskEducationPanel: React.FC<RiskEducationPanelProps> = ({
       {/* Relevant Modules */}
       {recommendation.relevant_modules &&
         recommendation.relevant_modules.length > 0 && (
-          <div className="bg-neutral-page/30 border border-neutral-border rounded-2xl p-4">
-            <div className="flex items-center justify-between mb-5">
-              <div className="flex items-center gap-2 text-secondary">
+          <div className="bg-neutral-page/30 border border-neutral-border rounded-xl md:rounded-2xl p-3 md:p-4">
+            <div className="flex items-center justify-between mb-4 md:mb-5">
+              <div className="flex items-center gap-1.5 md:gap-2 text-secondary">
                 <BookOpen className="size-5 text-primary" />
                 <h4 className="font-bold">Recommended Learning Modules</h4>
               </div>
               <Link
                 href="/edu"
-                className="text-sm font-bold text-primary hover:underline"
+                className="text-xs md:text-sm font-bold text-primary hover:underline"
               >
                 View all modules
               </Link>
@@ -112,7 +112,7 @@ export const RiskEducationPanel: React.FC<RiskEducationPanelProps> = ({
                   <Link
                     key={idx}
                     href={`/edu/${id}`}
-                    className="px-5 py-2.5 bg-white border border-neutral-border rounded-xl text-sm font-bold text-secondary hover:border-primary hover:text-primary transition-colors flex items-center gap-2"
+                    className="px-4 md:px-5 py-2 md:py-2.5 bg-white border border-neutral-border rounded-lg md:rounded-xl text-xs md:text-sm font-bold text-secondary hover:border-primary hover:text-primary transition-colors flex items-center gap-1.5 md:gap-2"
                   >
                     <BookOpen className="size-4" />
                     {title}

@@ -1,6 +1,14 @@
 /** @type {import('next').NextConfig} */
+const internalApiUrl =
+  process.env.INTERNAL_API_URL ||
+  process.env.NEXT_PUBLIC_API_URL ||
+  "http://backend:8000";
+
 const nextConfig = {
-  output: 'standalone',
+  ...(process.env.STANDALONE === 'true' ? { output: 'standalone' } : {}),
+  images: {
+    unoptimized: true,
+  },
   // Allow the /api/analyze route to receive large image uploads (up to 20 MB)
   experimental: {
     serverActions: {
@@ -44,11 +52,11 @@ const nextConfig = {
     return [
       {
         source: '/api/v1/:path*',
-        destination: `${process.env.NEXT_PUBLIC_API_URL || 'http://backend:8000'}/api/v1/:path*`,
+        destination: `${internalApiUrl}/api/v1/:path*`,
       },
       {
         source: '/uploads/:path*',
-        destination: `${process.env.NEXT_PUBLIC_API_URL || 'http://backend:8000'}/uploads/:path*`,
+        destination: `${internalApiUrl}/uploads/:path*`,
       },
     ];
   },

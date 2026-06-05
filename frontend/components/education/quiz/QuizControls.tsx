@@ -29,42 +29,46 @@ export const QuizControls: React.FC<QuizControlsProps> = ({
 }) => {
   return (
     <>
-      <div className="flex items-center justify-between gap-4">
-        <Button 
-          variant="outline" 
+      <div className="flex items-center justify-between gap-3 md:gap-4">
+        <Button
+          variant="outline"
           onClick={onPrevious}
           disabled={currentStep === 0}
-          className="px-8 py-6 font-bold"
+          className="px-6 md:px-8 font-bold"
         >
           Previous
         </Button>
-        
+
         {isLastStep ? (
-          <Button 
-            onClick={onSubmit} 
+          <Button
+            onClick={onSubmit}
             disabled={!canSubmit || submitting}
-            className="px-10 py-6 font-bold text-lg gap-2"
+            className="px-8 md:px-10 font-bold text-base md:text-lg gap-1.5 md:gap-2"
           >
             {submitting && <Loader2 className="size-5 animate-spin" />}
             {submitting ? "Submitting..." : "Submit Quiz"}
           </Button>
         ) : (
-          <Button 
+          <Button
             onClick={onNext}
             disabled={selectedAnswer === -1}
-            className="px-10 py-6 font-bold text-lg"
+            className="px-8 md:px-10 font-bold text-base md:text-lg"
           >
             Next Question
           </Button>
         )}
       </div>
-      
-      <div className="flex gap-2 justify-center py-4">
+
+      <div className="flex gap-1.5 md:gap-2 justify-center py-3 md:py-4">
         {new Array(totalQuestions).fill(0).map((_, i) => (
-          <div 
-            key={i} 
+          <div
+            key={i}
             className={`h-1.5 rounded-full transition-all duration-300 ${
-              i === currentStep ? "w-8 bg-primary" : answers[i] !== -1 ? "w-4 bg-primary/40" : "w-4 bg-neutral-border"
+              i === currentStep
+                ? "w-8 bg-primary"
+                : answers[i] !== -1
+                  ? "w-4 bg-primary/40"
+                  : "w-4 bg-neutral-border"
             }`}
           />
         ))}

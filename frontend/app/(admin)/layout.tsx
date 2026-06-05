@@ -1,10 +1,24 @@
 "use client";
 
 import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
 import Link from "next/link";
-import React from "react";
+import React, { useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
+import { usePermissions } from "@/hooks/usePermissions";
+
+function RedirectToHome() {
+  const router = useRouter();
+  useEffect(() => {
+    router.replace("/");
+  }, [router]);
+  return (
+    <div className="min-h-screen bg-neutral-page flex items-center justify-center">
+      <p className="text-xs md:text-sm font-bold text-secondary/60">Redirecting...</p>
+    </div>
+  );
+}
 
 export default function AdminLayout({
   children,
@@ -13,14 +27,15 @@ export default function AdminLayout({
 }) {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const { can } = usePermissions();
 
   // Loading state
   if (loading) {
     return (
       <div className="min-h-screen bg-neutral-page flex items-center justify-center">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-sm font-bold text-secondary/60">
+          <div className="w-8 h-8 md:w-12 md:h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto mb-3 md:mb-4"></div>
+          <p className="text-xs md:text-sm font-bold text-secondary/60">
             Verifying access...
           </p>
         </div>
@@ -31,12 +46,12 @@ export default function AdminLayout({
   // Not authenticated — redirect to login
   if (!user) {
     return (
-      <div className="min-h-screen bg-neutral-page flex items-center justify-center px-4">
-        <div className="max-w-md w-full bg-white rounded-2xl shadow-2xl p-10 text-center">
-          <div className="w-16 h-16 bg-risk-high/10 text-risk-high rounded-full flex items-center justify-center mx-auto mb-4">
+      <div className="min-h-screen bg-neutral-page flex items-center justify-center px-3 md:px-4">
+        <div className="max-w-md w-full bg-white rounded-xl md:rounded-2xl shadow-2xl p-8 md:p-10 text-center">
+          <div className="w-8 h-8 md:w-16 md:h-16 bg-risk-high/10 text-risk-high rounded-full flex items-center justify-center mx-auto mb-3 md:mb-4">
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="h-8 w-8"
+              className="h-6 md:h-8 w-6 md:w-8"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -49,19 +64,19 @@ export default function AdminLayout({
               />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-secondary mb-2">
+          <h1 className="text-xl md:text-2xl font-bold text-secondary mb-1.5 md:mb-2">
             Authentication Required
           </h1>
-          <p className="text-secondary-light text-sm mb-6">
+          <p className="text-secondary-light text-xs md:text-sm mb-4 md:mb-6">
             You need to sign in to access the Admin Portal.
           </p>
-          <Link href="/login" className="btn-primary px-8 py-3 text-sm">
+          <Link href="/login" className="btn-primary px-6 md:px-8 py-2 md:py-3 text-xs md:text-sm">
             Sign In
           </Link>
-          <div className="mt-4">
+          <div className="mt-3 md:mt-4">
             <Link
               href="/"
-              className="text-sm font-bold text-secondary/60 hover:text-primary transition-colors"
+              className="text-xs md:text-sm font-semibold text-secondary/60 hover:text-primary transition-colors"
             >
               Return to Public Site
             </Link>
@@ -71,50 +86,16 @@ export default function AdminLayout({
     );
   }
 
-  // Authenticated but NOT admin — access denied
-  if (user.role !== "admin") {
-    return (
-      <div className="min-h-screen bg-neutral-page flex items-center justify-center px-4">
-        <div className="max-w-md w-full bg-white rounded-2xl shadow-2xl p-10 text-center">
-          <div className="w-16 h-16 bg-risk-high/10 text-risk-high rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-8 w-8"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
-              />
-            </svg>
-          </div>
-          <h1 className="text-2xl font-bold text-secondary mb-2">
-            Access Denied
-          </h1>
-          <p className="text-secondary-light text-sm mb-2">
-            You are signed in as{" "}
-            <span className="font-bold text-secondary">{user.full_name}</span>,
-            but your account does not have admin privileges.
-          </p>
-          <p className="text-xs text-secondary/60 mb-6">
-            Contact your system administrator if you believe this is an error.
-          </p>
-          <Link href="/" className="btn-primary px-8 py-3 text-sm">
-            Return to Home
-          </Link>
-        </div>
-      </div>
-    );
+  // Authenticated but no dashboard access — redirect to home
+  if (!can("dashboard.view")) {
+    return <RedirectToHome />;
   }
 
   return (
     <div className="min-h-screen bg-neutral-page flex flex-col">
       <Navbar />
       <main className="flex-1">{children}</main>
+      <Footer />
     </div>
   );
 }

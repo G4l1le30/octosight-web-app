@@ -22,9 +22,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Pre-download SentenceTransformer model to make the image self-contained
-# and ensure it runs faster for the first request.
-RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')"
+# Note: we avoid pre-downloading large transformer models during image build.
+# If you need `sentence-transformers` and the model, install them locally or
+# build a separate ML image that contains the pre-downloaded model.
 
 # Copy the rest of the application
 COPY . .

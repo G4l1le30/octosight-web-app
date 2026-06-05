@@ -1,35 +1,35 @@
 import json
 from sqlalchemy.orm import Session
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from datetime import datetime, timezone
 from fastapi import HTTPException
 
+from app.models.education import EducationArticle
 from .repository import EducationRepository
 from .gemini_service import GeminiEducationService
 
 class EducationService:
     @staticmethod
-    def get_modules_with_progress(db: Session, user_id: str) -> List[Dict[str, Any]]:
+    def get_modules_with_progress(db: Session, user_id: Optional[str]) -> List[Dict[str, Any]]:
         modules = EducationRepository.get_all_modules(db)
         result = []
-        
+
         for module in modules:
-            progress = EducationRepository.get_user_progress(db, user_id, module.id)
-            
-            if not progress:
-                status = "IN_PROGRESS" if module.order_index == 1 else "LOCKED"
-                progress = EducationRepository.create_user_progress(db, user_id, module.id, status)
-            
-            # Auto-correct status if they have a passing score
-            if progress.quiz_score and progress.quiz_score >= 70 and progress.status != "COMPLETED":
-                progress.status = "COMPLETED"
-                if not progress.completed_at:
-                    progress.completed_at = datetime.now(timezone.utc)
-                db.commit()
-            
+            if user_id:
+                progress = EducationRepository.get_user_progress(db, user_id, module.id)
+                if not progress:
+                    status = "IN_PROGRESS" if module.order_index == 1 else "LOCKED"
+                    progress = EducationRepository.create_user_progress(db, user_id, module.id, status)
+
+                if progress.quiz_score and progress.quiz_score >= 70 and progress.status != "COMPLETED":
+                    progress.status = "COMPLETED"
+                    if not progress.completed_at:
+                        progress.completed_at = datetime.now(timezone.utc)
+                    db.commit()
+
             articles_with_progress = []
             for article in module.articles:
-                is_read = EducationRepository.get_article_progress(db, user_id, article.id) is not None
+                is_read = EducationRepository.get_article_progress(db, user_id, article.id) is not None if user_id else False
                 articles_with_progress.append({
                     "id": article.id,
                     "title": article.title,
@@ -38,9 +38,11 @@ class EducationService:
                     "duration_mins": article.duration_mins,
                     "publication_date": article.publication_date,
                     "description": article.description,
+                    "image_url": article.image_url,
+                    "content": article.content,
                     "is_read": is_read
                 })
-                
+
             result.append({
                 "id": module.id,
                 "title": module.title,
@@ -48,35 +50,39 @@ class EducationService:
                 "order_index": module.order_index,
                 "description": module.description,
                 "duration_mins": module.duration_mins,
+                "image_url": module.image_url,
                 "articles": articles_with_progress,
-                "status": progress.status,
-                "quiz_score": progress.quiz_score,
-                "completed_at": progress.completed_at,
+                "status": None if not user_id else (progress.status if progress else "LOCKED"),
+                "quiz_score": None if not user_id else (progress.quiz_score if progress else None),
+                "completed_at": None if not user_id else (progress.completed_at if progress else None),
                 "quiz_attempts_history": []
             })
-            
+
         return result
 
     @staticmethod
-    def get_module_detail(db: Session, user_id: str, module_id: str) -> Dict[str, Any]:
+    def get_module_detail(db: Session, user_id: Optional[str], module_id: str) -> Dict[str, Any]:
         module = EducationRepository.get_module_by_id(db, module_id)
         if not module:
             raise HTTPException(status_code=404, detail="Module not found")
-            
-        progress = EducationRepository.get_user_progress(db, user_id, module_id)
-        if not progress:
-            status = "IN_PROGRESS" if module.order_index == 1 else "LOCKED"
-            progress = EducationRepository.create_user_progress(db, user_id, module.id, status)
-            
-        if progress.quiz_score and progress.quiz_score >= 70 and progress.status != "COMPLETED":
-            progress.status = "COMPLETED"
-            if not progress.completed_at:
-                progress.completed_at = datetime.now(timezone.utc)
-            db.commit()
-            
+
+        progress = None
+        if user_id:
+            progress = EducationRepository.get_user_progress(db, user_id, module_id)
+            if not progress:
+                status = "IN_PROGRESS" if module.order_index == 1 else "LOCKED"
+                progress = EducationRepository.create_user_progress(db, user_id, module.id, status)
+
+            if progress and progress.quiz_score and progress.quiz_score >= 70 and progress.status != "COMPLETED":
+                progress.status = "COMPLETED"
+                if not progress.completed_at:
+                    progress.completed_at = datetime.now(timezone.utc)
+                db.commit()
+
+        sorted_articles = sorted(module.articles, key=lambda a: a.order_index or 0)
         articles_with_progress = []
-        for article in module.articles:
-            is_read = EducationRepository.get_article_progress(db, user_id, article.id) is not None
+        for article in sorted_articles:
+            is_read = EducationRepository.get_article_progress(db, user_id, article.id) is not None if user_id else False
             articles_with_progress.append({
                 "id": article.id,
                 "title": article.title,
@@ -85,11 +91,14 @@ class EducationService:
                 "duration_mins": article.duration_mins,
                 "publication_date": article.publication_date,
                 "description": article.description,
+                "image_url": article.image_url,
+                "content": article.content,
+                "order_index": article.order_index,
                 "is_read": is_read
             })
-            
-        attempts = EducationRepository.get_quiz_attempts(db, user_id, module_id)
-        
+
+        attempts = EducationRepository.get_quiz_attempts(db, user_id, module_id) if user_id else []
+
         return {
             "id": module.id,
             "title": module.title,
@@ -97,11 +106,65 @@ class EducationService:
             "order_index": module.order_index,
             "description": module.description,
             "duration_mins": module.duration_mins,
+            "image_url": module.image_url,
             "articles": articles_with_progress,
-            "status": progress.status,
-            "quiz_score": progress.quiz_score,
-            "completed_at": progress.completed_at,
+            "status": None if not user_id else (progress.status if progress else "LOCKED"),
+            "quiz_score": None if not user_id else (progress.quiz_score if progress else None),
+            "completed_at": None if not user_id else (progress.completed_at if progress else None),
             "quiz_attempts_history": attempts
+        }
+
+    @staticmethod
+    def get_article_detail(db: Session, user_id: Optional[str], article_id: str) -> Dict[str, Any]:
+        article = EducationRepository.get_article_by_id(db, article_id)
+        if not article:
+            raise HTTPException(status_code=404, detail="Article not found")
+
+        is_read = EducationRepository.get_article_progress(db, user_id, article.id) is not None if user_id else False
+
+        # Enforce prerequisite: if authenticated and not first article, check previous article is read
+        if user_id and article.order_index and article.order_index > 1:
+            prev_article = db.query(EducationArticle).filter(
+                EducationArticle.module_id == article.module_id,
+                EducationArticle.order_index == article.order_index - 1
+            ).first()
+            if prev_article:
+                prev_read = EducationRepository.get_article_progress(db, user_id, prev_article.id)
+                if not prev_read:
+                    raise HTTPException(status_code=403, detail="Complete the previous article first")
+
+        module_title = ""
+        module_id = ""
+        next_article = None
+        is_last_article = True
+        if article.module:
+            module_title = article.module.title
+            module_id = article.module.id
+            sorted_articles = sorted(article.module.articles, key=lambda a: a.order_index)
+            for i, a in enumerate(sorted_articles):
+                if a.id == article.id:
+                    if i + 1 < len(sorted_articles):
+                        nxt = sorted_articles[i + 1]
+                        next_article = {"id": nxt.id, "title": nxt.title, "duration_mins": nxt.duration_mins}
+                        is_last_article = False
+                    break
+
+        return {
+            "id": article.id,
+            "title": article.title,
+            "url": article.url,
+            "author": article.author,
+            "duration_mins": article.duration_mins,
+            "publication_date": article.publication_date,
+            "description": article.description,
+            "image_url": article.image_url,
+            "content": article.content,
+            "order_index": article.order_index,
+            "is_read": is_read,
+            "module_id": module_id,
+            "module_title": module_title,
+            "next_article": next_article,
+            "is_last_article": is_last_article
         }
 
     @staticmethod
@@ -114,6 +177,8 @@ class EducationService:
         progress = EducationRepository.get_article_progress(db, user_id, article_id)
         if not progress:
             EducationRepository.mark_article_as_read(db, user_id, article_id)
+            from app.modules.gamification.service import GamificationService
+            GamificationService.add_points_and_check_achievements(db, user_id, 5, "article_read")
             
         return {"message": "Article marked as read", "article_id": article_id}
 
@@ -206,6 +271,10 @@ class EducationService:
                     next_progress.status = "IN_PROGRESS"
         
         db.commit()
+
+        # Gamification: points for quiz attempt + triggers quiz_ace / module achievements
+        from app.modules.gamification.service import GamificationService
+        GamificationService.add_points_and_check_achievements(db, user_id, 10, "quiz")
         
         return {
             "score": score,

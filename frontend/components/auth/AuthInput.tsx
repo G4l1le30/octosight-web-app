@@ -24,7 +24,7 @@ export function AuthInput({
   const inputType = isPassword ? (showPassword ? "text" : "password") : type;
 
   return (
-    <div className="space-y-1.5 w-full">
+    <div className="space-y-1 md:space-y-1.5 w-full">
       <label htmlFor={id} className="text-xs font-bold text-secondary/60">
         {label}
       </label>
@@ -49,15 +49,15 @@ export function AuthInput({
             tabIndex={-1}
           >
             {showPassword ? (
-              <Eye className="h-5 w-5 animate-in fade-in duration-200" />
+              <Eye className="h-4 md:h-5 w-4 md:w-5 animate-in fade-in duration-200" />
             ) : (
-              <EyeOff className="h-5 w-5 animate-in fade-in duration-200" />
+              <EyeOff className="h-4 md:h-5 w-4 md:w-5 animate-in fade-in duration-200" />
             )}
           </button>
         )}
       </div>
       {errorText && (
-        <p className="text-xs text-risk-high font-bold mt-1 animate-in fade-in duration-200">
+        <p className="text-xs text-risk-high font-bold mt-0.5 md:mt-1 animate-in fade-in duration-200">
           {errorText}
         </p>
       )}

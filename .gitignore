@@ -21,7 +21,7 @@ develop-eggs/
 dist/
 downloads/
 eggs/
-lib/
+/lib/
 lib64/
 parts/
 sdist/
@@ -42,6 +42,7 @@ Thumbs.db
 data/mysql_data/
 node_cache/
 frontend/node_cache/
+/backend/uploads/
 
 # Markdown
 *.md

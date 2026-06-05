@@ -1,6 +1,6 @@
-export type IncidentType = "Website" | "SMS" | "WhatsApp" | "Email";
+export type IncidentType = "Website" | "SMS" | "WhatsApp" | "Email" | "Transaction";
 
-export type TicketStatus = "Submitted" | "In Review" | "Confirmed" | "False Positive" | "Mitigated" | "Closed";
+export type TicketStatus = "Submitted" | "In Review" | "Need More Info" | "Confirmed" | "False Positive" | "Mitigated" | "Closed";
 
 import { EducationRecommendation } from "./education";
 
@@ -17,7 +17,6 @@ export interface Ticket {
   priority: "High" | "Medium" | "Low";
   status: TicketStatus;
   screenshot_paths: string | null;
-  attachment_names: string | null;
   attachment_paths: string | null;
   extracted_text: string | null;
   flags: string | null;
@@ -25,15 +24,36 @@ export interface Ticket {
   education_recommendation: EducationRecommendation | null;
   admin_notes: string | null;
   investigation_notes: string | null;
+  bank_name: string | null;
+  bank_account: string | null;
+  reference_number: string | null;
+  assigned_to: string | null;
+  assigned_at: string | null;
   created_at: string;
   updated_at: string;
+  sla_deadline: string | null;
+  sla_breached: boolean;
 }
 
+export interface TicketAuditLog {
+  id: number;
+  ticket_id: string;
+  admin_id: string | null;
+  admin_name: string;
+  action_taken: string;
+  old_status: string | null;
+  new_status: string | null;
+  notes: string | null;
+  created_at: string;
+}
+
+
 export type ReportFormData =
-  | { type: "Website"; url: string; summary?: string; senderNumbers?: string; incidentDate: string }
-  | { type: "SMS"; url?: string; summary?: string; senderNumbers: string; incidentDate: string }
-  | { type: "WhatsApp"; url?: string; summary?: string; senderNumbers: string; incidentDate: string }
-  | { type: "Email"; url?: string; summary?: string; senderNumbers: string; incidentDate: string };
+  | { type: "Website"; url: string; summary?: string; senderNumbers?: string; incidentDate: string; bankName?: string; bankAccount?: string; referenceNumber?: string }
+  | { type: "SMS"; url?: string; summary?: string; senderNumbers: string; incidentDate: string; bankName?: string; bankAccount?: string; referenceNumber?: string }
+  | { type: "WhatsApp"; url?: string; summary?: string; senderNumbers: string; incidentDate: string; bankName?: string; bankAccount?: string; referenceNumber?: string }
+  | { type: "Email"; url?: string; summary?: string; senderNumbers: string; incidentDate: string; bankName?: string; bankAccount?: string; referenceNumber?: string }
+  | { type: "Transaction"; url?: string; summary?: string; senderNumbers: string; incidentDate: string; bankName?: string; bankAccount?: string; referenceNumber?: string };
 
 export interface DashboardStats {
   total: number;
@@ -42,4 +62,6 @@ export interface DashboardStats {
   typeDist: { name: string; value: number }[];
   trendData: { name: string; incidents: number }[];
   flagDist: { name: string; value: number }[];
+  openTickets?: number;
+  resolvedTickets?: number;
 }

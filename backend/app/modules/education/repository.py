@@ -56,7 +56,7 @@ class EducationRepository:
         ).order_by(UserQuizAttempt.created_at.asc()).all()
 
     @staticmethod
-    def get_quiz_attempt_by_id(db: Session, attempt_id: int, user_id: str, module_id: str) -> Optional[UserQuizAttempt]:
+    def get_quiz_attempt_by_id(db: Session, attempt_id: str, user_id: str, module_id: str) -> Optional[UserQuizAttempt]:
         return db.query(UserQuizAttempt).filter(
             UserQuizAttempt.id == attempt_id,
             UserQuizAttempt.user_id == user_id,
@@ -80,6 +80,10 @@ class EducationRepository:
     @staticmethod
     def get_module_by_order(db: Session, order_index: int) -> Optional[EducationModule]:
         return db.query(EducationModule).filter(EducationModule.order_index == order_index).first()
+
+    @staticmethod
+    def get_article_by_id(db: Session, article_id: str) -> Optional[EducationArticle]:
+        return db.query(EducationArticle).filter(EducationArticle.id == article_id).first()
 
     @staticmethod
     def get_articles_by_module(db: Session, module_id: str) -> List[EducationArticle]:

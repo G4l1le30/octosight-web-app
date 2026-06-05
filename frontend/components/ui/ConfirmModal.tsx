@@ -31,22 +31,22 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-secondary/40 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-8 border border-neutral-border animate-in zoom-in-95 duration-300">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 md:p-4 bg-secondary/40 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="bg-white rounded-2xl md:rounded-3xl shadow-2xl max-w-sm w-full p-6 md:p-8 border border-neutral-border animate-in zoom-in-95 duration-300">
         <div className="text-center">
           <div className={cn(
-            "w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6",
+            "w-8 h-8 md:w-12 md:h-12 md:w-16 md:h-16 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6",
             type === "danger" ? "bg-red-100 text-red-600" : "bg-primary/10 text-primary"
           )}>
             <AlertTriangle className="size-8" />
           </div>
           
-          <h3 className="text-xl font-bold text-secondary mb-2">{title}</h3>
-          <p className="text-secondary/60 text-sm font-medium leading-relaxed mb-8">
+          <h3 className="text-lg md:text-xl font-bold text-secondary mb-1.5 md:mb-2">{title}</h3>
+          <p className="text-secondary/60 text-xs md:text-sm font-medium leading-relaxed mb-6 md:mb-8">
             {message}
           </p>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2 md:gap-3">
             <Button
               variant="outline"
               onClick={onClose}

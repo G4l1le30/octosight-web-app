@@ -8,7 +8,9 @@ import { useGoogleLogin } from "@react-oauth/google";
 import { AuthCard } from "@/components/auth/AuthCard";
 import { AuthInput } from "@/components/auth/AuthInput";
 import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
-import { UserPlus } from "lucide-react";
+import { SecurityTips } from "@/components/auth/SecurityTips";
+import { UserPlus, CheckCircle2 } from "lucide-react";
+import { toast } from "sonner";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -25,12 +27,11 @@ export default function RegisterPage() {
     confirmPassword: ""
   });
 
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showGoogleSuccess, setShowGoogleSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
     setFieldErrors({ fullName: "", email: "", password: "", confirmPassword: "" });
 
     let hasErrors = false;
@@ -58,6 +59,15 @@ export default function RegisterPage() {
     } else if (!/[A-Z]/.test(password)) {
       newErrors.password = "Password must contain at least one uppercase letter";
       hasErrors = true;
+    } else if (!/[a-z]/.test(password)) {
+      newErrors.password = "Password must contain at least one lowercase letter";
+      hasErrors = true;
+    } else if (!/\d/.test(password)) {
+      newErrors.password = "Password must contain at least one number";
+      hasErrors = true;
+    } else if (!/[@$!%*?&#^]/.test(password)) {
+      newErrors.password = "Password must contain at least one special character";
+      hasErrors = true;
     }
 
     if (password && confirmPassword && password !== confirmPassword) {
@@ -73,22 +83,21 @@ export default function RegisterPage() {
     setLoading(true);
     try {
       await registerAccount(fullName, email, password);
-      router.push("/login?registered=true");
+      toast.success("Registration link sent! Please check your email inbox and spam folder to verify your account.");
     } catch (err: any) {
-      setError(err.message || "Registration failed");
+      toast.error(err.message || "Registration failed");
     } finally {
       setLoading(false);
     }
   };
 
   const handleGoogleSuccess = async (tokenResponse: any) => {
-    setError("");
     setLoading(true);
     try {
       await registerWithGoogle(tokenResponse.access_token);
-      router.push("/login?registered=true");
+      setShowGoogleSuccess(true);
     } catch (err: any) {
-      setError(err.message || "Google Sign-Up failed");
+      toast.error(err.message || "Google Sign-Up failed");
     } finally {
       setLoading(false);
     }
@@ -96,21 +105,20 @@ export default function RegisterPage() {
 
   const loginWithGoogleAction = useGoogleLogin({
     onSuccess: handleGoogleSuccess,
-    onError: () => setError("Google Authentication failed"),
+    onError: () => toast.error("Google Authentication failed"),
   });
 
   return (
     <AuthCard
       title="Create Account"
       subtitle="Join OctoSight to report phishing incidents"
-      icon={<UserPlus className="h-7 w-7" />}
+      icon={<UserPlus className="h-5 md:h-7 w-5 md:w-7" />}
       iconBgClass="bg-risk-low/10 text-risk-low"
-      error={error}
       footerText="Already have an account?"
       footerLinkText="Sign In"
       footerLinkHref="/login"
     >
-      <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+      <form onSubmit={handleSubmit} className="space-y-4 md:space-y-5" noValidate>
         <AuthInput
           id="register-name"
           label="Full Name"
@@ -124,6 +132,7 @@ export default function RegisterPage() {
           autoComplete="name"
           hasError={!!fieldErrors.fullName}
           errorText={fieldErrors.fullName || undefined}
+          disabled={loading}
         />
 
         <AuthInput
@@ -139,6 +148,7 @@ export default function RegisterPage() {
           autoComplete="email"
           hasError={!!fieldErrors.email}
           errorText={fieldErrors.email || undefined}
+          disabled={loading}
         />
 
         <AuthInput
@@ -154,6 +164,7 @@ export default function RegisterPage() {
           autoComplete="new-password"
           hasError={!!fieldErrors.password}
           errorText={fieldErrors.password || undefined}
+          disabled={loading}
         />
 
         <AuthInput
@@ -169,6 +180,7 @@ export default function RegisterPage() {
           autoComplete="new-password"
           hasError={!!fieldErrors.confirmPassword}
           errorText={fieldErrors.confirmPassword || undefined}
+          disabled={loading}
         />
 
         <Button
@@ -181,18 +193,43 @@ export default function RegisterPage() {
       </form>
 
       {/* Divider */}
-      <div className="relative my-6">
+      <div className="relative my-4 md:my-6">
         <div className="absolute inset-0 flex items-center">
           <div className="w-full border-t border-neutral-border"></div>
         </div>
         <div className="relative flex justify-center text-xs">
-          <span className="bg-neutral-page px-2 text-secondary/60">
+          <span className="bg-neutral-page px-1.5 md:px-2 text-secondary/60">
             Or continue with
           </span>
         </div>
       </div>
 
       <GoogleAuthButton onClick={() => loginWithGoogleAction()} loading={loading} type="register" />
+
+      <SecurityTips />
+
+      {showGoogleSuccess && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 md:p-4">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+          <div className="relative bg-white rounded-2xl md:rounded-3xl shadow-2xl w-full max-w-md p-6 md:p-8 text-center animate-in fade-in zoom-in-95 duration-200">
+            <div className="size-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3 md:mb-4">
+              <CheckCircle2 className="size-8 text-green-600" />
+            </div>
+            <h2 className="text-lg md:text-xl font-bold text-secondary mb-1.5 md:mb-2">
+              Registration Successful!
+            </h2>
+            <p className="text-xs md:text-sm text-secondary/70 mb-4 md:mb-6">
+              Your account has been created and verified. Welcome to OctoSight!
+            </p>
+            <button
+              onClick={() => router.push("/")}
+              className="w-full px-4 md:px-6 py-2 md:py-3 bg-primary text-white font-bold text-xs md:text-sm rounded-lg md:rounded-xl hover:opacity-90 transition-all"
+            >
+              Continue to Home
+            </button>
+          </div>
+        </div>
+      )}
     </AuthCard>
   );
 }

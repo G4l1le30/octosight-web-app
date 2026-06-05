@@ -1,0 +1,20 @@
+<!doctype html>
+<html>
+<head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<style>body{font-family:Inter,sans-serif;background:#f9fafb;margin:0;padding:0}.wrapper{width:100%;background:#f9fafb;padding-bottom:40px}.container{max-width:600px;background:#fff;margin:40px auto;border-radius:12px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,.08);border:1px solid #e5e7eb}.header{background:#fff;padding:40px 40px 20px}.logo-text{color:#e31e24;font-size:24px;font-weight:800;letter-spacing:-.5px}.content{padding:0 40px 40px;color:#374151;line-height:1.6}.title{font-size:22px;font-weight:700;color:#111827;margin-bottom:24px}.message{font-size:16px;color:#4b5563;margin-bottom:24px}.details-box{background:#f3f4f6;padding:24px;border-radius:8px;margin:24px 0;border:1px solid #e5e7eb}.label{font-weight:600;color:#6b7280}.value{color:#111827;font-weight:500}.footer{background:#f3f4f6;padding:32px 40px;border-top:1px solid #e5e7eb}.footer-text{font-size:13px;color:#6b7280;line-height:1.5}</style></head>
+<body><div class="wrapper"><div class="container">
+<div class="header"><div class="logo-text">OCTOSIGHT</div></div>
+<div class="content">
+<h1 class="title">Accuracy Issue Reported</h1>
+<p class="message">A user has reported an accuracy issue with their analysis result.</p>
+<div class="details-box">
+<div><span class="label">Ticket ID:</span> <span class="value">{{ ticket_id }}</span></div>
+<div><span class="label">Reported by:</span> <span class="value">{{ reporter_name }} ({{ reporter_email }})</span></div>
+<div><span class="label">Ticket Info:</span> <span class="value">{{ ticket_info }}</span></div>
+<hr style="border:none;border-top:1px solid #e5e7eb;margin:16px 0" />
+<div style="white-space:pre-wrap"><span class="value">{{ message }}</span></div>
+</div>
+<p class="message">Please review this ticket and take appropriate action.</p>
+</div>
+<div class="footer"><div class="footer-text"><strong>OctoSight Anti-Phishing & Fraud System</strong><br />Protecting your digital banking with AI and real-time analysis.</div></div>
+</div></div></body></html>

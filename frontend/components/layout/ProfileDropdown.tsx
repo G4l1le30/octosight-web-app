@@ -2,7 +2,8 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { AuthUser } from "@/types/auth";
+import { AuthUser, ROLE_BADGE_COLORS } from "@/types/auth";
+import { usePermissions } from "@/hooks/usePermissions";
 
 interface ProfileDropdownProps {
   user: AuthUser;
@@ -15,6 +16,7 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
   logout,
   isAdminRoute,
 }) => {
+  const { can } = usePermissions();
   const [profileOpen, setProfileOpen] = useState(false);
 
   const handleLogout = async () => {
@@ -23,16 +25,19 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
     window.location.href = "/";
   };
 
+  const badgeColor = ROLE_BADGE_COLORS[user.role] ?? "bg-neutral-border text-secondary/60";
+  const roleLabel = user.role.toUpperCase();
+
   return (
     <div className="self-center relative">
       <button
         onClick={() => setProfileOpen(!profileOpen)}
-        className="flex items-center gap-2 px-3 py-1.5 border border-neutral-border rounded-lg hover:border-primary/30 transition-all"
+        className="flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1 md:py-1.5 border border-neutral-border rounded-md md:rounded-lg hover:border-primary/30 transition-all"
       >
-        <div className="w-7 h-7 bg-primary/10 text-primary rounded-full flex items-center justify-center text-xs font-bold">
+        <div className="w-5 md:w-7 h-5 md:h-7 bg-primary/10 text-primary rounded-full flex items-center justify-center text-xs font-bold">
           {user.full_name.charAt(0).toUpperCase()}
         </div>
-        <span className="text-sm font-bold text-secondary max-w-[120px] truncate">
+        <span className="text-xs md:text-sm font-bold text-secondary max-w-[120px] truncate">
           {user.full_name}
         </span>
         <svg
@@ -57,36 +62,32 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
             className="fixed inset-0 z-40"
             onClick={() => setProfileOpen(false)}
           ></div>
-          <div className="absolute right-0 mt-2 w-56 bg-white border border-neutral-border rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-            <div className="px-4 py-3 border-b border-neutral-border bg-neutral-page">
-              <p className="text-sm font-bold text-secondary truncate">
+          <div className="absolute right-0 mt-1.5 md:mt-2 w-44 md:w-56 bg-white border border-neutral-border rounded-lg md:rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+            <div className="px-3 md:px-4 py-2 md:py-3 border-b border-neutral-border bg-neutral-page">
+              <p className="text-xs md:text-sm font-bold text-secondary truncate">
                 {user.full_name}
               </p>
-              <p className="mt-1 text-xs text-secondary/80 truncate">
+              <p className="mt-0.5 md:mt-1 text-xs text-secondary/80 truncate">
                 {user.email}
               </p>
               <span
-                className={`inline-block mt-2 text-[11px] font-bold px-2 py-0.5 rounded ${
-                  user.role === "admin"
-                    ? "bg-primary/10 text-primary"
-                    : "bg-neutral-border text-secondary/60"
-                }`}
+                className={`inline-block mt-2 text-xs font-bold px-2 py-0.5 rounded ${badgeColor}`}
               >
-                {user.role.toUpperCase()}
+                {roleLabel}
               </span>
             </div>
-            {user.role === "admin" && (
+            {can("dashboard.view") && (
               <Link
                 href={isAdminRoute ? "/" : "/admin"}
                 onClick={() => setProfileOpen(false)}
-                className="block px-4 py-2.5 text-sm font-bold text-secondary hover:bg-neutral-page transition-colors"
+                className="block px-3 md:px-4 py-2 md:py-2.5 text-xs md:text-sm font-bold text-secondary hover:bg-neutral-page transition-colors"
               >
                 {isAdminRoute ? "User Page" : "Admin Dashboard"}
               </Link>
             )}
             <button
               onClick={handleLogout}
-              className="w-full text-left px-4 py-2.5 text-sm font-bold text-risk-high hover:bg-risk-high/5 transition-colors"
+              className="w-full text-left px-3 md:px-4 py-2 md:py-2.5 text-xs md:text-sm font-bold text-risk-high hover:bg-risk-high/5 transition-colors"
             >
               Sign Out
             </button>

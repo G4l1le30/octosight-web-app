@@ -2,9 +2,15 @@ import os
 import json
 import re
 import time
-from google import genai
-from google.genai import types
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
+
+# Make google.genai optional so the app can run without Gemini SDK installed.
+try:
+    from google import genai  # type: ignore
+    from google.genai import types  # type: ignore
+except Exception:
+    genai = None
+    types = None
 
 class GeminiClient:
     # Circuit breaker — skip Gemini until this epoch timestamp
@@ -15,6 +21,12 @@ class GeminiClient:
     # Keys exhausted (429) — map key_index -> epoch when it becomes available again
     _key_exhausted_until: Dict[int, float] = {}
 
+    # Model fallback list (tried in order when 503 / overloaded is received)
+    MODEL_FALLBACKS = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash']
+    _current_model_index: int = 0
+    # Models overloaded (503) — map model_index -> epoch when it becomes available again
+    _model_overloaded_until: Dict[int, float] = {}
+
     @staticmethod
     def _get_api_keys() -> List[str]:
         """Return list of API keys from GEMINI_API_KEY (comma-separated for rotation)."""
@@ -22,11 +34,15 @@ class GeminiClient:
         return [k.strip() for k in raw.split(",") if k.strip()]
 
     @staticmethod
-    def get_client() -> Optional[genai.Client]:
+    def get_client() -> Optional[Any]:
         """
         Returns a Gemini client using the next available (non-exhausted) API key.
         Rotates through keys automatically. Returns None if all keys are exhausted.
         """
+        # If genai SDK is not installed, return None so callers fall back.
+        if genai is None:
+            return None
+
         keys = GeminiClient._get_api_keys()
         if not keys:
             return None
@@ -77,6 +93,30 @@ class GeminiClient:
     def is_circuit_open() -> bool:
         """Returns True if the global circuit breaker is active."""
         return time.time() < GeminiClient._circuit_open_until
+
+    @staticmethod
+    def get_model() -> str:
+        """Return current model name, accounting for overloaded models (503)."""
+        now = time.time()
+        num_models = len(GeminiClient.MODEL_FALLBACKS)
+        for attempt in range(num_models):
+            idx = (GeminiClient._current_model_index + attempt) % num_models
+            overloaded_until = GeminiClient._model_overloaded_until.get(idx, 0)
+            if now >= overloaded_until:
+                GeminiClient._current_model_index = idx
+                return GeminiClient.MODEL_FALLBACKS[idx]
+        GeminiClient._model_overloaded_until.clear()
+        GeminiClient._current_model_index = 0
+        print("[Model Rotation] All models overloaded — resetting and retrying from first model.")
+        return GeminiClient.MODEL_FALLBACKS[0]
+
+    @staticmethod
+    def rotate_model_on_overload(retry_delay_seconds: float = 30.0) -> None:
+        """Mark current model as overloaded (503) and advance to next model."""
+        idx = GeminiClient._current_model_index
+        GeminiClient._model_overloaded_until[idx] = time.time() + retry_delay_seconds
+        GeminiClient._current_model_index = (idx + 1) % len(GeminiClient.MODEL_FALLBACKS)
+        print(f"[Model Rotation] {GeminiClient.MODEL_FALLBACKS[idx]} overloaded for {retry_delay_seconds:.0f}s → switching to {GeminiClient.MODEL_FALLBACKS[GeminiClient._current_model_index]}")
 
     @staticmethod
     def extract_retry_delay(exception: Exception) -> float:

@@ -30,6 +30,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       target: dev
+      network: host
       args:
         INTERNAL_API_URL: http://backend:8000
     ports:

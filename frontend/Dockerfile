@@ -36,7 +36,10 @@ WORKDIR /app
 ENV NODE_ENV development
 
 COPY package.json package-lock.json ./
-RUN npm install
+RUN npm config set fetch-retry-mintimeout 20000 && \
+    npm config set fetch-retry-maxtimeout 120000 && \
+    npm config set fetch-retries 5 && \
+    npm ci --prefer-offline 2>/dev/null || npm ci
 
 COPY . .
 

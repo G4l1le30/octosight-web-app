@@ -1,6 +1,6 @@
 const stats = [
-  { value: "10M+", label: "THREATS DETECTED" },
-  { value: "250k", label: "USERS PROTECTED" },
+  { value: "2000+", label: "REPORT SUBMITTED" },
+  { value: "5000+", label: "LINK SCANNED" },
   { value: "99.9%", label: "DETECTION ACCURACY" },
   { value: "24/7", label: "REAL-TIME TRIAGE" },
 ];

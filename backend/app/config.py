@@ -60,6 +60,10 @@ class Settings(BaseSettings):
     default_admin_email: Optional[str] = None
     default_admin_password: Optional[str] = None
 
+    # Default user
+    default_user_email: Optional[str] = None
+    default_user_password: Optional[str] = None
+
     # Logging
     log_level: str = "INFO"
 

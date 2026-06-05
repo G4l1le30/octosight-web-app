@@ -9,7 +9,7 @@ const marqueeItems = [...stats, ...stats, ...stats, ...stats];
 
 export const SectionStatsRowSubsection = () => {
   return (
-    <section className="w-full bg-white border-t border-gray-100 py-12 overflow-hidden">
+    <section className="w-full bg-white border-t border-gray-100 py-8 md:py-12 overflow-hidden">
       <style>{`
         @keyframes marquee-slide {
           from { transform: translateX(0); }
@@ -36,11 +36,11 @@ export const SectionStatsRowSubsection = () => {
       <div className="marquee-track">
         {marqueeItems.map((stat, index) => (
           <div key={index} className="flex items-center shrink-0">
-            <div className="flex flex-col items-center gap-1 text-center px-14">
-              <p className="whitespace-nowrap text-4xl leading-10 tracking-[0] text-gray-900 font-bold">
+            <div className="flex flex-col items-center gap-0.5 md:gap-1 text-center px-10 md:px-14">
+              <p className="whitespace-nowrap text-3xl md:text-4xl leading-10 tracking-[0] text-gray-900 font-bold">
                 {stat.value}
               </p>
-              <p className="whitespace-nowrap text-[10px] leading-[15px] tracking-[1.20px] text-gray-400 font-bold">
+              <p className="whitespace-nowrap text-[9px] md:text-[10px] leading-[15px] tracking-[1.20px] text-gray-400 font-bold">
                 {stat.label}
               </p>
             </div>

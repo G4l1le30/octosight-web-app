@@ -36,48 +36,48 @@ const ecosystemCapabilities: Capability[] = [
 
 export const EcosystemSectionSubsection = () => {
   return (
-    <section className="w-full bg-white px-0 py-24">
-      <div className="mx-auto flex w-full max-w-screen-xl flex-col items-start gap-16 px-8 py-0">
+    <section className="w-full bg-white px-0 py-18 md:py-24">
+      <div className="mx-auto flex w-full max-w-screen-xl flex-col items-start gap-12 md:gap-16 px-6 md:px-8 py-0">
 
-        <header className="flex w-full flex-col items-center gap-2">
-          <p className="flex w-fit items-center justify-center text-center text-[10px] font-bold uppercase leading-[15px] tracking-[2px] text-[#e11d2e] whitespace-nowrap">
+        <header className="flex w-full flex-col items-center gap-1.5 md:gap-2">
+          <p className="flex w-fit items-center justify-center text-center text-xs font-bold uppercase leading-[15px] tracking-wide text-[#e11d2e] whitespace-nowrap">
             OUR CAPABILITIES
           </p>
-          <h2 className="flex w-fit items-center justify-center text-center text-3xl font-bold leading-9 tracking-[0] text-gray-900 whitespace-nowrap">
+          <h2 className="flex w-fit items-center justify-center text-center text-2xl md:text-3xl font-bold leading-8 md:leading-9 tracking-[0] text-gray-900 whitespace-nowrap">
             The OctoSight Ecosystem
           </h2>
           <div className="h-1 w-16 rounded-full bg-[#e11d2e]" aria-hidden="true" />
         </header>
 
-        <div className="grid h-fit w-full grid-cols-1 gap-8 md:grid-cols-2 xl:grid-cols-4">
+        <div className="grid h-fit w-full grid-cols-1 gap-6 md:gap-8 md:grid-cols-2 xl:grid-cols-4">
           {ecosystemCapabilities.map((cap) => {
             const Icon = cap.icon;
             return (
               <FlipCard
                 key={cap.title}
-                className="h-[240px] w-full"
+                className="h-[180px] md:h-[240px] w-full"
                 direction="horizontal"
                 trigger="hover"
                 duration={0.5}
                 perspective={1200}
               >
-                <FlipCardFront className="flex flex-col items-center justify-center gap-6 border border-gray-100 bg-white p-8">
-                  <span className="flex h-24 w-24 items-center justify-center rounded-full bg-[#e11d2e] shadow-[0_0_0_8px_rgba(225,29,46,0.08)]">
-                    <Icon className="h-10 w-10 text-white" strokeWidth={1.5} />
+                <FlipCardFront className="flex flex-col items-center justify-center gap-4 md:gap-6 border-2 border-gray-200/80 bg-white p-6 md:p-8">
+                  <span className="flex h-[72px] w-[72px] md:h-24 md:w-24 items-center justify-center rounded-full bg-[#e11d2e] shadow-[0_0_0_6px_rgba(225,29,46,0.08)] md:shadow-[0_0_0_8px_rgba(225,29,46,0.08)]">
+                    <Icon className="h-8 w-8 md:h-10 md:w-10 text-white" strokeWidth={1.5} />
                   </span>
-                  <h3 className="text-center text-lg font-bold leading-7 tracking-[0] text-gray-900">
+                  <h3 className="text-center text-base md:text-lg font-bold leading-6 md:leading-7 tracking-[0] text-gray-900">
                     {cap.title}
                   </h3>
                 </FlipCardFront>
 
-                <FlipCardBack className="flex flex-col items-start justify-center gap-4 border border-[#e11d2e]/20 bg-white p-8">
-                  <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-[#e11d2e]">
-                    <Icon className="h-5 w-5 text-white" />
+                <FlipCardBack className="flex flex-col items-start justify-center gap-3 md:gap-4 border-2 border-gray-200/80 bg-white p-6 md:p-8">
+                  <span className="inline-flex h-8 w-8 md:h-11 md:w-11 items-center justify-center rounded-xl bg-[#e11d2e]">
+                    <Icon className="h-4 w-4 md:h-5 md:w-5 text-white" />
                   </span>
-                  <h3 className="text-lg font-bold leading-7 tracking-[0] text-gray-900">
+                  <h3 className="text-base md:text-lg font-bold leading-6 md:leading-7 tracking-[0] text-gray-900">
                     {cap.title}
                   </h3>
-                  <p className="text-sm font-normal leading-[22px] tracking-[0] text-gray-500">
+                  <p className="text-xs md:text-sm font-normal leading-[18px] md:leading-[22px] tracking-[0] text-gray-500">
                     {cap.description}
                   </p>
                 </FlipCardBack>

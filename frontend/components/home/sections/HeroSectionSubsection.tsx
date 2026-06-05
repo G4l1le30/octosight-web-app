@@ -1,5 +1,6 @@
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -65,10 +66,13 @@ export const HeroSectionSubsection = () => {
           <div className="relative w-full max-w-[584px]">
             <Card className="flex w-full rotate-3 flex-col items-start rounded-3xl border-0 bg-gray-900 p-2 md:p-3 shadow-[0px_25px_50px_-12px_#00000060]">
               <CardContent className="relative w-full overflow-hidden rounded-2xl p-0">
-                <img
+                <Image
                   src="/hero-phishing.png"
                   alt="Waspada penipuan email phishing CIMB Niaga"
+                  width={584}
+                  height={480}
                   className="h-[300px] w-full object-cover object-center md:h-[400px] lg:h-[480px]"
+                  priority
                 />
               </CardContent>
             </Card>

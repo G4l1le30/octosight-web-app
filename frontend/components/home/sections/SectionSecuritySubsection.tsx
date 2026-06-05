@@ -14,16 +14,16 @@ export const SectionSecuritySubsection = () => {
 
   return (
     <section className="w-full bg-gray-50 px-0 py-18 md:py-24">
-      <div className="mx-auto flex w-full max-w-screen-xl flex-col items-start gap-12 md:gap-16 px-6 md:px-8 py-0">
+      <div className="mx-auto grid h-fit w-full max-w-6xl grid-cols-1 gap-8 md:gap-12 lg:grid-cols-2 lg:items-center">
 
         <header className="flex w-full flex-col items-center gap-1.5 md:gap-2">
-          <p className="flex w-fit items-center justify-center whitespace-nowrap text-center text-xs font-bold leading-[15px] tracking-wide text-[#e11d2e]">
+          <p className="flex w-fit items-center justify-center whitespace-nowrap text-base md:text-lg font-bold leading-[20px] tracking-wide text-primary">
             ADVANCED PROTECTION
           </p>
-          <h2 className="flex w-fit items-center justify-center whitespace-nowrap text-center text-2xl md:text-3xl font-bold leading-8 md:leading-9 tracking-[0] text-gray-900">
+          <h2 className="flex w-fit items-center justify-center whitespace-nowrap text-center text-3xl md:text-4xl font-bold leading-9 md:leading-10 tracking-[0] text-gray-900">
             Comprehensive Security Features
           </h2>
-          <div className="h-1 w-16 rounded-full bg-[#e11d2e]" />
+          <div className="h-1 w-16 rounded-full bg-primary" />
         </header>
 
         <div className="flex w-full flex-col gap-4 md:gap-5">
@@ -44,14 +44,14 @@ export const SectionSecuritySubsection = () => {
                   <h3 className="flex w-fit items-center whitespace-nowrap text-xl md:text-2xl font-bold leading-7 md:leading-8 tracking-[0] text-white">
                     AI-Powered Analysis
                   </h3>
-                  <p className="w-fit max-w-md text-xs md:text-sm font-normal leading-4 md:leading-5 tracking-[0] text-gray-300">
+                  <p className="w-fit max-w-md text-sm md:text-base font-normal leading-5 md:leading-6 tracking-[0] text-gray-300">
                     Utilizing advanced machine learning models to identify complex
                     phishing patterns in real-time.
                   </p>
                   <div className="grid w-full grid-rows-[0fr] transition-all duration-300 ease-out group-hover:grid-rows-[1fr] group-hover:pt-3">
                     <div className="overflow-hidden">
                       <Link href="/report" className="block w-full">
-                        <Button className="h-auto w-full rounded-xl bg-white px-0 py-2.5 md:py-3 text-sm md:text-base font-bold leading-6 tracking-[0] text-[#e11d2e] hover:bg-white/90">
+                        <Button className="h-auto w-full rounded-xl bg-white px-0 py-2.5 md:py-3 text-sm md:text-base font-bold leading-6 tracking-[0] text-primary hover:bg-white/90">
                           Report Incident
                         </Button>
                       </Link>
@@ -66,12 +66,12 @@ export const SectionSecuritySubsection = () => {
               <Card className="flex-1 rounded-3xl border border-solid border-gray-100 bg-white shadow-none">
                 <CardContent className="flex h-full flex-col items-start gap-2.5 md:gap-3 p-6 md:p-8">
                   <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-red-50">
-                    <Signal className="h-4 w-4 text-[#e11d2e]" />
+                    <Signal className="h-5 w-5 text-primary" />
                   </span>
                   <h3 className="text-lg md:text-xl font-bold leading-6 md:leading-7 tracking-[0] text-gray-900">
                     Official Reporting
                   </h3>
-                  <p className="text-xs md:text-sm font-normal leading-4 md:leading-5 tracking-[0] text-gray-500">
+                  <p className="text-sm md:text-base font-normal leading-5 md:leading-6 tracking-[0] text-gray-500">
                     Seamlessly submit threats directly to banking authorities.
                   </p>
                 </CardContent>
@@ -80,12 +80,12 @@ export const SectionSecuritySubsection = () => {
               <Card className="flex-1 rounded-3xl border border-solid border-gray-100 bg-white shadow-none">
                 <CardContent className="flex h-full flex-col items-start gap-2.5 md:gap-3 p-6 md:p-8">
                   <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-red-50">
-                    <BarChart2 className="h-4 w-4 text-[#e11d2e]" />
+                    <BarChart2 className="h-4 w-4 text-primary" />
                   </span>
                   <h3 className="text-lg md:text-xl font-bold leading-6 md:leading-7 tracking-[0] text-gray-900">
                     Admin Triage Tools
                   </h3>
-                  <p className="text-xs md:text-sm font-normal leading-4 md:leading-5 tracking-[0] text-gray-500">
+                  <p className="text-sm md:text-base font-normal leading-5 md:leading-6 tracking-[0] text-gray-500">
                     Investigation dashboard for in-depth security analysis.
                   </p>
                 </CardContent>
@@ -116,7 +116,7 @@ export const SectionSecuritySubsection = () => {
                   <div className="grid w-full grid-rows-[0fr] transition-all duration-300 ease-out group-hover:grid-rows-[1fr] group-hover:pt-3">
                     <div className="overflow-hidden">
                       <Link href={user ? "/status" : "/login"} className="block w-full">
-                        <Button className="h-auto w-full rounded-xl bg-white px-0 py-2.5 md:py-3 text-sm md:text-base font-bold leading-6 tracking-[0] text-[#e11d2e] hover:bg-white/90">
+                        <Button className="h-auto w-full rounded-xl bg-white px-0 py-2.5 md:py-3 text-sm md:text-base font-bold leading-6 tracking-[0] text-primary hover:bg-white/90">
                           Check Status
                         </Button>
                       </Link>
@@ -147,7 +147,7 @@ export const SectionSecuritySubsection = () => {
                   <div className="grid w-full grid-rows-[0fr] transition-all duration-300 ease-out group-hover:grid-rows-[1fr] group-hover:pt-3">
                     <div className="overflow-hidden">
                       <Link href="/edu" className="block w-full">
-                        <Button className="h-auto w-full rounded-xl bg-white px-0 py-2.5 md:py-3 text-sm md:text-base font-bold leading-6 tracking-[0] text-[#e11d2e] hover:bg-white/90">
+                        <Button className="h-auto w-full rounded-xl bg-white px-0 py-2.5 md:py-3 text-sm md:text-base font-bold leading-6 tracking-[0] text-primary hover:bg-white/90">
                           Start Learning
                         </Button>
                       </Link>
@@ -160,7 +160,7 @@ export const SectionSecuritySubsection = () => {
             <Card className="h-[225px] md:h-[300px] w-full rounded-3xl border border-solid border-gray-100 bg-white shadow-none lg:flex-1">
               <CardContent className="flex h-full w-full flex-col items-start justify-start gap-2.5 md:gap-3 p-6 md:p-8">
                 <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-red-50">
-                  <FileSearch className="h-4 w-4 text-[#e11d2e]" />
+                    <FileSearch className="h-4 w-4 text-primary" />
                 </span>
                 <h3 className="text-lg md:text-xl font-bold leading-6 md:leading-7 tracking-[0] text-gray-900">
                   Evidence Management

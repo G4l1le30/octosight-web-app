@@ -86,11 +86,11 @@ export const HeroSectionSubsection = () => {
                   </span>
                 </span>
                 <div className="inline-flex flex-col items-start">
-                  <p className="flex w-fit items-center whitespace-nowrap text-[9px] md:text-[10px] leading-[15px] font-bold tracking-[1.00px] text-gray-400">
+                  <p className="flex w-fit items-center whitespace-nowrap text-[9px] md:text-[10px] leading-[15px] font-bold tracking-wide text-gray-400">
                     Welcome to
                   </p>
                   <p className="flex w-fit items-center whitespace-nowrap text-sm md:text-base leading-6 font-bold tracking-[0] text-gray-900">
-                    OctoSight
+                    OCTOSIGHT
                   </p>
                 </div>
               </CardContent>

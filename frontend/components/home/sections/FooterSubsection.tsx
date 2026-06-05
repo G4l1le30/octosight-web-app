@@ -19,7 +19,7 @@ const footerSections = [
 export const FooterSubsection = () => {
   return (
     <footer className="w-full bg-[#e11d2e] pt-20 pb-10">
-      <div className="mx-auto flex w-full max-w-screen-xl flex-col gap-10 px-8">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-8">
         <Card className="border-0 bg-transparent shadow-none">
           <CardContent className="grid h-fit grid-cols-1 gap-12 border-b border-[#ffffff33] px-0 pt-0 pb-16 md:grid-cols-10">
             <section className="col-span-1 flex h-fit w-full flex-col items-start gap-[23.3px] md:col-span-4">

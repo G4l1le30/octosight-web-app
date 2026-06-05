@@ -10,7 +10,7 @@ const navItems = [
 
 export const NavigationSubsection = () => {
   return (
-    <header className="w-full border-b border-gray-100 bg-[#ffffffe6] px-8 py-0 backdrop-blur-[6px] backdrop-brightness-[100%] [-webkit-backdrop-filter:blur(6px)_brightness(100%)]">
+    <header className="w-full border-b border-gray-100 bg-[#ffffffe6] mx-auto max-w-6xl px-8 py-0 backdrop-blur-[6px] backdrop-brightness-[100%]">
       <nav
         aria-label="Primary"
         className="flex h-20 w-full items-center justify-between"
@@ -32,11 +32,10 @@ export const NavigationSubsection = () => {
             >
               <button
                 type="button"
-                className={`relative mt-[-1.00px] flex w-fit items-center whitespace-nowrap text-base tracking-[0] transition-colors ${
-                  item.active
+                className={`relative mt-[-1.00px] flex w-fit items-center whitespace-nowrap text-base tracking-[0] transition-colors ${item.active
                     ? "font-semibold text-[#e11d2e] border-b-2 border-[#e11d2e] pb-0.5"
                     : "font-normal text-gray-600 hover:text-gray-900"
-                }`}
+                  }`}
               >
                 {item.label}
               </button>

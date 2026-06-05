@@ -8,8 +8,6 @@ import { useGoogleLogin } from "@react-oauth/google";
 import { AuthCard } from "@/components/auth/AuthCard";
 import { AuthInput } from "@/components/auth/AuthInput";
 import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
-import { SecurityTips } from "@/components/auth/SecurityTips";
-import { Lock } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
 
@@ -102,7 +100,6 @@ function LoginForm() {
         <AuthCard
           title="Welcome Back"
           subtitle="Sign in to your OctoSight account"
-          icon={<Lock className="h-5 md:h-7 w-5 md:w-7" />}
           success={isRegistered ? "Registration link sent! Please check your email inbox and spam folder to verify your account." : undefined}
           footerText="Don't have an account?"
           footerLinkText="Create Account"

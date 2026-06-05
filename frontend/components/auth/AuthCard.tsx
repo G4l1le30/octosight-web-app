@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 interface AuthCardProps {
   title: string;
   subtitle: string;
-  icon: React.ReactNode;
+  icon?: React.ReactNode;
   iconBgClass?: string;
   success?: string;
   children: React.ReactNode;
@@ -19,7 +19,6 @@ interface AuthCardProps {
 export function AuthCard({
   title,
   subtitle,
-  icon,
   iconBgClass = "bg-primary/10 text-primary",
   success,
   children,
@@ -28,21 +27,18 @@ export function AuthCard({
   footerLinkHref,
 }: AuthCardProps) {
   return (
-    <div className="min-h-[calc(100vh-8rem)] flex items-center justify-center px-4 py-8 md:py-12 animate-in fade-in zoom-in duration-300">
+    <div className="min-h-screen flex items-center justify-center px-4 py-6 md:py-8 animate-in fade-in zoom-in duration-300">
       <div className="max-w-lg w-full">
-        <div className="p-6 md:p-10">
+        <div className="p-4 md:p-6">
           {/* Header */}
           <div className="text-left mb-6 md:mb-8">
-            {icon && (
-              <div
-                className={cn(
-                  "w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex items-center justify-center mb-3 md:mb-4",
-                  iconBgClass
-                )}
-              >
-                {icon}
-              </div>
-            )}
+            <div
+              className={cn(
+                "w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex items-center justify-center mb-3 md:mb-4",
+                iconBgClass
+              )}
+            >
+            </div>
             <h1 className="text-2xl md:text-3xl font-bold text-secondary mb-2">{title}</h1>
             <p className="text-secondary-light text-xs md:text-sm">{subtitle}</p>
           </div>

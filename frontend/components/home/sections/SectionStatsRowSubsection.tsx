@@ -1,8 +1,8 @@
 const stats = [
-  { value: "2000+", label: "REPORT SUBMITTED" },
-  { value: "5000+", label: "LINK SCANNED" },
-  { value: "99.9%", label: "DETECTION ACCURACY" },
-  { value: "24/7", label: "REAL-TIME TRIAGE" },
+  { value: "1,200+", label: "INCIDENTS TRACKED" },
+  { value: "85-90%", label: "DETECTION ACCURACY" },
+  { value: "< 1 Hr", label: "RESPONSE SLA" },
+  { value: "24/7", label: "ACTIVE MONITORING" },
 ];
 
 const marqueeItems = [...stats, ...stats, ...stats, ...stats];
@@ -10,6 +10,7 @@ const marqueeItems = [...stats, ...stats, ...stats, ...stats];
 export const SectionStatsRowSubsection = () => {
   return (
     <section className="w-full bg-white border-t border-gray-100 py-8 md:py-12 overflow-hidden">
+      <div className="mx-auto flex w-full max-w-6xl">
       <style>{`
         @keyframes marquee-slide {
           from { transform: translateX(0); }
@@ -45,13 +46,13 @@ export const SectionStatsRowSubsection = () => {
               </p>
             </div>
             <span
-              className="blink-dot shrink-0 h-1.5 w-1.5 rounded-full bg-[#e11d2e]"
+              className="blink-dot shrink-0 h-1.5 w-1.5 rounded-full bg-primary"
               style={{ animationDelay: `${(index % 4) * 0.35}s` }}
             />
           </div>
         ))}
       </div>
-    </section>
+    </div></section>
   );
 };
 

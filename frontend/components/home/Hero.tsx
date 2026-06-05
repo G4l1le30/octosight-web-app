@@ -35,7 +35,7 @@ const Hero: React.FC = () => {
           </span>
         </h1>
 
-        <p className="text-lg md:text-xl text-secondary/80 mb-12 md:mb-16 max-w-3xl mx-auto font-medium leading-relaxed animate-in fade-in slide-in-from-bottom-6 duration-700 delay-300">
+        <p className="text-lg md:text-xl text-secondary mb-12 md:mb-16 max-w-3xl mx-auto font-medium leading-relaxed animate-in fade-in slide-in-from-bottom-6 duration-700 delay-300">
           OctoSight combines human intelligence with machine learning to
           identify and mitigate phishing threats in real-time. Secure your
           digital banking experience.

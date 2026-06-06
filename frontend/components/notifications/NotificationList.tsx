@@ -61,7 +61,7 @@ const NOTIFICATION_COLORS: Record<string, { bg: string; icon: string }> = {
   sla_breach: { bg: "bg-risk-high/10", icon: "text-risk-high" },
   rule_created: { bg: "bg-teal-50", icon: "text-teal-600" },
   rule_updated: { bg: "bg-cyan-50", icon: "text-cyan-600" },
-  rule_deactivated: { bg: "bg-gray-100", icon: "text-gray-500" },
+  rule_deactivated: { bg: "bg-gray-100", icon: "text-secondary" },
 };
 
 const ICON_MAP: Record<string, React.ElementType> = {

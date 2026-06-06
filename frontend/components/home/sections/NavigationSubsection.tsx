@@ -34,7 +34,7 @@ export const NavigationSubsection = () => {
                 type="button"
                 className={`relative mt-[-1.00px] flex w-fit items-center whitespace-nowrap text-base tracking-[0] transition-colors ${item.active
                     ? "font-semibold text-[#e11d2e] border-b-2 border-[#e11d2e] pb-0.5"
-                    : "font-normal text-gray-600 hover:text-gray-900"
+                    : "font-normal text-secondary hover:text-secondary"
                   }`}
               >
                 {item.label}

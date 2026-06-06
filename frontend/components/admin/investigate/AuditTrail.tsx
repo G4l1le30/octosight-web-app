@@ -45,7 +45,7 @@ function getStatusBadgeStyle(status: string) {
   if (s.includes("confirmed")) return "bg-red-50 text-red-600 border-red-200";
   if (s.includes("mitigated"))
     return "bg-cyan-50 text-cyan-600 border-cyan-200";
-  if (s.includes("closed")) return "bg-gray-100 text-gray-600 border-gray-300";
+  if (s.includes("closed")) return "bg-gray-100 text-secondary border-gray-300";
   if (s.includes("false positive"))
     return "bg-green-50 text-green-600 border-green-200";
   if (s.includes("submitted"))

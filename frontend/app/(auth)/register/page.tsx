@@ -8,8 +8,7 @@ import { useGoogleLogin } from "@react-oauth/google";
 import { AuthCard } from "@/components/auth/AuthCard";
 import { AuthInput } from "@/components/auth/AuthInput";
 import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
-import { SecurityTips } from "@/components/auth/SecurityTips";
-import { UserPlus, CheckCircle2 } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 
 import Image from "next/image";
@@ -125,8 +124,6 @@ export default function RegisterPage() {
         <AuthCard
           title="Create Account"
           subtitle="Join OctoSight to report phishing incidents"
-          icon={<UserPlus className="h-5 md:h-7 w-5 md:w-7" />}
-          iconBgClass="bg-risk-low/10 text-risk-low"
           footerText="Already have an account?"
           footerLinkText="Sign In"
           footerLinkHref="/login"
@@ -218,8 +215,6 @@ export default function RegisterPage() {
           </div>
 
           <GoogleAuthButton onClick={() => loginWithGoogleAction()} loading={loading} type="register" />
-
-          <SecurityTips />
 
           {showGoogleSuccess && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-3 md:p-4">

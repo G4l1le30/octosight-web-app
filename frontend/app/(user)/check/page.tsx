@@ -86,7 +86,7 @@ export default function FraudCheckPage() {
   return (
     <div className="container mx-auto px-3 md:px-4 py-8 md:py-12 max-w-6xl">
       <div className="text-center mb-8 md:mb-10">
-        <h1 className="text-3xl md:text-4xl font-bold text-secondary mb-3 md:mb-4 flex items-center justify-center gap-2 md:gap-3">
+        <h1 className="text-3xl md:text-4xl font-black mb-3 md:mb-4 flex items-center justify-center gap-2 md:gap-3 bg-gradient-to-r from-primary via-primary-dark to-primary-light bg-clip-text text-transparent">
           Fraud & Transaction Check
         </h1>
         <p className="text-secondary/70 text-md max-w-2xl mx-auto">

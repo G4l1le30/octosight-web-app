@@ -87,7 +87,7 @@ export default function StatusPage() {
   return (
     <div className="container mx-auto px-3 md:px-4 py-8 md:py-12 max-w-6xl">
       <div className="mb-8 md:mb-12 text-center">
-        <h1 className="text-3xl md:text-4xl font-bold mb-3 md:mb-4 text-secondary">Track Your Reports</h1>
+        <h1 className="text-3xl md:text-4xl font-black mb-3 md:mb-4 bg-gradient-to-r from-primary via-primary-dark to-primary-light bg-clip-text text-transparent">Track Your Reports</h1>
         <p className="text-secondary opacity-70 font-medium max-w-xl mx-auto">
           Enter a Ticket ID manually or select from your recent submission history below.
         </p>

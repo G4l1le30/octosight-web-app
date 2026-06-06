@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import React, { useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { usePathname } from "next/navigation";
@@ -29,6 +30,13 @@ const Navbar: React.FC = () => {
     <header className="sticky top-0 z-50 bg-white border-b border-neutral-border shadow-sm">
       <div className="container mx-auto px-2 sm:px-3 lg:px-6 h-10 sm:h-12 lg:h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-1 sm:gap-1.5 lg:gap-2">
+          <Image
+            src="/icon.png"
+            alt="OctoSight"
+            width={28}
+            height={28}
+            className="h-5 w-5 sm:h-6 sm:w-6 lg:h-7 lg:w-7"
+          />
           <span className="text-primary text-base sm:text-lg lg:text-2xl font-black tracking-wide">
             OCTOSIGHT
           </span>

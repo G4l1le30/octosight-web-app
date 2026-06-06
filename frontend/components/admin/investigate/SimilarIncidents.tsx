@@ -94,7 +94,7 @@ export const SimilarIncidents: React.FC<SimilarIncidentsProps> = ({
                 {t.summary || "No summary"}
               </p>
               <div className="flex items-center justify-between">
-                <span className="text-xs px-1 md:px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded font-medium">
+                <span className="text-xs px-1 md:px-1.5 py-0.5 bg-gray-100 text-secondary rounded font-medium">
                   {t.type || <span className="text-secondary/60">None</span>}
                 </span>
                 <span

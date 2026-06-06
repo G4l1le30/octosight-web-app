@@ -37,7 +37,7 @@ export const StatusHeader: React.FC<StatusHeaderProps> = ({ result }) => {
                       : (result.status || "").toLowerCase() === "mitigated"
                         ? "bg-cyan-50 text-cyan-700 border-cyan-200"
                         : (result.status || "").toLowerCase() === "closed"
-                          ? "bg-gray-100 text-gray-700 border-gray-200"
+                          ? "bg-gray-100 text-secondary border-gray-200"
                           : "bg-neutral-page text-secondary border-neutral-border"
             }`}
           >

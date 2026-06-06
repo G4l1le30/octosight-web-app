@@ -336,7 +336,7 @@ export default function ReportPage() {
       )}
 
       <div className="mb-8 md:mb-10 text-center">
-        <h1 className="text-3xl md:text-4xl font-bold text-secondary mb-2 md:mb-3 flex items-center justify-center gap-2 md:gap-3 tracking-tight">
+        <h1 className="text-3xl md:text-4xl font-black mb-2 md:mb-3 flex items-center justify-center gap-2 md:gap-3 tracking-tight bg-gradient-to-r from-primary via-primary-dark to-primary-light bg-clip-text text-transparent">
           Report Phishing Incident
         </h1>
         <p className="text-secondary opacity-70 font-medium">

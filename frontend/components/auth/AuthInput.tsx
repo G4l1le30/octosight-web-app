@@ -32,13 +32,11 @@ export function AuthInput({
         <input
           id={id}
           type={inputType}
-          className={`w-full p-3 bg-neutral-page border rounded-lg outline-none transition-all text-sm ${
-            isPassword ? "pr-12" : ""
-          } ${
-            hasError || errorText
+          className={`w-full p-3 bg-neutral-page border rounded-lg outline-none transition-all text-sm ${isPassword ? "pr-12" : ""
+            } ${hasError || errorText
               ? "border-risk-high focus:border-risk-high"
               : "border-neutral-border focus:border-primary"
-          } ${className || ""}`}
+            } ${className || ""}`}
           {...props}
         />
         {isPassword && (

@@ -46,9 +46,9 @@ export function ReportHistory({
       case "mitigated":
         return "bg-cyan-50 text-cyan-700 border-cyan-200";
       case "closed":
-        return "bg-gray-100 text-gray-600 border-gray-200";
+        return "bg-gray-100 text-secondary border-gray-200";
       default:
-        return "bg-gray-50 text-gray-600 border-gray-100";
+        return "bg-gray-50 text-secondary border-gray-100";
     }
   };
 

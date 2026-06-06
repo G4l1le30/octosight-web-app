@@ -480,7 +480,7 @@ export const ReportConfirmation = ({
             </Button>
             <Button
               size="lg"
-              className="w-full text-base md:text-lg"
+              className="w-full text-base md:text-lg bg-gradient-to-r from-primary via-primary-dark to-primary-light border-none"
               onClick={onSubmit}
               loading={isSubmitting}
               disabled={isScanning}

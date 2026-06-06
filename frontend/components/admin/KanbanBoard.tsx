@@ -75,7 +75,7 @@ function PriorityLabel({ priority }: { priority: string }) {
     <span
       className={cn(
         "text-xs font-bold px-1.5 md:px-2 py-0.5 md:py-1 rounded-full border",
-        colors[priority] || "bg-gray-100 text-gray-600 border-gray-200",
+        colors[priority] || "bg-gray-100 text-secondary border-gray-200",
       )}
     >
       {priority}
@@ -94,7 +94,7 @@ function TypeBadge({ type }: { type: string }) {
     <span
       className={cn(
         "text-xs font-semibold px-1.5 md:px-2 py-0.5 md:py-1 rounded-full",
-        colors[type] || "bg-gray-100 text-gray-600",
+        colors[type] || "bg-gray-100 text-secondary",
       )}
     >
       {type}

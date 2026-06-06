@@ -2,6 +2,7 @@ services:
   # Caddy Reverse Proxy (SSL termination)
   caddy:
     image: caddy:2-alpine
+    platform: linux/amd64
     ports:
       - "80:80"
       - "443:443"
@@ -13,7 +14,9 @@ services:
       - frontend
       - backend
     networks:
-      - octo-network
+      octo-network:
+        aliases:
+          - frontend
     restart: unless-stopped
     deploy:
       resources:
@@ -33,6 +36,7 @@ services:
       network: host
       args:
         INTERNAL_API_URL: http://backend:8000
+    image: octosight-web-app-frontend
     ports:
       - "3000:3000"
     environment:
@@ -69,6 +73,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    image: octosight-web-app-backend
     ports:
       - "8000:8000"
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --log-level debug
@@ -140,6 +145,7 @@ services:
   # Redis Cache
   redis:
     image: redis:7-alpine
+    platform: linux/amd64
     ports:
       - "6379:6379"
     networks:
@@ -157,9 +163,7 @@ services:
 
   # Celery Worker
   celery_worker:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
+    image: octosight-web-app-backend
     command: celery -A celery_app worker --loglevel=info
     volumes:
       - ./backend:/app
@@ -183,9 +187,7 @@ services:
 
   # Celery Beat
   celery_beat:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
+    image: octosight-web-app-backend
     command: celery -A celery_app beat --loglevel=info
     volumes:
       - ./backend:/app

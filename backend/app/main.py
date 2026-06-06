@@ -19,8 +19,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+from app.config import settings
+
 logging.basicConfig(
-    level=getattr(logging, os.getenv("LOG_LEVEL", "INFO"), logging.INFO),
+    level=getattr(logging, settings.log_level.upper(), logging.INFO),
     format="%(asctime)s [%(levelname)s] %(name)s — %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
     stream=sys.stdout,
@@ -791,6 +793,9 @@ app = FastAPI(
     version="1.2.0",
     lifespan=lifespan,
 )
+
+# Register global error handlers
+register_error_handlers(app)
 
 app.state.limiter = limiter
 

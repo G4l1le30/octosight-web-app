@@ -334,14 +334,14 @@ export default function InvestigatePage({
 
             <div className="flex gap-2 md:gap-3 mb-3 md:mb-4 text-xs md:text-sm">
               <div className="flex-1 bg-gray-50 rounded-md md:rounded-lg p-1.5 md:p-2 text-center">
-                <span className="text-gray-500 block text-xs">ML Score</span>
-                <span className="font-bold text-gray-800">
+                <span className="text-secondary block text-xs">ML Score</span>
+                <span className="font-bold text-secondary">
                   {ticket.ml_score ?? "N/A"}
                 </span>
               </div>
               <div className="flex-1 bg-gray-50 rounded-md md:rounded-lg p-1.5 md:p-2 text-center">
-                <span className="text-gray-500 block text-xs">Rule Score</span>
-                <span className="font-bold text-gray-800">
+                <span className="text-secondary block text-xs">Rule Score</span>
+                <span className="font-bold text-secondary">
                   {ticket.rule_score ?? "N/A"}
                 </span>
               </div>
@@ -353,7 +353,7 @@ export default function InvestigatePage({
                 className={`flex flex-col items-center gap-1 p-3 rounded-lg border-2 text-xs font-medium transition-all ${
                   feedbackType === "tp"
                     ? "border-green-500 ring-2 ring-green-200 bg-green-50 text-green-700"
-                    : "border-gray-200 text-gray-600 hover:border-green-300 hover:bg-green-50/50"
+                    : "border-gray-200 text-secondary hover:border-green-300 hover:bg-green-50/50"
                 }`}
               >
                 Correct - Phishing
@@ -363,7 +363,7 @@ export default function InvestigatePage({
                 className={`flex flex-col items-center gap-1 p-3 rounded-lg border-2 text-xs font-medium transition-all ${
                   feedbackType === "fp"
                     ? "border-amber-500 ring-2 ring-amber-200 bg-amber-50 text-amber-700"
-                    : "border-gray-200 text-gray-600 hover:border-amber-300 hover:bg-amber-50/50"
+                    : "border-gray-200 text-secondary hover:border-amber-300 hover:bg-amber-50/50"
                 }`}
               >
                 False Alarm
@@ -373,7 +373,7 @@ export default function InvestigatePage({
                 className={`flex flex-col items-center gap-1 p-3 rounded-lg border-2 text-xs font-medium transition-all ${
                   feedbackType === "fn"
                     ? "border-red-500 ring-2 ring-red-200 bg-red-50 text-red-700"
-                    : "border-gray-200 text-gray-600 hover:border-red-300 hover:bg-red-50/50"
+                    : "border-gray-200 text-secondary hover:border-red-300 hover:bg-red-50/50"
                 }`}
               >
                 Missed Phishing
@@ -383,7 +383,7 @@ export default function InvestigatePage({
                 className={`flex flex-col items-center gap-1 p-3 rounded-lg border-2 text-xs font-medium transition-all ${
                   feedbackType === "tn"
                     ? "border-blue-500 ring-2 ring-blue-200 bg-blue-50 text-blue-700"
-                    : "border-gray-200 text-gray-600 hover:border-blue-300 hover:bg-blue-50/50"
+                    : "border-gray-200 text-secondary hover:border-blue-300 hover:bg-blue-50/50"
                 }`}
               >
                 Correct - Safe

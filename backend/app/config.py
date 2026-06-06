@@ -34,6 +34,7 @@ class Settings(BaseSettings):
 
     # Environment
     environment: str = "development"
+    api_base_url: str = "http://localhost:8000"
     api_public_url: str = "http://localhost:8000"
     frontend_url: str = "http://localhost:3000"
 
@@ -72,7 +73,9 @@ class Settings(BaseSettings):
 
     @property
     def allowed_origins_list(self) -> List[str]:
-        return [o.strip() for o in self.allowed_origins.split(",") if o.strip()]
+        origins = [o.strip() for o in self.allowed_origins.split(",") if o.strip()]
+        origins.append(self.frontend_url.rstrip("/"))
+        return origins
 
 
 settings = Settings()

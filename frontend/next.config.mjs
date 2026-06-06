@@ -9,6 +9,19 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  env: {
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
+    NEXT_PUBLIC_FRONTEND_URL: process.env.NEXT_PUBLIC_FRONTEND_URL,
+  },
+  async redirects() {
+    return [
+      {
+        source: '/auth',
+        destination: '/login',
+        permanent: false,
+      },
+    ];
+  },
   // Allow the /api/analyze route to receive large image uploads (up to 20 MB)
   experimental: {
     serverActions: {

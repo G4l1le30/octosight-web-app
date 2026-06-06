@@ -79,9 +79,6 @@ export default function EducationPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row items-end justify-between gap-4 md:gap-6 mb-8 md:mb-12">
         <div className="max-w-2xl">
-          <h1 className="text-3xl md:text-4xl font-bold mb-2 md:mb-3">
-            Security Microlearning
-          </h1>
           <p className="text-sm md:text-base text-secondary-light leading-relaxed">
             Improve your digital literacy with bite-sized security modules
             designed to prevent fraud and phishing.
@@ -159,10 +156,10 @@ export default function EducationPage() {
                 return (
                   <div
                     key={mod.id}
-                    className="relative flex flex-col md:flex-row items-center group"
+                    className={`relative flex flex-col ${index % 2 === 0 ? "md:flex-row" : "md:flex-row-reverse"} items-center group`}
                   >
-                    {/* Left Column: Card */}
-                    <div className="w-full md:w-1/2 pr-10 md:pr-12 z-10">
+                    {/* Card Column */}
+                    <div className={`w-full md:w-1/2 z-10 ${index % 2 === 0 ? "pr-10 md:pr-12" : "pl-10 md:pl-12"}`}>
                       <div
                         onClick={
                           isLocked
@@ -310,8 +307,8 @@ export default function EducationPage() {
                       </div>
                     </div>
 
-                    {/* Right Column: Description */}
-                    <div className="w-full md:w-1/2 pl-10 md:pl-12 hidden md:flex flex-col justify-center py-3 md:py-4">
+                    {/* Description Column */}
+                    <div className={`w-full md:w-1/2 hidden md:flex flex-col justify-center py-3 md:py-4 ${index % 2 === 0 ? "pl-10 md:pl-12" : "pr-10 md:pr-12"}`}>
                       <h3
                         className={`text-xl font-bold mb-3 ${isLocked ? "text-secondary/50" : "text-secondary"}`}
                       >

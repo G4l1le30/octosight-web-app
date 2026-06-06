@@ -63,7 +63,7 @@ export const RiskScoreCard = ({
             stroke="currentColor"
             strokeWidth="8"
             fill="transparent"
-            className="text-gray-50"
+            className="text-secondary"
           />
           <circle
             cx="64"
@@ -88,7 +88,7 @@ export const RiskScoreCard = ({
           >
             {score}
           </span>
-          <span className="text-xs md:text-sm font-semibold text-gray-600 mt-0.5 md:mt-1">
+          <span className="text-xs md:text-sm font-semibold text-secondary mt-0.5 md:mt-1">
             / 100
           </span>
         </div>

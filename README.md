@@ -176,12 +176,21 @@ npm install
 npm run dev        # :3000, proxies API to :8000
 ```
 
+### Running in Production
+For production deployment (e.g., Vercel for frontend, and a VPS for backend):
+1. Set `FRONTEND_URL` and `API_BASE_URL` in your backend `.env` to match your real domain (e.g., `https://octosight-web-app.vercel.app`).
+2. Set `NEXT_PUBLIC_FRONTEND_URL` and `NEXT_PUBLIC_API_URL` in the frontend environment variables (or Vercel dashboard).
+3. The Caddy reverse proxy will route `https://octosight-web-app.vercel.app` traffic to the backend, enabling secure cross-origin requests.
+
 ### Environment Variables
 | Variable | Default | Description |
 |---|---|---|
 | `SECRET_KEY` | — | JWT signing key |
 | `DATABASE_URL` | `mysql+pymysql://user:pass@db:3306/octosight_db` | MySQL connection |
-| `NEXT_PUBLIC_API_URL` | `http://localhost:8000` | Backend URL for frontend proxy |
+| `API_BASE_URL` | `http://localhost:8000` | Backend API Base URL |
+| `FRONTEND_URL` | `http://localhost:3000` | Frontend Web App URL |
+| `NEXT_PUBLIC_API_URL` | `http://localhost:8000` | Backend URL for frontend |
+| `NEXT_PUBLIC_FRONTEND_URL` | `http://localhost:3000` | Frontend public URL |
 | `MAIL_USERNAME` / `MAIL_PASSWORD` | — | Gmail SMTP credentials |
 | `GOOGLE_CLIENT_ID` | — | Google OAuth client ID |
 | `GEMINI_API_KEY` | — | Google Gemini AI API key |

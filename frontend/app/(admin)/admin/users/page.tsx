@@ -117,7 +117,7 @@ export default function AdminUsersPage() {
 
   const roleBadge = (role: string) => {
     const color =
-      ROLE_BADGE_COLORS[role as UserRole] ?? "bg-gray-100 text-gray-700";
+      ROLE_BADGE_COLORS[role as UserRole] ?? "bg-gray-100 text-secondary";
     return (
       <span
         className={cn(

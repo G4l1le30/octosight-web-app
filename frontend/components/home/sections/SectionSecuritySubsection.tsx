@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,23 +14,34 @@ export const SectionSecuritySubsection = () => {
   const { user } = useAuth();
 
   return (
-    <section className="w-full bg-gray-50 px-0 py-18 md:py-24">
-      <div className="mx-auto grid h-fit w-full max-w-6xl grid-cols-1 gap-8 md:gap-12 lg:grid-cols-2 lg:items-center">
-
-        <header className="flex w-full flex-col items-center gap-1.5 md:gap-2">
+    <section className="relative w-full bg-gray-50 px-6 md:px-8 py-18 md:py-24 overflow-hidden">
+      <div className="pointer-events-none absolute inset-0 opacity-[0.06]" style={{ backgroundImage: 'linear-gradient(rgba(0,0,0,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.4) 1px, transparent 1px)', backgroundSize: '50px 50px' }} />
+      <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-12 md:gap-16 relative z-10">
+        <motion.header
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.5 }}
+          className="flex w-full flex-col items-center gap-1.5 md:gap-2"
+        >
           <p className="flex w-fit items-center justify-center whitespace-nowrap text-base md:text-lg font-bold leading-[20px] tracking-wide text-primary">
             ADVANCED PROTECTION
           </p>
-          <h2 className="flex w-fit items-center justify-center whitespace-nowrap text-center text-3xl md:text-4xl font-bold leading-9 md:leading-10 tracking-[0] text-gray-900">
+          <h2 className="flex w-fit items-center justify-center whitespace-nowrap text-center text-3xl md:text-4xl font-bold leading-9 md:leading-10 tracking-[0] text-secondary">
             Comprehensive Security Features
           </h2>
           <div className="h-1 w-16 rounded-full bg-primary" />
-        </header>
+        </motion.header>
 
-        <div className="flex w-full flex-col gap-4 md:gap-5">
+        <div className="w-full flex flex-col gap-4 md:gap-5">
 
-          <div className="flex w-full flex-col items-stretch gap-4 md:gap-5 lg:flex-row">
-
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-60px" }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="flex w-full flex-col items-stretch gap-4 md:gap-5 lg:flex-row"
+          >
             <Card
               className="group relative w-full min-h-[255px] md:min-h-[340px] overflow-hidden rounded-3xl border-0 shadow-none lg:flex-[2] cursor-pointer"
               style={{
@@ -44,7 +56,7 @@ export const SectionSecuritySubsection = () => {
                   <h3 className="flex w-fit items-center whitespace-nowrap text-xl md:text-2xl font-bold leading-7 md:leading-8 tracking-[0] text-white">
                     AI-Powered Analysis
                   </h3>
-                  <p className="w-fit max-w-md text-sm md:text-base font-normal leading-5 md:leading-6 tracking-[0] text-gray-300">
+                  <p className="w-fit max-w-md text-sm md:text-base font-normal leading-5 md:leading-6 tracking-[0] text-secondary">
                     Utilizing advanced machine learning models to identify complex
                     phishing patterns in real-time.
                   </p>
@@ -68,10 +80,10 @@ export const SectionSecuritySubsection = () => {
                   <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-red-50">
                     <Signal className="h-5 w-5 text-primary" />
                   </span>
-                  <h3 className="text-lg md:text-xl font-bold leading-6 md:leading-7 tracking-[0] text-gray-900">
+                  <h3 className="text-lg md:text-xl font-bold leading-6 md:leading-7 tracking-[0] text-secondary">
                     Official Reporting
                   </h3>
-                  <p className="text-sm md:text-base font-normal leading-5 md:leading-6 tracking-[0] text-gray-500">
+                  <p className="text-sm md:text-base font-normal leading-5 md:leading-6 tracking-[0] text-secondary">
                     Seamlessly submit threats directly to banking authorities.
                   </p>
                 </CardContent>
@@ -82,20 +94,25 @@ export const SectionSecuritySubsection = () => {
                   <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-red-50">
                     <BarChart2 className="h-4 w-4 text-primary" />
                   </span>
-                  <h3 className="text-lg md:text-xl font-bold leading-6 md:leading-7 tracking-[0] text-gray-900">
+                  <h3 className="text-lg md:text-xl font-bold leading-6 md:leading-7 tracking-[0] text-secondary">
                     Admin Triage Tools
                   </h3>
-                  <p className="text-sm md:text-base font-normal leading-5 md:leading-6 tracking-[0] text-gray-500">
+                  <p className="text-sm md:text-base font-normal leading-5 md:leading-6 tracking-[0] text-secondary">
                     Investigation dashboard for in-depth security analysis.
                   </p>
                 </CardContent>
               </Card>
 
             </div>
-          </div>
+          </motion.div>
 
-          <div className="flex w-full flex-col gap-4 md:gap-5 lg:flex-row">
-
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-60px" }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="flex w-full flex-col gap-4 md:gap-5 lg:flex-row"
+          >
             <Card
               className="group relative h-[225px] md:h-[300px] w-full overflow-hidden rounded-3xl border-0 shadow-none lg:flex-1 cursor-pointer"
               style={{
@@ -110,7 +127,7 @@ export const SectionSecuritySubsection = () => {
                   <h3 className="flex w-fit items-center whitespace-nowrap text-lg md:text-xl font-bold leading-6 md:leading-7 tracking-[0] text-white">
                     Real-time Notifications
                   </h3>
-                  <p className="w-fit text-xs md:text-sm font-normal leading-4 md:leading-5 tracking-[0] text-gray-300">
+                  <p className="w-fit text-xs md:text-sm font-normal leading-4 md:leading-5 tracking-[0] text-secondary">
                     Instant alerts for new threats detected in your ecosystem.
                   </p>
                   <div className="grid w-full grid-rows-[0fr] transition-all duration-300 ease-out group-hover:grid-rows-[1fr] group-hover:pt-3">
@@ -162,29 +179,29 @@ export const SectionSecuritySubsection = () => {
                 <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-red-50">
                     <FileSearch className="h-4 w-4 text-primary" />
                 </span>
-                <h3 className="text-lg md:text-xl font-bold leading-6 md:leading-7 tracking-[0] text-gray-900">
+                <h3 className="text-lg md:text-xl font-bold leading-6 md:leading-7 tracking-[0] text-secondary">
                   Evidence Management
                 </h3>
-                <p className="text-xs md:text-sm font-normal leading-[18px] md:leading-[22px] tracking-[0] text-gray-500">
+                <p className="text-xs md:text-sm font-normal leading-[18px] md:leading-[22px] tracking-[0] text-secondary">
                   Securely upload and store screenshots or transaction logs for
                   triage. Our encrypted vault ensures chain of custody for legal
                   and banking requirements.
                 </p>
-                <div className="inline-flex items-center gap-2 mt-auto">
-                  {evidenceBadges.map((item) => (
-                    <Badge
-                      key={item}
-                      variant="secondary"
-                      className="rounded-md bg-gray-100 px-3 py-1 text-[9px] md:text-[10px] font-bold leading-[15px] tracking-[0] text-gray-500 hover:bg-gray-100"
-                    >
-                      {item}
-                    </Badge>
-                  ))}
-                </div>
+                  <div className="inline-flex items-center gap-2 mt-auto">
+                    {evidenceBadges.map((item) => (
+                      <Badge
+                        key={item}
+                        variant="secondary"
+                        className="rounded-md bg-gray-100 px-3 py-1 text-[9px] md:text-[10px] font-bold leading-[15px] tracking-[0] text-secondary hover:bg-gray-100"
+                      >
+                        {item}
+                      </Badge>
+                    ))}
+                  </div>
               </CardContent>
             </Card>
 
-          </div>
+          </motion.div>
         </div>
 
       </div>

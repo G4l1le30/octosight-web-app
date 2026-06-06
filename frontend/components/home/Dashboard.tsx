@@ -1,3 +1,5 @@
+"use client";
+import { motion, useReducedMotion } from "framer-motion";
 import { EcosystemSectionSubsection } from "./sections/EcosystemSectionSubsection";
 import { HeroSectionSubsection } from "./sections/HeroSectionSubsection";
 import { SectionCtaBannerSubsection } from "./sections/SectionCtaBannerSubsection";
@@ -16,9 +18,7 @@ export const Dashboard = () => {
   return (
     <main className="min-h-screen w-full bg-white">
       {dashboardSections.map(({ id, component: SectionComponent }) => (
-        <section key={id} aria-label={id} className="w-full">
-          <SectionComponent />
-        </section>
+        <SectionComponent key={id} />
       ))}
     </main>
   );

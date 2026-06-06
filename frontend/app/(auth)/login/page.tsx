@@ -9,7 +9,6 @@ import { AuthCard } from "@/components/auth/AuthCard";
 import { AuthInput } from "@/components/auth/AuthInput";
 import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
 import { toast } from "sonner";
-import Link from "next/link";
 
 import Image from "next/image";
 
@@ -138,15 +137,6 @@ function LoginForm() {
               disabled={loading}
             />
 
-            <div className="text-right -mt-3 md:-mt-4">
-              <Link
-                href="/forgot-password"
-                className="text-xs font-bold text-primary hover:underline"
-              >
-                Forgot Password?
-              </Link>
-            </div>
-
             <Button type="submit" loading={loading} className="w-full">
               Sign In
             </Button>
@@ -165,8 +155,6 @@ function LoginForm() {
           </div>
 
           <GoogleAuthButton onClick={() => loginWithGoogleAction()} loading={loading} type="login" />
-
-          <SecurityTips />
         </AuthCard>
       </div>
     </div>

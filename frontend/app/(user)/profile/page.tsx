@@ -5,6 +5,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { AlertTriangle, CheckCircle, Trash2, X } from "lucide-react";
+import { AuthRequired } from "@/components/auth/AuthRequired";
 import PointsCounter from "@/components/gamification/PointsCounter";
 import StreakTracker from "@/components/gamification/StreakTracker";
 import BadgeCard from "@/components/gamification/BadgeCard";
@@ -29,7 +30,7 @@ const ACHIEVEMENT_ORDER: Record<string, number> = {
 };
 
 export default function ProfilePage() {
-  const { user, logout } = useAuth();
+  const { user, loading: authLoading, logout } = useAuth();
   const router = useRouter();
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -45,6 +46,7 @@ export default function ProfilePage() {
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
+    if (!user) return;
     fetch("/api/v1/gamification/my-stats")
       .then((r) => r.json())
       .then((data) => setStats(data))
@@ -53,10 +55,10 @@ export default function ProfilePage() {
 
     fetch("/api/v1/gamification/achievements")
       .then((r) => r.json())
-      .then((data) => setAchievements(data))
+      .then((data) => setAchievements(Array.isArray(data) ? data : []))
       .catch(console.error)
       .finally(() => setAchLoading(false));
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     if (user) {
@@ -64,12 +66,12 @@ export default function ProfilePage() {
     }
   }, [user]);
 
-  const sortedAchievements = achievements
-    .slice()
-    .sort(
-      (a, b) =>
-        (ACHIEVEMENT_ORDER[a.code] ?? 999) - (ACHIEVEMENT_ORDER[b.code] ?? 999),
-    );
+  const sortedAchievements = Array.isArray(achievements)
+    ? achievements.slice().sort(
+        (a, b) =>
+          (ACHIEVEMENT_ORDER[a.code] ?? 999) - (ACHIEVEMENT_ORDER[b.code] ?? 999),
+      )
+    : [];
 
   const [fieldErrors, setFieldErrors] = useState({
     oldPassword: "",
@@ -160,6 +162,19 @@ export default function ProfilePage() {
       setSaving(false);
     }
   };
+
+  if (authLoading) {
+    return (
+      <div className="container mx-auto px-3 md:px-4 py-24 md:py-32 text-center">
+        <div className="size-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-3 md:mb-4" />
+        <p className="text-secondary font-medium">Loading...</p>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <AuthRequired description="Please log in to view your profile and achievements." />;
+  }
 
   if (loading) {
     return (

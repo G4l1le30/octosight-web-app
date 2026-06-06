@@ -169,7 +169,6 @@ const Navbar: React.FC = () => {
               <Link href="/" onClick={() => setMobileOpen(false)} className="py-2 text-sm font-bold text-secondary hover:text-primary">Home</Link>
               <Link href="/report" onClick={() => setMobileOpen(false)} className="py-2 text-sm font-bold text-secondary hover:text-primary">Report Incident</Link>
               <Link href="/check" onClick={() => setMobileOpen(false)} className="py-2 text-sm font-bold text-secondary hover:text-primary">Fraud Check</Link>
-              <Link href="/status" onClick={() => setMobileOpen(false)} className="py-2 text-sm font-bold text-secondary hover:text-primary">Check Status</Link>
               <Link href="/edu" onClick={() => setMobileOpen(false)} className="py-2 text-sm font-bold text-secondary hover:text-primary">E-Learning</Link>
               {user && (
                 <>

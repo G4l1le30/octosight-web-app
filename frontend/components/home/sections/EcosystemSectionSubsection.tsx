@@ -99,7 +99,7 @@ export const EcosystemSectionSubsection = () => {
                   {dotPositions.map((pos, i) => (
                     <span key={i} className={`absolute ${pos} h-1.5 w-1.5 rounded-full bg-primary/30`} />
                   ))}
-                  <span className="flex h-[72px] w-[72px] md:h-24 md:w-24 items-center justify-center rounded-full bg-gradient-to-br from-primary via-primary-dark to-primary-light shadow-[0_0_0_6px_rgba(227,30,36,0.08)] md:shadow-[0_0_0_8px_rgba(227,30,36,0.08)]">
+                  <span className="flex h-[72px] w-[72px] md:h-24 md:w-24 items-center justify-center rounded-xl bg-gradient-to-br from-primary via-primary-dark to-primary-light hover:brightness-110 transition-all duration-200">
                     <Icon className="h-8 w-8 md:h-10 md:w-10 text-white" strokeWidth={1.5} />
                   </span>
                   <h3 className="text-center text-base md:text-lg font-bold leading-6 md:leading-7 tracking-[0] text-secondary">

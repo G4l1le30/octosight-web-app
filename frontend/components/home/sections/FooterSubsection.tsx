@@ -27,7 +27,7 @@ export const FooterSubsection = () => {
                 OCTOSIGHT
               </h2>
               <div className="flex max-w-xs w-80 flex-col items-start">
-                <p className=" text-sm font-normal leading-[22.8px] tracking-[0] text-red-100">
+                <p className=" text-sm font-normal leading-[22.8px] tracking-[0] text-white">
                   Powered by Team CyberSentinel. OctoSight
                   <br />
                   protects the future of digital banking through
@@ -40,11 +40,10 @@ export const FooterSubsection = () => {
               <nav
                 key={section.title}
                 aria-label={section.title}
-                className={`col-span-1 flex h-fit w-full flex-col items-start gap-6 pt-0 px-0 ${
-                  index === 2
+                className={`col-span-1 flex h-fit w-full flex-col items-start gap-6 pt-0 px-0 ${index === 2
                     ? "pb-[52.25px] md:col-span-2"
                     : "pb-[16.25px] md:col-span-2"
-                }`}
+                  }`}
               >
                 <h3 className="self-stretch text-base font-bold leading-6 tracking-[0] text-white">
                   {section.title}
@@ -54,7 +53,7 @@ export const FooterSubsection = () => {
                     <li key={item} className="w-full">
                       <Button
                         variant="ghost"
-                        className="h-auto justify-start p-0 text-left text-sm font-normal leading-5 tracking-[0] text-red-100 hover:bg-transparent hover:text-white"
+                        className="h-auto justify-start p-0 text-left text-sm font-normal leading-5 tracking-[0] text-white hover:bg-transparent hover:text-white"
                       >
                         {item}
                       </Button>

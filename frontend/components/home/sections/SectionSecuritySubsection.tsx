@@ -30,7 +30,7 @@ export const SectionSecuritySubsection = () => {
           <h2 className="flex w-fit items-center justify-center whitespace-nowrap text-center text-3xl md:text-4xl font-bold leading-9 md:leading-10 tracking-[0] text-secondary">
             Comprehensive Security Features
           </h2>
-          <div className="h-1 w-16 rounded-full bg-primary" />
+          <div className="h-1 w-16 md:w-24 mt-1 rounded-full bg-primary" />
         </motion.header>
 
         <div className="w-full flex flex-col gap-4 md:gap-5">
@@ -56,7 +56,7 @@ export const SectionSecuritySubsection = () => {
                   <h3 className="flex w-fit items-center whitespace-nowrap text-xl md:text-2xl font-bold leading-7 md:leading-8 tracking-[0] text-white">
                     AI-Powered Analysis
                   </h3>
-                  <p className="w-fit max-w-md text-sm md:text-base font-normal leading-5 md:leading-6 tracking-[0] text-secondary">
+                  <p className="w-fit max-w-md text-sm md:text-base font-normal leading-5 md:leading-6 tracking-[0] text-white">
                     Utilizing advanced machine learning models to identify complex
                     phishing patterns in real-time.
                   </p>
@@ -127,7 +127,7 @@ export const SectionSecuritySubsection = () => {
                   <h3 className="flex w-fit items-center whitespace-nowrap text-lg md:text-xl font-bold leading-6 md:leading-7 tracking-[0] text-white">
                     Real-time Notifications
                   </h3>
-                  <p className="w-fit text-xs md:text-sm font-normal leading-4 md:leading-5 tracking-[0] text-secondary">
+                  <p className="w-fit text-xs md:text-sm font-normal leading-4 md:leading-5 tracking-[0] text-white">
                     Instant alerts for new threats detected in your ecosystem.
                   </p>
                   <div className="grid w-full grid-rows-[0fr] transition-all duration-300 ease-out group-hover:grid-rows-[1fr] group-hover:pt-3">
@@ -157,7 +157,7 @@ export const SectionSecuritySubsection = () => {
                   <h3 className="flex w-fit items-center whitespace-nowrap text-xl md:text-2xl font-bold leading-7 md:leading-8 tracking-[0] text-white">
                     Microlearning Modules
                   </h3>
-                  <p className="w-fit text-xs md:text-sm font-normal leading-4 md:leading-5 tracking-[0] text-red-100">
+                  <p className="w-fit text-xs md:text-sm font-normal leading-4 md:leading-5 tracking-[0] text-white">
                     Educational content designed to boost long-term vigilance and
                     security awareness.
                   </p>
@@ -177,7 +177,7 @@ export const SectionSecuritySubsection = () => {
             <Card className="h-[225px] md:h-[300px] w-full rounded-3xl border border-solid border-gray-100 bg-white shadow-none lg:flex-1">
               <CardContent className="flex h-full w-full flex-col items-start justify-start gap-2.5 md:gap-3 p-6 md:p-8">
                 <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-red-50">
-                    <FileSearch className="h-4 w-4 text-primary" />
+                  <FileSearch className="h-4 w-4 text-primary" />
                 </span>
                 <h3 className="text-lg md:text-xl font-bold leading-6 md:leading-7 tracking-[0] text-secondary">
                   Evidence Management
@@ -187,17 +187,17 @@ export const SectionSecuritySubsection = () => {
                   triage. Our encrypted vault ensures chain of custody for legal
                   and banking requirements.
                 </p>
-                  <div className="inline-flex items-center gap-2 mt-auto">
-                    {evidenceBadges.map((item) => (
-                      <Badge
-                        key={item}
-                        variant="secondary"
-                        className="rounded-md bg-gray-100 px-3 py-1 text-[9px] md:text-[10px] font-bold leading-[15px] tracking-[0] text-secondary hover:bg-gray-100"
-                      >
-                        {item}
-                      </Badge>
-                    ))}
-                  </div>
+                <div className="inline-flex items-center gap-2 mt-auto">
+                  {evidenceBadges.map((item) => (
+                    <Badge
+                      key={item}
+                      variant="secondary"
+                      className="rounded-md bg-gray-100 px-3 py-1 text-[9px] md:text-[10px] font-bold leading-[15px] tracking-[0] text-secondary hover:bg-gray-100"
+                    >
+                      {item}
+                    </Badge>
+                  ))}
+                </div>
               </CardContent>
             </Card>
 

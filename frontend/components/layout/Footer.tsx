@@ -152,7 +152,7 @@ const Footer: React.FC = () => {
 
         {/* Row 2: Super big OctoSight text */}
         <div className="text-center select-none">
-          <p className="text-6xl sm:text-7xl md:text-8xl lg:text-[10rem] xl:text-[12rem] font-black text-white leading-none tracking-tight">
+          <p className="text-6xl sm:text-7xl md:text-8xl lg:text-[10rem] xl:text-[12rem] font-black text-white/80 leading-none tracking-wider">
             OctoSight
           </p>
         </div>
@@ -160,13 +160,13 @@ const Footer: React.FC = () => {
         {/* Row 3: Developed by credit */}
         <div className="mt-4 sm:mt-6 lg:mt-8 text-center">
           <div className="space-y-1">
-            <p className="text-white/60 text-[10px] sm:text-xs font-medium tracking-wide">
+            <p className="text-white/80 text-xs sm:text-sm font-medium">
               Developed by
             </p>
-            <p className="text-white text-xs sm:text-sm lg:text-base font-bold">
+            <p className="text-white text-xs sm:text-sm font-bold">
               Capstone B3 Team 4 FILKOM UB
             </p>
-            <p className="text-white/60 text-[10px] sm:text-xs font-medium">
+            <p className="text-white/80 text-xs sm:text-sm font-medium">
               for CIMB Niaga Capstone Project
             </p>
           </div>

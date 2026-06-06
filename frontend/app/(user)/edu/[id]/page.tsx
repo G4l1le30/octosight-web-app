@@ -5,6 +5,8 @@ import { useParams, useRouter } from "next/navigation";
 import { EducationModuleWithProgress } from "@/types/education";
 import { useAuth } from "@/lib/auth-context";
 import { Loader2, ArrowLeft, AlertCircle, Home, ChevronRight, BarChart3 } from "lucide-react";
+import { motion } from "framer-motion";
+import { fadeSlideUp } from "@/lib/animations";
 import Image from "next/image";
 import { Button } from "@/components/ui/Button";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
@@ -130,7 +132,7 @@ export default function ModuleDetailPage() {
   const hasAttempted = (mod.quiz_attempts_history || []).length > 0;
 
   return (
-    <div className="container mx-auto px-3 md:px-4 py-8 md:py-12 max-w-6xl">
+    <div className="container mx-auto px-3 md:px-4 py-8 md:py-12 max-w-5xl">
       {/* Breadcrumb */}
       <nav className="flex items-center gap-1.5 md:gap-2 text-sm md:text-base font-semibold text-secondary-light mb-6 md:mb-8">
         <button onClick={() => router.push("/edu")} className="hover:text-primary transition-colors flex items-center gap-0.5 md:gap-1">

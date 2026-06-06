@@ -5,7 +5,7 @@ import Image from "next/image";
 import React, { useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { usePathname } from "next/navigation";
-import { ProfileDropdown } from "./ProfileDropdown";
+import { User } from "lucide-react";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { usePermissions } from "@/hooks/usePermissions";
 
@@ -26,7 +26,7 @@ const Navbar: React.FC = () => {
     }`;
   };
 
-  return (
+    return (
     <header className="sticky top-0 z-50 bg-white border-b border-neutral-border shadow-sm">
       <div className="container mx-auto px-2 sm:px-3 lg:px-6 h-10 sm:h-12 lg:h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-1 sm:gap-1.5 lg:gap-2">
@@ -117,41 +117,27 @@ const Navbar: React.FC = () => {
               <Link href="/edu" className={getLinkClass("/edu")}>
                 E-Learning
               </Link>
-              {user && (
-                <Link href="/profile" className={getLinkClass("/profile")}>
-                  Profile
-                </Link>
-              )}
+
             </>
           )}
 
-          <div className="self-center w-px h-3 sm:h-4 bg-neutral-border mx-1 sm:mx-1.5 lg:mx-2"></div>
+          <div className="self-center w-px h-3 sm:h-4 bg-neutral-border mx-1 sm:mx-1.5 lg:mx-2" />
 
-          {user && !loading ? (
-            <div className="self-center flex items-center gap-1 sm:gap-1.5 lg:gap-2">
-              <NotificationBell />
-              <ProfileDropdown
-                user={user}
-                logout={logout}
-                isAdminRoute={isAdminRoute}
-              />
-            </div>
-          ) : (
-            <div className="self-center flex items-center gap-1 sm:gap-1.5 lg:gap-2">
-              <Link
-                href="/login"
-                className="text-[11px] sm:text-xs lg:text-sm font-bold text-secondary hover:text-primary px-1.5 sm:px-2 lg:px-3 py-0.5 sm:py-1 lg:py-1.5 transition-colors"
-              >
-                Sign In
+          <div className="flex items-center gap-2">
+            {user && !loading && (
+              <Link href="/profile" className="flex items-center gap-1.5 text-secondary hover:text-primary transition-colors">
+                <User className="size-5" />
+                <span className="text-xs sm:text-sm font-semibold">Profile</span>
               </Link>
-              <Link
-                href="/register"
-                className="text-[11px] sm:text-xs lg:text-sm font-bold text-white bg-primary hover:bg-primary-dark px-2 sm:px-3 lg:px-4 py-0.5 sm:py-1 lg:py-1.5 rounded sm:rounded-md lg:rounded-lg transition-all"
-              >
-                Register
-              </Link>
-            </div>
-          )}
+            )}
+            <NotificationBell />
+            {!user && !loading && (
+              <>
+                <Link href="/login" className="text-[11px] sm:text-xs lg:text-sm font-bold text-secondary hover:text-primary px-1.5 sm:px-2 lg:px-3 py-0.5 sm:py-1 lg:py-1.5 transition-colors">Sign In</Link>
+                <Link href="/register" className="text-[11px] sm:text-xs lg:text-sm font-bold text-white bg-primary hover:bg-primary-dark px-2 sm:px-3 lg:px-4 py-0.5 sm:py-1 lg:py-1.5 rounded sm:rounded-md lg:rounded-lg transition-all">Register</Link>
+              </>
+            )}
+          </div>
         </nav>
 
         {/* Mobile menu button */}

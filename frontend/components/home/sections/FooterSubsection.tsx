@@ -1,5 +1,7 @@
-import { Button } from "@/components/ui/Button";
+import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/Button";
+import { fadeSlideUp } from "@/lib/animations";
 
 const footerSections = [
   {
@@ -18,7 +20,7 @@ const footerSections = [
 
 export const FooterSubsection = () => {
   return (
-    <footer className="w-full bg-[#e11d2e] pt-20 pb-10">
+    <motion.footer {...fadeSlideUp} className="w-full bg-[#e11d2e] pt-20 pb-10">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-8">
         <Card className="border-0 bg-transparent shadow-none">
           <CardContent className="grid h-fit grid-cols-1 gap-12 border-b border-[#ffffff33] px-0 pt-0 pb-16 md:grid-cols-10">
@@ -73,7 +75,7 @@ export const FooterSubsection = () => {
           </p>
         </div>
       </div>
-    </footer>
+    </motion.footer>
   );
 };
 

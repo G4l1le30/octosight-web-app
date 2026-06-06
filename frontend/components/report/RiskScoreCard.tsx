@@ -63,7 +63,7 @@ export const RiskScoreCard = ({
             stroke="currentColor"
             strokeWidth="8"
             fill="transparent"
-            className="text-secondary"
+            className="text-gray-200"
           />
           <circle
             cx="64"

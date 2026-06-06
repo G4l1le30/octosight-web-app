@@ -48,7 +48,7 @@ export const SectionCtaBannerSubsection = () => {
             <Link href="/register">
               <Button
                 type="button"
-                className="h-auto rounded-full bg-white px-8 py-3.5 text-base md:px-10 md:py-5 md:text-lg leading-7 text-primary shadow-[0px_8px_10px_-6px_#0000001a,0px_20px_25px_-5px_#0000001a] hover:bg-white/95 font-bold"
+                className="h-auto rounded-lg bg-white px-8 py-3.5 text-base md:px-10 md:py-5 md:text-lg leading-7 text-primary shadow-[0px_8px_10px_-6px_#0000001a,0px_20px_25px_-5px_#0000001a] hover:bg-white/95 font-bold"
               >
                 {ctaContent.buttonLabel}
               </Button>

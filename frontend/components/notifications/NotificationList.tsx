@@ -144,7 +144,7 @@ export const NotificationList: React.FC<NotificationListProps> = ({
                   {notification.body}
                 </p>
               </div>
-              <div className="text-xs text-secondary/50 whitespace-nowrap">
+              <div className="text-xs text-secondary/60 whitespace-nowrap">
                 {timeAgo(notification.created_at)}
               </div>
             </div>

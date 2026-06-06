@@ -1,4 +1,6 @@
 import { Button } from "@/components/ui/Button";
+import { motion } from "framer-motion";
+import { fadeSlideUp } from "@/lib/animations";
 
 const navItems = [
   { label: "Home", active: true },
@@ -10,7 +12,7 @@ const navItems = [
 
 export const NavigationSubsection = () => {
   return (
-    <header className="w-full border-b border-gray-100 bg-[#ffffffe6] mx-auto max-w-6xl px-8 py-0 backdrop-blur-[6px] backdrop-brightness-[100%]">
+    <motion.header {...fadeSlideUp} className="w-full border-b border-gray-100 bg-[#ffffffe6] mx-auto max-w-6xl px-8 py-0 backdrop-blur-[6px] backdrop-brightness-[100%]">
       <nav
         aria-label="Primary"
         className="flex h-20 w-full items-center justify-between"
@@ -60,7 +62,7 @@ export const NavigationSubsection = () => {
           </div>
         </div>
       </nav>
-    </header>
+    </motion.header>
   );
 };
 

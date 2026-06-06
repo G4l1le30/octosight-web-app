@@ -1,6 +1,7 @@
-import { motion } from "framer-motion";
 import { Zap, ShieldCheck, BarChart2, BookOpen, LucideIcon } from "lucide-react";
 import { FlipCard, FlipCardFront, FlipCardBack } from "@/components/ui/flip-card";
+import { motion } from "framer-motion";
+import { fadeSlideUp } from "@/lib/animations";
 
 interface Capability {
   title: string;
@@ -49,7 +50,7 @@ const dotPositions = [
 
 export const EcosystemSectionSubsection = () => {
   return (
-    <section className="relative w-full bg-white px-0 py-18 md:py-24 overflow-hidden">
+    <motion.section {...fadeSlideUp} className="relative w-full bg-white px-0 py-18 md:py-24 overflow-hidden">
       <style>{ecoAnimations}</style>
 
       <div className="pointer-events-none absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.02) 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
@@ -61,34 +62,22 @@ export const EcosystemSectionSubsection = () => {
 
       <div className="mx-auto flex w-full max-w-6xl flex-col items-start gap-12 md:gap-16 px-6 md:px-8 py-0 relative z-10">
 
-        <motion.header
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-60px" }}
-          transition={{ duration: 0.5 }}
-          className="flex w-full flex-col items-center gap-1.5 md:gap-2"
-        >
+        <header className="flex w-full flex-col items-center gap-1.5 md:gap-2">
           <p className="flex w-fit items-center justify-center text-center text-base md:text-lg font-bold uppercase leading-[20px] tracking-wide text-primary whitespace-nowrap">
             OUR CAPABILITIES
           </p>
-          <h2 className="flex w-fit items-center justify-center text-center text-3xl md:text-4xl font-bold leading-9 md:leading-10 tracking-[0] text-secondary whitespace-nowrap">
+          <h2 className="flex w-fit items-center justify-center text-center text-3xl md:text-4xl font-bold leading-9 md:leading-10 text-gray-900 whitespace-nowrap">
             The OctoSight Ecosystem
           </h2>
-          <div className="h-1 w-16 rounded-full bg-primary" aria-hidden="true" />
-        </motion.header>
+          <div className="h-1 w-16 md:w-24 mt-1 rounded-full bg-primary" aria-hidden="true" />
+        </header>
 
         <div className="grid h-fit w-full grid-cols-1 gap-6 md:gap-8 md:grid-cols-2 xl:grid-cols-4">
-          {ecosystemCapabilities.map((cap, index) => {
+          {ecosystemCapabilities.map((cap) => {
             const Icon = cap.icon;
             return (
-              <motion.div
-                key={cap.title}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-60px" }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-              >
               <FlipCard
+                key={cap.title}
                 className="h-[240px] md:h-[300px] w-full"
                 direction="horizontal"
                 trigger="hover"
@@ -99,10 +88,10 @@ export const EcosystemSectionSubsection = () => {
                   {dotPositions.map((pos, i) => (
                     <span key={i} className={`absolute ${pos} h-1.5 w-1.5 rounded-full bg-primary/30`} />
                   ))}
-                  <span className="flex h-[72px] w-[72px] md:h-24 md:w-24 items-center justify-center rounded-xl bg-gradient-to-br from-primary via-primary-dark to-primary-light hover:brightness-110 transition-all duration-200">
+                  <span className="flex h-[72px] w-[72px] md:h-24 md:w-24 items-center justify-center rounded-full bg-gradient-to-br from-primary via-primary-dark to-primary-light shadow-[0_0_0_6px_rgba(227,30,36,0.08)] md:shadow-[0_0_0_8px_rgba(227,30,36,0.08)]">
                     <Icon className="h-8 w-8 md:h-10 md:w-10 text-white" strokeWidth={1.5} />
                   </span>
-                  <h3 className="text-center text-base md:text-lg font-bold leading-6 md:leading-7 tracking-[0] text-secondary">
+                  <h3 className="text-center text-base md:text-lg font-bold leading-6 md:leading-7 text-gray-900">
                     {cap.title}
                   </h3>
                 </FlipCardFront>
@@ -111,21 +100,20 @@ export const EcosystemSectionSubsection = () => {
                   <span className="inline-flex h-8 w-8 md:h-11 md:w-11 items-center justify-center rounded-xl bg-gradient-to-br from-primary via-primary-dark to-primary-light">
                     <Icon className="h-4 w-4 md:h-5 md:w-5 text-white" />
                   </span>
-                  <h3 className="text-base md:text-lg font-bold leading-6 md:leading-7 tracking-[0] text-secondary">
+                  <h3 className="text-base md:text-lg font-bold leading-6 md:leading-7 text-gray-900">
                     {cap.title}
                   </h3>
-                  <p className="text-xs md:text-sm font-normal leading-[18px] md:leading-[22px] tracking-[0] text-secondary">
+                  <p className="text-xs md:text-sm font-normal leading-[18px] md:leading-[22px] text-gray-500">
                     {cap.description}
                   </p>
                 </FlipCardBack>
               </FlipCard>
-              </motion.div>
             );
           })}
         </div>
 
       </div>
-    </section>
+    </motion.section>
   );
 };
 

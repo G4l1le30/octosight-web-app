@@ -174,7 +174,7 @@ export const ReportForm: React.FC<ReportFormProps> = ({
           />
         </div>
 
-        <Button type="submit" loading={loading} size="lg" className="w-full text-base md:text-lg">
+        <Button type="submit" loading={loading} size="lg" className="w-full py-2 md:py-4 text-base md:text-lg">
           Analyze Report
         </Button>
       </form>

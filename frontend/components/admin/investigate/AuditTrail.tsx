@@ -164,7 +164,7 @@ export const AuditTrail: React.FC<AuditTrailProps> = ({
       })}
 
       {!submittedAt && logs.length === 0 && (
-        <div className="w-full text-center text-sm md:text-base font-medium text-secondary/50 py-4 md:py-5">
+        <div className="w-full text-center text-sm md:text-base font-medium text-secondary/60 py-4 md:py-5">
           No actions recorded yet.
         </div>
       )}

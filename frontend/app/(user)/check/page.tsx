@@ -253,7 +253,7 @@ export default function FraudCheckPage() {
 
               <Button
                 variant="outline"
-                className="w-full"
+                className="w-full bg-white"
                 onClick={() => {
                   setResult(null);
                   setScreenshots(null);

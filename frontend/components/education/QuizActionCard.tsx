@@ -34,13 +34,12 @@ export const QuizActionCard: React.FC<QuizActionCardProps> = ({
 
   return (
     <div
-      className={`rounded-2xl p-6 md:p-8 text-center relative overflow-hidden ${
-        isCompleted
-          ? "bg-green-50 border border-green-200"
-          : isLocked || !allMaterialsFinished
-            ? "bg-neutral-page border border-neutral-border"
-            : "bg-primary/5 border border-primary/20"
-      }`}
+      className={`rounded-2xl p-6 md:p-8 text-center relative overflow-hidden ${isCompleted
+        ? "bg-green-50 border border-green-200"
+        : isLocked || !allMaterialsFinished
+          ? "bg-neutral-page border border-neutral-border"
+          : "bg-primary/5 border border-primary/20"
+        }`}
     >
       <div className="relative z-10">
         {isCompleted ? (
@@ -103,7 +102,7 @@ export const QuizActionCard: React.FC<QuizActionCardProps> = ({
               <div className="flex flex-wrap justify-center gap-3 md:gap-4">
                 <Button
                   onClick={onStartQuiz}
-                  className="gap-1.5 md:gap-2 px-8 md:px-10 text-lg md:text-xl shadow-lg shadow-black/10"
+                  className="gap-1.5 md:gap-2 px-8 md:px-10 py-4 text-lg md:text-xl shadow-lg shadow-black/10"
                 >
                   <Play className="size-5" />{" "}
                   {savedQuiz

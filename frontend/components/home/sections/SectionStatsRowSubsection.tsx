@@ -11,7 +11,7 @@ const marqueeItems = [...stats, ...stats, ...stats, ...stats];
 
 export const SectionStatsRowSubsection = () => {
   return (
-    <section className="relative w-full bg-white border-t border-gray-100 py-8 md:py-12 overflow-hidden">
+    <motion.section initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-60px" }} transition={{ duration: 0.5 }} className="relative w-full bg-white border-t border-gray-100 py-8 md:py-12 overflow-hidden">
       <div className="pointer-events-none absolute inset-0 opacity-[0.06]" style={{ backgroundImage: 'linear-gradient(rgba(0,0,0,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.4) 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
       <div className="mx-auto flex w-full max-w-6xl relative z-10">
         <style>{`
@@ -61,7 +61,7 @@ export const SectionStatsRowSubsection = () => {
             </div>
           ))}
         </motion.div>
-      </div></section>
+      </div></motion.section>
   );
 };
 

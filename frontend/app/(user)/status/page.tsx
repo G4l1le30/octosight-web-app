@@ -94,6 +94,19 @@ export default function StatusPage() {
       </div>
 
       <div className="grid gap-6 md:gap-8">
+        {/* Search Section */}
+        <div className="card p-4 md:p-5 shadow-xl border-neutral-border">
+          <SearchBar
+            value={ticketId}
+            onChange={setTicketId}
+            onSearch={handleSearch}
+            placeholder="Enter Ticket ID (e.g., OCTO-9921)"
+            loading={loading}
+            buttonText="Track Report"
+            inputClassName="font-medium"
+          />
+        </div>
+
         {/* Latest Submission Card */}
         {history.length > 0 && (() => {
           const latest = history[0];
@@ -114,16 +127,13 @@ export default function StatusPage() {
           return (
             <Link href={`/report/${latest.ticket_id}`} className="card p-5 md:p-6 shadow-xl border-neutral-border hover:border-primary/30 transition-all block group">
               <div className="flex items-center gap-1.5 md:gap-2 mb-3 md:mb-4">
-                <div className="p-1 md:p-1.5 rounded-md md:rounded-lg bg-primary/5 text-primary">
-                  <AlertTriangle className="size-4" />
-                </div>
-                <span className="text-xs font-bold text-secondary/60 tracking-wide">LATEST SUBMISSION</span>
-                <ChevronRight className="size-4 text-secondary/20 ml-auto group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                <span className="text-base md:text-lg font-bold text-secondary tracking-wide">Latest Submission</span>
+                <ChevronRight className="size-6 text-secondary/60 ml-auto group-hover:text-primary group-hover:translate-x-1 transition-all" />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-4 md:mb-5">
                 <div>
-                  <p className="text-xs font-semibold text-secondary/60 mb-0.5 md:mb-1">Ticket ID</p>
+                  <p className="text-xs font-semibold text-secondary/80 mb-0.5 md:mb-1">Ticket ID</p>
                   <p className="text-sm md:text-base font-bold text-secondary">{latest.ticket_id}</p>
                   <p className="text-xs font-medium text-secondary/70 flex items-center gap-0.5 md:gap-1 mt-0.5">
                     <Clock className="size-3" />
@@ -165,7 +175,7 @@ export default function StatusPage() {
                               ? "bg-green-50 text-green-700 border-green-200"
                               : i === currentIdx
                                 ? "bg-amber-50 text-amber-700 border-amber-200 ring-2 ring-amber-200"
-                                : "bg-neutral-page text-secondary/50 border-neutral-border"
+                                : "bg-neutral-page text-secondary/60 border-neutral-border"
                           )}>
                             {s}
                           </span>
@@ -187,7 +197,7 @@ export default function StatusPage() {
                             ? "bg-green-50 text-green-700 border-green-200"
                             : i === currentIdx
                               ? "bg-primary/10 text-primary border-primary/30 ring-2 ring-primary/20"
-                              : "bg-neutral-page text-secondary/50 border-neutral-border"
+                              : "bg-neutral-page text-secondary/60 border-neutral-border"
                         )}>
                           {s}
                         </span>
@@ -202,19 +212,6 @@ export default function StatusPage() {
             </Link>
           );
         })()}
-
-        {/* Search Section */}
-        <div className="card p-4 md:p-5 shadow-xl border-neutral-border">
-          <SearchBar
-            value={ticketId}
-            onChange={setTicketId}
-            onSearch={handleSearch}
-            placeholder="Enter Ticket ID (e.g., OCTO-9921)"
-            loading={loading}
-            buttonText="Track Report"
-            inputClassName="font-medium"
-          />
-        </div>
 
         {/* History Section */}
         <ReportHistory

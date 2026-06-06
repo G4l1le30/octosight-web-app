@@ -42,7 +42,8 @@ export const QuizControls: React.FC<QuizControlsProps> = ({
         {isLastStep ? (
           <Button
             onClick={onSubmit}
-            disabled={!canSubmit || submitting}
+            disabled={answers.includes(-1) || submitting}
+            size="lg"
             className="px-8 md:px-10 font-bold text-base md:text-lg gap-1.5 md:gap-2"
           >
             {submitting && <Loader2 className="size-5 animate-spin" />}
@@ -52,6 +53,7 @@ export const QuizControls: React.FC<QuizControlsProps> = ({
           <Button
             onClick={onNext}
             disabled={selectedAnswer === -1}
+            size="lg"
             className="px-8 md:px-10 font-bold text-base md:text-lg"
           >
             Next Question

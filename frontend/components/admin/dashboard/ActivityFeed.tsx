@@ -200,7 +200,7 @@ export const ActivityFeed: React.FC = () => {
                       {sanitizeActivityText(item.description)}
                     </p>
                   </div>
-                  <div className="text-xs text-secondary/50 whitespace-nowrap">
+                  <div className="text-xs text-secondary/60 whitespace-nowrap">
                     {timeAgo(item.created_at)}
                   </div>
                 </div>

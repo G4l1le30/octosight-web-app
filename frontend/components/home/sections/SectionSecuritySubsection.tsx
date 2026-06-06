@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { fadeSlideUp } from "@/lib/animations";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -14,7 +15,7 @@ export const SectionSecuritySubsection = () => {
   const { user } = useAuth();
 
   return (
-    <section className="relative w-full bg-gray-50 px-6 md:px-8 py-18 md:py-24 overflow-hidden">
+    <motion.section {...fadeSlideUp} className="relative w-full bg-gray-50 px-6 md:px-8 py-20 md:py-32 overflow-hidden">
       <div className="pointer-events-none absolute inset-0 opacity-[0.06]" style={{ backgroundImage: 'linear-gradient(rgba(0,0,0,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.4) 1px, transparent 1px)', backgroundSize: '50px 50px' }} />
       <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-12 md:gap-16 relative z-10">
         <motion.header
@@ -24,10 +25,10 @@ export const SectionSecuritySubsection = () => {
           transition={{ duration: 0.5 }}
           className="flex w-full flex-col items-center gap-1.5 md:gap-2"
         >
-          <p className="flex w-fit items-center justify-center whitespace-nowrap text-base md:text-lg font-bold leading-[20px] tracking-wide text-primary">
+          <p className="flex w-fit items-center justify-center text-center text-base md:text-lg font-bold leading-[20px] tracking-wide text-primary">
             ADVANCED PROTECTION
           </p>
-          <h2 className="flex w-fit items-center justify-center whitespace-nowrap text-center text-3xl md:text-4xl font-bold leading-9 md:leading-10 tracking-[0] text-secondary">
+          <h2 className="flex w-fit items-center justify-center text-center text-3xl md:text-4xl lg:text-5xl font-bold leading-tight md:leading-tight tracking-[0] text-secondary">
             Comprehensive Security Features
           </h2>
           <div className="h-1 w-16 md:w-24 mt-1 rounded-full bg-primary" />
@@ -43,7 +44,7 @@ export const SectionSecuritySubsection = () => {
             className="flex w-full flex-col items-stretch gap-4 md:gap-5 lg:flex-row"
           >
             <Card
-              className="group relative w-full min-h-[255px] md:min-h-[340px] overflow-hidden rounded-3xl border-0 shadow-none lg:flex-[2] cursor-pointer"
+              className="group relative w-full h-[560px] md:h-[720px] overflow-hidden rounded-3xl border-0 shadow-none lg:flex-[2] cursor-pointer"
               style={{
                 backgroundImage: "url('/bg-ai-analysis.jpg')",
                 backgroundSize: "cover",
@@ -53,7 +54,7 @@ export const SectionSecuritySubsection = () => {
               <CardContent className="relative flex h-full flex-col justify-end p-0">
                 <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(0deg,rgba(10,15,28,0.95)_0%,rgba(10,15,28,0.4)_50%,rgba(10,15,28,0.1)_100%)]" />
                 <div className="relative flex w-full flex-col items-start gap-2.5 md:gap-3 p-6 md:p-8">
-                  <h3 className="flex w-fit items-center whitespace-nowrap text-xl md:text-2xl font-bold leading-7 md:leading-8 tracking-[0] text-white">
+                  <h3 className="flex w-fit items-center text-xl md:text-2xl font-bold leading-7 md:leading-8 tracking-[0] text-white">
                     AI-Powered Analysis
                   </h3>
                   <p className="w-fit max-w-md text-sm md:text-base font-normal leading-5 md:leading-6 tracking-[0] text-white">
@@ -205,7 +206,7 @@ export const SectionSecuritySubsection = () => {
         </div>
 
       </div>
-    </section>
+    </motion.section>
   );
 };
 

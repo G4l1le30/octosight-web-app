@@ -1135,10 +1135,18 @@ async def analyze_preview(
     # --- Context-Aware Scoring Override (Preview) ---
     is_scam_scenario = any("scam_scenario:" in f for f in rule_analysis["flags"])
     is_valid_ref = "VERIFIED_BY_BANK" in rule_analysis["flags"]
+    is_suspicious_verified = "VERIFIED_TRANSACTION_WITH_SUSPICIOUS_LINK" in rule_analysis["flags"]
     is_any_blacklisted = blacklisted_entry is not None or account_blacklisted
     is_whitelisted = "on_whitelist" in rule_analysis["flags"]
 
-    if not url.strip() and (is_scam_scenario or is_valid_ref) and not is_any_blacklisted and not is_whitelisted:
+    if is_suspicious_verified:
+        # High Risk override: Verified data used for phishing
+        final_score = rule_score  # Should be 90
+        hybrid["final_score"] = final_score
+        hybrid["rule_weight"] = 100
+        hybrid["ml_weight"] = 0
+        hybrid["formula"] = "final = rule (Selective Phishing Detection)"
+    elif not url.strip() and (is_scam_scenario or is_valid_ref) and not is_any_blacklisted and not is_whitelisted:
         final_score = round((rule_score * 0.8) + (hybrid["ml_score"] * 0.2), 2)
         hybrid["rule_weight"] = 80
         hybrid["ml_weight"] = 20

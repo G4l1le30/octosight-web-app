@@ -391,12 +391,25 @@ class RuleEngine:
 
         # FINAL SCORING ADJUSTMENTS
         if is_verified_bank:
-            # If the bank verified the transaction, we ignore all accumulated suspicion
-            # and set a very low score.
-            score = 15
-            details["keywords"] = "Clean (Verified)"
-            details["detected_scam_type"] = "Verified Transaction"
-            details["transaction_validation"] = "Transaction Confirmed by CIMB NIAGA Core Records"
+            # Check if there's a URL and if it's NOT whitelisted
+            has_url = bool(url and url.strip())
+            is_url_whitelisted = "on_whitelist" in flags
+
+            if has_url and not is_url_whitelisted:
+                # DANGEROUS: Verified transaction details combined with a phishing link.
+                # This is a classic "Selective Phishing" tactic.
+                score = 90
+                flags.append("VERIFIED_TRANSACTION_WITH_SUSPICIOUS_LINK")
+                details["keywords"] = "CRITICAL: Suspicious Link in Verified Message"
+                details["detected_scam_type"] = "Selective Phishing (High Risk)"
+                details["transaction_validation"] = "Transaction Details are Correct, BUT the Link is FAKE/UNAUTHORIZED"
+            else:
+                # If the bank verified the transaction and there's no malicious link, it's safe.
+                score = 0
+                details["keywords"] = "Clean (Verified)"
+                details["detected_scam_type"] = "Verified Transaction"
+                details["transaction_validation"] = "Transaction Confirmed by CIMB NIAGA Core Records"
+
 
         if not found_keywords and any(kw in domain for kw in self.suspicious_keywords):
             details["keywords"] = "Detected"

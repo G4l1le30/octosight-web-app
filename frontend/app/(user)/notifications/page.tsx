@@ -120,12 +120,7 @@ export default function NotificationsPage() {
       <div className="bg-white rounded-2xl md:rounded-3xl border border-neutral-border shadow-xl overflow-hidden">
         <div className="flex flex-col gap-3 md:gap-4 p-5 md:p-6 lg:p-8">
           <div className="flex flex-col gap-2 md:gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-sm md:text-base text-secondary font-semibold">
-                {total} notification{total !== 1 ? "s" : ""}
-              </p>
-            </div>
-            <div className="flex flex-wrap items-center gap-2 md:gap-3">
+            <div className="flex items-center gap-2 md:gap-3">
               <button
                 onClick={() => router.back()}
                 className="px-2 md:px-3 py-1.5 md:py-2 rounded-lg md:rounded-xl border border-neutral-border hover:bg-neutral-page transition-colors"
@@ -133,6 +128,11 @@ export default function NotificationsPage() {
               >
                 <ArrowLeft className="h-3 md:h-4 w-3 md:w-4 text-secondary" />
               </button>
+              <p className="text-sm md:text-base text-secondary font-semibold">
+                {total} notification{total !== 1 ? "s" : ""}
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 md:gap-3">
             </div>
           </div>
 

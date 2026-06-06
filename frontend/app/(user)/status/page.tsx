@@ -20,6 +20,20 @@ export default function StatusPage() {
   const [loading, setLoading] = useState(false);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [error, setError] = useState("");
+  const isSearching = ticketId.trim().length > 0;
+  const filteredHistory = isSearching
+    ? history.filter((t) => {
+        const q = ticketId.toLowerCase();
+        return (
+          t.ticket_id.toLowerCase().includes(q) ||
+          (t.url && t.url.toLowerCase().includes(q)) ||
+          (t.sender_numbers && t.sender_numbers.toLowerCase().includes(q)) ||
+          (t.bank_account && t.bank_account.toLowerCase().includes(q)) ||
+          (t.type && t.type.toLowerCase().includes(q)) ||
+          (t.status && t.status.toLowerCase().includes(q))
+        );
+      })
+    : history;
 
   useEffect(() => {
     if (user) {
@@ -108,7 +122,7 @@ export default function StatusPage() {
         </div>
 
         {/* Latest Submission Card */}
-        {history.length > 0 && (() => {
+        {!isSearching && history.length > 0 && (() => {
           const latest = history[0];
           const statusFlow = ["Submitted", "In Review", "Confirmed", "Mitigated", "Closed"];
           const currentIdx = statusFlow.indexOf(latest.status);
@@ -284,7 +298,7 @@ export default function StatusPage() {
 
         {/* History Section */}
         <ReportHistory
-          history={history}
+          history={filteredHistory}
           loading={historyLoading}
           onSelect={selectTicket}
         />

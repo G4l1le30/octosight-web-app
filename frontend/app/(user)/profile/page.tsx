@@ -332,7 +332,7 @@ export default function ProfilePage() {
               personal information will be removed from our system.
             </p>
             <div className="flex flex-wrap gap-2">
-              {user?.auth_provider === "google" && (
+              {user?.auth_provider === "google" ? (
                 <Button
                   variant="danger"
                   loading={deleting}
@@ -358,17 +358,18 @@ export default function ProfilePage() {
                   leftIcon={<Trash2 className="size-4" />}
                   className="bg-risk-high text-white hover:bg-risk-high/90"
                 >
-                  Send Confirmation Email
+                  Send email to delete account
+                </Button>
+              ) : (
+                <Button
+                  variant="danger"
+                  onClick={() => setShowDeleteModal(true)}
+                  leftIcon={<Trash2 className="size-4" />}
+                  className="bg-risk-high text-white hover:bg-risk-high/90"
+                >
+                  Delete My Account
                 </Button>
               )}
-              <Button
-                variant="danger"
-                onClick={() => setShowDeleteModal(true)}
-                leftIcon={<Trash2 className="size-4" />}
-                className="bg-risk-high text-white hover:bg-risk-high/90"
-              >
-                Delete My Account
-              </Button>
             </div>
           </div>
         </div>

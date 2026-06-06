@@ -31,8 +31,9 @@ export default function ReportSuccess({
       <div className="w-full max-w-2xl bg-white rounded-2xl md:rounded-3xl shadow-xl border border-neutral-border flex flex-col items-center p-8 sm:p-10 md:p-12 relative overflow-hidden">
         {/* Success Icon Group */}
         <div className="mb-6 md:mb-8 relative">
-          <div className="size-24 rounded-full bg-green-50 flex items-center justify-center">
-            <div className="size-16 rounded-full bg-green-600 flex items-center justify-center shadow-lg shadow-green-600/20">
+          <div className="size-24 rounded-full bg-green-50 flex items-center justify-center relative">
+            <div className="absolute inset-0 rounded-full bg-green-400/20 animate-ping [animation-duration:1.5s]" />
+            <div className="size-16 rounded-full bg-green-600 flex items-center justify-center shadow-lg shadow-green-600/30 relative animate-[bounce_1s_ease-in-out_0.5s]">
               <Check className="size-8 text-white" strokeWidth={4} />
             </div>
           </div>
@@ -43,7 +44,7 @@ export default function ReportSuccess({
           <h1 className="text-3xl md:text-4xl font-bold text-secondary">
             Report Submitted Successfully!
           </h1>
-          <p className="text-secondary/70 text-base md:text-lg max-w-[480px] mx-auto leading-relaxed font-medium">
+          <p className="text-secondary/80 text-base md:text-lg max-w-[480px] mx-auto leading-relaxed font-medium">
             Our team will review your report within 24 hours. You will receive a
             notification if there&apos;s a status update.
           </p>
@@ -93,7 +94,7 @@ export default function ReportSuccess({
         <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center w-full max-w-lg">
           <Button
             size="md"
-            className="flex-1 text-sm md:text-base shadow-xl shadow-primary/10 transition-all active:scale-[0.98]"
+            className="flex-1 text-sm md:text-base py-4 md:py-6 shadow-xl shadow-primary/10 transition-all active:scale-[0.98]"
             onClick={() => router.push(`/report/${ticketData.ticket_id}`)}
           >
             View Report Status
@@ -101,7 +102,7 @@ export default function ReportSuccess({
           <Button
             variant="outline"
             size="md"
-            className="flex-1 text-sm md:text-base border-neutral-border text-secondary hover:bg-neutral-page transition-all active:scale-[0.98]"
+            className="flex-1 text-sm md:text-base py-4 md:py-6 border-neutral-border text-secondary hover:bg-neutral-page transition-all active:scale-[0.98]"
             onClick={onReset}
           >
             Report Another Incident

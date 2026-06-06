@@ -25,20 +25,18 @@ export function AuthInput({
 
   return (
     <div className="space-y-1 md:space-y-1.5 w-full">
-      <label htmlFor={id} className="text-xs font-bold text-secondary/60">
+      <label htmlFor={id} className="text-xs font-bold text-secondary">
         {label}
       </label>
       <div className="relative">
         <input
           id={id}
           type={inputType}
-          className={`w-full p-3 bg-neutral-page border rounded-lg outline-none transition-all text-sm ${
-            isPassword ? "pr-12" : ""
-          } ${
-            hasError || errorText
+          className={`w-full p-3 bg-neutral-page border rounded-lg outline-none transition-all text-sm ${isPassword ? "pr-12" : ""
+            } ${hasError || errorText
               ? "border-risk-high focus:border-risk-high"
               : "border-neutral-border focus:border-primary"
-          } ${className || ""}`}
+            } ${className || ""}`}
           {...props}
         />
         {isPassword && (

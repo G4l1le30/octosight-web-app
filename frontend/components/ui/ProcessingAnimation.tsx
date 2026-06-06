@@ -30,15 +30,20 @@ export const ProcessingAnimation: React.FC<{
   onCancel?: () => void;
 }> = ({ title = "Processing Security Report", onCancel }) => {
   const [step, setStep] = useState(0);
-  const [tip] = useState(
-    () => loadingTips[Math.floor(Math.random() * loadingTips.length)],
-  );
+  const [tipIndex, setTipIndex] = useState(0);
+  const tip = loadingTips[tipIndex];
 
   useEffect(() => {
-    const interval = setInterval(() => {
+    const stepInterval = setInterval(() => {
       setStep((prev) => (prev < processingSteps.length - 1 ? prev + 1 : prev));
     }, 1800);
-    return () => clearInterval(interval);
+    const tipInterval = setInterval(() => {
+      setTipIndex((prev) => (prev + 1) % loadingTips.length);
+    }, 4000);
+    return () => {
+      clearInterval(stepInterval);
+      clearInterval(tipInterval);
+    };
   }, []);
 
   return (
@@ -70,9 +75,9 @@ export const ProcessingAnimation: React.FC<{
       </div>
 
       {/* Progress Bar */}
-      <div className="w-full max-w-xs h-0.5 md:h-1 bg-neutral-border/50 rounded-full overflow-hidden">
+      <div className="w-full max-w-xs h-px md:h-0.5 bg-neutral-border/50 rounded-full overflow-hidden">
         <div
-          className="h-full bg-primary transition-all duration-1000 ease-out"
+          className="h-full bg-gray-200 transition-all duration-1000 ease-out"
           style={{ width: `${((step + 1) / processingSteps.length) * 100}%` }}
         />
       </div>

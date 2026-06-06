@@ -71,7 +71,7 @@ const STATUS_STAGES: {
     key: "Closed",
     label: "Closed",
     Icon: CheckCircle2,
-    color: "text-gray-600",
+    color: "text-secondary",
     bgColor: "bg-gray-100",
     ringColor: "ring-gray-200",
     borderColor: "border-gray-300",

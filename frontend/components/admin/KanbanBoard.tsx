@@ -75,7 +75,7 @@ function PriorityLabel({ priority }: { priority: string }) {
     <span
       className={cn(
         "text-xs font-bold px-1.5 md:px-2 py-0.5 md:py-1 rounded-full border",
-        colors[priority] || "bg-gray-100 text-gray-600 border-gray-200",
+        colors[priority] || "bg-gray-100 text-secondary border-gray-200",
       )}
     >
       {priority}
@@ -94,7 +94,7 @@ function TypeBadge({ type }: { type: string }) {
     <span
       className={cn(
         "text-xs font-semibold px-1.5 md:px-2 py-0.5 md:py-1 rounded-full",
-        colors[type] || "bg-gray-100 text-gray-600",
+        colors[type] || "bg-gray-100 text-secondary",
       )}
     >
       {type}
@@ -162,7 +162,7 @@ function KanbanCard({ ticket, canDrag }: { ticket: KanbanTicket; canDrag: boolea
             {ticket.risk_score?.toFixed(0) || "0"}
           </span>
         </div>
-        <p className="text-xs md:text-sm text-secondary/70 line-clamp-2 leading-normal">
+        <p className="text-xs md:text-sm text-secondary/80 line-clamp-2 leading-normal">
           {ticket.summary || "No summary"}
         </p>
         <div className="flex flex-wrap items-center gap-1.5 md:gap-2 pt-0.5 md:pt-1">
@@ -403,25 +403,25 @@ export default function KanbanBoard({
             Low: "bg-risk-low",
           };
           return (
-          <div className="bg-white rounded-md md:rounded-lg border-2 border-neutral-border shadow-xl opacity-90 overflow-hidden w-[250px] rotate-3">
-            <div className={cn("h-1 md:h-1.5", barColors[activeTicket.priority] || "bg-gray-300")} />
-            <div className="p-2 md:p-3 space-y-1 md:space-y-1.5">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-secondary">
-                  {activeTicket.ticket_id}
-                </span>
-                <span
-                  className="text-xs font-bold px-1 md:px-1.5 py-0.5 rounded"
-                  style={{ backgroundColor: riskClr.hex + "20", color: riskClr.hex }}
-                >
-                  {activeTicket.risk_score?.toFixed(0)}
-                </span>
+            <div className="bg-white rounded-md md:rounded-lg border-2 border-neutral-border shadow-xl opacity-90 overflow-hidden w-[250px] rotate-3">
+              <div className={cn("h-1 md:h-1.5", barColors[activeTicket.priority] || "bg-gray-300")} />
+              <div className="p-2 md:p-3 space-y-1 md:space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-secondary">
+                    {activeTicket.ticket_id}
+                  </span>
+                  <span
+                    className="text-xs font-bold px-1 md:px-1.5 py-0.5 rounded"
+                    style={{ backgroundColor: riskClr.hex + "20", color: riskClr.hex }}
+                  >
+                    {activeTicket.risk_score?.toFixed(0)}
+                  </span>
+                </div>
+                <p className="text-xs text-secondary/80 line-clamp-2">
+                  {activeTicket.summary}
+                </p>
               </div>
-              <p className="text-xs text-secondary/70 line-clamp-2">
-                {activeTicket.summary}
-              </p>
             </div>
-          </div>
           );
         })()}
       </DragOverlay>

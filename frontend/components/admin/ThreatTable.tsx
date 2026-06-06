@@ -134,7 +134,7 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
                 />
               </th>
             )}
-            <th className="px-4 md:px-6 py-3 md:py-4 w-[28%] cursor-pointer select-none" onClick={() => onSort?.("ticket_id")}>
+            <th className="px-4 md:px-6 py-3 md:py-4 w-[35%] cursor-pointer select-none" onClick={() => onSort?.("ticket_id")}>
               Ticket {sortBy === "ticket_id" && (sortDir === "asc" ? "↑" : "↓")}
             </th>
             <th className="px-4 md:px-6 py-3 md:py-4 w-[25%] cursor-pointer select-none" onClick={() => onSort?.("url")}>
@@ -275,7 +275,7 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
                       <span className="text-xs text-secondary/80">None</span>
                     )}
                     {ticket.flags && ticket.flags.split(",").length > 2 && (
-                      <span className="text-xs font-bold text-secondary/70">
+                      <span className="text-xs font-bold text-secondary/80">
                         +{ticket.flags.split(",").length - 2}
                       </span>
                     )}

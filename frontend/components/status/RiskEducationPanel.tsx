@@ -26,15 +26,15 @@ export const RiskEducationPanel: React.FC<RiskEducationPanelProps> = ({
           <div className="bg-white border border-neutral-border rounded-xl md:rounded-2xl p-3 md:p-4">
             <div className="flex items-center gap-1.5 md:gap-2 mb-3 md:mb-4 text-risk-high">
               <AlertCircle className="size-5" />
-              <h4 className="font-bold">Risk Warnings</h4>
+              <h4 className="font-bold text-black">Risk Warnings</h4>
             </div>
-            <ul className="space-y-0.5 md:space-y-1">
+            <ul className="space-y-0">
               {recommendation.warnings.map((warning, idx) => (
                 <li
                   key={idx}
-                  className="text-xs md:text-sm font-medium text-secondary flex items-start gap-1.5 md:gap-2"
+                  className="text-xs md:text-sm font-medium text-secondary flex items-start gap-1.5 md:gap-2 leading-tight"
                 >
-                  <span className="mt-0.5">•</span>
+                  <span className="mt-0.5 shrink-0">•</span>
                   <span>{warning}</span>
                 </li>
               ))}
@@ -48,15 +48,15 @@ export const RiskEducationPanel: React.FC<RiskEducationPanelProps> = ({
             <div className="bg-white border border-neutral-border rounded-xl md:rounded-2xl p-3 md:p-4">
               <div className="flex items-center gap-1.5 md:gap-2 mb-3 md:mb-4 text-blue-600">
                 <CheckCircle2 className="size-5" />
-                <h4 className="font-bold">Suggested Actions</h4>
+                <h4 className="font-bold text-black">Suggested Actions</h4>
               </div>
-              <ul className="space-y-0.5 md:space-y-1">
+              <ul className="space-y-0">
                 {recommendation.suggested_actions.map((action, idx) => (
                   <li
                     key={idx}
-                    className="text-xs md:text-sm font-medium text-secondary flex items-start gap-1.5 md:gap-2"
+                    className="text-xs md:text-sm font-medium text-secondary flex items-start gap-1.5 md:gap-2 leading-tight"
                   >
-                    <span className="mt-0.5">•</span>
+                    <span className="mt-0.5 shrink-0">•</span>
                     <span>{action}</span>
                   </li>
                 ))}
@@ -69,15 +69,15 @@ export const RiskEducationPanel: React.FC<RiskEducationPanelProps> = ({
           <div className="bg-white border border-neutral-border rounded-xl md:rounded-2xl p-3 md:p-4 md:col-span-2">
             <div className="flex items-center gap-1.5 md:gap-2 mb-3 md:mb-4 text-green-600">
               <Lightbulb className="size-5" />
-              <h4 className="font-bold">Prevention Tips</h4>
+              <h4 className="font-bold text-black">Prevention Tips</h4>
             </div>
-            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-3">
+            <ul className="grid grid-cols-1 gap-0.5 md:gap-1">
               {recommendation.tips.map((tip, idx) => (
                 <li
                   key={idx}
-                  className="text-xs md:text-sm font-medium text-secondary flex items-start gap-1.5 md:gap-2"
+                  className="text-xs md:text-sm font-medium text-secondary flex items-start gap-1.5 md:gap-2 leading-tight"
                 >
-                  <span className="mt-0.5">•</span>
+                  <span className="mt-0.5 shrink-0">•</span>
                   <span>{tip}</span>
                 </li>
               ))}
@@ -107,7 +107,7 @@ export const RiskEducationPanel: React.FC<RiskEducationPanelProps> = ({
                 // Handle both legacy (number) and new (object) formats
                 const id = typeof m === "object" ? m.id : m;
                 const title = typeof m === "object" ? m.title : `Module ${m}`;
-                
+
                 return (
                   <Link
                     key={idx}

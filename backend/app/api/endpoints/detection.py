@@ -386,6 +386,7 @@ def _notify_admin_report_submitted(
             "gemini_actions": [],
             "gemini_tips": [],
             "reporter_email": reporter_email,
+            "link": link,
         },
     )
 

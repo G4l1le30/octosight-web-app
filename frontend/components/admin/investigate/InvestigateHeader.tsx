@@ -47,9 +47,10 @@ export const InvestigateHeader: React.FC<InvestigateHeaderProps> = ({
         {can("investigate.update_status") && (
           <Button
             onClick={onSave}
+            size="lg"
             loading={saving}
             disabled={disabled}
-            className="px-6 md:px-8"
+            className="text-sm md:text-base px-6 md:px-8"
           >
             Save Changes
           </Button>

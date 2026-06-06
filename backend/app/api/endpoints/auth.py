@@ -39,10 +39,11 @@ from app.core.security import (
     SECRET_KEY,
     ALGORITHM,
 )
+from app.config import settings as app_settings
 from app.db.session import get_db
 from app.models.models import User, PendingRegistration
 from app.models.permission import Permission, RolePermission
-from app.schemas.schemas import LoginRequest, RegisterRequest, UserResponse, GoogleLoginRequest, DeleteAccountRequest, ForgotPasswordRequest, ResetPasswordRequest
+from app.schemas.schemas import LoginRequest, RegisterRequest, UserResponse, GoogleLoginRequest, DeleteAccountRequest, RequestDeletionRequest, ConfirmDeletionRequest, ForgotPasswordRequest, ResetPasswordRequest
 from fastapi import Request
 from app.modules.notifications.service import send_email_notification
 
@@ -279,7 +280,7 @@ def login(request: Request, data: LoginRequest, response: Response, db: Session 
     )
     _set_auth_cookies(response, token, refresh_token)
     return UserResponse(
-        id=user.id, full_name=user.full_name, email=user.email, role=user.role
+        id=user.id, full_name=user.full_name, email=user.email, role=user.role, auth_provider=user.auth_provider
     )
 
 
@@ -297,6 +298,7 @@ def get_me(current_user: User = Depends(get_current_user)):
         full_name=current_user.full_name,
         email=current_user.email,
         role=current_user.role,
+        auth_provider=current_user.auth_provider,
     )
 
 
@@ -306,14 +308,15 @@ def update_me(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    if body.new_password and not body.old_password:
-        raise HTTPException(
-            status_code=400,
-            detail="Old password is required to change password.",
-        )
-
-    if body.old_password and not verify_password(body.old_password, current_user.hashed_password):
-        raise HTTPException(status_code=400, detail="Old password is incorrect.")
+    if body.new_password:
+        if current_user.auth_provider != "google":
+            if not body.old_password:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Old password is required to change password.",
+                )
+            if not verify_password(body.old_password, current_user.hashed_password):
+                raise HTTPException(status_code=400, detail="Old password is incorrect.")
 
     if body.full_name is not None:
         current_user.full_name = body.full_name.strip()
@@ -329,6 +332,7 @@ def update_me(
         full_name=current_user.full_name,
         email=current_user.email,
         role=current_user.role,
+        auth_provider=current_user.auth_provider,
     )
 
 
@@ -342,8 +346,9 @@ def delete_me(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    if not verify_password(body.password, current_user.hashed_password):
-        raise HTTPException(status_code=400, detail="Password is incorrect.")
+    if current_user.auth_provider != "google":
+        if not verify_password(body.password, current_user.hashed_password):
+            raise HTTPException(status_code=400, detail="Password is incorrect.")
     """Permanently delete the current user's account and all associated data."""
     from app.models.models import Ticket
     from app.models.gamification import UserGamification, UserAchievement
@@ -366,6 +371,89 @@ def delete_me(
     db.query(Ticket).filter(Ticket.assigned_to == user_id).update({Ticket.assigned_to: None}, synchronize_session=False)
 
     db.delete(current_user)
+    db.commit()
+
+    _clear_auth_cookies(response)
+    return {"message": "Account deleted permanently"}
+
+
+@router.post("/request-deletion", summary="Send deletion confirmation email to user")
+def request_deletion(
+    body: RequestDeletionRequest,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if current_user.auth_provider == "email":
+        if not body.password:
+            raise HTTPException(status_code=400, detail="Password is required.")
+        if not verify_password(body.password, current_user.hashed_password):
+            raise HTTPException(status_code=400, detail="Password is incorrect.")
+
+        db.delete(current_user)
+        db.commit()
+
+        response = Response()
+        _clear_auth_cookies(response)
+        return {"message": "Account deleted permanently"}
+
+    token = jwt.encode(
+        {"sub": current_user.id, "email": current_user.email, "exp": datetime.now(timezone.utc) + timedelta(hours=1)},
+        SECRET_KEY,
+        algorithm=ALGORITHM,
+    )
+    confirmation_url = f"{app_settings.frontend_url}/confirm-deletion?token={token}"
+
+    send_email_notification(
+        background_tasks=background_tasks,
+        subject="Confirm Account Deletion — OctoSight",
+        email_to=current_user.email,
+        template_name="deletion_confirmation.html",
+        template_body={
+            "user_name": current_user.full_name,
+            "confirmation_url": confirmation_url,
+        },
+    )
+    return {"message": "Confirmation email sent. Please check your inbox."}
+
+
+@router.post("/confirm-deletion", summary="Confirm account deletion via token")
+def confirm_deletion(
+    body: ConfirmDeletionRequest,
+    response: Response,
+    db: Session = Depends(get_db),
+):
+    try:
+        payload = jwt.decode(body.token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id = payload.get("sub")
+        if not user_id:
+            raise HTTPException(status_code=400, detail="Invalid token.")
+    except JWTError:
+        raise HTTPException(status_code=400, detail="Invalid or expired token.")
+
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found.")
+
+    from app.models.models import Ticket
+    from app.models.gamification import UserGamification, UserAchievement
+    from app.models.education import UserLearningProgress, UserArticleProgress, UserQuizAttempt
+    from app.models.notification import Notification
+    from app.models.feedback import MLFeedback
+    from app.models.activity import ActivityLog
+
+    db.query(Notification).filter(Notification.user_id == user_id).delete()
+    db.query(UserLearningProgress).filter(UserLearningProgress.user_id == user_id).delete()
+    db.query(UserArticleProgress).filter(UserArticleProgress.user_id == user_id).delete()
+    db.query(UserQuizAttempt).filter(UserQuizAttempt.user_id == user_id).delete()
+    db.query(UserAchievement).filter(UserAchievement.user_id == user_id).delete()
+    db.query(UserGamification).filter(UserGamification.user_id == user_id).delete()
+    db.query(MLFeedback).filter(MLFeedback.admin_id == user_id).update({MLFeedback.admin_id: None}, synchronize_session=False)
+    db.query(ActivityLog).filter(ActivityLog.actor_id == user_id).update({ActivityLog.actor_id: None}, synchronize_session=False)
+    db.query(Ticket).filter(Ticket.user_id == user_id).update({Ticket.user_id: None}, synchronize_session=False)
+    db.query(Ticket).filter(Ticket.assigned_to == user_id).update({Ticket.assigned_to: None}, synchronize_session=False)
+
+    db.delete(user)
     db.commit()
 
     _clear_auth_cookies(response)
@@ -502,7 +590,7 @@ def google_login(request: Request, data: GoogleLoginRequest, response: Response,
     refresh_token = create_refresh_token({"sub": str(user.id)})
     _set_auth_cookies(response, token, refresh_token)
     
-    return UserResponse(id=user.id, full_name=user.full_name, email=user.email, role=user.role)
+    return UserResponse(id=user.id, full_name=user.full_name, email=user.email, role=user.role, auth_provider=user.auth_provider)
 
 @router.post("/google/register", response_model=UserResponse, summary="Register with Google")
 @limiter.limit("5/minute")
@@ -552,8 +640,9 @@ def google_register(
         id=str(uuid.uuid4()),
         full_name=full_name,
         email=email,
-        hashed_password=hash_password(str(uuid.uuid4())), 
+        hashed_password=hash_password(str(uuid.uuid4())),
         role="user",
+        auth_provider="google",
     )
     db.add(user)
     db.commit()
@@ -583,7 +672,7 @@ def google_register(
     refresh_token = create_refresh_token({"sub": str(user.id)})
     _set_auth_cookies(response, access_token, refresh_token)
     
-    return UserResponse(id=user.id, full_name=user.full_name, email=user.email, role=user.role)
+    return UserResponse(id=user.id, full_name=user.full_name, email=user.email, role=user.role, auth_provider=user.auth_provider)
 
 @router.post("/refresh", summary="Refresh access token")
 def refresh_token(request: Request, response: Response, db: Session = Depends(get_db)):

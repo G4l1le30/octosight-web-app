@@ -60,7 +60,7 @@ export const QuizLoadingUI: React.FC = () => {
         </p>
       </div>
 
-      <p className="text-xs md:text-sm text-secondary/60 italic text-center mt-3 md:mt-4 max-w-md animate-fadeIn">
+      <p className="text-xs md:text-sm text-secondary/60 text-center mt-3 md:mt-4 max-w-md animate-fadeIn">
         {tips[tipIndex]}
       </p>
     </div>

@@ -58,7 +58,7 @@ export const MaterialList: React.FC<MaterialListProps> = ({
               className={`flex items-start gap-3 md:gap-4 ${isArticleLocked ? "opacity-60" : ""}`}
             >
               {article.image_url && (
-                <div className="shrink-0 w-20 h-20 md:w-24 md:h-24 rounded-lg md:rounded-xl overflow-hidden bg-neutral-page relative">
+                <div className="shrink-0 w-14 xs:w-20 h-14 xs:h-20 md:w-24 md:h-24 rounded-lg md:rounded-xl overflow-hidden bg-neutral-page relative">
                   <Image
                     src={article.image_url}
                     alt={article.title}
@@ -70,32 +70,32 @@ export const MaterialList: React.FC<MaterialListProps> = ({
                 </div>
               )}
               <div
-                className={`flex items-start justify-between flex-1 min-w-0 ${article.image_url ? "" : "ml-0"}`}
+                className={`flex items-start justify-between flex-1 min-w-0 overflow-hidden ${article.image_url ? "" : "ml-0"}`}
               >
-                <div className="flex gap-3 md:gap-4">
+                <div className="flex gap-2 md:gap-4 min-w-0">
                   <div
-                    className={`mt-1 shrink-0 size-6 rounded-full flex items-center justify-center border-2 ${
+                    className={`mt-1 shrink-0 size-5 xs:size-6 rounded-full flex items-center justify-center border-2 ${
                       article.is_read
                         ? "bg-green-500 border-green-500 text-white shadow-sm"
                         : "bg-white border-secondary text-secondary"
                     }`}
                   >
                     {article.is_read ? (
-                      <CheckCircle2 className="size-4" />
+                      <CheckCircle2 className="size-3 xs:size-4" />
                     ) : (
-                      <span className="text-xs font-bold">{idx + 1}</span>
+                      <span className="text-[10px] xs:text-xs font-bold">{idx + 1}</span>
                     )}
                   </div>
-                  <div className="min-w-0">
+                  <div className="min-w-0 overflow-hidden">
                     <h3
-                      className={`text-base md:text-lg font-bold mb-1 truncate ${isArticleLocked ? "text-secondary" : "text-secondary group-hover:text-primary transition-colors"}`}
+                      className={`text-sm xs:text-base md:text-lg font-bold mb-1 truncate ${isArticleLocked ? "text-secondary" : "text-secondary group-hover:text-primary transition-colors"}`}
                     >
                       {article.title}
                     </h3>
                     <p className="text-xs md:text-sm text-secondary-light font-medium mb-2 md:mb-3 line-clamp-2">
                       {article.description}
                     </p>
-                    <div className="flex items-center gap-3 md:gap-4 text-xs font-bold text-secondary/60">
+                    <div className="flex flex-wrap items-center gap-x-2 md:gap-x-4 gap-y-0.5 text-xs font-bold text-secondary/60">
                       <span>By: {article.author}</span>
                       <span>•</span>
                       <span>{article.duration_mins} Mins read</span>
@@ -110,9 +110,9 @@ export const MaterialList: React.FC<MaterialListProps> = ({
                   </div>
                 </div>
                 {isArticleLocked ? (
-                  <Lock className="size-5 text-secondary/60 shrink-0 mt-0.5 md:mt-1" />
+                  <Lock className="size-4 xs:size-5 text-secondary/60 shrink-0 mt-0.5 md:mt-1" />
                 ) : (
-                  <ChevronRight className="size-5 text-secondary/40 group-hover:text-primary transition-colors shrink-0 mt-0.5 md:mt-1" />
+                  <ChevronRight className="size-4 xs:size-5 text-secondary/40 group-hover:text-primary transition-colors shrink-0 mt-0.5 md:mt-1" />
                 )}
               </div>
             </div>
@@ -122,7 +122,7 @@ export const MaterialList: React.FC<MaterialListProps> = ({
             return (
               <div
                 key={article.id}
-                className="block bg-neutral-page border border-neutral-border rounded-lg md:rounded-xl p-4 md:p-6 cursor-not-allowed"
+                className="block bg-neutral-page border border-neutral-border rounded-lg md:rounded-xl p-4 md:p-6 cursor-not-allowed overflow-hidden"
               >
                 {content}
               </div>
@@ -133,7 +133,7 @@ export const MaterialList: React.FC<MaterialListProps> = ({
             <button
               key={article.id}
               onClick={() => onArticleClick(article.id)}
-              className={`w-full text-left block bg-white border ${isReadingThis ? "border-primary ring-1 ring-primary/20" : "border-neutral-border hover:border-primary hover:shadow-md"} rounded-xl p-4 md:p-6 transition-all group`}
+              className={`w-full text-left block bg-white border ${isReadingThis ? "border-primary ring-1 ring-primary/20" : "border-neutral-border hover:border-primary hover:shadow-md"} rounded-xl p-4 md:p-6 transition-all group overflow-hidden`}
             >
               {content}
             </button>

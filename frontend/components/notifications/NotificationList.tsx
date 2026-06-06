@@ -61,7 +61,7 @@ const NOTIFICATION_COLORS: Record<string, { bg: string; icon: string }> = {
   sla_breach: { bg: "bg-risk-high/10", icon: "text-risk-high" },
   rule_created: { bg: "bg-teal-50", icon: "text-teal-600" },
   rule_updated: { bg: "bg-cyan-50", icon: "text-cyan-600" },
-  rule_deactivated: { bg: "bg-gray-100", icon: "text-gray-500" },
+  rule_deactivated: { bg: "bg-gray-100", icon: "text-secondary" },
 };
 
 const ICON_MAP: Record<string, React.ElementType> = {
@@ -140,11 +140,11 @@ export const NotificationList: React.FC<NotificationListProps> = ({
                 <div className="text-xs md:text-sm font-semibold text-secondary">
                   {notification.title}
                 </div>
-                <p className="text-xs md:text-sm text-secondary/70 mt-0.5 md:mt-1 line-clamp-2 leading-snug">
+                <p className="text-xs md:text-sm font-medium text-secondary/80 mt-0.5 md:mt-1 line-clamp-2 leading-snug">
                   {notification.body}
                 </p>
               </div>
-              <div className="text-xs text-secondary/50 whitespace-nowrap">
+              <div className="text-xs font-medium text-secondary/60 whitespace-nowrap">
                 {timeAgo(notification.created_at)}
               </div>
             </div>

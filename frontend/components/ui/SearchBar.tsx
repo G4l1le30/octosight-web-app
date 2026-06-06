@@ -30,18 +30,18 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     <form onSubmit={onSearch} className={cn("flex flex-col sm:flex-row gap-2 md:gap-3", className)}>
       <div className="relative flex-1">
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-secondary/60" />
-        <input 
-          type="text" 
-          placeholder={placeholder} 
+        <input
+          type="text"
+          placeholder={placeholder}
           className={cn(
-            "w-full pl-8 md:pl-11 pr-3 md:pr-4 py-2 md:py-3 border-2 border-neutral-border rounded-lg md:rounded-xl focus:border-primary outline-none transition-all font-medium text-xs md:text-sm text-secondary",
+            "w-full pl-12 pr-3 md:pr-4 py-2 sm:py-3 border-2 border-neutral-border rounded-lg md:rounded-xl focus:border-primary outline-none transition-all font-medium text-xs md:text-sm text-secondary",
             inputClassName
           )}
           value={value}
           onChange={(e) => onChange(e.target.value)}
         />
       </div>
-      <Button type="submit" disabled={loading} size="md" className="px-6 md:px-8 text-xs md:text-sm h-[48px]">
+      <Button type="submit" disabled={loading} size="md" className="px-6 md:px-8 text-sm h-[48px]">
         {loading ? <Loader2 className="animate-spin size-4" /> : buttonText}
       </Button>
     </form>

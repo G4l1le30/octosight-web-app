@@ -122,6 +122,14 @@ class EducationService:
 
         is_read = EducationRepository.get_article_progress(db, user_id, article.id) is not None if user_id else False
 
+        # Enforce module-level lock: if the module is locked, deny access
+        if user_id and article.module:
+            mod_progress = EducationRepository.get_user_progress(db, user_id, article.module.id)
+            if mod_progress and mod_progress.status == "LOCKED":
+                raise HTTPException(status_code=403, detail="Complete the previous module's quiz first")
+            if not mod_progress and article.module.order_index != 1:
+                raise HTTPException(status_code=403, detail="Complete the previous module's quiz first")
+
         # Enforce prerequisite: if authenticated and not first article, check previous article is read
         if user_id and article.order_index and article.order_index > 1:
             prev_article = db.query(EducationArticle).filter(
@@ -173,6 +181,13 @@ class EducationService:
         article = db.query(EducationArticle).filter(EducationArticle.id == article_id).first()
         if not article:
             raise HTTPException(status_code=404, detail="Article not found")
+            
+        if article.module:
+            mod_progress = EducationRepository.get_user_progress(db, user_id, article.module.id)
+            if mod_progress and mod_progress.status == "LOCKED":
+                raise HTTPException(status_code=403, detail="Module is locked")
+            if not mod_progress and article.module.order_index != 1:
+                raise HTTPException(status_code=403, detail="Module is locked")
             
         progress = EducationRepository.get_article_progress(db, user_id, article_id)
         if not progress:

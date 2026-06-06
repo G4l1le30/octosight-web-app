@@ -45,7 +45,7 @@ function getStatusBadgeStyle(status: string) {
   if (s.includes("confirmed")) return "bg-red-50 text-red-600 border-red-200";
   if (s.includes("mitigated"))
     return "bg-cyan-50 text-cyan-600 border-cyan-200";
-  if (s.includes("closed")) return "bg-gray-100 text-gray-600 border-gray-300";
+  if (s.includes("closed")) return "bg-gray-100 text-secondary border-gray-300";
   if (s.includes("false positive"))
     return "bg-green-50 text-green-600 border-green-200";
   if (s.includes("submitted"))
@@ -145,7 +145,7 @@ export const AuditTrail: React.FC<AuditTrailProps> = ({
                 </p>
                 {log.notes && (
                   <div className="mt-1.5 md:mt-2 p-2 md:p-2.5 bg-neutral-page/60 rounded-md md:rounded-lg border border-neutral-border/60">
-                    <p className="text-xs font-medium text-secondary/70 leading-relaxed">
+                    <p className="text-xs font-medium text-secondary/80 leading-relaxed">
                       &quot;{log.notes}&quot;
                     </p>
                   </div>
@@ -164,7 +164,7 @@ export const AuditTrail: React.FC<AuditTrailProps> = ({
       })}
 
       {!submittedAt && logs.length === 0 && (
-        <div className="w-full text-center text-sm md:text-base font-medium text-secondary/50 py-4 md:py-5">
+        <div className="w-full text-center text-sm md:text-base font-medium text-secondary/60 py-4 md:py-5">
           No actions recorded yet.
         </div>
       )}

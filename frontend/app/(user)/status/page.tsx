@@ -20,6 +20,20 @@ export default function StatusPage() {
   const [loading, setLoading] = useState(false);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [error, setError] = useState("");
+  const isSearching = ticketId.trim().length > 0;
+  const filteredHistory = isSearching
+    ? history.filter((t) => {
+        const q = ticketId.toLowerCase();
+        return (
+          t.ticket_id.toLowerCase().includes(q) ||
+          (t.url && t.url.toLowerCase().includes(q)) ||
+          (t.sender_numbers && t.sender_numbers.toLowerCase().includes(q)) ||
+          (t.bank_account && t.bank_account.toLowerCase().includes(q)) ||
+          (t.type && t.type.toLowerCase().includes(q)) ||
+          (t.status && t.status.toLowerCase().includes(q))
+        );
+      })
+    : history;
 
   useEffect(() => {
     if (user) {
@@ -85,17 +99,30 @@ export default function StatusPage() {
   }
 
   return (
-    <div className="container mx-auto px-3 md:px-4 py-8 md:py-12 max-w-6xl">
-      <div className="mb-8 md:mb-12 text-center">
-        <h1 className="text-3xl md:text-4xl font-bold mb-3 md:mb-4 text-secondary">Track Your Reports</h1>
-        <p className="text-secondary opacity-70 font-medium max-w-xl mx-auto">
+    <div className="container mx-auto px-6 sm:px-8 py-8 md:py-12 max-w-6xl">
+      <div className="text-center mb-6">
+        <h1 className="text-3xl md:text-4xl font-black mb-3 md:mb-4 bg-gradient-to-r from-primary via-primary-dark to-primary-light bg-clip-text text-transparent">Track Your Reports</h1>
+        <p className="text-secondary/80 font-medium max-w-2xl mx-auto">
           Enter a Ticket ID manually or select from your recent submission history below.
         </p>
       </div>
 
       <div className="grid gap-6 md:gap-8">
+        {/* Search Section */}
+        <div className="card p-4 md:p-5 shadow-xl border-neutral-border">
+          <SearchBar
+            value={ticketId}
+            onChange={setTicketId}
+            onSearch={handleSearch}
+            placeholder="Enter Ticket ID (e.g., OCTO-9921)"
+            loading={loading}
+            buttonText="Track Report"
+            inputClassName="font-medium"
+          />
+        </div>
+
         {/* Latest Submission Card */}
-        {history.length > 0 && (() => {
+        {!isSearching && history.length > 0 && (() => {
           const latest = history[0];
           const statusFlow = ["Submitted", "In Review", "Confirmed", "Mitigated", "Closed"];
           const currentIdx = statusFlow.indexOf(latest.status);
@@ -114,63 +141,129 @@ export default function StatusPage() {
           return (
             <Link href={`/report/${latest.ticket_id}`} className="card p-5 md:p-6 shadow-xl border-neutral-border hover:border-primary/30 transition-all block group">
               <div className="flex items-center gap-1.5 md:gap-2 mb-3 md:mb-4">
-                <div className="p-1 md:p-1.5 rounded-md md:rounded-lg bg-primary/5 text-primary">
-                  <AlertTriangle className="size-4" />
-                </div>
-                <span className="text-xs font-bold text-secondary/60 tracking-wide">LATEST SUBMISSION</span>
-                <ChevronRight className="size-4 text-secondary/20 ml-auto group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                <span className="text-base md:text-lg font-bold text-secondary tracking-wide">Latest Submission</span>
+                <ChevronRight className="size-6 text-secondary/60 ml-auto group-hover:text-primary group-hover:translate-x-1 transition-all" />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-4 md:mb-5">
-                <div>
-                  <p className="text-xs font-semibold text-secondary/60 mb-0.5 md:mb-1">Ticket ID</p>
-                  <p className="text-sm md:text-base font-bold text-secondary">{latest.ticket_id}</p>
-                  <p className="text-xs font-medium text-secondary/70 flex items-center gap-0.5 md:gap-1 mt-0.5">
+
+              <div className="flex flex-col xs:hidden gap-3 mb-3">
+                <p className="text-xs font-semibold text-secondary/80">Ticket ID</p>
+                <p className="text-sm font-bold text-secondary">{latest.ticket_id}</p>
+                <p className="text-xs font-medium text-secondary/80 flex items-center gap-1">
+                  <Clock className="size-3" />
+                  {formatDateTime(latest.created_at).full}
+                </p>
+                <div className="flex items-center gap-1.5 pt-0.5">
+                  <div className="p-0.5 rounded bg-neutral-page border border-neutral-border text-primary">
+                    {getTypeIcon(latest.type)}
+                  </div>
+                  <span className="text-xs font-semibold text-secondary truncate">{latest.url || latest.sender_numbers || "N/A"}</span>
+                </div>
+                <div className="flex items-center justify-between pt-1">
+                  <div>
+                    <p className="text-xs font-semibold text-secondary/60">Risk Score</p>
+                    <p className={cn("text-base font-bold", latest.risk_score >= 75 ? "text-risk-high" : latest.risk_score >= 35 ? "text-risk-medium" : "text-risk-low")}>
+                      {latest.risk_score}
+                      <span className="text-xs font-semibold text-secondary/60 ml-0.5">/ 100</span>
+                    </p>
+                  </div>
+                  <span className={`px-2 py-1 rounded-lg text-xs font-bold border ${latest.status === "Submitted" ? "bg-blue-50 text-blue-700 border-blue-200" : latest.status === "In Review" ? "bg-orange-50 text-orange-700 border-orange-200" : latest.status === "Confirmed" ? "bg-red-50 text-red-700 border-red-200" : latest.status === "False Positive" ? "bg-green-50 text-green-700 border-green-200" : ""}`}>
+                    {latest.status}
+                  </span>
+                </div>
+              </div>
+
+              {/* xs to md: two rows */}
+              <div className="hidden xs:block md:hidden mb-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-semibold text-secondary/80 mb-4">Ticket ID</p>
+                    <p className="text-sm font-bold text-secondary">{latest.ticket_id}</p>
+                    <p className="text-xs font-medium text-secondary/80 flex items-center gap-1 mt-0.5">
+                      <Clock className="size-3" />
+                      {formatDateTime(latest.created_at).full}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs font-semibold text-secondary/60 mb-4">Indicator</p>
+                    <div className="flex items-center gap-1 justify-end">
+                      <div className="p-0.5 rounded bg-neutral-page border border-neutral-border text-primary">
+                        {getTypeIcon(latest.type)}
+                      </div>
+                      <span className="text-xs font-semibold text-secondary truncate max-w-[200px]">{latest.url || latest.sender_numbers || "N/A"}</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between gap-3 mt-2">
+                  <div>
+                    <p className="text-xs font-semibold text-secondary/60 mb-4">Risk Score</p>
+                    <p className={cn("text-base font-bold", latest.risk_score >= 75 ? "text-risk-high" : latest.risk_score >= 35 ? "text-risk-medium" : "text-risk-low")}>
+                      {latest.risk_score}
+                      <span className="text-xs font-semibold text-secondary/60 ml-0.5">/ 100</span>
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs font-semibold text-secondary/60 mb-4">Status</p>
+                    <span className={`px-2.5 py-1 rounded-lg text-xs font-bold border whitespace-nowrap ${latest.status === "Submitted" ? "bg-blue-50 text-blue-700 border-blue-200" : latest.status === "In Review" ? "bg-orange-50 text-orange-700 border-orange-200" : latest.status === "Confirmed" ? "bg-red-50 text-red-700 border-red-200" : latest.status === "False Positive" ? "bg-green-50 text-green-700 border-green-200" : latest.status === "Mitigated" ? "bg-cyan-50 text-cyan-700 border-cyan-200" : latest.status === "Closed" ? "bg-gray-100 text-secondary border-gray-200" : "bg-gray-50 text-secondary border-gray-100"}`}>
+                      {latest.status}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* md+: single row (table-like) */}
+              <div className="hidden md:flex items-center gap-6 mb-5">
+                <div className="min-w-0 flex-[2]">
+                  <p className="text-xs font-semibold text-secondary/80 mb-4">Ticket ID</p>
+                  <p className="text-sm font-bold text-secondary">{latest.ticket_id}</p>
+                  <p className="text-xs font-medium text-secondary/80 flex items-center gap-1 mt-0.5">
                     <Clock className="size-3" />
                     {formatDateTime(latest.created_at).full}
                   </p>
                 </div>
-                <div>
-                  <p className="text-xs font-semibold text-secondary/60 mb-0.5 md:mb-1">Type</p>
-                  <div className="flex items-center gap-1 md:gap-1.5">
-                    <div className="p-0.5 md:p-1 rounded bg-neutral-page border border-neutral-border text-primary">
+                <div className="flex-[3]">
+                  <p className="text-xs font-semibold text-secondary/60 mb-4">Indicator</p>
+                  <div className="flex items-center gap-1.5">
+                    <div className="p-1 rounded bg-neutral-page border border-neutral-border text-primary">
                       {getTypeIcon(latest.type)}
                     </div>
-                    <span className="text-xs md:text-sm font-bold text-secondary">{latest.type}</span>
+                    <span className="text-sm font-semibold text-secondary truncate">{latest.url || latest.sender_numbers || "N/A"}</span>
                   </div>
                 </div>
-                <div>
-                  <p className="text-xs font-semibold text-secondary/60 mb-0.5 md:mb-1">Indicator</p>
-                  <p className="text-xs md:text-sm font-bold text-secondary break-all line-clamp-1">{latest.url || latest.sender_numbers || "N/A"}</p>
-                </div>
-                <div>
-                  <p className="text-xs font-semibold text-secondary/60 mb-0.5 md:mb-1">Risk Score</p>
-                  <p className={cn("text-base md:text-lg font-bold", latest.risk_score >= 75 ? "text-risk-high" : latest.risk_score >= 35 ? "text-risk-medium" : "text-risk-low")}>
+                <div className="flex-[1] text-center">
+                  <p className="text-xs font-semibold text-secondary/60 mb-4">Risk Score</p>
+                  <p className={cn("text-base font-bold", latest.risk_score >= 75 ? "text-risk-high" : latest.risk_score >= 35 ? "text-risk-medium" : "text-risk-low")}>
                     {latest.risk_score}
-                    <span className="text-xs font-semibold text-secondary/60 ml-0.5 md:ml-1">/ 100</span>
+                    <span className="text-xs font-semibold text-secondary/60 ml-0.5">/ 100</span>
                   </p>
+                </div>
+                <div className="flex-[1] text-right">
+                  <p className="text-xs font-semibold text-secondary/60 mb-4">Status</p>
+                  <span className={`px-2.5 py-1 rounded-lg text-xs font-bold border whitespace-nowrap ${latest.status === "Submitted" ? "bg-blue-50 text-blue-700 border-blue-200" : latest.status === "In Review" ? "bg-orange-50 text-orange-700 border-orange-200" : latest.status === "Confirmed" ? "bg-red-50 text-red-700 border-red-200" : latest.status === "False Positive" ? "bg-green-50 text-green-700 border-green-200" : latest.status === "Mitigated" ? "bg-cyan-50 text-cyan-700 border-cyan-200" : latest.status === "Closed" ? "bg-gray-100 text-secondary border-gray-200" : "bg-gray-50 text-secondary border-gray-100"}`}>
+                    {latest.status}
+                  </span>
                 </div>
               </div>
 
               {/* Status Timeline */}
-              <div className="pt-3 md:pt-4 border-t border-neutral-border">
-                <div className="flex items-center gap-0.5 md:gap-1">
+              <div className="pt-3 md:pt-4 border-t border-neutral-border w-full">
+                <div className="flex items-center justify-center gap-0.5 md:gap-1">
                   {isFalsePositive ? (
                     <>
                       {statusFlow.slice(0, 3).map((s, i) => (
-                        <div key={s} className="flex items-center gap-0.5 md:gap-1 flex-1 min-w-0">
+                        <div key={s} className="flex items-center gap-0.5 md:gap-1 min-w-0">
                           <span className={cn(
                             "text-[10px] md:text-xs font-bold px-1.5 md:px-2 py-0.5 md:py-1 rounded-sm md:rounded-md border whitespace-nowrap truncate transition-all",
                             i < currentIdx
                               ? "bg-green-50 text-green-700 border-green-200"
                               : i === currentIdx
                                 ? "bg-amber-50 text-amber-700 border-amber-200 ring-2 ring-amber-200"
-                                : "bg-neutral-page text-secondary/50 border-neutral-border"
+                                : "bg-neutral-page text-secondary/60 border-neutral-border"
                           )}>
                             {s}
                           </span>
                           {i < statusFlow.length - 1 && (
-                            <div className={cn("h-px flex-1 min-w-[8px]", i < currentIdx ? "bg-green-300" : "bg-neutral-border")} />
+                            <div className={cn("h-px w-3 md:w-6", i < currentIdx ? "bg-green-300" : "bg-neutral-border")} />
                           )}
                         </div>
                       ))}
@@ -180,19 +273,19 @@ export default function StatusPage() {
                     </>
                   ) : (
                     statusFlow.map((s, i) => (
-                      <div key={s} className="flex items-center gap-0.5 md:gap-1 flex-1 min-w-0">
+                      <div key={s} className="flex items-center gap-0.5 md:gap-1 min-w-0">
                         <span className={cn(
                           "text-[10px] md:text-xs font-bold px-1.5 md:px-2 py-0.5 md:py-1 rounded-sm md:rounded-md border whitespace-nowrap truncate transition-all",
                           i < currentIdx
                             ? "bg-green-50 text-green-700 border-green-200"
                             : i === currentIdx
                               ? "bg-primary/10 text-primary border-primary/30 ring-2 ring-primary/20"
-                              : "bg-neutral-page text-secondary/50 border-neutral-border"
+                              : "bg-neutral-page text-secondary/60 border-neutral-border"
                         )}>
                           {s}
                         </span>
                         {i < statusFlow.length - 1 && (
-                          <div className={cn("h-px flex-1 min-w-[8px]", i < currentIdx ? "bg-green-300" : "bg-neutral-border")} />
+                          <div className={cn("h-px w-3 md:w-6", i < currentIdx ? "bg-green-300" : "bg-neutral-border")} />
                         )}
                       </div>
                     ))
@@ -203,22 +296,9 @@ export default function StatusPage() {
           );
         })()}
 
-        {/* Search Section */}
-        <div className="card p-4 md:p-5 shadow-xl border-neutral-border">
-          <SearchBar
-            value={ticketId}
-            onChange={setTicketId}
-            onSearch={handleSearch}
-            placeholder="Enter Ticket ID (e.g., OCTO-9921)"
-            loading={loading}
-            buttonText="Track Report"
-            inputClassName="font-medium"
-          />
-        </div>
-
         {/* History Section */}
         <ReportHistory
-          history={history}
+          history={filteredHistory}
           loading={historyLoading}
           onSelect={selectTicket}
         />

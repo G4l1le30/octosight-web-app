@@ -14,7 +14,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
           toast:
             "group toast group-[.toaster]:bg-white group-[.toaster]:text-secondary group-[.toaster]:border-neutral-border group-[.toaster]:shadow-lg font-sans border p-3 md:p-4 rounded-xl items-center gap-2 md:gap-3",
           title: "text-sm font-bold",
-          description: "group-[.toast]:text-secondary/70 text-xs font-medium",
+          description: "group-[.toast]:text-secondary/80 text-xs font-medium",
           actionButton:
             "group-[.toast]:bg-primary group-[.toast]:text-white font-bold rounded-lg px-3 py-2",
           cancelButton:
@@ -27,7 +27,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
             "group-[.toaster]:border-risk-medium group-[.toaster]:text-risk-medium [&_svg]:text-risk-medium",
           info:
             "group-[.toaster]:border-primary group-[.toaster]:text-primary [&_svg]:text-primary",
-          default: 
+          default:
             "group-[.toaster]:border-neutral-border group-[.toaster]:text-secondary [&_svg]:text-secondary",
         },
       }}

@@ -44,13 +44,13 @@ function statusBadge(status: string) {
     COMPLETED: "bg-green-50 text-green-700 border-green-200",
     PENDING: "bg-amber-50 text-amber-700 border-amber-200",
     FLAGGED: "bg-red-50 text-red-700 border-red-200",
-    REVERSED: "bg-gray-100 text-gray-600 border-gray-200",
+    REVERSED: "bg-gray-100 text-secondary border-gray-200",
   };
   return (
     <span
       className={cn(
         "inline-block px-2 md:px-2.5 py-0.5 md:py-1 text-xs font-bold rounded-full border",
-        colors[status] || "bg-gray-50 text-gray-600 border-gray-200",
+        colors[status] || "bg-gray-50 text-secondary border-gray-200",
       )}
     >
       {status}
@@ -68,7 +68,7 @@ function typeBadge(type: string) {
     <span
       className={cn(
         "inline-block px-2 md:px-2.5 py-0.5 md:py-1 text-xs font-bold rounded-full border",
-        colors[type] || "bg-gray-50 text-gray-600 border-gray-200",
+        colors[type] || "bg-gray-50 text-secondary border-gray-200",
       )}
     >
       {type}
@@ -147,7 +147,7 @@ export const TransactionsTable: React.FC<TransactionsTableProps> = ({
                 <td className="px-4 md:px-6 py-4 md:py-5 text-left">
                   <div className="font-semibold text-xs md:text-sm text-secondary">{tx.sender_name}</div>
                   {tx.sender_account && (
-                    <div className="text-xs font-medium text-secondary/70">
+                    <div className="text-xs font-medium text-secondary/80">
                       {tx.sender_bank} • {tx.sender_account}
                     </div>
                   )}

@@ -13,6 +13,7 @@ import { formatDateTime } from "@/lib/utils";
 import { ROLE_BADGE_COLORS, type UserRole } from "@/types/auth";
 import { usePermissions } from "@/hooks/usePermissions";
 import { PermissionGate } from "@/components/ui/PermissionGate";
+import { AdminHeader } from "@/components/admin/AdminHeader";
 
 interface AdminUser {
   id: number;
@@ -117,7 +118,7 @@ export default function AdminUsersPage() {
 
   const roleBadge = (role: string) => {
     const color =
-      ROLE_BADGE_COLORS[role as UserRole] ?? "bg-gray-100 text-gray-700";
+      ROLE_BADGE_COLORS[role as UserRole] ?? "bg-gray-100 text-secondary";
     return (
       <span
         className={cn(
@@ -133,26 +134,11 @@ export default function AdminUsersPage() {
   return (
     <div className="bg-neutral-page min-h-screen">
       <div className="container mx-auto px-3 md:px-4 pb-6 md:pb-8">
-        {/* Header */}
-        <div className="flex items-center gap-3 md:gap-4 mb-6 md:mb-8">
-          <div>
-            <h1 className="text-xl md:text-2xl font-bold text-secondary">
-              User Management
-            </h1>
-            <p className="text-xs md:text-sm text-secondary/80 font-medium mt-0.5 md:mt-1">
-              View, edit, and manage all registered users.
-            </p>
-          </div>
-          <div className="ml-auto bg-primary/10 border border-primary/20 rounded-xl md:rounded-2xl px-4 md:px-6 py-3 md:py-4 flex items-center gap-2 md:gap-3">
-            <div>
-              <p className="text-xl md:text-2xl font-bold text-primary leading-none">
-                {users.length}
-              </p>
-              <p className="text-xs text-primary font-bold mt-0.5 md:mt-1">Total Users</p>
-            </div>
-            <Users className="size-8 text-primary opacity-40" />
-          </div>
-        </div>
+        <AdminHeader
+          title="User Management"
+          subtitle="View, edit, and manage all registered users."
+          stat={{ label: "Total Users", value: users.length }}
+        />
 
         {/* Error state */}
         {!loading && users.length === 0 && (

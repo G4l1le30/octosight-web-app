@@ -189,7 +189,7 @@ export function BlacklistModal({
           {status === null && (
             <div className="flex items-center justify-center gap-2 md:gap-3 py-6 md:py-8">
               <Loader2 className="size-5 animate-spin text-secondary" />
-              <span className="text-xs md:text-sm font-semibold text-secondary/70">
+              <span className="text-xs md:text-sm font-semibold text-secondary/80">
                 Checking blacklist...
               </span>
             </div>

@@ -11,7 +11,7 @@ export const ROLE_HIERARCHY: Record<UserRole, number> = {
 };
 
 export const ROLE_BADGE_COLORS: Record<UserRole, string> = {
-  viewer: "bg-gray-100 text-gray-700",
+  viewer: "bg-gray-100 text-secondary",
   user: "bg-blue-100 text-blue-700",
   cs: "bg-green-100 text-green-700",
   analyst: "bg-purple-100 text-purple-700",
@@ -63,6 +63,7 @@ export interface AuthUser {
   email: string;
   role: UserRole;
   permissions?: string[];
+  auth_provider?: string;
 }
 
 export interface LoginFormData {

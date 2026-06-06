@@ -19,8 +19,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+from app.config import settings
+
 logging.basicConfig(
-    level=getattr(logging, os.getenv("LOG_LEVEL", "INFO"), logging.INFO),
+    level=getattr(logging, settings.log_level.upper(), logging.INFO),
     format="%(asctime)s [%(levelname)s] %(name)s — %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
     stream=sys.stdout,
@@ -111,6 +113,30 @@ def _seed_db(db) -> None:
         )
         db.commit()
         print(f"[Seed] Admin user created: {admin_email}")
+
+    user_email = (settings.default_user_email or "").strip()
+    user_password = settings.default_user_password
+
+    if user_email:
+        try:
+            from email_validator import validate_email
+            user_email = validate_email(user_email, check_deliverability=False).normalized.lower()
+        except Exception as exc:
+            print(f"[Seed] Skipping user — DEFAULT_USER_EMAIL invalid: {exc}")
+            user_email = ""
+
+    if user_email and user_password and not db.query(User).filter(User.email == user_email).first():
+        db.add(
+            User(
+                id=str(uuid.uuid4()),
+                full_name="OctoSight User",
+                email=user_email,
+                hashed_password=hash_password(user_password),
+                role="user",
+            )
+        )
+        db.commit()
+        print(f"[Seed] User created: {user_email}")
 
     # Role-based team users (octosight.{role}@gmail.com)
     default_pw = settings.default_admin_password or "octosight123"
@@ -767,6 +793,9 @@ app = FastAPI(
     version="1.2.0",
     lifespan=lifespan,
 )
+
+# Register global error handlers
+register_error_handlers(app)
 
 app.state.limiter = limiter
 

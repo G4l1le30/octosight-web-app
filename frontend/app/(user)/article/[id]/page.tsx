@@ -192,7 +192,7 @@ export default function ArticlePage() {
               setIsRead(true);
               toast.success("Marked as read");
             })
-            .catch(() => {})
+            .catch(() => { })
             .finally(() => setMarking(false));
         }
       } else {
@@ -248,7 +248,7 @@ export default function ArticlePage() {
     );
 
   return (
-    <div className="container mx-auto px-3 md:px-4 py-8 md:py-12 max-w-6xl">
+    <div className="container mx-auto px-6 sm:px-8 py-8 md:py-12 max-w-6xl">
       {/* Breadcrumb */}
       <nav className="flex items-center gap-1.5 md:gap-2 text-sm md:text-base font-semibold text-secondary-light mb-6 md:mb-8">
         <button
@@ -317,7 +317,7 @@ export default function ArticlePage() {
 
       {/* Description */}
       {article.description && (
-        <p className="text-base md:text-lg text-secondary-light leading-relaxed mb-6 md:mb-8 pb-6 md:pb-8 border-b border-neutral-border italic max-w-6xl text-justify">
+        <p className="text-base md:text-lg text-secondary-light leading-relaxed mb-6 md:mb-8 pb-6 md:pb-8 border-b border-neutral-border max-w-4xl text-justify">
           {article.description}
         </p>
       )}
@@ -389,33 +389,33 @@ export default function ArticlePage() {
           {(() => {
             const nextArticle = article.next_article;
             return nextArticle ? (
-            <button
-              onClick={() => router.push(`/article/${nextArticle.id}`)}
-              className="w-full flex items-center justify-between p-4 md:p-5 rounded-lg md:rounded-xl border border-neutral-border hover:border-primary/30 hover:bg-neutral-page/50 transition-all group bg-white shadow-sm"
-            >
-              <div className="text-left">
-                <span className="text-xs md:text-sm font-medium text-primary mb-0.5 md:mb-1 block">Next Article</span>
-                <span className="text-sm md:text-base font-semibold text-secondary group-hover:text-primary transition-colors">
-                  {nextArticle.title}
-                </span>
-                <span className="text-xs md:text-sm text-secondary-light ml-1.5 md:ml-2">{nextArticle.duration_mins} min</span>
-              </div>
-              <ChevronRight className="size-6 text-secondary-light group-hover:text-primary shrink-0" />
-            </button>
+              <button
+                onClick={() => router.push(`/article/${nextArticle.id}`)}
+                className="w-full flex items-center justify-between p-4 md:p-5 rounded-lg md:rounded-xl border border-neutral-border hover:border-primary/30 hover:bg-neutral-page/50 transition-all group bg-white shadow-sm"
+              >
+                <div className="text-left">
+                  <span className="text-xs md:text-sm font-medium text-primary mb-0.5 md:mb-1 block">Next Article</span>
+                  <span className="text-sm md:text-base font-semibold text-secondary group-hover:text-primary transition-colors">
+                    {nextArticle.title}
+                  </span>
+                  <span className="text-xs md:text-sm text-secondary-light ml-1.5 md:ml-2">{nextArticle.duration_mins} min</span>
+                </div>
+                <ChevronRight className="size-6 text-secondary-light group-hover:text-primary shrink-0" />
+              </button>
             ) : (
-            <button
-              onClick={() => router.push(`/edu/${article.module_id}`)}
-              className="w-full flex items-center justify-between p-4 md:p-5 rounded-lg md:rounded-xl border border-neutral-border hover:border-primary/30 hover:bg-neutral-page/50 transition-all group bg-white shadow-sm"
-            >
-              <div className="text-left">
-                <span className="text-xs md:text-sm font-medium text-primary mb-0.5 md:mb-1 block">Complete Module</span>
-                <span className="text-sm md:text-base font-semibold text-secondary group-hover:text-primary transition-colors flex items-center gap-1.5 md:gap-2">
-                  <GraduationCap className="size-5" />
-                  Take Quiz to Complete Module
-                </span>
-              </div>
-              <ChevronRight className="size-6 text-secondary-light group-hover:text-primary shrink-0" />
-            </button>
+              <button
+                onClick={() => router.push(`/edu/${article.module_id}`)}
+                className="w-full flex items-center justify-between p-4 md:p-5 rounded-lg md:rounded-xl border border-neutral-border hover:border-primary/30 hover:bg-neutral-page/50 transition-all group bg-white shadow-sm"
+              >
+                <div className="text-left">
+                  <span className="text-xs md:text-sm font-medium text-primary mb-0.5 md:mb-1 block">Complete Module</span>
+                  <span className="text-sm md:text-base font-semibold text-secondary group-hover:text-primary transition-colors flex items-center gap-1.5 md:gap-2">
+                    <GraduationCap className="size-5" />
+                    Take Quiz to Complete Module
+                  </span>
+                </div>
+                <ChevronRight className="size-6 text-secondary-light group-hover:text-primary shrink-0" />
+              </button>
             );
           })()}
         </section>

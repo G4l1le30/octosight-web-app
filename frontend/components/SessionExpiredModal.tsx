@@ -34,7 +34,7 @@ export default function SessionExpiredModal() {
             </svg>
           </div>
           <h2 className="text-lg md:text-xl font-bold text-secondary">Session Expired</h2>
-          <p className="mt-1.5 md:mt-2 text-xs md:text-sm text-secondary/70">
+          <p className="mt-1.5 md:mt-2 text-xs md:text-sm text-secondary/80">
             Your session has expired. Please log in again to continue.
           </p>
         </div>

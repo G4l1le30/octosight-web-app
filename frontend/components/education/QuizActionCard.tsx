@@ -34,13 +34,12 @@ export const QuizActionCard: React.FC<QuizActionCardProps> = ({
 
   return (
     <div
-      className={`rounded-2xl p-6 md:p-8 text-center relative overflow-hidden ${
-        isCompleted
-          ? "bg-green-50 border border-green-200"
-          : isLocked || !allMaterialsFinished
-            ? "bg-neutral-page border border-neutral-border"
-            : "bg-primary/5 border border-primary/20"
-      }`}
+      className={`rounded-2xl p-6 md:p-8 text-center relative overflow-hidden ${isCompleted
+        ? "bg-green-50 border border-green-200"
+        : isLocked || !allMaterialsFinished
+          ? "bg-neutral-page border border-neutral-border"
+          : "bg-primary/5 border border-primary/20"
+        }`}
     >
       <div className="relative z-10">
         {isCompleted ? (
@@ -103,7 +102,7 @@ export const QuizActionCard: React.FC<QuizActionCardProps> = ({
               <div className="flex flex-wrap justify-center gap-3 md:gap-4">
                 <Button
                   onClick={onStartQuiz}
-                  className="gap-1.5 md:gap-2 px-8 md:px-10 text-lg md:text-xl shadow-lg shadow-black/10"
+                  className="gap-1.5 md:gap-2 px-8 md:px-10 py-4 md:py-6 text-base md:text-lg text-white shadow-lg shadow-black/10"
                 >
                   <Play className="size-5" />{" "}
                   {savedQuiz
@@ -117,7 +116,7 @@ export const QuizActionCard: React.FC<QuizActionCardProps> = ({
                   <Button
                     onClick={onResetQuiz}
                     variant="outline"
-                    className="gap-1.5 md:gap-2 px-6 md:px-8 text-sm md:text-base border-risk-high/30 text-risk-high hover:bg-risk-high/5"
+                    className="gap-1.5 md:gap-2 px-8 md:px-10 py-4 md:py-6 text-base md:text-lg border-risk-high/30 text-risk-high hover:bg-risk-high/5"
                   >
                     Start Fresh
                   </Button>

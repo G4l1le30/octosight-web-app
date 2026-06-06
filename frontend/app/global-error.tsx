@@ -18,8 +18,8 @@ export default function GlobalError({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
             </svg>
           </div>
-          <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-1.5 md:mb-2">Critical Error</h1>
-          <p className="text-gray-500 text-xs md:text-sm leading-relaxed mb-6 md:mb-8">
+          <h1 className="text-xl md:text-2xl font-bold text-secondary mb-1.5 md:mb-2">Critical Error</h1>
+          <p className="text-secondary text-xs md:text-sm leading-relaxed mb-6 md:mb-8">
             A critical error occurred. Please refresh the page or try again later.
           </p>
           <div className="flex flex-col sm:flex-row gap-2 md:gap-3 justify-center">
@@ -31,7 +31,7 @@ export default function GlobalError({
             </button>
             <Link
               href="/"
-              className="inline-flex items-center justify-center px-4 md:px-6 py-2 md:py-3 border-2 border-gray-200 rounded-lg md:rounded-xl font-bold text-xs md:text-sm text-gray-700 hover:border-gray-400 transition-all"
+              className="inline-flex items-center justify-center px-4 md:px-6 py-2 md:py-3 border-2 border-gray-200 rounded-lg md:rounded-xl font-bold text-xs md:text-sm text-secondary hover:border-gray-400 transition-all"
             >
               Go Home
             </Link>

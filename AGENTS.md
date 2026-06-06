@@ -361,3 +361,10 @@ NEXT_PUBLIC_API_URL=http://localhost:8000
 - Frontend patterns → `FRONTEND_BEST_PRACTICES.md`
 - Backend standar detail → `BACKEND_ENGINEERING_STANDARD.md`
 - Frontend standar detail → `FRONTEND_ENGINEERING_STANDARD.md`
+
+## Migration Notes
+
+### Dynamic URLs (Production Readiness)
+Mulai dari pembaruan Production Readiness, environment variables berikut ditambahkan ke sistem:
+- `FRONTEND_URL` & `API_BASE_URL` (Backend / `.env`): Digunakan untuk mengatur CORS middleware dan absolut URL di backend (contoh: untuk link reset password).
+- `NEXT_PUBLIC_FRONTEND_URL` & `NEXT_PUBLIC_API_URL` (Frontend / `.env.local`): Digunakan oleh Next.js untuk mereferensikan endpoint API yang dinamis sesuai environment (Dev vs Vercel).

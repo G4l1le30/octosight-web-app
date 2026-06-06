@@ -11,6 +11,8 @@ from app.schemas.auth import (
     GoogleLoginRequest,
     UserResponse,
     DeleteAccountRequest,
+    RequestDeletionRequest,
+    ConfirmDeletionRequest,
     ForgotPasswordRequest,
     ResetPasswordRequest,
 )

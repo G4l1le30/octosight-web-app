@@ -196,7 +196,7 @@ export default function RegisterPage() {
             <Button
               type="submit"
               loading={loading}
-              className="w-full"
+              className="w-full bg-red-600 hover:bg-red-700 text-white"
             >
               Create Account
             </Button>
@@ -226,7 +226,7 @@ export default function RegisterPage() {
                 <h2 className="text-lg md:text-xl font-bold text-secondary mb-1.5 md:mb-2">
                   Registration Successful!
                 </h2>
-                <p className="text-xs md:text-sm text-secondary/70 mb-4 md:mb-6">
+                <p className="text-xs md:text-sm text-secondary/80 mb-4 md:mb-6">
                   Your account has been created and verified. Welcome to OctoSight!
                 </p>
                 <button

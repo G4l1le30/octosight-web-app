@@ -5,8 +5,6 @@ import { Ticket } from "@/types/ticket";
 import {
   History,
   Clock,
-  AlertTriangle,
-  CheckCircle,
   ChevronRight,
   Loader2,
   Globe,
@@ -102,52 +100,41 @@ export function ReportHistory({
             <button
               key={ticket.id}
               onClick={() => onSelect(ticket)}
-              className={`w-full grid grid-cols-1 sm:grid-cols-12 items-center gap-3 md:gap-4 p-3 md:p-4 rounded-xl border transition-all text-left group ${
-                selectedId === ticket.id
-                  ? "border-primary bg-primary/5 shadow-sm"
-                  : "border-neutral-border hover:border-primary/30 hover:bg-neutral-page"
-              }`}
+              className={`w-full p-3 md:p-4 rounded-xl border transition-all text-left group ${selectedId === ticket.id
+                ? "border-primary bg-primary/5 shadow-sm"
+                : "border-neutral-border hover:border-primary/30 hover:bg-neutral-page"
+                }`}
             >
-              <div className="col-span-3">
-                <p className="text-xs md:text-sm font-bold text-secondary">
-                  {ticket.ticket_id}
-                </p>
-                <p className="text-xs font-medium text-secondary/80 flex items-center gap-0.5 md:gap-1 mt-0.5">
-                  <Clock className="size-3" />
-                  {formatDate(ticket.created_at)}
-                </p>
-              </div>
-
-              <div className="col-span-5 flex items-center gap-2 md:gap-3">
-                <div className="p-1 md:p-1.5 rounded bg-neutral-page border border-neutral-border text-primary">
-                  {getTypeIcon(ticket.type)}
+              {/* xs+: single row (table-like, matching Latest Submission layout) */}
+              <div className="flex items-start gap-3 xs:gap-4 sm:gap-6">
+                <div className="min-w-0 flex-[2]">
+                  <p className="text-xs xs:text-sm font-bold text-secondary">{ticket.ticket_id}</p>
+                  <p className="text-[10px] xs:text-xs font-medium text-secondary/80 flex items-center gap-1">
+                    <Clock className="size-2.5 xs:size-3" />
+                    {formatDate(ticket.created_at)}
+                  </p>
                 </div>
-                <p className="text-xs md:text-sm font-bold text-secondary truncate max-w-full">
-                  {ticket.url || ticket.sender_numbers || "No data"}
-                </p>
-              </div>
-
-               <div className="col-span-2 flex justify-center">
-                 <span
-                   className={`text-sm font-bold ${
-                     ticket.risk_score >= 75
-                       ? "text-risk-high"
-                       : ticket.risk_score >= 35
-                         ? "text-risk-medium"
-                         : "text-green-600"
-                   }`}
-                 >
-                   {ticket.risk_score}
-                 </span>
-               </div>
-
-              <div className="col-span-2 flex justify-end items-center gap-1.5 md:gap-2">
-                <span
-                  className={`px-2.5 py-1 rounded-lg text-xs font-bold border whitespace-nowrap ${getStatusColor(ticket.status)}`}
-                >
-                  {ticket.status}
-                </span>
-                <ChevronRight className="size-4 text-secondary/20 group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                <div className="flex-[3] min-w-0">
+                  <div className="flex items-center gap-1 xs:gap-1.5">
+                    <div className="p-0.5 xs:p-1 rounded bg-neutral-page border border-neutral-border text-primary shrink-0">
+                      {getTypeIcon(ticket.type)}
+                    </div>
+                    <span className="text-xs xs:text-sm font-semibold text-secondary truncate">{ticket.url || ticket.sender_numbers || "No data"}</span>
+                  </div>
+                </div>
+                <div className="flex-1 text-center hidden xs:block">
+                  <span className={`text-xs xs:text-sm font-bold ${ticket.risk_score >= 75 ? "text-risk-high" : ticket.risk_score >= 35 ? "text-risk-medium" : "text-green-600"}`}>
+                    {ticket.risk_score}
+                  </span>
+                </div>
+                <div className="flex-1 text-right">
+                  <div className="flex items-center gap-1 justify-end">
+                    <span className={`px-1.5 xs:px-2.5 py-0.5 xs:py-1 rounded-lg text-[10px] xs:text-xs font-bold border whitespace-nowrap ${getStatusColor(ticket.status)}`}>
+                      {ticket.status}
+                    </span>
+                    <ChevronRight className="size-3 xs:size-4 text-secondary/20 group-hover:text-primary group-hover:translate-x-1 transition-all shrink-0" />
+                  </div>
+                </div>
               </div>
             </button>
           ))}

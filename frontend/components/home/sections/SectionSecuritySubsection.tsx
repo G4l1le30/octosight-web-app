@@ -44,7 +44,7 @@ export const SectionSecuritySubsection = () => {
             className="flex w-full flex-col items-stretch gap-4 md:gap-5 lg:flex-row"
           >
             <Card
-              className="group relative w-full h-[560px] md:h-[720px] overflow-hidden rounded-3xl border-0 shadow-none lg:flex-[2] cursor-pointer"
+              className="group relative w-full h-[350px] md:h-[465px] overflow-hidden rounded-3xl border-0 shadow-none lg:flex-[2] cursor-pointer"
               style={{
                 backgroundImage: "url('/bg-ai-analysis.jpg')",
                 backgroundSize: "cover",
@@ -76,7 +76,7 @@ export const SectionSecuritySubsection = () => {
 
             <div className="flex w-full flex-col gap-4 md:gap-5 lg:flex-[1]">
 
-              <Card className="flex-1 rounded-3xl border border-solid border-gray-100 bg-white shadow-none">
+              <Card className="flex-1 rounded-3xl border border-solid border-gray-100 bg-white shadow-none h-[128px] md:h-[170px]">
                 <CardContent className="flex h-full flex-col items-start gap-2.5 md:gap-3 p-6 md:p-8">
                   <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-red-50">
                     <Signal className="h-5 w-5 text-primary" />
@@ -90,7 +90,7 @@ export const SectionSecuritySubsection = () => {
                 </CardContent>
               </Card>
 
-              <Card className="flex-1 rounded-3xl border border-solid border-gray-100 bg-white shadow-none">
+              <Card className="flex-1 rounded-3xl border border-solid border-gray-100 bg-white shadow-none h-[128px] md:h-[170px]">
                 <CardContent className="flex h-full flex-col items-start gap-2.5 md:gap-3 p-6 md:p-8">
                   <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-red-50">
                     <BarChart2 className="h-4 w-4 text-primary" />

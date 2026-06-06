@@ -24,17 +24,13 @@ export const FooterSubsection = () => {
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-8">
         <Card className="border-0 bg-transparent shadow-none">
           <CardContent className="grid h-fit grid-cols-1 gap-12 border-b border-[#ffffff33] px-0 pt-0 pb-16 md:grid-cols-10">
-            <section className="col-span-1 flex h-fit w-full flex-col items-start gap-[23.3px] md:col-span-4">
+            <section className="col-span-1 flex h-fit w-full flex-col justify-start items-start gap-[23.3px] md:col-span-4">
               <h2 className="w-fit whitespace-nowrap text-3xl font-bold leading-9 tracking-[-1.50px] text-white">
                 OCTOSIGHT
               </h2>
               <div className="flex max-w-xs w-80 flex-col items-start">
                 <p className=" text-sm font-normal leading-[22.8px] tracking-[0] text-white">
-                  Powered by Team CyberSentinel. OctoSight
-                  <br />
-                  protects the future of digital banking through
-                  <br />
-                  innovative phishing mitigation solutions.
+                  Empowering users to detect and report phishing threats with advanced AI-driven analysis and real-time security intelligence.
                 </p>
               </div>
             </section>

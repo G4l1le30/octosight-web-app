@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { EducationModuleWithProgress } from "@/types/education";
 import { useAuth } from "@/lib/auth-context";
-import { Loader2, ArrowLeft, AlertCircle, Home, ChevronRight, BarChart3 } from "lucide-react";
+import { Loader2, ArrowLeft, AlertCircle, Home, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { fadeSlideUp } from "@/lib/animations";
 import Image from "next/image";
@@ -93,11 +93,6 @@ export default function ModuleDetailPage() {
     router.push(`/article/${articleId}`);
   };
 
-  const completedModulesCount = allModules.filter((m) =>
-    m.status === "COMPLETED" || (m.quiz_score !== null && m.quiz_score !== undefined && m.quiz_score >= 70)
-  ).length;
-  const totalModulesCount = allModules.length;
-
   if (authLoading) return (
     <div className="container mx-auto px-3 md:px-4 py-24 md:py-32 text-center">
       <Loader2 className="animate-spin size-12 text-primary mx-auto mb-3 md:mb-4" />
@@ -132,7 +127,7 @@ export default function ModuleDetailPage() {
   const hasAttempted = (mod.quiz_attempts_history || []).length > 0;
 
   return (
-    <div className="container mx-auto px-3 md:px-4 py-8 md:py-12 max-w-5xl">
+    <div className="container mx-auto px-6 sm:px-8 py-8 md:py-12 max-w-5xl">
       {/* Breadcrumb */}
       <nav className="flex items-center gap-1.5 md:gap-2 text-sm md:text-base font-semibold text-secondary-light mb-6 md:mb-8">
         <button onClick={() => router.push("/edu")} className="hover:text-primary transition-colors flex items-center gap-0.5 md:gap-1">
@@ -141,34 +136,6 @@ export default function ModuleDetailPage() {
         <ChevronRight className="size-4" />
         <span className="text-primary truncate max-w-xs">{mod.title}</span>
       </nav>
-
-      {/* Learning Progress Overview */}
-      {user && totalModulesCount > 0 && (
-        <div className="bg-white rounded-xl md:rounded-2xl border border-neutral-border p-5 md:p-6 mb-8 md:mb-10 shadow-sm">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 md:gap-4">
-            <div className="flex items-center gap-2 md:gap-3">
-              <div className="size-12 rounded-full bg-neutral-page flex items-center justify-center">
-                <BarChart3 className="size-6 text-secondary" />
-              </div>
-              <div>
-                <p className="font-bold text-sm md:text-base text-secondary">Your Learning Progress</p>
-                <p className="text-xs md:text-sm text-secondary-light">{completedModulesCount} of {totalModulesCount} modules completed</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 md:gap-3 w-full md:w-auto">
-              <div className="flex-1 w-36 md:w-48 h-2 md:h-2.5 bg-neutral-border rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-secondary transition-all duration-500 rounded-full"
-                  style={{ width: `${totalModulesCount > 0 ? (completedModulesCount / totalModulesCount) * 100 : 0}%` }}
-                />
-              </div>
-              <span className="text-base md:text-lg font-bold text-secondary shrink-0">
-                {totalModulesCount > 0 ? Math.round((completedModulesCount / totalModulesCount) * 100) : 0}%
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Hero Image */}
       {mod.image_url && (
@@ -245,7 +212,7 @@ export default function ModuleDetailPage() {
         title="Reset Quiz?"
         message="Are you sure you want to discard your current progress and start fresh?"
         confirmText="Reset"
-        type="danger"
+        type="primary"
       />
     </div>
   );

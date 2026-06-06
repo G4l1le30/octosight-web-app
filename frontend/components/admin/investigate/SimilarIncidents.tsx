@@ -90,7 +90,7 @@ export const SimilarIncidents: React.FC<SimilarIncidentsProps> = ({
                   )}
                 </span>
               </div>
-              <p className="text-xs text-secondary/70 line-clamp-2 mb-1.5 md:mb-2">
+              <p className="text-xs text-secondary/80 line-clamp-2 mb-1.5 md:mb-2">
                 {t.summary || "No summary"}
               </p>
               <div className="flex items-center justify-between">

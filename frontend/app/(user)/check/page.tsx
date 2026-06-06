@@ -84,12 +84,12 @@ export default function FraudCheckPage() {
   };
 
   return (
-    <div className="container mx-auto px-3 md:px-4 py-8 md:py-12 max-w-6xl">
+    <div className="container mx-auto px-6 sm:px-8 py-8 md:py-12 max-w-6xl">
       <div className="text-center mb-8 md:mb-10">
         <h1 className="text-3xl md:text-4xl font-black mb-3 md:mb-4 flex items-center justify-center gap-2 md:gap-3 bg-gradient-to-r from-primary via-primary-dark to-primary-light bg-clip-text text-transparent">
           Fraud & Transaction Check
         </h1>
-        <p className="text-secondary/70 text-md max-w-2xl mx-auto">
+        <p className="text-secondary/80 text-md font-medium max-w-2xl mx-auto">
           Verify suspicious accounts or validate receipts against our secure
           CIMB NIAGA database.
         </p>
@@ -245,7 +245,7 @@ export default function FraudCheckPage() {
                   <h4 className="font-bold text-secondary mb-1.5 md:mb-2">
                     Validation Result
                   </h4>
-                  <p className="text-xs md:text-sm font-medium text-secondary/70 bg-neutral-page p-2 md:p-3 rounded-md md:rounded-lg border border-neutral-border/50">
+                  <p className="text-xs md:text-sm font-medium text-secondary/80 bg-neutral-page p-2 md:p-3 rounded-md md:rounded-lg border border-neutral-border/50">
                     {result.details.transaction_validation}
                   </p>
                 </div>

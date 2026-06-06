@@ -196,7 +196,7 @@ export const ActivityFeed: React.FC = () => {
                     <div className="text-xs md:text-sm font-semibold text-secondary">
                       {getActivityLabel(item.activity_type)}
                     </div>
-                    <p className="text-xs md:text-sm text-secondary/70 mt-0.5 md:mt-1 leading-snug">
+                    <p className="text-xs md:text-sm text-secondary/80 mt-0.5 md:mt-1 leading-snug">
                       {sanitizeActivityText(item.description)}
                     </p>
                   </div>

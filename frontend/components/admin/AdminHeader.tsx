@@ -26,7 +26,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({ title, subtitle, stat 
         </div>
         {stat && (
           <div className="flex items-center gap-2 md:gap-2.5 bg-neutral-page border border-neutral-border rounded-lg md:rounded-xl px-3 md:px-4 py-2 md:py-2.5">
-            <span className="text-xs font-semibold text-secondary/70 uppercase tracking-wide">{stat.label}</span>
+            <span className="text-xs font-semibold text-secondary/80 uppercase tracking-wide">{stat.label}</span>
             <span className="text-base md:text-lg font-bold text-secondary">{stat.value}</span>
           </div>
         )}

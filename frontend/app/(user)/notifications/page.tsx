@@ -106,12 +106,12 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div className="container mx-auto px-3 md:px-4 py-8 md:py-12 max-w-6xl">
+    <div className="container mx-auto px-6 sm:px-8 py-8 md:py-12 max-w-6xl">
       <div className="mb-8 md:mb-12 text-center">
         <h1 className="text-3xl md:text-4xl font-bold mb-3 md:mb-4 text-secondary">
           Notifications
         </h1>
-        <p className="text-secondary opacity-70 font-medium max-w-2xl mx-auto">
+        <p className="text-secondary/80 font-medium max-w-2xl mx-auto">
           Review your in-app notifications, including admin notifications from
           across the platform.
         </p>
@@ -121,7 +121,7 @@ export default function NotificationsPage() {
         <div className="flex flex-col gap-3 md:gap-4 p-5 md:p-6 lg:p-8">
           <div className="flex flex-col gap-2 md:gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-xs md:text-sm text-secondary/60 font-medium">
+              <p className="text-sm md:text-base text-secondary font-semibold">
                 {total} notification{total !== 1 ? "s" : ""}
               </p>
             </div>
@@ -138,7 +138,7 @@ export default function NotificationsPage() {
 
           {loading ? (
             <div className="flex items-center justify-center py-14 md:py-20">
-              <Loader2 className="h-4 md:h-6 w-4 md:w-6 animate-spin text-secondary/60" />
+              <Loader2 className="h-4 md:h-6 w-4 md:w-6 animate-spin text-secondary/80" />
             </div>
           ) : (
             <>
@@ -159,7 +159,7 @@ export default function NotificationsPage() {
                   Previous
                 </button>
 
-                <span className="text-xs md:text-sm text-secondary/70 font-medium">
+                <span className="text-sm md:text-base text-secondary font-medium">
                   Page {page} of {totalPages || 1}
                 </span>
 

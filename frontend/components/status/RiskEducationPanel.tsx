@@ -28,13 +28,13 @@ export const RiskEducationPanel: React.FC<RiskEducationPanelProps> = ({
               <AlertCircle className="size-5" />
               <h4 className="font-bold text-black">Risk Warnings</h4>
             </div>
-            <ul className="space-y-0.5 md:space-y-1">
+            <ul className="space-y-0">
               {recommendation.warnings.map((warning, idx) => (
                 <li
                   key={idx}
-                  className="text-xs md:text-sm font-medium text-secondary flex items-start gap-1.5 md:gap-2"
+                  className="text-xs md:text-sm font-medium text-secondary flex items-start gap-1.5 md:gap-2 leading-tight"
                 >
-                  <span className="mt-0.5">•</span>
+                  <span className="mt-0.5 shrink-0">•</span>
                   <span>{warning}</span>
                 </li>
               ))}
@@ -50,13 +50,13 @@ export const RiskEducationPanel: React.FC<RiskEducationPanelProps> = ({
                 <CheckCircle2 className="size-5" />
                 <h4 className="font-bold text-black">Suggested Actions</h4>
               </div>
-              <ul className="space-y-0.5 md:space-y-1">
+              <ul className="space-y-0">
                 {recommendation.suggested_actions.map((action, idx) => (
                   <li
                     key={idx}
-                    className="text-xs md:text-sm font-medium text-secondary flex items-start gap-1.5 md:gap-2"
+                    className="text-xs md:text-sm font-medium text-secondary flex items-start gap-1.5 md:gap-2 leading-tight"
                   >
-                    <span className="mt-0.5">•</span>
+                    <span className="mt-0.5 shrink-0">•</span>
                     <span>{action}</span>
                   </li>
                 ))}
@@ -71,13 +71,13 @@ export const RiskEducationPanel: React.FC<RiskEducationPanelProps> = ({
               <Lightbulb className="size-5" />
               <h4 className="font-bold text-black">Prevention Tips</h4>
             </div>
-            <ul className="grid grid-cols-1 gap-2 md:gap-3">
+            <ul className="grid grid-cols-1 gap-0.5 md:gap-1">
               {recommendation.tips.map((tip, idx) => (
                 <li
                   key={idx}
-                  className="text-xs md:text-sm font-medium text-secondary flex items-start gap-1.5 md:gap-2"
+                  className="text-xs md:text-sm font-medium text-secondary flex items-start gap-1.5 md:gap-2 leading-tight"
                 >
-                  <span className="mt-0.5">•</span>
+                  <span className="mt-0.5 shrink-0">•</span>
                   <span>{tip}</span>
                 </li>
               ))}

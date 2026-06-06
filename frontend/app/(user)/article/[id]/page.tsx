@@ -248,7 +248,7 @@ export default function ArticlePage() {
     );
 
   return (
-    <div className="container mx-auto px-3 md:px-4 py-8 md:py-12 max-w-6xl">
+    <div className="container mx-auto px-6 sm:px-8 py-8 md:py-12 max-w-6xl">
       {/* Breadcrumb */}
       <nav className="flex items-center gap-1.5 md:gap-2 text-sm md:text-base font-semibold text-secondary-light mb-6 md:mb-8">
         <button
@@ -317,7 +317,7 @@ export default function ArticlePage() {
 
       {/* Description */}
       {article.description && (
-        <p className="text-base md:text-lg text-secondary-light leading-relaxed mb-6 md:mb-8 pb-6 md:pb-8 border-b border-neutral-border max-w-5xl text-justify">
+        <p className="text-base md:text-lg text-secondary-light leading-relaxed mb-6 md:mb-8 pb-6 md:pb-8 border-b border-neutral-border max-w-4xl text-justify">
           {article.description}
         </p>
       )}
@@ -352,7 +352,7 @@ export default function ArticlePage() {
           )}
           {user && !isRead && (
             <div>
-              <h3 className="text-sm md:text-base font-bold text-white mb-2 md:mb-3">Finished Reading?</h3>
+              <h3 className="text-sm md:text-base font-bold text-secondary mb-2 md:mb-3">Finished Reading?</h3>
               <Button
                 onClick={() => {
                   if (marking) return;

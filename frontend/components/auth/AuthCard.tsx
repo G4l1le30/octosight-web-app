@@ -30,7 +30,7 @@ export function AuthCard({
           {/* Header */}
           <div className="text-center flex flex-col items-center mb-6 md:mb-8">
             <h1 className="text-2xl md:text-3xl font-bold text-secondary mb-2">{title}</h1>
-            <p className="text-secondary-light text-xs md:text-sm">{subtitle}</p>
+            <p className="text-secondary text-sm md:text-base">{subtitle}</p>
           </div>
 
           {/* Success Banner */}

@@ -27,7 +27,7 @@ export const SecurityTips: React.FC = () => {
   return (
     <div className="flex items-start gap-2 md:gap-2.5 p-2.5 md:p-3 rounded-lg md:rounded-xl bg-primary/5 border border-primary/10 max-w-md mx-auto mt-3 md:mt-4 animate-fadeIn">
       <Shield className="size-3.5 md:size-4 text-primary shrink-0 mt-0.5" />
-      <p className="text-[11px] md:text-xs text-secondary/70 leading-relaxed">
+      <p className="text-[11px] md:text-xs text-secondary/80 leading-relaxed">
         {tips[tipIndex]}
       </p>
     </div>

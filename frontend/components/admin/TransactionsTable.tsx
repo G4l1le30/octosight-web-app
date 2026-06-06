@@ -147,7 +147,7 @@ export const TransactionsTable: React.FC<TransactionsTableProps> = ({
                 <td className="px-4 md:px-6 py-4 md:py-5 text-left">
                   <div className="font-semibold text-xs md:text-sm text-secondary">{tx.sender_name}</div>
                   {tx.sender_account && (
-                    <div className="text-xs font-medium text-secondary/70">
+                    <div className="text-xs font-medium text-secondary/80">
                       {tx.sender_bank} • {tx.sender_account}
                     </div>
                   )}

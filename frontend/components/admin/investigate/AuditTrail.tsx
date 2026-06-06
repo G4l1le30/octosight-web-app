@@ -145,7 +145,7 @@ export const AuditTrail: React.FC<AuditTrailProps> = ({
                 </p>
                 {log.notes && (
                   <div className="mt-1.5 md:mt-2 p-2 md:p-2.5 bg-neutral-page/60 rounded-md md:rounded-lg border border-neutral-border/60">
-                    <p className="text-xs font-medium text-secondary/70 leading-relaxed">
+                    <p className="text-xs font-medium text-secondary/80 leading-relaxed">
                       &quot;{log.notes}&quot;
                     </p>
                   </div>

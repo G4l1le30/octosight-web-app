@@ -15,7 +15,7 @@ import { fadeSlideUp } from "@/lib/animations";
 
 export const HeroSectionSubsection = () => {
   return (
-    <motion.section {...fadeSlideUp} className="relative w-full min-h-screen flex flex-col justify-center bg-white px-6 py-12 md:px-8 md:pt-16 md:pb-24 overflow-hidden">
+    <motion.section {...fadeSlideUp} className="relative w-full h-[calc(100vh-4rem)] flex flex-col justify-center bg-white px-6 pb-12 md:px-8 overflow-hidden">
       <style>{heroGridLines}</style>
 
       <div className="pointer-events-none absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.03) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />

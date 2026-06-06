@@ -24,6 +24,7 @@ class UserResponse(BaseModel):
     full_name: str
     email: str
     role: str
+    auth_provider: str = "email"
 
 
 class TokenResponse(BaseModel):
@@ -33,6 +34,14 @@ class TokenResponse(BaseModel):
 
 class DeleteAccountRequest(BaseModel):
     password: str
+
+
+class RequestDeletionRequest(BaseModel):
+    password: Optional[str] = None
+
+
+class ConfirmDeletionRequest(BaseModel):
+    token: str
 
 
 class ForgotPasswordRequest(BaseModel):
@@ -53,6 +62,7 @@ class UserResponse(BaseModel):
     full_name: str
     email: str
     role: str
+    auth_provider: str = "email"
 
     class Config:
         from_attributes = True

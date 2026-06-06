@@ -93,7 +93,7 @@ export default function DetailedReportPage() {
   }
 
   return (
-    <div className="container mx-auto px-3 md:px-4 py-8 md:py-12 max-w-6xl">
+    <div className="container mx-auto px-6 sm:px-8 py-8 md:py-12 max-w-6xl">
       <div className="mb-8 md:mb-10 flex items-center gap-3 md:gap-4 animate-in fade-in slide-in-from-left-4 duration-500">
         <button
           onClick={() => router.push("/status")}

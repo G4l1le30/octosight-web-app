@@ -310,7 +310,7 @@ export default function ReportPage() {
 
   if (isConfirming && confirmedData)
     return (
-      <div className="container mx-auto px-3 md:px-4 py-8 md:py-12 max-w-6xl">
+      <div className="container mx-auto px-6 sm:px-8 py-8 md:py-12 max-w-6xl">
         <ReportConfirmation
           formData={confirmedData}
           analysisResult={analysisResult}
@@ -322,7 +322,7 @@ export default function ReportPage() {
     );
 
   return (
-    <div className="container mx-auto px-3 md:px-4 py-8 md:py-12 max-w-6xl">
+    <div className="container mx-auto px-6 sm:px-8 py-8 md:py-12 max-w-6xl">
       {/* Loading Overlay for Pre-analysis */}
       {loading && !isConfirming && (
         <div className="fixed inset-0 z-[100] bg-white/80 backdrop-blur-md flex items-center justify-center p-4 md:p-6">
@@ -339,7 +339,7 @@ export default function ReportPage() {
         <h1 className="text-3xl md:text-4xl font-black mb-2 md:mb-3 flex items-center justify-center gap-2 md:gap-3 tracking-tight bg-gradient-to-r from-primary via-primary-dark to-primary-light bg-clip-text text-transparent">
           Report Phishing Incident
         </h1>
-        <p className="text-secondary opacity-70 font-medium">
+        <p className="text-secondary/80 font-medium">
           Help us protect the community by reporting suspicious activities.
         </p>
       </div>

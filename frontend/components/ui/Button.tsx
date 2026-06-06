@@ -16,17 +16,17 @@ export type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
 const variants: Record<string, string> = {
   primary: "bg-primary text-white hover:bg-primary/90",
   secondary: "bg-secondary text-white hover:bg-secondary/90",
-  outline: "border border-input hover:bg-accent hover:text-accent-foreground",
-  ghost: "hover:bg-accent hover:text-accent-foreground",
-  danger: "bg-destructive text-white hover:bg-destructive/90",
+  outline: "border border-neutral-border bg-white text-secondary hover:bg-neutral-page",
+  ghost: "text-secondary hover:bg-neutral-page",
+  danger: "bg-risk-high text-white hover:bg-risk-high/90",
   google: "bg-[#4285F4] text-white hover:bg-[#3367D6]",
 };
 
 const sizeVariants = {
   sm: "h-9 px-3",
   md: "h-10 px-4",
-    lg: "px-5 py-2 md:py-4",
-  
+  lg: "px-5 py-2 md:py-3",
+
 };
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
@@ -35,7 +35,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <Component
         className={cn(
-          "inline-flex items-center justify-center rounded-md text-sm font-semibold transition-colors focus-visible:outline-none disabled:opacity-50 disabled:pointer-events-none",
+          "inline-flex items-center justify-center rounded-lg text-sm font-semibold transition-colors focus-visible:outline-none disabled:opacity-50 disabled:pointer-events-none",
           variants[variant as keyof typeof variants],
           sizeVariants[size],
           loading && "opacity-50 cursor-wait",

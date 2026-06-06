@@ -165,7 +165,7 @@ export const ReportConfirmation = ({
         <h1 className="text-3xl md:text-4xl font-bold mb-3 md:mb-4 text-secondary">
           Report Phishing Incident
         </h1>
-        <p className="text-secondary opacity-70 font-medium">
+        <p className="text-secondary/80 font-medium">
           Help us protect the community by reporting suspicious activities.
         </p>
       </div>
@@ -342,7 +342,7 @@ export const ReportConfirmation = ({
                       {analysisResult.rule_score !== undefined && (
                         <div>
                           <div className="flex justify-between text-xs md:text-sm font-semibold mb-1 md:mb-1.5">
-                            <span className="text-secondary/70">
+                            <span className="text-secondary/80">
                               Rule-based ({analysisResult.rule_weight ?? 35}%)
                             </span>
                             <span className="text-secondary">
@@ -363,7 +363,7 @@ export const ReportConfirmation = ({
                       )}
                       <div>
                         <div className="flex justify-between text-xs md:text-sm font-semibold mb-1 md:mb-1.5">
-                          <span className="text-secondary/70">
+                          <span className="text-secondary/80">
                             ML Engine ({analysisResult.ml_weight ?? 65}%)
                           </span>
                           <span className="text-secondary">
@@ -421,10 +421,10 @@ export const ReportConfirmation = ({
                     </p>
                     {analysisResult.details.transaction_validation !==
                       "N/A" && (
-                      <p className="text-xs text-secondary/70 mt-0.5 md:mt-1">
-                        {analysisResult.details.transaction_validation}
-                      </p>
-                    )}
+                        <p className="text-xs text-secondary/80 mt-0.5 md:mt-1">
+                          {analysisResult.details.transaction_validation}
+                        </p>
+                      )}
                   </div>
                 )}
               </div>
@@ -480,7 +480,7 @@ export const ReportConfirmation = ({
             </Button>
             <Button
               size="lg"
-              className="w-full text-base md:text-lg bg-gradient-to-r from-primary via-primary-dark to-primary-light border-none"
+              className="w-full text-base md:text-lg border-none"
               onClick={onSubmit}
               loading={isSubmitting}
               disabled={isScanning}

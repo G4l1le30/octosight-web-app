@@ -63,6 +63,7 @@ export interface AuthUser {
   email: string;
   role: UserRole;
   permissions?: string[];
+  auth_provider?: string;
 }
 
 export interface LoginFormData {

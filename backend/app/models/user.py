@@ -20,6 +20,7 @@ class User(Base):
     full_name = Column(String(255), nullable=False)
     email = Column(String(255), unique=True, nullable=False, index=True)
     hashed_password = Column(String(255), nullable=False)
+    auth_provider = Column(String(20), default="email")
     role = Column(String(20), default="user")
     is_active = Column(Boolean, default=True)
     failed_login_attempts = Column(Integer, default=0)

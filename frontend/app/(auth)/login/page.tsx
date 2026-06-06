@@ -137,7 +137,7 @@ function LoginForm() {
               disabled={loading}
             />
 
-            <Button type="submit" loading={loading} className="w-full">
+            <Button type="submit" loading={loading} className="w-full bg-red-600 hover:bg-red-700 text-white">
               Sign In
             </Button>
           </form>

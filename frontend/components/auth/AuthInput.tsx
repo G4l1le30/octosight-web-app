@@ -25,7 +25,7 @@ export function AuthInput({
 
   return (
     <div className="space-y-1 md:space-y-1.5 w-full">
-      <label htmlFor={id} className="text-xs font-bold text-secondary/60">
+      <label htmlFor={id} className="text-xs font-bold text-secondary">
         {label}
       </label>
       <div className="relative">

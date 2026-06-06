@@ -20,18 +20,18 @@ const Footer: React.FC = () => {
 
       <div className="container mx-auto max-w-6xl relative z-10">
         {/* Row 1: Description | Navigation | Contact */}
-        <div className="flex flex-col lg:flex-row justify-between items-center gap-12 w-full">
+        <div className="flex flex-col lg:flex-row justify-between items-center gap-12 mb-4 w-full">
           {/* Left: Description (50%) */}
           <div className="w-full lg:w-1/2 text-center xl:text-left xl:pr-8">
             <p className="text-white text-sm md:text-base leading-relaxed lg:max-w-md md:px-16 mx-auto font-medium">
-              Empowering users to detect and report phishing threats with advanced AI-driven analysis and real-time security intelligence.
+              Empowering users to detect and report phishing threats with AI‑driven analysis and real‑time security intelligence. Our platform blends machine learning and human expertise to monitor and mitigate fraud, keeping digital banking safe.
             </p>
           </div>
 
           {/* Right side wrapper: Navigation & Contact (50%) */}
           <div className="w-full lg:w-1/2 flex flex-col sm:flex-row justify-center lg:justify-end gap-12 sm:gap-16 lg:gap-24 lg:pr-8">
             {/* Center-Right: Navigation */}
-            <div className="text-center xl:text-start min-w-[140px]">
+            <div className="text-center lg:text-start min-w-[140px]">
               <h4 className="text-white font-bold mb-3 sm:mb-4 text-xs sm:text-sm tracking-wide uppercase">
                 Navigation
               </h4>
@@ -112,7 +112,7 @@ const Footer: React.FC = () => {
             </div>
 
             {/* Right: Contact */}
-            <div className="text-center min-w-[140px]">
+            <div className="text-center lg:text-start min-w-[140px]">
               <h4 className="text-white font-bold mb-3 sm:mb-4 text-xs sm:text-sm tracking-wide uppercase">
                 Contact
               </h4>

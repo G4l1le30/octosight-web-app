@@ -4,15 +4,27 @@ config.py — Centralized Pydantic Settings.
 Single source of truth for all environment variables with type validation.
 """
 
+import os
+from dotenv import load_dotenv, find_dotenv 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import List, Optional
 
+
+load_dotenv(find_dotenv())
+
+_USER = os.getenv("DB_USER", "octouser")
+_PASS = os.getenv("DB_PASSWORD", "octopassword")
+_HOST = os.getenv("DB_HOST", "127.0.0.1")  # Gunakan 127.0.0.1 jika menjalankan uvicorn lokal
+_PORT = os.getenv("DB_PORT", "3306")
+_NAME = os.getenv("DB_NAME", "octosight_db")
+
+_FINAL_URL = f"mysql+pymysql://{_USER}:{_PASS}@{_HOST}:{_PORT}/{_NAME}"
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
     # Database
-    database_url: str = "mysql+pymysql://octouser:octopassword@db:3306/octosight_db"
+    database_url: str = _FINAL_URL
     mysql_ssl_ca: Optional[str] = None
     mysql_ssl_cert: Optional[str] = None
     mysql_ssl_key: Optional[str] = None

@@ -1,8 +1,8 @@
 {
   "framework": "nextjs",
-  "src": "frontend",
-  "installCommand": "npm --prefix frontend ci",
-  "buildCommand": "npm --prefix frontend run build",
-  "outputDirectory": "frontend/.next",
+  "rootDirectory": "frontend",
+  "installCommand": "npm ci",
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
   "nodeVersion": "20.x"
 }

@@ -15,9 +15,11 @@ from app.api.v1 import rbac
 from app.api.v1 import transactions
 from app.api.v1 import url_scanner
 from app.api.v1 import similarity
+from app.api.v1 import gamification
 
 v1_router = APIRouter(prefix="/api/v1")
 
+v1_router.include_router(gamification.router)
 v1_router.include_router(health.router)
 v1_router.include_router(dashboard.router)
 v1_router.include_router(tickets.router)

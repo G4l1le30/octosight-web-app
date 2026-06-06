@@ -5,8 +5,6 @@ import { Ticket } from "@/types/ticket";
 import {
   History,
   Clock,
-  AlertTriangle,
-  CheckCircle,
   ChevronRight,
   Loader2,
   Globe,
@@ -46,9 +44,9 @@ export function ReportHistory({
       case "mitigated":
         return "bg-cyan-50 text-cyan-700 border-cyan-200";
       case "closed":
-        return "bg-gray-100 text-gray-600 border-gray-200";
+        return "bg-gray-100 text-secondary border-gray-200";
       default:
-        return "bg-gray-50 text-gray-600 border-gray-100";
+        return "bg-gray-50 text-secondary border-gray-100";
     }
   };
 
@@ -78,82 +76,71 @@ export function ReportHistory({
   return (
     <div className="card p-6 md:p-8 border-neutral-border shadow-xl">
       <div className="flex items-center justify-between mb-6 md:mb-8">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-primary/5 text-primary">
+        <div className="flex items-center gap-2 md:gap-3">
+          <div className="p-1.5 md:p-2 rounded-md md:rounded-lg bg-primary/5 text-primary">
             <History className="size-6" />
           </div>
           <h2 className="text-lg md:text-xl font-bold text-secondary">
             Submission History
           </h2>
         </div>
-        <span className="text-sm font-bold text-secondary/80">
+        <span className="text-xs md:text-sm font-bold text-secondary/80">
           {history.length} Reports Found
         </span>
       </div>
 
       {loading ? (
         <div className="py-8 md:py-12 text-center">
-          <Loader2 className="animate-spin size-8 text-primary mx-auto mb-4" />
+          <Loader2 className="animate-spin size-8 text-primary mx-auto mb-3 md:mb-4" />
           <p className="text-secondary/80 font-medium">Loading history...</p>
         </div>
       ) : history.length > 0 ? (
-        <div className="space-y-3">
+        <div className="space-y-2 md:space-y-3">
           {history.slice(0, visibleCount).map((ticket) => (
             <button
               key={ticket.id}
               onClick={() => onSelect(ticket)}
-              className={`w-full grid grid-cols-1 sm:grid-cols-12 items-center gap-3 md:gap-4 p-3 md:p-4 rounded-xl border transition-all text-left group ${
-                selectedId === ticket.id
-                  ? "border-primary bg-primary/5 shadow-sm"
-                  : "border-neutral-border hover:border-primary/30 hover:bg-neutral-page"
-              }`}
+              className={`w-full p-3 md:p-4 rounded-xl border transition-all text-left group ${selectedId === ticket.id
+                ? "border-primary bg-primary/5 shadow-sm"
+                : "border-neutral-border hover:border-primary/30 hover:bg-neutral-page"
+                }`}
             >
-              <div className="col-span-3">
-                <p className="text-sm font-bold text-secondary">
-                  {ticket.ticket_id}
-                </p>
-                <p className="text-xs font-medium text-secondary/80 flex items-center gap-1 mt-0.5">
-                  <Clock className="size-3" />
-                  {formatDate(ticket.created_at)}
-                </p>
-              </div>
-
-              <div className="col-span-5 flex items-center gap-3">
-                <div className="p-1.5 rounded bg-neutral-page border border-neutral-border text-primary">
-                  {getTypeIcon(ticket.type)}
+              {/* xs+: single row (table-like, matching Latest Submission layout) */}
+              <div className="flex items-start gap-3 xs:gap-4 sm:gap-6">
+                <div className="min-w-0 flex-[2]">
+                  <p className="text-xs xs:text-sm font-bold text-secondary">{ticket.ticket_id}</p>
+                  <p className="text-[10px] xs:text-xs font-medium text-secondary/80 flex items-center gap-1">
+                    <Clock className="size-2.5 xs:size-3" />
+                    {formatDate(ticket.created_at)}
+                  </p>
                 </div>
-                <p className="text-sm font-bold text-secondary truncate max-w-full">
-                  {ticket.url || ticket.sender_numbers || "No data"}
-                </p>
-              </div>
-
-               <div className="col-span-2 flex justify-center">
-                 <span
-                   className={`text-sm font-bold ${
-                     ticket.risk_score >= 75
-                       ? "text-risk-high"
-                       : ticket.risk_score >= 35
-                         ? "text-risk-medium"
-                         : "text-green-600"
-                   }`}
-                 >
-                   {ticket.risk_score}
-                 </span>
-               </div>
-
-              <div className="col-span-2 flex justify-end items-center gap-2">
-                <span
-                  className={`px-2.5 py-1 rounded-lg text-xs font-bold border whitespace-nowrap ${getStatusColor(ticket.status)}`}
-                >
-                  {ticket.status}
-                </span>
-                <ChevronRight className="size-4 text-secondary/20 group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                <div className="flex-[3] min-w-0">
+                  <div className="flex items-center gap-1 xs:gap-1.5">
+                    <div className="p-0.5 xs:p-1 rounded bg-neutral-page border border-neutral-border text-primary shrink-0">
+                      {getTypeIcon(ticket.type)}
+                    </div>
+                    <span className="text-xs xs:text-sm font-semibold text-secondary truncate">{ticket.url || ticket.sender_numbers || "No data"}</span>
+                  </div>
+                </div>
+                <div className="flex-1 text-center hidden xs:block">
+                  <span className={`text-xs xs:text-sm font-bold ${ticket.risk_score >= 75 ? "text-risk-high" : ticket.risk_score >= 35 ? "text-risk-medium" : "text-green-600"}`}>
+                    {ticket.risk_score}
+                  </span>
+                </div>
+                <div className="flex-1 text-right">
+                  <div className="flex items-center gap-1 justify-end">
+                    <span className={`px-1.5 xs:px-2.5 py-0.5 xs:py-1 rounded-lg text-[10px] xs:text-xs font-bold border whitespace-nowrap ${getStatusColor(ticket.status)}`}>
+                      {ticket.status}
+                    </span>
+                    <ChevronRight className="size-3 xs:size-4 text-secondary/20 group-hover:text-primary group-hover:translate-x-1 transition-all shrink-0" />
+                  </div>
+                </div>
               </div>
             </button>
           ))}
 
           {visibleCount < history.length && (
-            <div className="pt-4 text-center">
+            <div className="pt-3 md:pt-4 text-center">
               <Button
                 variant="outline"
                 size="sm"
@@ -166,13 +153,13 @@ export function ReportHistory({
           )}
         </div>
       ) : (
-        <div className="py-8 md:py-12 text-center bg-neutral-page rounded-xl border-2 border-dashed border-neutral-border">
-          <p className="text-secondary/80 font-medium text-sm">
+        <div className="py-8 md:py-12 text-center bg-neutral-page rounded-lg md:rounded-xl border-2 border-dashed border-neutral-border">
+          <p className="text-secondary/80 font-medium text-xs md:text-sm">
             You haven&apos;t submitted any reports yet.
           </p>
           <Link
             href="/report"
-            className="text-primary font-bold text-sm hover:underline mt-2 inline-block"
+            className="text-primary font-bold text-xs md:text-sm hover:underline mt-1.5 md:mt-2 inline-block"
           >
             Submit your first report
           </Link>

@@ -53,9 +53,9 @@ export const ReportForm: React.FC<ReportFormProps> = ({
 
   return (
     <div className="card p-6 md:p-8 mb-6 md:mb-8 bg-white border border-neutral-border overflow-visible">
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-        <div className="space-y-4">
-          <label className="text-base font-bold text-secondary">Incident Type</label>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 md:space-y-8">
+        <div className="space-y-3 md:space-y-4">
+          <label className="text-sm md:text-base font-bold text-secondary">Incident Type</label>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
             {(["Website", "SMS", "WhatsApp", "Email"] as IncidentType[]).map((type) => (
               <IncidentTypeCard
@@ -93,26 +93,26 @@ export const ReportForm: React.FC<ReportFormProps> = ({
         <Textarea label={dynamic.summaryLabel} placeholder={dynamic.summaryPlaceholder} error={errors.summary?.message} {...register("summary")} className="min-h-[110px] md:min-h-[150px]" />
 
         {/* Advanced Information Section */}
-        <div className="border border-neutral-border rounded-xl overflow-hidden shadow-sm">
+        <div className="border border-neutral-border rounded-lg md:rounded-xl overflow-hidden shadow-sm">
           <button
             type="button"
             onClick={() => setShowAdvanced(!showAdvanced)}
             className="w-full flex items-center justify-between p-3 md:p-4 hover:bg-neutral-border/20 transition-colors text-left"
           >
             <div className="flex items-center gap-2 md:gap-3">
-              <div className="p-2 rounded-lg text-black">
+              <div className="p-1.5 md:p-2 rounded-md md:rounded-lg text-black">
                 <ShieldCheck className="size-5" />
               </div>
               <div>
                 <span className="font-bold text-secondary block leading-tight">Advanced Information (Optional)</span>
-                <span className="text-sm text-secondary/80 font-medium">Bank &amp; Transaction Details</span>
+                <span className="text-xs md:text-sm text-secondary/80 font-medium">Bank &amp; Transaction Details</span>
               </div>
             </div>
             {showAdvanced ? <ChevronUp className="size-5 text-secondary" /> : <ChevronDown className="size-5 text-secondary" />}
           </button>
 
           <div className={cn(
-            "p-6 space-y-6 bg-white border-t border-neutral-border animate-in fade-in duration-300",
+            "p-4 md:p-6 space-y-4 md:space-y-6 bg-white border-t border-neutral-border animate-in fade-in duration-300",
             showAdvanced ? "block" : "hidden"
           )}>
             <p className="text-xs font-medium text-secondary/60 leading-relaxed">

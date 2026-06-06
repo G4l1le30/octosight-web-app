@@ -9,6 +9,7 @@ from app.schemas.education import (
 from app.modules.education.service import EducationService
 from app.modules.education.repository import EducationRepository
 from app.core.security import get_current_user, get_optional_user
+from app.modules.activity.service import ActivityService
 
 router = APIRouter(prefix="/api/v1/education", tags=["education"])
 
@@ -49,6 +50,16 @@ def get_quiz_attempt(
     if not attempt:
         raise HTTPException(status_code=404, detail="Attempt not found")
     return attempt
+
+@router.get("/articles/{article_id}")
+def get_article(
+    article_id: str,
+    db: Session = Depends(get_db),
+    current_user = Depends(get_optional_user)
+):
+    """Get a single article by ID. Public — no login required."""
+    user_id = current_user.id if current_user else None
+    return EducationService.get_article_detail(db, user_id, article_id)
 
 @router.post("/articles/{article_id}/read")
 def mark_article_as_read(
@@ -99,4 +110,15 @@ def complete_module(
     progress.status = "COMPLETED"
     progress.completed_at = datetime.now(timezone.utc)
     db.commit()
+
+    ActivityService.log_ticket_updated(
+        db, current_user.id, module_id,
+        f"Education module '{module_id}' completed by {current_user.full_name}",
+    )
+
+    from app.modules.gamification.service import GamificationService
+    GamificationService.add_points_and_check_achievements(
+        db, current_user.id, 20, "module"
+    )
+
     return {"message": "Module completed", "module_id": module_id}

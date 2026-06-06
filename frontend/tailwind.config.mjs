@@ -26,7 +26,7 @@ export default {
           light: "#4d4d4d",
         },
         risk: {
-          low: "#ca8a04",      // Yellow
+          low: "#eab308",      // Yellow (bright)
           medium: "#f97316",   // Orange
           high: "#e31e24",     // Red
         },

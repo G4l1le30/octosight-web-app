@@ -5,17 +5,22 @@ const internalApiUrl =
   "http://backend:8000";
 
 const nextConfig = {
-  ...(process.env.NODE_ENV === 'production' ? { output: 'standalone' } : {}),
-  // Allow external images from Supabase Storage
+  ...(process.env.STANDALONE === 'true' ? { output: 'standalone' } : {}),
   images: {
-    remotePatterns: [
+    unoptimized: true,
+  },
+  env: {
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
+    NEXT_PUBLIC_FRONTEND_URL: process.env.NEXT_PUBLIC_FRONTEND_URL,
+  },
+  async redirects() {
+    return [
       {
-        protocol: 'https',
-        hostname: 'tvhahvigtjlzwvmmfylb.supabase.co',
-        port: '',
-        pathname: '/storage/v1/object/sign/**',
+        source: '/auth',
+        destination: '/login',
+        permanent: false,
       },
-    ],
+    ];
   },
   // Allow the /api/analyze route to receive large image uploads (up to 20 MB)
   experimental: {
@@ -25,15 +30,6 @@ const nextConfig = {
   },
   async headers() {
     return [
-      {
-        source: '/(login|register)(/.*)?',
-        headers: [
-          {
-            key: 'Cross-Origin-Opener-Policy',
-            value: 'unsafe-none',
-          },
-        ],
-      },
       {
         source: '/(.*)',
         headers: [

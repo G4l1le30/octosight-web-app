@@ -75,3 +75,7 @@ class AuditLogResponse(BaseModel):
 class TicketFeedbackCreate(BaseModel):
     feedback_type: str  # fp, tp, fn, tn
     notes: Optional[str] = None
+
+
+class TicketStatusUpdate(BaseModel):
+    status: str

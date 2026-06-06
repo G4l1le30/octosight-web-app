@@ -6,7 +6,13 @@ export interface EducationArticle {
   duration_mins: number;
   publication_date?: string;
   description?: string;
+  image_url?: string;
+  content?: any;
   is_read?: boolean;
+  module_id?: string;
+  module_title?: string;
+  next_article?: { id: string; title: string; duration_mins: number } | null;
+  is_last_article?: boolean;
 }
 
 export interface QuizAttempt {
@@ -25,6 +31,7 @@ export interface EducationModuleWithProgress {
   order_index: number;
   description: string;
   duration_mins: number;
+  image_url?: string;
   articles: EducationArticle[];
   status: "LOCKED" | "IN_PROGRESS" | "COMPLETED";
   quiz_score?: number;

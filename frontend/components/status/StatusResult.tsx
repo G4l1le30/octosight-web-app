@@ -46,27 +46,27 @@ const StatusResult: React.FC<StatusResultProps> = ({ result }) => {
   }, [result.ticket_id]);
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-       <div className="bg-white rounded-3xl border border-neutral-border shadow-sm overflow-hidden">
+    <div className="space-y-4 md:space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+       <div className="bg-white rounded-2xl md:rounded-3xl border border-neutral-border shadow-sm overflow-hidden">
          <div
            className={`h-1.5 ${(result.risk_score ?? 0) >= 75 ? "bg-risk-high" : (result.risk_score ?? 0) >= 35 ? "bg-risk-medium" : "bg-risk-low"}`}
          ></div>
         <div className="p-6 md:p-8">
           <StatusHeader result={result} />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-8 md:mb-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10 mb-8 md:mb-10">
             {/* Left Column */}
             <StatusOverview result={result} />
 
             {/* Right Column */}
-            <div className="space-y-8">
+            <div className="space-y-6 md:space-y-8">
               <StatusAnalysis result={result} />
               <StatusEvidence result={result} />
             </div>
           </div>
 
-          <div className="pt-6 border-t border-neutral-border flex flex-col sm:flex-row sm:items-center justify-end gap-3 md:gap-4">
-            <div className="flex gap-3 w-full sm:w-auto">
+          <div className="pt-4 md:pt-6 border-t border-neutral-border flex flex-col sm:flex-row sm:items-center justify-end gap-3 md:gap-4">
+            <div className="flex gap-2 md:gap-3 w-full sm:w-auto">
               <Button
                 variant="outline"
                 size="md"
@@ -96,20 +96,20 @@ const StatusResult: React.FC<StatusResultProps> = ({ result }) => {
 
           {/* Accuracy Issue Modal */}
           {accuracyModal && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setAccuracyModal(false)}>
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-3 md:p-4" onClick={() => setAccuracyModal(false)}>
               <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
-              <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-md p-6 md:p-8 border border-neutral-border animate-in fade-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
-                <h2 className="text-lg font-bold text-secondary mb-2">Report Accuracy Issue</h2>
-                <p className="text-sm text-secondary/60 mb-4">This will notify the OctoSight admin about an issue with this analysis.</p>
+              <div className="relative bg-white rounded-2xl md:rounded-3xl shadow-2xl w-full max-w-md p-6 md:p-8 border border-neutral-border animate-in fade-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
+                <h2 className="text-base md:text-lg font-bold text-secondary mb-1.5 md:mb-2">Report Accuracy Issue</h2>
+                <p className="text-xs md:text-sm text-secondary/60 mb-3 md:mb-4">This will notify the OctoSight admin about an issue with this analysis.</p>
                 <textarea
                   value={messageText}
                   onChange={(e) => setMessageText(e.target.value)}
                   placeholder="Describe what seems incorrect about the analysis..."
                   rows={4}
-                  className="w-full border-2 border-neutral-border rounded-xl p-3 text-sm outline-none focus:border-primary focus:ring-4 focus:ring-primary/5 resize-none mb-4"
+                  className="w-full border-2 border-neutral-border rounded-lg md:rounded-xl p-2 md:p-3 text-xs md:text-sm outline-none focus:border-primary focus:ring-4 focus:ring-primary/5 resize-none mb-3 md:mb-4"
                 />
-                <div className="flex items-center justify-end gap-3">
-                  <button onClick={() => setAccuracyModal(false)} className="px-5 py-2.5 bg-white border-2 border-neutral-border text-secondary font-bold text-sm rounded-xl hover:bg-neutral-page transition-all">Cancel</button>
+                <div className="flex items-center justify-end gap-2 md:gap-3">
+                  <button onClick={() => setAccuracyModal(false)} className="px-4 md:px-5 py-2 md:py-2.5 bg-white border-2 border-neutral-border text-secondary font-bold text-xs md:text-sm rounded-lg md:rounded-xl hover:bg-neutral-page transition-all">Cancel</button>
                   <button onClick={async () => {
                     setSendingAccuracy(true);
                     try {
@@ -122,7 +122,7 @@ const StatusResult: React.FC<StatusResultProps> = ({ result }) => {
                       else { toast.error("Failed to send report."); }
                     } catch { toast.error("Connection error."); }
                     finally { setSendingAccuracy(false); }
-                  }} disabled={sendingAccuracy} className="px-5 py-2.5 bg-secondary text-white font-bold text-sm rounded-xl hover:opacity-90 transition-all disabled:opacity-50 shadow-md">
+                  }} disabled={sendingAccuracy} className="px-4 md:px-5 py-2 md:py-2.5 bg-secondary text-white font-bold text-xs md:text-sm rounded-lg md:rounded-xl hover:opacity-90 transition-all disabled:opacity-50 shadow-md">
                     {sendingAccuracy ? "Sending..." : "Send Report"}
                   </button>
                 </div>
@@ -132,20 +132,20 @@ const StatusResult: React.FC<StatusResultProps> = ({ result }) => {
 
           {/* Support Modal */}
           {supportModal && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setSupportModal(false)}>
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-3 md:p-4" onClick={() => setSupportModal(false)}>
               <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
-              <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-md p-6 md:p-8 border border-neutral-border animate-in fade-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
-                <h2 className="text-lg font-bold text-secondary mb-2">Notify Support</h2>
-                <p className="text-sm text-secondary/60 mb-4">Request the OctoSight admin to review and take action on this ticket.</p>
+              <div className="relative bg-white rounded-2xl md:rounded-3xl shadow-2xl w-full max-w-md p-6 md:p-8 border border-neutral-border animate-in fade-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
+                <h2 className="text-base md:text-lg font-bold text-secondary mb-1.5 md:mb-2">Notify Support</h2>
+                <p className="text-xs md:text-sm text-secondary/60 mb-3 md:mb-4">Request the OctoSight admin to review and take action on this ticket.</p>
                 <textarea
                   value={messageText}
                   onChange={(e) => setMessageText(e.target.value)}
                   placeholder="Describe what you need help with..."
                   rows={4}
-                  className="w-full border-2 border-neutral-border rounded-xl p-3 text-sm outline-none focus:border-primary focus:ring-4 focus:ring-primary/5 resize-none mb-4"
+                  className="w-full border-2 border-neutral-border rounded-lg md:rounded-xl p-2 md:p-3 text-xs md:text-sm outline-none focus:border-primary focus:ring-4 focus:ring-primary/5 resize-none mb-3 md:mb-4"
                 />
-                <div className="flex items-center justify-end gap-3">
-                  <button onClick={() => setSupportModal(false)} className="px-5 py-2.5 bg-white border-2 border-neutral-border text-secondary font-bold text-sm rounded-xl hover:bg-neutral-page transition-all">Cancel</button>
+                <div className="flex items-center justify-end gap-2 md:gap-3">
+                  <button onClick={() => setSupportModal(false)} className="px-4 md:px-5 py-2 md:py-2.5 bg-white border-2 border-neutral-border text-secondary font-bold text-xs md:text-sm rounded-lg md:rounded-xl hover:bg-neutral-page transition-all">Cancel</button>
                   <button onClick={async () => {
                     setSendingSupport(true);
                     try {
@@ -158,7 +158,7 @@ const StatusResult: React.FC<StatusResultProps> = ({ result }) => {
                       else { toast.error("Failed to send request."); }
                     } catch { toast.error("Connection error."); }
                     finally { setSendingSupport(false); }
-                  }} disabled={sendingSupport} className="px-5 py-2.5 bg-secondary text-white font-bold text-sm rounded-xl hover:opacity-90 transition-all disabled:opacity-50 shadow-md">
+                  }} disabled={sendingSupport} className="px-4 md:px-5 py-2 md:py-2.5 bg-secondary text-white font-bold text-xs md:text-sm rounded-lg md:rounded-xl hover:opacity-90 transition-all disabled:opacity-50 shadow-md">
                     {sendingSupport ? "Sending..." : "Send Request"}
                   </button>
                 </div>
@@ -169,7 +169,7 @@ const StatusResult: React.FC<StatusResultProps> = ({ result }) => {
       </div>
 
       {result.education_recommendation && (
-        <div className="bg-white rounded-3xl border border-neutral-border shadow-sm overflow-hidden">
+        <div className="bg-white rounded-2xl md:rounded-3xl border border-neutral-border shadow-sm overflow-hidden">
            <div
              className={`h-1.5 ${(result.risk_score ?? 0) >= 75 ? "bg-risk-high" : (result.risk_score ?? 0) >= 35 ? "bg-risk-medium" : "bg-risk-low"}`}
            ></div>
@@ -182,26 +182,26 @@ const StatusResult: React.FC<StatusResultProps> = ({ result }) => {
       )}
 
       {/* Report Timeline */}
-      <div className="bg-white rounded-3xl border border-neutral-border shadow-sm overflow-hidden">
+      <div className="bg-white rounded-2xl md:rounded-3xl border border-neutral-border shadow-sm overflow-hidden">
         <div
           className={`h-1.5 ${(result.risk_score ?? 0) >= 70 ? "bg-risk-high" : (result.risk_score ?? 0) >= 40 ? "bg-risk-medium" : "bg-risk-low"}`}
         />
         <div className="p-6 md:p-8">
-          <div className="mb-4 md:mb-6 space-y-1">
+          <div className="mb-4 md:mb-6 space-y-0.5 md:space-y-1">
             <h3 className="text-lg md:text-xl font-bold text-secondary">
               Report Timeline
             </h3>
-            <p className="text-sm text-secondary/60 font-medium">
+            <p className="text-xs md:text-sm text-secondary/60 font-medium">
               Live status updates and investigator actions
             </p>
           </div>
           {logsLoading ? (
-            <div className="flex items-center gap-3 text-sm text-secondary/60 font-medium py-4 md:py-6">
+            <div className="flex items-center gap-2 md:gap-3 text-xs md:text-sm text-secondary/60 font-medium py-4 md:py-6">
               <div className="size-5 border-2 border-secondary/20 border-t-secondary/60 rounded-full animate-spin" />
               Loading timeline...
             </div>
           ) : (
-            <div className="py-2">
+            <div className="py-1.5 md:py-2">
               <TicketTimeline
                 auditLogs={auditLogs}
                 currentStatus={result.status}

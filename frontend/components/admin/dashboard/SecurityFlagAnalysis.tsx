@@ -28,7 +28,7 @@ export const SecurityFlagAnalysis: React.FC<SecurityFlagAnalysisProps> = ({
   }, [flagDist]);
 
   return (
-    <div className="card p-6 md:p-8">
+    <div className="card p-6 md:p-8 h-full">
       <div className="flex items-center justify-between mb-4 md:mb-6">
         <h3 className="font-bold text-base md:text-lg text-secondary">
           Security Flag Analysis (Sub-Categories)
@@ -80,7 +80,7 @@ export const SecurityFlagAnalysis: React.FC<SecurityFlagAnalysisProps> = ({
           </ResponsiveContainer>
         </div>
       ) : (
-        <div className="py-8 text-center opacity-40 font-semibold text-sm">
+        <div className="py-6 md:py-8 text-center opacity-40 font-semibold text-xs md:text-sm">
           No detection flags triggered yet.
         </div>
       )}

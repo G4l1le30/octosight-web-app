@@ -62,4 +62,6 @@ export interface DashboardStats {
   typeDist: { name: string; value: number }[];
   trendData: { name: string; incidents: number }[];
   flagDist: { name: string; value: number }[];
+  openTickets?: number;
+  resolvedTickets?: number;
 }

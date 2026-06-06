@@ -3,7 +3,9 @@ import hashlib
 import inspect
 import json
 import time
-from typing import Any, Callable
+from typing import Any, Callable, Optional
+
+from app.core.redis_client import RedisClient
 
 
 def _is_depends_param(param: inspect.Parameter) -> bool:
@@ -11,11 +13,8 @@ def _is_depends_param(param: inspect.Parameter) -> bool:
     try:
         if param.default is None:
             return False
-        # Check if it's a Depends object by checking its type name and module
-        # This avoids direct import of Depends to prevent circular imports
         return type(param.default).__name__ == 'Depends' and type(param.default).__module__ == 'fastapi.params'
     except Exception:
-        # If anything goes wrong, assume it's not a Depends param
         return False
 
 
@@ -31,7 +30,6 @@ def _cache_params(fn: Callable, *args, **kwargs) -> str:
     except (ValueError, TypeError):
         param_names = []
 
-    # Build a dict of param_name → value, excluding Depends params
     filtered: dict[str, Any] = {}
     for i, name in enumerate(param_names):
         if i < len(args):
@@ -44,7 +42,6 @@ def _cache_params(fn: Callable, *args, **kwargs) -> str:
             continue
         filtered[name] = val
 
-    # Any extra kwargs not in the signature
     for name, val in kwargs.items():
         if name not in filtered and name not in param_names:
             filtered[name] = val
@@ -64,17 +61,31 @@ def _cache_params(fn: Callable, *args, **kwargs) -> str:
 
 
 class TimedCache:
-    """Simple in-memory cache with TTL per key."""
+    """TTL-based cache backed by Redis, falling back to in-memory dict."""
 
-    def __init__(self, ttl_seconds: int = 3600):
+    def __init__(self, ttl_seconds: int = 3600, use_redis: bool = True):
         self._data: dict[str, tuple[float, Any]] = {}
         self._ttl = ttl_seconds
+        self._use_redis = use_redis
+        self._redis: Optional[RedisClient] = None
+
+    def _get_redis(self) -> Optional[RedisClient]:
+        if self._use_redis:
+            if self._redis is None:
+                self._redis = RedisClient()
+            if self._redis.available:
+                return self._redis
+        return None
 
     def key(self, fn: Callable, *args, **kwargs) -> str:
         parts = [fn.__qualname__, _cache_params(fn, *args, **kwargs)]
         return hashlib.md5("|".join(parts).encode()).hexdigest()
 
     def get(self, key: str) -> Any | None:
+        r = self._get_redis()
+        if r is not None:
+            return r.get_json(key)
+
         if key in self._data:
             expires, value = self._data[key]
             if time.time() < expires:
@@ -82,8 +93,13 @@ class TimedCache:
             del self._data[key]
         return None
 
-    def set(self, key: str, value: Any) -> None:
-        self._data[key] = (time.time() + self._ttl, value)
+    def set(self, key: str, value: Any, ttl: Optional[int] = None) -> None:
+        r = self._get_redis()
+        if r is not None:
+            r.set_json(key, value, ttl or self._ttl)
+            return
+        t = ttl or self._ttl
+        self._data[key] = (time.time() + t, value)
 
     def get_or_compute(self, fn: Callable, *args, **kwargs) -> Any:
         k = self.key(fn, *args, **kwargs)
@@ -105,17 +121,26 @@ class TimedCache:
 
     def invalidate(self, fn: Callable, *args, **kwargs) -> None:
         k = self.key(fn, *args, **kwargs)
+        r = self._get_redis()
+        if r is not None:
+            r.delete(k)
+            return
         self._data.pop(k, None)
 
     def clear(self) -> None:
+        r = self._get_redis()
+        if r is not None:
+            r.clear_fallback()
         self._data.clear()
 
 
 # Shared instances
 try:
     explain_cache = TimedCache(ttl_seconds=3600)
+    cache = TimedCache(ttl_seconds=300)  # Default short-TTL cache
 except Exception:
     explain_cache = None
+    cache = None
 
 
 def cache_result(ttl: int = 60):

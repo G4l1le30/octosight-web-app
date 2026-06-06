@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Ticket } from "@/types/ticket";
 import { cn, formatDateTime } from "@/lib/utils";
 import { RISK } from "@/constants/colors";
+import { usePermissions } from "@/hooks/usePermissions";
 
 interface ThreatTableProps {
   tickets: Ticket[];
@@ -14,6 +15,9 @@ interface ThreatTableProps {
   onAssign?: (ticketId: string, email: string) => void;
   selectedIds?: number[];
   onSelectionChange?: (ids: number[]) => void;
+  onSort?: (column: string) => void;
+  sortBy?: string;
+  sortDir?: string;
 }
 
 export const ThreatTable: React.FC<ThreatTableProps> = ({
@@ -24,7 +28,11 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
   onAssign,
   selectedIds = [],
   onSelectionChange,
+  onSort,
+  sortBy,
+  sortDir,
 }) => {
+  const { can } = usePermissions();
   const [assignModalOpen, setAssignModalOpen] = useState(false);
   const [assignTicketId, setAssignTicketId] = useState<string | null>(null);
   const [assignEmail, setAssignEmail] = useState("");
@@ -102,21 +110,21 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
 
   if (loading) {
     return (
-      <div className="py-20 text-center opacity-40 font-semibold">
+      <div className="py-14 md:py-20 text-center opacity-40 font-semibold">
         Loading threat data...
       </div>
     );
   }
 
-  const colSpan = onSelectionChange ? 9 : 8;
+  const colSpan = onSelectionChange ? 10 : 9;
 
   return (
     <div className={cn("overflow-x-auto", className)}>
       <table className="w-full text-left">
-        <thead className="bg-neutral-page text-sm font-bold text-secondary border-b border-neutral-border">
+        <thead className="bg-neutral-page text-xs md:text-sm font-bold text-secondary border-b border-neutral-border">
           <tr>
             {onSelectionChange && (
-              <th className="px-4 md:px-6 py-4 w-10">
+              <th className="px-2 md:px-3 py-3 md:py-4 w-6 md:w-8">
                 <input
                   ref={headerCheckboxRef}
                   type="checkbox"
@@ -126,14 +134,25 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
                 />
               </th>
             )}
-            <th className="px-4 md:px-6 py-4 w-[25%]">Ticket</th>
-            <th className="px-4 md:px-6 py-4 w-[20%]">Indicator / Target</th>
-            <th className="px-4 md:px-6 py-4 text-center">Priority</th>
-            <th className="px-4 md:px-6 py-4 text-center">Risk Score</th>
-            <th className="px-4 md:px-6 py-4 text-center">Key Findings</th>
-            <th className="px-4 md:px-6 py-4 text-center">Status</th>
-            <th className="px-4 md:px-6 py-4 text-center">Assignee</th>
-            <th className="px-4 md:px-6 py-4 text-center">Actions</th>
+            <th className="px-4 md:px-6 py-3 md:py-4 w-[35%] cursor-pointer select-none" onClick={() => onSort?.("ticket_id")}>
+              Ticket {sortBy === "ticket_id" && (sortDir === "asc" ? "↑" : "↓")}
+            </th>
+            <th className="px-4 md:px-6 py-3 md:py-4 w-[25%] cursor-pointer select-none" onClick={() => onSort?.("url")}>
+              Indicator / Target {sortBy === "url" && (sortDir === "asc" ? "↑" : "↓")}
+            </th>
+            <th className="px-4 md:px-6 py-3 md:py-4 text-center cursor-pointer select-none" onClick={() => onSort?.("priority")}>
+              Priority {sortBy === "priority" && (sortDir === "asc" ? "↑" : "↓")}
+            </th>
+            <th className="px-4 md:px-6 py-3 md:py-4 text-center cursor-pointer select-none" onClick={() => onSort?.("risk_score")}>
+              Risk Score {sortBy === "risk_score" && (sortDir === "asc" ? "↑" : "↓")}
+            </th>
+            <th className="px-4 md:px-6 py-3 md:py-4 text-center">Key Findings</th>
+            <th className="px-4 md:px-6 py-3 md:py-4 text-center cursor-pointer select-none" onClick={() => onSort?.("status")}>
+              Status {sortBy === "status" && (sortDir === "asc" ? "↑" : "↓")}
+            </th>
+            <th className="px-4 md:px-6 py-3 md:py-4 text-center w-[100px]">SLA</th>
+            <th className="px-4 md:px-6 py-3 md:py-4 text-center w-[110px]">Assignee</th>
+            <th className="px-4 md:px-6 py-3 md:py-4 text-center w-[90px]">Actions</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-neutral-border">
@@ -164,8 +183,8 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
                 )}
                 <td className="px-4 md:px-6 py-4 md:py-5">
                   <div className="flex flex-col">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-base text-black">
+                    <div className="flex items-center gap-1.5 md:gap-2">
+                      <span className="font-bold text-sm md:text-base text-black">
                         {ticket.ticket_id}
                       </span>
                     </div>
@@ -176,11 +195,11 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
                 </td>
                 <td className="px-4 md:px-6 py-4 md:py-5">
                   <div className="flex flex-col">
-                    <span className="text-xs font-bold text-secondary mb-1">
+                    <span className="text-xs font-bold text-secondary mb-0.5 md:mb-1">
                       {ticket.type}
                     </span>
                     <span
-                      className="text-sm font-medium text-secondary break-all line-clamp-1"
+                      className="text-xs md:text-sm font-medium text-secondary break-all line-clamp-1"
                       title={
                         ticket.type === "SMS" || ticket.type === "WhatsApp"
                           ? ticket.sender_numbers || "N/A"
@@ -208,9 +227,9 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
                   </span>
                 </td>
                 <td className="px-4 md:px-6 py-4 md:py-5 text-center">
-                  <div className="flex flex-col items-center gap-2">
+                  <div className="flex flex-col items-center gap-1.5 md:gap-2">
                     <span
-                      className="text-sm font-bold"
+                      className="text-xs md:text-sm font-bold"
                       style={{
                         color:
                           ticket.risk_score >= 75
@@ -222,7 +241,7 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
                     >
                       {ticket.risk_score}
                     </span>
-                    <div className="w-full max-w-[140px] rounded-full bg-neutral-border h-1 overflow-hidden">
+                    <div className="w-full max-w-[140px] rounded-full bg-neutral-border h-0.5 md:h-1 overflow-hidden">
                       <div
                         className="h-full rounded-full transition-all duration-1000"
                         style={{
@@ -239,7 +258,7 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
                   </div>
                 </td>
                 <td className="px-4 md:px-6 py-4 md:py-5 text-center">
-                  <div className="flex flex-wrap gap-1 justify-center">
+                  <div className="flex flex-wrap gap-0.5 md:gap-1 justify-center">
                     {ticket.flags ? (
                       ticket.flags
                         .split(",")
@@ -247,7 +266,7 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
                         .map((f, i) => (
                           <span
                             key={i}
-                            className="text-xs font-bold border border-neutral-border text-secondary/80 px-2 py-0.5 rounded"
+                            className="text-xs font-bold border border-neutral-border text-secondary/80 px-1.5 md:px-2 py-0.5 rounded"
                           >
                             {f.replace(/_/g, " ")}
                           </span>
@@ -256,7 +275,7 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
                       <span className="text-xs text-secondary/80">None</span>
                     )}
                     {ticket.flags && ticket.flags.split(",").length > 2 && (
-                      <span className="text-xs font-bold text-secondary/70">
+                      <span className="text-xs font-bold text-secondary/80">
                         +{ticket.flags.split(",").length - 2}
                       </span>
                     )}
@@ -265,12 +284,34 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
                 <td className="px-4 md:px-6 py-4 md:py-5 text-center">
                   <span
                     className={cn(
-                      "text-xs font-bold px-2.5 py-1 rounded-full whitespace-nowrap border",
+                      "text-xs font-bold px-2 md:px-2.5 py-0.5 md:py-1 rounded-full whitespace-nowrap border",
                       getStatusBadgeClass(ticket.status),
                     )}
                   >
                     {ticket.status}
                   </span>
+                </td>
+                <td className="px-4 md:px-6 py-4 md:py-5 text-center">
+                  {ticket.sla_breached ? (
+                    <span className="text-xs font-bold px-1.5 md:px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200 inline-flex items-center gap-0.5 md:gap-1">
+                      Breached
+                    </span>
+                  ) : ticket.sla_deadline ? (
+                    <span className="text-xs font-medium text-secondary">
+                      {(() => {
+                        const deadline = new Date(ticket.sla_deadline);
+                        const now = new Date();
+                        const diffMs = deadline.getTime() - now.getTime();
+                        if (diffMs <= 0) return "Expired";
+                        const diffHrs = Math.floor(diffMs / 3600000);
+                        const diffMins = Math.floor((diffMs % 3600000) / 60000);
+                        if (diffHrs > 0) return `${diffHrs}h ${diffMins}m left`;
+                        return `${diffMins}m left`;
+                      })()}
+                    </span>
+                  ) : (
+                    <span className="text-xs text-secondary/60">N/A</span>
+                  )}
                 </td>
                 <td className="px-4 md:px-6 py-4 md:py-5 text-center">
                   <span
@@ -281,21 +322,21 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
                   </span>
                 </td>
                 <td className="px-4 md:px-6 py-4 md:py-5 text-center">
-                  <div className="flex items-center justify-center gap-2">
-                    {onAssign && (
+                  <div className="flex flex-col items-center gap-1 md:gap-1.5">
+                    <Link
+                      href={`/admin/investigate/${ticket.ticket_id}`}
+                      className="text-xs font-bold text-white bg-primary px-2 md:px-3 py-1 md:py-1.5 rounded-md md:rounded-lg hover:opacity-90 transition-all w-full text-center"
+                    >
+                      Investigate
+                    </Link>
+                    {onAssign && can("tickets.assign") && (
                       <button
                         onClick={() => openAssignModal(ticket.ticket_id)}
-                        className="text-xs font-bold border border-neutral-border px-3 py-1.5 rounded-lg hover:bg-neutral-page transition-colors"
+                        className="text-xs font-bold border border-neutral-border px-2 md:px-3 py-1 md:py-1.5 rounded-md md:rounded-lg hover:bg-neutral-page transition-colors w-full text-center"
                       >
                         Assign
                       </button>
                     )}
-                    <Link
-                      href={`/admin/investigate/${ticket.ticket_id}`}
-                      className="text-xs font-bold text-secondary hover:text-primary transition-colors bg-white border border-neutral-border px-4 py-2 rounded-xl shadow-sm inline-block"
-                    >
-                      Investigate
-                    </Link>
                   </div>
                 </td>
               </tr>
@@ -306,21 +347,21 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
 
       {/* Assign Modal */}
       {assignModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 md:p-4">
           <div
             className="absolute inset-0 bg-black/40 backdrop-blur-sm"
             onClick={() => setAssignModalOpen(false)}
           />
-          <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md p-6 animate-in fade-in zoom-in-95 duration-200">
-            <h3 className="text-lg font-bold text-secondary mb-1">
+          <div className="relative bg-white rounded-xl md:rounded-2xl shadow-xl w-full max-w-md p-4 md:p-6 animate-in fade-in zoom-in-95 duration-200">
+            <h3 className="text-base md:text-lg font-bold text-secondary mb-0.5 md:mb-1">
               Assign Ticket
             </h3>
-            <p className="text-sm text-secondary/60 mb-4">
+            <p className="text-xs md:text-sm text-secondary/60 mb-3 md:mb-4">
               Assigning{" "}
               <span className="font-bold text-secondary">{assignTicketId}</span>{" "}
               to an analyst.
             </p>
-            <label className="text-xs font-bold text-secondary block mb-1.5">
+            <label className="text-xs font-bold text-secondary block mb-1 md:mb-1.5">
               Email Address
             </label>
             <input
@@ -331,20 +372,20 @@ export const ThreatTable: React.FC<ThreatTableProps> = ({
                 if (e.key === "Enter") handleAssignConfirm();
               }}
               placeholder="analyst@domain.com"
-              className="w-full border border-neutral-border rounded-xl px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all mb-4"
+              className="w-full border border-neutral-border rounded-lg md:rounded-xl px-3 md:px-4 py-2 md:py-2.5 text-xs md:text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all mb-3 md:mb-4"
               autoFocus
             />
-            <div className="flex justify-end gap-2">
+            <div className="flex justify-end gap-1.5 md:gap-2">
               <button
                 onClick={() => setAssignModalOpen(false)}
-                className="px-4 py-2 text-sm font-bold text-secondary hover:bg-neutral-page rounded-xl transition-colors"
+                className="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-bold text-secondary hover:bg-neutral-page rounded-lg md:rounded-xl transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleAssignConfirm}
                 disabled={!assignEmail.trim()}
-                className="px-4 py-2 text-sm font-bold text-white bg-primary hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl transition-colors"
+                className="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-bold text-white bg-primary hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed rounded-lg md:rounded-xl transition-colors"
               >
                 Save
               </button>

@@ -1,5 +1,5 @@
 export interface ActivityItem {
-  id: number;
+  id: string;
   activity_type: string;
   description: string;
   actor_id: string | null;

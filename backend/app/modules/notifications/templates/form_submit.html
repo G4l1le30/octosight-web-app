@@ -31,13 +31,22 @@
     }
 
     .header {
-      background-color: #ffffff;
+      background-color: #e31e24;
       padding: 40px 40px 20px 40px;
       text-align: left;
     }
 
+    .header-warning {
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
     .logo-text {
-      color: #e31e24;
+      color: #ffffff;
       font-size: 24px;
       font-weight: 800;
       letter-spacing: -0.5px;
@@ -63,11 +72,11 @@
     }
 
     .details-box {
-      background-color: #f3f4f6;
+      background-color: #fef2f2;
       padding: 24px;
       border-radius: 8px;
       margin: 24px 0;
-      border: 1px solid #e5e7eb;
+      border: 1px solid #fecaca;
     }
 
     .details-row {
@@ -95,6 +104,45 @@
       font-size: 16px;
       font-weight: 700;
       color: #e31e24;
+    }
+
+    .priority-badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .priority-high {
+      background-color: #fef2f2;
+      color: #dc2626;
+      border: 1px solid #fecaca;
+    }
+
+    .priority-medium {
+      background-color: #fffbeb;
+      color: #d97706;
+      border: 1px solid #fde68a;
+    }
+
+    .priority-low {
+      background-color: #f0fdf4;
+      color: #16a34a;
+      border: 1px solid #bbf7d0;
+    }
+
+    .cta-button {
+      display: inline-block;
+      background-color: #e31e24;
+      color: #ffffff;
+      padding: 14px 32px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 15px;
+      margin: 24px 0;
     }
 
     .footer {
@@ -140,20 +188,22 @@
   <div class="wrapper">
     <div class="container">
       <div class="header">
+        <div class="header-warning">&#9888; New Incident Report</div>
         <div class="logo-text">OCTOSIGHT</div>
       </div>
 
       <div class="content">
-        <h1 class="title">Report Submitted</h1>
+        <h1 class="title">New Report Requires Review</h1>
         <p class="message">
-          Hello,<br /><br />
-          Thank you for participating in maintaining digital security. Your report has been successfully received and is
-          currently under review.
+          A new phishing/fraud report has been submitted by
+          <strong>{{ reporter_email }}</strong> and requires your attention.
+          Please review the details below and take the appropriate action.
         </p>
 
         <div class="details-box">
           <div class="details-row"><span class="label">Ticket ID:</span> <span class="value">{{ ticket_id }}</span>
           </div>
+          <div class="details-row"><span class="label">Reporter:</span> <span class="value">{{ reporter_email }}</span></div>
           <div class="details-row"><span class="label">Report Type:</span> <span class="value">{{ type }}</span></div>
           <div class="details-row"><span class="label">URL/Indicator:</span> <span class="value">{{ url }}</span></div>
           <div class="details-row"><span class="label">Sender:</span> <span class="value">{{ sender_numbers }}</span></div>
@@ -171,73 +221,10 @@
           {% endif %}
         </div>
 
-        {% if gemini_warnings or gemini_actions or gemini_tips %}
-        <div
-          style="background-color: #ffffff; padding: 16px; border-radius: 6px; margin-top: 24px; border-left: 4px solid #e31e24; font-size: 14px; color: #374151;">
-          <div style="font-weight: 600; margin-bottom: 12px; font-size: 15px; color: #111827;">Security Recommendations
-            <span style="font-weight: 400; color: #6b7280;">&middot; Powered by Gemini AI</span></div>
-
-          {% if gemini_warnings %}
-          <div style="margin-bottom: 10px;">
-            <div style="margin-bottom: 4px; font-weight: 600; color: #374151;">Risk Warnings</div>
-            <ul style="margin: 0; padding-left: 20px; color: #374151; font-size: 14px; line-height: 1.5;">
-              {% for warning in gemini_warnings %}
-              <li>{{ warning }}</li>
-              {% endfor %}
-            </ul>
-          </div>
-          {% endif %}
-
-          {% if gemini_actions %}
-          <div style="margin-bottom: 10px;">
-            <div style="margin-bottom: 4px; font-weight: 600; color: #374151;">Suggested Actions</div>
-            <ul style="margin: 0; padding-left: 20px; color: #374151; font-size: 14px; line-height: 1.5;">
-              {% for action in gemini_actions %}
-              <li>{{ action }}</li>
-              {% endfor %}
-            </ul>
-          </div>
-          {% endif %}
-
-          {% if gemini_tips %}
-          <div style="margin-bottom: 0;">
-            <div style="margin-bottom: 4px; font-weight: 600; color: #374151;">Prevention Tips</div>
-            <ul style="margin: 0; padding-left: 20px; color: #374151; font-size: 14px; line-height: 1.5;">
-              {% for tip in gemini_tips %}
-              <li>{{ tip }}</li>
-              {% endfor %}
-            </ul>
-          </div>
-          {% endif %}
-        </div>
-        {% endif %}
-
-          {% if gemini_actions %}
-          <div style="margin-bottom: 10px;">
-            <strong style="color: #374151; display: block; margin-bottom: 4px;">Suggested Actions</strong>
-            <ul style="margin: 0; padding-left: 20px; color: #374151; font-size: 14px; line-height: 1.5;">
-              {% for action in gemini_actions %}
-              <li>{{ action }}</li>
-              {% endfor %}
-            </ul>
-          </div>
-          {% endif %}
-
-          {% if gemini_tips %}
-          <div style="margin-bottom: 0;">
-            <strong style="color: #374151; display: block; margin-bottom: 4px;">Prevention Tips</strong>
-            <ul style="margin: 0; padding-left: 20px; color: #374151; font-size: 14px; line-height: 1.5;">
-              {% for tip in gemini_tips %}
-              <li>{{ tip }}</li>
-              {% endfor %}
-            </ul>
-          </div>
-          {% endif %}
-        </div>
-        {% endif %}
+        <a href="{{ link }}" class="cta-button">Review Report in Dashboard</a>
 
         <p class="message" style="margin-top: 24px; margin-bottom: 0;">
-          You can monitor the status of this report in the report dashboard menu on the OctoSight application.
+          This is an automated notification from OctoSight. Please ensure this report is reviewed and assigned to the appropriate team member as soon as possible.
         </p>
       </div>
 

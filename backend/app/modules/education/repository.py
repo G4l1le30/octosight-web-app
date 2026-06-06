@@ -82,5 +82,9 @@ class EducationRepository:
         return db.query(EducationModule).filter(EducationModule.order_index == order_index).first()
 
     @staticmethod
+    def get_article_by_id(db: Session, article_id: str) -> Optional[EducationArticle]:
+        return db.query(EducationArticle).filter(EducationArticle.id == article_id).first()
+
+    @staticmethod
     def get_articles_by_module(db: Session, module_id: str) -> List[EducationArticle]:
         return db.query(EducationArticle).filter(EducationArticle.module_id == module_id).all()

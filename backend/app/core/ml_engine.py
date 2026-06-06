@@ -84,6 +84,9 @@ def _load_model():
 
 
 def analyze_spam(text: str) -> dict:
+    if not isinstance(text, str):
+        return {"error": "Input must be a text string"}
+
     _load_model()
 
     if _spam_model is None:
@@ -91,9 +94,15 @@ def analyze_spam(text: str) -> dict:
             "error": "ML model is not available. Make sure spam_pipeline.pkl exists in backend/models/."
         }
 
-    prediction = _spam_model.predict([text])[0]
-    probabilities = _spam_model.predict_proba([text])[0]
-    confidence = float(max(probabilities)) * 100
+    try:
+        prediction = _spam_model.predict([text])[0]
+        probabilities = _spam_model.predict_proba([text])[0]
+        confidence = float(max(probabilities)) * 100
+    except Exception as exc:
+        err_msg = str(exc)
+        if "not support image" in err_msg.lower() or "image" in err_msg.lower():
+            return {"error": "The ML model only supports text input. Image analysis is not available."}
+        return {"error": f"ML prediction failed: {err_msg}"}
 
     return {
         "category": str(prediction),

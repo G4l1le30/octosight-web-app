@@ -32,89 +32,89 @@ export const TriageFilters: React.FC<TriageFiltersProps> = ({
 }) => {
   return (
     <div className="card p-4 md:p-6 mb-6 md:mb-8 bg-white border-primary/10 border-t-4 shadow-xl overflow-visible">
-      <div className="flex items-center gap-2 mb-6 border-b border-neutral-border pb-4">
-        <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="flex items-center gap-1.5 md:gap-2 mb-4 md:mb-6 border-b border-neutral-border pb-3 md:pb-4">
+        <svg className="w-4 md:w-5 h-4 md:h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 8.293A1 1 0 013 7.586V4z"></path>
         </svg>
         <h2 className="font-bold text-slgm text-secondary">Advanced Search Filters</h2>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
-        <Select 
+        <Select
           label="Priority"
           value={filters.priority}
-          onChange={(e) => setFilters({...filters, priority: e.target.value})}
+          onChange={(e) => setFilters({ ...filters, priority: e.target.value })}
           options={[
-            {value: "All", label: "All Priority"},
-            {value: "High", label: "High"},
-            {value: "Medium", label: "Medium"},
-            {value: "Low", label: "Low"}
+            { value: "All", label: "All Priority" },
+            { value: "High", label: "High" },
+            { value: "Medium", label: "Medium" },
+            { value: "Low", label: "Low" }
           ]}
         />
 
-        <Select 
+        <Select
           label="Ticket Status"
           value={filters.status}
-          onChange={(e) => setFilters({...filters, status: e.target.value})}
+          onChange={(e) => setFilters({ ...filters, status: e.target.value })}
           options={[
-            {value: "All", label: "All Status"},
-            {value: "Submitted", label: "Submitted"},
-            {value: "In Review", label: "In Review"},
-            {value: "Need More Info", label: "Need More Info"},
-            {value: "Confirmed", label: "Confirmed"},
-            {value: "False Positive", label: "False Positive"},
-            {value: "Mitigated", label: "Mitigated"},
-            {value: "Closed", label: "Closed"}
+            { value: "All", label: "All Status" },
+            { value: "Submitted", label: "Submitted" },
+            { value: "In Review", label: "In Review" },
+            { value: "Need More Info", label: "Need More Info" },
+            { value: "Confirmed", label: "Confirmed" },
+            { value: "False Positive", label: "False Positive" },
+            { value: "Mitigated", label: "Mitigated" },
+            { value: "Closed", label: "Closed" }
           ]}
         />
 
-        <Select 
+        <Select
           label="Channel"
           value={filters.type}
-          onChange={(e) => setFilters({...filters, type: e.target.value})}
+          onChange={(e) => setFilters({ ...filters, type: e.target.value })}
           options={[
-            {value: "All", label: "All Channels"},
-            {value: "Website", label: "Website"},
-            {value: "SMS", label: "SMS"},
-            {value: "WhatsApp", label: "WhatsApp"},
-            {value: "Email", label: "Email"}
+            { value: "All", label: "All Channels" },
+            { value: "Website", label: "Website" },
+            { value: "SMS", label: "SMS" },
+            { value: "WhatsApp", label: "WhatsApp" },
+            { value: "Email", label: "Email" }
           ]}
         />
 
-        <Select 
+        <Select
           label="Detection Flag"
           value={filters.flag}
-          onChange={(e) => setFilters({...filters, flag: e.target.value})}
+          onChange={(e) => setFilters({ ...filters, flag: e.target.value })}
           options={[
-            {value: "All", label: "Any Flag"},
-            ...availableFlags.map(f => ({value: f, label: f.replace(/_/g, ' ')}))
+            { value: "All", label: "Any Flag" },
+            ...availableFlags.map(f => ({ value: f, label: f.replace(/_/g, ' ') }))
           ]}
         />
 
-        <DatePicker 
+        <DatePicker
           label="From Date"
           value={filters.startDate}
-          onChange={(val) => setFilters({...filters, startDate: val})}
+          onChange={(val) => setFilters({ ...filters, startDate: val })}
           placeholder="Start Date"
-          triggerClassName="py-2 text-sm"
+          triggerClassName="text-sm"
         />
 
-        <DatePicker 
+        <DatePicker
           label="To Date"
           value={filters.endDate}
-          onChange={(val) => setFilters({...filters, endDate: val})}
+          onChange={(val) => setFilters({ ...filters, endDate: val })}
           placeholder="End Date"
-          triggerClassName="py-2 text-sm"
+          triggerClassName="text-sm"
         />
       </div>
 
-      <div className="mt-6 pt-4 border-t border-dashed border-neutral-border flex items-center justify-between">
-        <p className="text-sm font-medium opacity-60">
+      <div className="mt-4 md:mt-6 pt-3 md:pt-4 border-t border-dashed border-neutral-border flex items-center justify-between">
+        <p className="text-xs md:text-sm font-medium opacity-60">
           Found <span className="text-secondary opacity-100">{filteredCount}</span> matching reports out of {totalCount} total
         </p>
-        <button 
+        <button
           onClick={onReset}
-          className="text-sm font-bold text-risk-high px-3 py-1 rounded transition-all hover:underline hover:underline-offset-4"
+          className="text-xs md:text-sm font-bold text-risk-high px-2 md:px-3 py-0.5 md:py-1 rounded transition-all hover:underline hover:underline-offset-4"
         >
           Clear All Filters
         </button>

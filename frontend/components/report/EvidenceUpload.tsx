@@ -15,7 +15,14 @@ import React, { useCallback } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
-import { Camera, FileCode, AlertTriangle, FileText, Archive, FileImage } from "lucide-react";
+import {
+  Camera,
+  FileCode,
+  AlertTriangle,
+  FileText,
+  Archive,
+  FileImage,
+} from "lucide-react";
 
 // Constants
 
@@ -25,13 +32,24 @@ const IMAGE_EXTENSIONS = ["png", "jpg", "jpeg"];
 // Phishing attachment types — NO images (images go to screenshot uploader)
 const ALLOWED_ATTACHMENT_EXTENSIONS = [
   // Documents
-  "pdf", "doc", "docx", "docm", "rtf",
+  "pdf",
+  "doc",
+  "docx",
+  "docm",
+  "rtf",
   // Archives
-  "zip", "rar", "7z",
+  "zip",
+  "rar",
+  "7z",
   // Executables / APKs
-  "apk", "exe", "scr", "vbs",
+  "apk",
+  "exe",
+  "scr",
+  "vbs",
   // Web / Email
-  "html", "htm", "eml",
+  "html",
+  "htm",
+  "eml",
 ];
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
@@ -49,24 +67,52 @@ function getAttachmentBadge(ext: string): {
   Icon: React.FC<{ className?: string }>;
 } {
   if (["pdf", "doc", "docx", "docm", "rtf"].includes(ext)) {
-    return { label: "Document", color: "text-blue-600 bg-blue-50 border-blue-200", Icon: FileText };
+    return {
+      label: "Document",
+      color: "text-blue-600 bg-blue-50 border-blue-200",
+      Icon: FileText,
+    };
   }
   if (["zip", "rar", "7z"].includes(ext)) {
-    return { label: "Archive", color: "text-yellow-700 bg-yellow-50 border-yellow-200", Icon: Archive };
+    return {
+      label: "Archive",
+      color: "text-yellow-700 bg-yellow-50 border-yellow-200",
+      Icon: Archive,
+    };
   }
   if (["apk", "exe", "scr", "vbs"].includes(ext)) {
-    return { label: "Executable", color: "text-risk-high bg-risk-high/10 border-risk-high/30", Icon: FileCode };
+    return {
+      label: "Executable",
+      color: "text-risk-high bg-risk-high/10 border-risk-high/30",
+      Icon: FileCode,
+    };
   }
   if (["html", "htm", "svg"].includes(ext)) {
-    return { label: "Web File", color: "text-purple-600 bg-purple-50 border-purple-200", Icon: FileCode };
+    return {
+      label: "Web File",
+      color: "text-purple-600 bg-purple-50 border-purple-200",
+      Icon: FileCode,
+    };
   }
   if (["eml"].includes(ext)) {
-    return { label: "Email File", color: "text-orange-600 bg-orange-50 border-orange-200", Icon: FileText };
+    return {
+      label: "Email File",
+      color: "text-orange-600 bg-orange-50 border-orange-200",
+      Icon: FileText,
+    };
   }
   if (IMAGE_EXTENSIONS.includes(ext)) {
-    return { label: "Image", color: "text-green-700 bg-green-50 border-green-200", Icon: FileImage };
+    return {
+      label: "Image",
+      color: "text-green-700 bg-green-50 border-green-200",
+      Icon: FileImage,
+    };
   }
-  return { label: ext.toUpperCase(), color: "text-secondary bg-neutral-border border-neutral-border", Icon: FileCode };
+  return {
+    label: ext.toUpperCase(),
+    color: "text-secondary bg-neutral-border border-neutral-border",
+    Icon: FileCode,
+  };
 }
 
 // Props
@@ -112,7 +158,9 @@ export const EvidenceUpload = ({
   // State
   const [file, setFile] = React.useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
-  const [validationError, setValidationError] = React.useState<string | null>(null);
+  const [validationError, setValidationError] = React.useState<string | null>(
+    null,
+  );
   const [isDragging, setIsDragging] = React.useState(false);
   const [imageDimensions, setImageDimensions] = React.useState<{
     width: number;
@@ -138,7 +186,7 @@ export const EvidenceUpload = ({
       }
       return null;
     },
-    [allowedExtensions, otherSelectedFile]
+    [allowedExtensions, otherSelectedFile],
   );
 
   // Apply selected file
@@ -168,7 +216,10 @@ export const EvidenceUpload = ({
         // Detect portrait vs landscape safely
         const img = new window.Image();
         img.onload = () => {
-          setImageDimensions({ width: img.naturalWidth, height: img.naturalHeight });
+          setImageDimensions({
+            width: img.naturalWidth,
+            height: img.naturalHeight,
+          });
         };
         img.onerror = () => {
           setImageDimensions(null);
@@ -181,7 +232,7 @@ export const EvidenceUpload = ({
 
       onFileChange(f);
     },
-    [validate, onFileChange]
+    [validate, onFileChange],
   );
 
   // Reset
@@ -234,8 +285,8 @@ export const EvidenceUpload = ({
 
   // Render
   return (
-    <div className="space-y-3">
-      <label className="text-base font-bold text-secondary">{label}</label>
+    <div className="space-y-2 md:space-y-3">
+      <label className="text-sm md:text-base font-bold text-secondary">{label}</label>
       <div
         className="relative"
         onDragOver={handleDragOver}
@@ -259,14 +310,14 @@ export const EvidenceUpload = ({
         {file ? (
           <div
             className={cn(
-              "flex flex-row items-center w-full h-36 md:h-48 border-2 rounded-xl p-3 md:p-4 gap-3 md:gap-4 bg-white transition-all",
+              "flex flex-row items-center w-full h-36 md:h-48 border-2 rounded-lg md:rounded-xl p-3 md:p-4 gap-3 md:gap-4 bg-white transition-all",
               error
                 ? "border-risk-high bg-risk-high/5"
-                : "border-neutral-border"
+                : "border-neutral-border",
             )}
           >
             {/* Left Side: Square Preview Container */}
-            <div className="h-full aspect-square rounded-lg overflow-hidden border border-neutral-border bg-neutral-page flex items-center justify-center shrink-0 relative">
+            <div className="h-full aspect-square rounded-md md:rounded-lg overflow-hidden border border-neutral-border bg-neutral-page flex items-center justify-center shrink-0 relative">
               {isImageFile && previewUrl ? (
                 <Image
                   src={previewUrl}
@@ -278,17 +329,17 @@ export const EvidenceUpload = ({
               ) : (
                 <div className="flex flex-col items-center justify-center">
                   {badge ? (
-                    <badge.Icon className="size-12 text-secondary/40" />
+                    <badge.Icon className="size-12 text-secondary/60" />
                   ) : (
-                    <FileCode className="size-12 text-secondary/40" />
+                    <FileCode className="size-12 text-secondary/60" />
                   )}
                 </div>
               )}
             </div>
 
             {/* Right Side: Details & Actions */}
-            <div className="flex flex-col justify-center h-full flex-1 min-w-0 py-1">
-              <div className="space-y-1.5 min-w-0">
+            <div className="flex flex-col justify-center h-full flex-1 min-w-0 py-0.5 md:py-1">
+              <div className="space-y-1 md:space-y-1.5 min-w-0">
                 <h4
                   className="text-sm md:text-base font-bold text-secondary truncate"
                   title={file.name}
@@ -300,7 +351,7 @@ export const EvidenceUpload = ({
                 </p>
 
                 {/* Badges container */}
-                <div className="flex flex-col gap-1">
+                <div className="flex flex-col gap-0.5 md:gap-1">
                   {badge && (
                     <span className="text-xs font-medium text-secondary/60">
                       {badge.label}
@@ -309,12 +360,12 @@ export const EvidenceUpload = ({
                 </div>
               </div>
 
-              <div className="pt-2">
+              <div className="pt-1.5 md:pt-2">
                 <Button
                   variant="danger"
                   size="sm"
                   onClick={handleReset}
-                  className="px-4 font-bold text-xs"
+                  className="px-3 md:px-4 font-bold text-xs"
                 >
                   Remove
                 </Button>
@@ -325,25 +376,25 @@ export const EvidenceUpload = ({
           <label
             htmlFor={id}
             className={cn(
-              "flex flex-col items-center justify-center w-full h-36 md:h-48 border-2 border-dashed rounded-xl cursor-pointer hover:bg-primary/5 transition-all group overflow-hidden p-3 md:p-4",
+              "flex flex-col items-center justify-center w-full h-36 md:h-48 border-2 border-dashed rounded-lg md:rounded-xl cursor-pointer hover:bg-primary/5 transition-all group overflow-hidden p-3 md:p-4",
               error || validationError
                 ? "border-risk-high bg-risk-high/5"
                 : isDragging
                   ? "border-primary bg-primary/10 scale-[1.02]"
                   : "border-neutral-border hover:border-primary",
-              disabled && "opacity-60 cursor-not-allowed pointer-events-none"
+              disabled && "opacity-60 cursor-not-allowed pointer-events-none",
             )}
           >
-            <div className="flex flex-col items-center justify-center text-center p-2 gap-2">
+            <div className="flex flex-col items-center justify-center text-center p-1.5 md:p-2 gap-1.5 md:gap-2">
               {isScreenshotMode ? (
-                <Camera className="w-8 h-8 text-secondary/60 group-hover:text-primary transition-colors" />
+                <Camera className="w-6 md:w-8 h-6 md:h-8 text-secondary/60 group-hover:text-primary transition-colors" />
               ) : (
-                <FileCode className="w-8 h-8 text-secondary/60 group-hover:text-primary transition-colors" />
+                <FileCode className="w-6 md:w-8 h-6 md:h-8 text-secondary/60 group-hover:text-primary transition-colors" />
               )}
 
-              <p className="text-sm font-bold text-secondary">Upload {label}</p>
+              <p className="text-xs md:text-sm font-bold text-secondary">Upload {label}</p>
 
-              <p className="text-[10px] text-secondary/60 max-w-[200px] leading-normal font-semibold">
+              <p className="text-xs text-secondary/60 max-w-[200px] leading-normal font-semibold">
                 {isScreenshotMode
                   ? "PNG, JPG, JPEG (max 10 MB)"
                   : "PDF, DOC, ZIP, APK, & more (max 10 MB)"}
@@ -354,7 +405,7 @@ export const EvidenceUpload = ({
 
         {/* Validation / error message */}
         {displayError && (
-          <p className="text-xs font-semibold text-risk-high mt-1.5">
+          <p className="text-xs font-semibold text-risk-high mt-1 md:mt-1.5">
             {displayError}
           </p>
         )}

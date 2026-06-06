@@ -31,55 +31,60 @@ export const StatusAnalysis: React.FC<StatusAnalysisProps> = ({ result }) => {
     console.error("Failed to parse analysis results", e);
   }
 
+  const rawMlPrediction = result.flags?.split("ml_prediction:")[1]?.split(",")[0] ?? null;
+  const normalizedMlPrediction = rawMlPrediction === "ham"
+    ? "not phishing"
+    : rawMlPrediction?.replace(/_/g, " ") ?? null;
+
   return (
-    <div className="space-y-6 pt-2">
+    <div className="space-y-4 md:space-y-6 pt-1.5 md:pt-2">
       {/* Hybrid Score Breakdown */}
       <div>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-bold text-secondary tracking-wide">
+        <div className="flex items-center justify-between mb-3 md:mb-4">
+          <h3 className="text-xs md:text-sm font-bold text-secondary tracking-wide">
             Hybrid Score Breakdown
           </h3>
           {result.flags?.includes("BLACKLISTED") && (
-            <span className="px-2.5 py-1 rounded-md bg-secondary text-white text-xs font-bold tracking-wide">
+            <span className="px-2 md:px-2.5 py-0.5 md:py-1 rounded-sm md:rounded-md bg-secondary text-white text-xs font-bold tracking-wide">
               Blacklist
             </span>
           )}
         </div>
         <div className="grid grid-cols-1 gap-3 md:gap-4">
-          <div className="bg-neutral-page/50 p-4 rounded-xl border border-neutral-border/50">
-            <div className="flex justify-between text-sm font-bold text-secondary mb-2">
+          <div className="bg-neutral-page/50 p-3 md:p-4 rounded-lg md:rounded-xl border border-neutral-border/50">
+            <div className="flex justify-between text-xs md:text-sm font-bold text-secondary mb-1.5 md:mb-2">
               <span>Rule-based ({ruleWeight}%)</span>
               <span>{Number(result.rule_score)} / 100</span>
             </div>
-            <div className="w-full bg-neutral-border/60 rounded-full h-2 overflow-hidden">
+            <div className="w-full bg-neutral-border/60 rounded-full h-1.5 md:h-2 overflow-hidden">
               <div
                 className="bg-secondary h-full rounded-full transition-all duration-1000"
                 style={{ width: `${result.rule_score}%` }}
               ></div>
             </div>
           </div>
-          <div className="bg-neutral-page/50 p-4 rounded-xl border border-neutral-border/50">
-            <div className="flex justify-between text-sm font-bold text-secondary mb-2">
+          <div className="bg-neutral-page/50 p-3 md:p-4 rounded-lg md:rounded-xl border border-neutral-border/50">
+            <div className="flex justify-between text-xs md:text-sm font-bold text-secondary mb-1.5 md:mb-2">
               <span>ML Engine ({mlWeight}%)</span>
               <span>{Number(result.ml_score)} / 100</span>
             </div>
-            <div className="w-full bg-neutral-border/60 rounded-full h-2 overflow-hidden">
+            <div className="w-full bg-neutral-border/60 rounded-full h-1.5 md:h-2 overflow-hidden">
               <div
                 className="bg-primary h-full rounded-full transition-all duration-1000"
                 style={{ width: `${result.ml_score}%` }}
               ></div>
             </div>
-            <div className="flex justify-between items-center mt-2.5">
-              {result.flags?.includes("ml_prediction:") && (
+            <div className="flex justify-between items-center mt-2 md:mt-2.5">
+              {normalizedMlPrediction && (
                 <p className="text-xs font-bold text-secondary">
-                  Prediction:{" "}
+                  ML prediction:{" "}
                   <span className="text-secondary/80">
-                    {result.flags.split("ml_prediction:")[1].split(",")[0]}
+                    {normalizedMlPrediction}
                   </span>
                 </p>
               )}
               {isScamOverride && (
-                <p className="text-[10px] text-primary/60 font-bold">
+                <p className="text-xs text-secondary font-bold">
                   Context Optimized
                 </p>
               )}
@@ -90,24 +95,24 @@ export const StatusAnalysis: React.FC<StatusAnalysisProps> = ({ result }) => {
 
       {/* Scenario Analysis Result */}
       {details.detected_scam_type && details.detected_scam_type !== "General Phishing" && (
-        <div className="bg-neutral-page/30 rounded-2xl p-4 md:p-6 border border-neutral-border animate-in fade-in zoom-in-95 duration-500">
+        <div className="bg-neutral-page/30 rounded-xl md:rounded-2xl p-4 md:p-6 border border-neutral-border animate-in fade-in zoom-in-95 duration-500">
           <div className="flex items-center gap-3 md:gap-4">
-            <div className="p-3 bg-white rounded-xl shadow-sm text-secondary">
+            <div className="p-2 md:p-3 bg-white rounded-lg md:rounded-xl shadow-sm text-secondary">
               <ShieldCheck className="size-6" />
             </div>
             <div>
               <h3 className="text-xs font-bold text-secondary/60 tracking-wide leading-tight">
                 Fraud Scenario Analysis
               </h3>
-              <p className="text-base font-bold text-secondary">
+              <p className="text-sm md:text-base font-bold text-secondary">
                 {details.detected_scam_type}
               </p>
             </div>
           </div>
 
           {details.transaction_validation && details.transaction_validation !== "N/A" && (
-            <div className="bg-white/80 p-4 rounded-xl border border-neutral-border/50">
-              <p className="text-sm font-bold text-secondary/80 leading-relaxed">
+            <div className="bg-white/80 p-3 md:p-4 rounded-lg md:rounded-xl border border-neutral-border/50">
+              <p className="text-xs md:text-sm font-bold text-secondary/80 leading-relaxed">
                 {'"' + details.transaction_validation + '"'}
               </p>
             </div>
@@ -116,12 +121,12 @@ export const StatusAnalysis: React.FC<StatusAnalysisProps> = ({ result }) => {
       )}
 
       {/* Analysis Detail */}
-      <div className="bg-neutral-page/30 p-4 md:p-6 rounded-xl border border-neutral-border shadow-sm">
-        <h3 className="text-base font-bold text-secondary mb-5 flex items-center gap-2">
+      <div className="bg-neutral-page/30 p-4 md:p-6 rounded-lg md:rounded-xl border border-neutral-border shadow-sm">
+        <h3 className="text-sm md:text-base font-bold text-secondary mb-4 md:mb-5 flex items-center gap-1.5 md:gap-2">
           <Info className="size-5 text-secondary" />
           Analysis Detail
         </h3>
-        <ul className="text-sm space-y-2 font-bold opacity-90">
+        <ul className="text-xs md:text-sm space-y-1.5 md:space-y-2 font-bold opacity-90">
           <li className="flex justify-between items-center">
             <span className="text-secondary">Typosquatting Rules:</span>
             <span
@@ -135,13 +140,13 @@ export const StatusAnalysis: React.FC<StatusAnalysisProps> = ({ result }) => {
               {details.typosquatting}
             </span>
           </li>
-          <li className="flex justify-between items-center pt-2">
+          <li className="flex justify-between items-center pt-1.5 md:pt-2">
             <span className="text-secondary">OCR Evidence Analysis:</span>
             <span className={details.ocr === "Complete" ? "text-green-600" : ""}>
               {details.ocr}
             </span>
           </li>
-          <li className="flex justify-between items-center pt-2">
+          <li className="flex justify-between items-center pt-1.5 md:pt-2">
             <span className="text-secondary">Keyword Analysis:</span>
             <span
               className={
@@ -153,7 +158,7 @@ export const StatusAnalysis: React.FC<StatusAnalysisProps> = ({ result }) => {
               {details.keywords}
             </span>
           </li>
-          <li className="flex justify-between items-center pt-2">
+          <li className="flex justify-between items-center pt-1.5 md:pt-2">
             <span className="text-secondary">Malicious Attachment:</span>
             <span
               className={
@@ -169,11 +174,11 @@ export const StatusAnalysis: React.FC<StatusAnalysisProps> = ({ result }) => {
       </div>
 
       {result.investigation_notes && (
-        <div className="bg-neutral-page/30 p-4 md:p-6 rounded-xl border border-neutral-border shadow-sm">
-          <h3 className="text-sm font-bold text-secondary mb-3 flex items-center gap-2">
+        <div className="bg-neutral-page/30 p-4 md:p-6 rounded-lg md:rounded-xl border border-neutral-border shadow-sm">
+          <h3 className="text-xs md:text-sm font-bold text-secondary mb-2 md:mb-3 flex items-center gap-1.5 md:gap-2">
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="h-4 w-4 text-secondary"
+              className="h-3 md:h-4 w-3 md:w-4 text-secondary"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -186,8 +191,8 @@ export const StatusAnalysis: React.FC<StatusAnalysisProps> = ({ result }) => {
             </svg>
             Investigation Notes
           </h3>
-          <div className="max-h-40 overflow-y-auto pr-2 custom-scrollbar">
-            <p className="text-sm font-medium text-secondary leading-relaxed">
+          <div className="max-h-32 md:max-h-40 overflow-y-auto pr-1.5 md:pr-2 custom-scrollbar">
+            <p className="text-xs md:text-sm font-medium text-secondary leading-relaxed">
               {'"' + result.investigation_notes + '"'}
             </p>
           </div>

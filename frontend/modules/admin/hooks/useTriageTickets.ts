@@ -20,7 +20,7 @@ export interface TriageFiltersState {
   endDate: string;
 }
 
-export const useTriageTickets = () => {
+export const useTriageTickets = (externalSortBy?: string, externalSortDir?: string) => {
   const [paginatedData, setPaginatedData] = useState<PaginatedResponse>({
     items: [],
     total: 0,
@@ -49,13 +49,13 @@ export const useTriageTickets = () => {
     const params = new URLSearchParams({
       page: String(currentPage),
       per_page: String(itemsPerPage),
-      sort_by: "created_at",
-      sort_dir: "desc",
+      sort_by: externalSortBy || "created_at",
+      sort_dir: externalSortDir || "desc",
     });
     if (filters.status !== "All") params.set("status", filters.status);
     if (filters.priority !== "All") params.set("priority", filters.priority);
     return `/api/v1/tickets?${params}`;
-  }, [currentPage, itemsPerPage, filters.status, filters.priority]);
+  }, [currentPage, itemsPerPage, filters.status, filters.priority, externalSortBy, externalSortDir]);
 
   const fetchTickets = useCallback(async () => {
     setLoading(true);

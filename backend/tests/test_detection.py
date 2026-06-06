@@ -42,6 +42,8 @@ class TestAnalysisRequest:
 
 import pytest
 
+from app.core.rule_engine import RuleEngine
+
 
 class TestHybridScoreResult:
     def test_hybrid_score_formula(self):
@@ -69,3 +71,18 @@ class TestHybridScoreResult:
         not_phishing_score = 100 - 98.1
         assert phishing_score == 96.2
         assert round(not_phishing_score, 1) == 1.9
+
+
+class TestWhitelistRuleEngine:
+    def test_whitelisted_domain_root_skips_ml(self):
+        engine = RuleEngine(whitelist_path="data/whitelist.txt")
+        result = engine.calculate_risk("https://www.cimbniaga.co.id/login")
+        assert result["score"] == 0
+        assert result["priority"] == "Low"
+        assert "on_whitelist" in result["flags"]
+
+    def test_similar_domain_not_whitelisted(self):
+        engine = RuleEngine(whitelist_path="data/whitelist.txt")
+        result = engine.calculate_risk("https://tracking.cimbniaga.co.idmalicious.com")
+        assert result["score"] > 0
+        assert "on_whitelist" not in result["flags"]

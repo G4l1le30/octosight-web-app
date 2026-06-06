@@ -49,7 +49,7 @@ export const RiskScoreCard = ({
   return (
     <div
       className={cn(
-        "bg-white rounded-3xl p-4 md:p-6 border-2 border-gray-100 flex items-center justify-center h-full gap-6 md:gap-8",
+        "bg-white rounded-2xl md:rounded-3xl p-4 md:p-6 border-2 border-gray-100 flex items-center justify-center h-full gap-6 md:gap-8",
         className,
       )}
     >
@@ -63,7 +63,7 @@ export const RiskScoreCard = ({
             stroke="currentColor"
             strokeWidth="8"
             fill="transparent"
-            className="text-gray-50"
+            className="text-gray-200"
           />
           <circle
             cx="64"
@@ -88,19 +88,19 @@ export const RiskScoreCard = ({
           >
             {score}
           </span>
-          <span className="text-xs md:text-sm font-semibold text-gray-600 mt-1">
+          <span className="text-xs md:text-sm font-semibold text-secondary mt-0.5 md:mt-1">
             / 100
           </span>
         </div>
       </div>
 
       <div className="flex flex-col items-start text-left">
-        <p className="text-sm font-semibold text-secondary mb-2">
+        <p className="text-xs md:text-sm font-semibold text-secondary mb-1.5 md:mb-2">
           Initial Risk Estimate
         </p>
         <span
           className={cn(
-            "px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap",
+            "px-3 md:px-4 py-1 md:py-1.5 rounded-full text-xs font-bold whitespace-nowrap",
             activeBadgeClass,
           )}
         >

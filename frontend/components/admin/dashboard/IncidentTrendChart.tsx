@@ -39,7 +39,7 @@ export const IncidentTrendChart: React.FC<IncidentTrendChartProps> = ({
         <select
           value={timeRange}
           onChange={(e) => onTimeRangeChange(e.target.value as TimeRange)}
-          className="text-xs font-bold border border-neutral-border rounded-lg px-3 py-1.5 outline-none focus:border-primary bg-white text-secondary cursor-pointer"
+          className="text-xs font-bold border border-neutral-border rounded-md md:rounded-lg px-2 md:px-3 py-1 md:py-1.5 outline-none focus:border-primary bg-white text-secondary cursor-pointer"
         >
           {(Object.entries(TIME_RANGE_LABELS) as [TimeRange, string][]).map(
             ([value, label]) => (
@@ -51,7 +51,7 @@ export const IncidentTrendChart: React.FC<IncidentTrendChartProps> = ({
         </select>
       </div>
 
-      <div className="h-64 w-full">
+      <div className="h-48 md:h-64 w-full">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={trendData}>
             <CartesianGrid

@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Ticket } from "@/types/ticket";
 import { Sparkles, Loader2, Check, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
+import { usePermissions } from "@/hooks/usePermissions";
 
 interface InvestigateNotesProps {
   ticket: Ticket;
@@ -16,6 +17,7 @@ export const InvestigateNotes: React.FC<InvestigateNotesProps> = ({
   notes,
   setNotes,
 }) => {
+  const { can } = usePermissions();
   const [loadingAI, setLoadingAI] = useState(false);
   // Keep previous notes so admin can undo
   const [prevNotes, setPrevNotes] = useState<string | null>(null);
@@ -64,47 +66,55 @@ export const InvestigateNotes: React.FC<InvestigateNotesProps> = ({
         </h3>
 
         {/* Gemini AI suggestion trigger */}
-        <button
-          onClick={handleGenerateSuggestion}
-          disabled={loadingAI}
-          title="Generate AI suggestion for investigation notes"
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg text-secondary/70 hover:text-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
-        >
-          {loadingAI ? (
-            <Loader2 className="size-3.5 animate-spin" />
-          ) : (
-            <Sparkles className="size-3.5 group-hover:text-primary" />
-          )}
-        </button>
+        {can("investigate.generate_notes") && (
+          <button
+            onClick={handleGenerateSuggestion}
+            disabled={loadingAI}
+            title="Generate AI suggestion for investigation notes"
+            className="flex items-center gap-1 md:gap-1.5 px-2 md:px-3 py-1 md:py-1.5 text-xs font-bold rounded-md md:rounded-lg text-secondary/80 hover:text-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
+          >
+            {loadingAI ? (
+              <Loader2 className="size-3.5 animate-spin" />
+            ) : (
+              <Sparkles className="size-3.5 group-hover:text-primary" />
+            )}
+          </button>
+        )}
       </div>
 
       {/* Notes textarea — suggestion lands here directly */}
-      <textarea
-        value={notes}
-        onChange={(e) => {
-          setNotes(e.target.value);
-          // If admin edits after AI fill, clear undo state
-          if (aiActive) setPrevNotes(null);
-        }}
-        placeholder="Record investigation findings, domain whois info, or escalation notes here..."
-        className={`flex-1 min-h-[150px] md:min-h-[200px] w-full p-3 md:p-4 text-sm bg-neutral-page border rounded-xl focus:border-primary outline-none transition-all font-normal text-black leading-relaxed resize-none ${aiActive ? "border-primary/50 ring-1 ring-primary/20" : "border-neutral-border"
-          }`}
-      />
+      {can("investigate.update_notes") ? (
+        <textarea
+          value={notes}
+          onChange={(e) => {
+            setNotes(e.target.value);
+            // If admin edits after AI fill, clear undo state
+            if (aiActive) setPrevNotes(null);
+          }}
+          placeholder="Record investigation findings, domain whois info, or escalation notes here..."
+          className={`flex-1 min-h-[150px] md:min-h-[200px] w-full p-3 md:p-4 text-sm bg-neutral-page border rounded-xl focus:border-primary outline-none transition-all font-normal text-black leading-relaxed resize-none ${aiActive ? "border-primary/50 ring-1 ring-primary/20" : "border-neutral-border"
+            }`}
+        />
+      ) : (
+        <div className="flex-1 min-h-[150px] md:min-h-[200px] w-full p-3 md:p-4 text-sm bg-neutral-page border border-neutral-border rounded-xl font-normal text-secondary/80 leading-relaxed whitespace-pre-wrap">
+          {notes || "No investigation notes recorded yet."}
+        </div>
+      )}
 
       {/* Undo / Keep buttons — only visible after AI fills the textarea */}
       {aiActive && (
-        <div className="flex items-center justify-end gap-2 px-1">
-          <div className="flex gap-2">
+        <div className="flex items-center justify-end gap-1.5 md:gap-2 px-0.5 md:px-1">
+          <div className="flex gap-1.5 md:gap-2">
             <button
               onClick={handleUndo}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-secondary/70 hover:text-secondary border border-neutral-border hover:border-secondary/30 transition-all"
+              className="flex items-center gap-0.5 md:gap-1 px-2 md:px-3 py-1 md:py-1.5 rounded-md md:rounded-lg text-xs font-bold text-secondary/80 hover:text-secondary border border-neutral-border hover:border-secondary/30 transition-all"
             >
               <RotateCcw className="size-3" />
               Undo
             </button>
             <button
               onClick={handleKeep}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-primary hover:bg-primary/90 transition-all"
+              className="flex items-center gap-0.5 md:gap-1 px-2 md:px-3 py-1 md:py-1.5 rounded-md md:rounded-lg text-xs font-bold text-white bg-primary hover:bg-primary/90 transition-all"
             >
               <Check className="size-3" />
               Keep

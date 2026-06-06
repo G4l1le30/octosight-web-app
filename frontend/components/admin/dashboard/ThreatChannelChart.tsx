@@ -16,9 +16,9 @@ export const ThreatChannelChart: React.FC<ThreatChannelChartProps> = ({ typeDist
       <h3 className="font-bold mb-4 md:mb-6 text-base md:text-lg text-secondary">
         Threat Channel Distribution
       </h3>
-      <div className="h-64 w-full flex flex-col md:flex-row items-center justify-between">
+      <div className="h-48 md:h-64 w-full flex flex-col md:flex-row items-center justify-between">
         {typeDist.length === 0 ? (
-          <div className="w-full h-full flex items-center justify-center opacity-40 font-bold text-sm">
+          <div className="w-full h-full flex items-center justify-center opacity-40 font-bold text-xs md:text-sm">
             No channel data available yet.
           </div>
         ) : (
@@ -46,15 +46,15 @@ export const ThreatChannelChart: React.FC<ThreatChannelChartProps> = ({ typeDist
             </PieChart>
           </ResponsiveContainer>
         </div>
-        <div className="w-full md:w-1/2 space-y-4 pl-6">
+        <div className="w-full md:w-1/2 space-y-3 md:space-y-4 pl-4 md:pl-6">
           {typeDist.map((item, idx) => (
             <div
               key={idx}
-              className="flex items-center justify-between text-sm"
+              className="flex items-center justify-between text-xs md:text-sm"
             >
               <div className="flex items-center gap-2 md:gap-3">
                 <div
-                  className="w-3 h-3 rounded-sm shadow-sm"
+                  className="w-2 md:w-3 h-2 md:h-3 rounded-none md:rounded-sm shadow-sm"
                   style={{ backgroundColor: COLORS[idx % COLORS.length] }}
                 ></div>
                 <span className="font-bold">{item.name}</span>

@@ -31,52 +31,52 @@ const STATUS_STAGES: {
   ringColor: string;
   borderColor: string;
 }[] = [
-    {
-      key: "Submitted",
-      label: "Submitted",
-      Icon: FileText,
-      color: "text-blue-600",
-      bgColor: "bg-blue-50",
-      ringColor: "ring-blue-200",
-      borderColor: "border-blue-200",
-    },
-    {
-      key: "In Review",
-      label: "In Review",
-      Icon: Search,
-      color: "text-orange-600",
-      bgColor: "bg-orange-50",
-      ringColor: "ring-orange-200",
-      borderColor: "border-orange-200",
-    },
-    {
-      key: "Confirmed",
-      label: "Confirmed",
-      Icon: ShieldAlert,
-      color: "text-red-600",
-      bgColor: "bg-red-50",
-      ringColor: "ring-red-200",
-      borderColor: "border-red-200",
-    },
-    {
-      key: "Mitigated",
-      label: "Mitigated",
-      Icon: ShieldCheck,
-      color: "text-cyan-600",
-      bgColor: "bg-cyan-50",
-      ringColor: "ring-cyan-200",
-      borderColor: "border-cyan-200",
-    },
-    {
-      key: "Closed",
-      label: "Closed",
-      Icon: CheckCircle2,
-      color: "text-gray-600",
-      bgColor: "bg-gray-100",
-      ringColor: "ring-gray-200",
-      borderColor: "border-gray-300",
-    },
-  ];
+  {
+    key: "Submitted",
+    label: "Submitted",
+    Icon: FileText,
+    color: "text-blue-600",
+    bgColor: "bg-blue-50",
+    ringColor: "ring-blue-200",
+    borderColor: "border-blue-200",
+  },
+  {
+    key: "In Review",
+    label: "In Review",
+    Icon: Search,
+    color: "text-orange-600",
+    bgColor: "bg-orange-50",
+    ringColor: "ring-orange-200",
+    borderColor: "border-orange-200",
+  },
+  {
+    key: "Confirmed",
+    label: "Confirmed",
+    Icon: ShieldAlert,
+    color: "text-red-600",
+    bgColor: "bg-red-50",
+    ringColor: "ring-red-200",
+    borderColor: "border-red-200",
+  },
+  {
+    key: "Mitigated",
+    label: "Mitigated",
+    Icon: ShieldCheck,
+    color: "text-cyan-600",
+    bgColor: "bg-cyan-50",
+    ringColor: "ring-cyan-200",
+    borderColor: "border-cyan-200",
+  },
+  {
+    key: "Closed",
+    label: "Closed",
+    Icon: CheckCircle2,
+    color: "text-secondary",
+    bgColor: "bg-gray-100",
+    ringColor: "ring-gray-200",
+    borderColor: "border-gray-300",
+  },
+];
 
 const FALSE_POSITIVE_STAGE = {
   key: "False Positive" as TicketStatus,
@@ -129,17 +129,17 @@ export const TicketTimeline: React.FC<TicketTimelineProps> = ({
     : getStageIndex(currentStatus);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       {/* Status Progress Bar */}
-      <div className="overflow-x-auto pb-4 pt-2 px-2">
+      <div className="overflow-x-auto pb-3 md:pb-4 pt-1.5 md:pt-2 px-1.5 md:px-2">
         <div className="relative flex items-start justify-between min-w-[600px] w-full px-6 md:px-8">
           {/* Connector Line behind circles */}
           <div className="absolute top-6 left-14 right-14 h-0.5 bg-neutral-border z-0">
             {/* Active/Completed Line part */}
-            <div 
+            <div
               className="h-full bg-secondary/30 transition-all duration-500 rounded"
               style={{
-                width: `${stages.length > 1 ? (Math.max(0, currentStageIndex) / (stages.length - 1)) * 100 : 0}%`
+                width: `${stages.length > 1 ? (Math.max(0, currentStageIndex) / (stages.length - 1)) * 100 : 0}%`,
               }}
             />
           </div>
@@ -150,20 +150,23 @@ export const TicketTimeline: React.FC<TicketTimelineProps> = ({
             const isPending = index > currentStageIndex;
 
             return (
-              <div key={stage.key} className="relative z-10 flex flex-col items-center gap-2">
+              <div
+                key={stage.key}
+                className="relative z-10 flex flex-col items-center gap-1.5 md:gap-2"
+              >
                 <div
                   className={`
                     size-12 shrink-0 rounded-full flex items-center justify-center border-2 transition-all duration-300 font-bold text-xs bg-white
                     ${isDone ? `${stage.bgColor} ${stage.color} ${stage.borderColor}` : ""}
                     ${isCurrent ? `${stage.bgColor} ${stage.color} ${stage.borderColor} ring-4 ${stage.ringColor} ring-offset-2` : ""}
-                    ${isPending ? "bg-white text-secondary/40 border-neutral-border" : ""}
+                    ${isPending ? "bg-white text-secondary/60 border-neutral-border" : ""}
                   `}
                 >
                   <stage.Icon className="size-5" />
                 </div>
                 <span
                   className={`text-xs font-bold text-center leading-tight whitespace-nowrap
-                  ${isCurrent ? "text-secondary font-extrabold" : isPending ? "text-secondary/40" : "text-secondary/60"}`}
+                  ${isCurrent ? "text-secondary font-extrabold" : isPending ? "text-secondary/60" : "text-secondary/60"}`}
                 >
                   {stage.label}
                 </span>
@@ -174,11 +177,11 @@ export const TicketTimeline: React.FC<TicketTimelineProps> = ({
       </div>
 
       {/* Timeline Activity Log */}
-      <AuditTrail 
-        logs={auditLogs} 
-        loading={false} 
-        submittedAt={submittedAt} 
-        variant="plain" 
+      <AuditTrail
+        logs={auditLogs}
+        loading={false}
+        submittedAt={submittedAt}
+        variant="plain"
       />
     </div>
   );

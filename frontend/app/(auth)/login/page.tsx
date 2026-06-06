@@ -8,8 +8,9 @@ import { useGoogleLogin } from "@react-oauth/google";
 import { AuthCard } from "@/components/auth/AuthCard";
 import { AuthInput } from "@/components/auth/AuthInput";
 import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
-import { Lock } from "lucide-react";
 import { toast } from "sonner";
+
+import Image from "next/image";
 
 function LoginForm() {
   const router = useRouter();
@@ -72,7 +73,7 @@ function LoginForm() {
       await authenticateWithGoogle(tokenResponse.access_token);
       router.push(redirectTo);
     } catch (err: any) {
-      toast.error(err.message || "Google Sign-In failed");
+      toast.error(err.message || "Google Sign-Up failed");
     } finally {
       setLoading(false);
     }
@@ -84,67 +85,79 @@ function LoginForm() {
   });
 
   return (
-    <AuthCard
-      title="Welcome Back"
-      subtitle="Sign in to your OctoSight account"
-      icon={<Lock className="h-7 w-7" />}
-      success={isRegistered ? "Registration link sent! Please check your email inbox and spam folder to verify your account." : undefined}
-      footerText="Don't have an account?"
-      footerLinkText="Create Account"
-      footerLinkHref="/register"
-    >
-      <form onSubmit={handleSubmit} className="space-y-5" noValidate>
-        <AuthInput
-          id="login-email"
-          label="Email Address"
-          type="email"
-          placeholder="name@gmail.com"
-          value={email}
-          onChange={(e) => {
-            setEmail(e.target.value);
-            if (fieldErrors.email) setFieldErrors(prev => ({ ...prev, email: "" }));
-          }}
-          autoComplete="email"
-          hasError={!!fieldErrors.email}
-          errorText={fieldErrors.email || undefined}
-          disabled={loading}
+    <div className="grid grid-cols-1 lg:grid-cols-2 min-h-screen">
+      <div className="relative hidden lg:block h-full w-full">
+        <Image
+          src="/auth-bg-2.png"
+          alt="OctoSight Login"
+          fill
+          className="object-cover"
+          priority
         />
-
-        <AuthInput
-          id="login-password"
-          label="Password"
-          type="password"
-          placeholder="Enter your password"
-          value={password}
-          onChange={(e) => {
-            setPassword(e.target.value);
-            if (fieldErrors.password) setFieldErrors(prev => ({ ...prev, password: "" }));
-          }}
-          autoComplete="current-password"
-          hasError={!!fieldErrors.password}
-          errorText={fieldErrors.password || undefined}
-          disabled={loading}
-        />
-
-        <Button type="submit" loading={loading} className="w-full">
-          Sign In
-        </Button>
-      </form>
-
-      {/* Divider */}
-      <div className="relative my-6">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-neutral-border"></div>
-        </div>
-        <div className="relative flex justify-center text-xs">
-          <span className="bg-neutral-page px-2 text-secondary/60">
-            Or continue with
-          </span>
-        </div>
       </div>
+      <div className="flex flex-col justify-center h-full">
+        <AuthCard
+          title="Welcome Back"
+          subtitle="Sign in to your OctoSight account"
+          success={isRegistered ? "Registration link sent! Please check your email inbox and spam folder to verify your account." : undefined}
+          footerText="Don't have an account?"
+          footerLinkText="Create Account"
+          footerLinkHref="/register"
+        >
+          <form onSubmit={handleSubmit} className="space-y-4 md:space-y-5" noValidate>
+            <AuthInput
+              id="login-email"
+              label="Email Address"
+              type="email"
+              placeholder="name@gmail.com"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (fieldErrors.email) setFieldErrors(prev => ({ ...prev, email: "" }));
+              }}
+              autoComplete="email"
+              hasError={!!fieldErrors.email}
+              errorText={fieldErrors.email || undefined}
+              disabled={loading}
+            />
 
-      <GoogleAuthButton onClick={() => loginWithGoogleAction()} loading={loading} type="login" />
-    </AuthCard>
+            <AuthInput
+              id="login-password"
+              label="Password"
+              type="password"
+              placeholder="Enter your password"
+              value={password}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (fieldErrors.password) setFieldErrors(prev => ({ ...prev, password: "" }));
+              }}
+              autoComplete="current-password"
+              hasError={!!fieldErrors.password}
+              errorText={fieldErrors.password || undefined}
+              disabled={loading}
+            />
+
+            <Button type="submit" loading={loading} className="w-full bg-red-600 hover:bg-red-700 text-white">
+              Sign In
+            </Button>
+          </form>
+
+          {/* Divider */}
+          <div className="relative my-4 md:my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-neutral-border"></div>
+            </div>
+            <div className="relative flex justify-center text-xs">
+              <span className="bg-neutral-page px-1.5 md:px-2 text-secondary/60">
+                Or continue with
+              </span>
+            </div>
+          </div>
+
+          <GoogleAuthButton onClick={() => loginWithGoogleAction()} loading={loading} type="login" />
+        </AuthCard>
+      </div>
+    </div>
   );
 }
 

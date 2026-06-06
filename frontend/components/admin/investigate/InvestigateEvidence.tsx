@@ -44,19 +44,19 @@ export const InvestigateEvidence: React.FC<InvestigateEvidenceProps> = ({ ticket
         Incident Evidence
       </h3>
 
-      <div className="space-y-6">
+      <div className="space-y-4 md:space-y-6">
         <div>
-          <span className="text-sm font-bold block mb-3 text-secondary">
+          <span className="text-xs md:text-sm font-bold block mb-2 md:mb-3 text-secondary">
             User Summary
           </span>
-          <div className="bg-neutral-page/50 p-3 md:p-4 rounded-xl border border-neutral-border text-sm font-medium text-secondary/80 leading-relaxed max-h-40 overflow-y-auto custom-scrollbar">
+          <div className="bg-neutral-page/50 p-3 md:p-4 rounded-lg md:rounded-xl border border-neutral-border text-xs md:text-sm font-medium text-secondary/80 leading-relaxed max-h-32 md:max-h-40 overflow-y-auto custom-scrollbar">
             &quot;{ticket.summary || "No summary provided."}&quot;
           </div>
         </div>
 
         {screenshotPaths.length > 0 && (
           <div>
-            <span className="text-sm font-bold block mb-4 text-secondary">
+            <span className="text-xs md:text-sm font-bold block mb-3 md:mb-4 text-secondary">
               Evidence Screenshots
             </span>
             <div className="grid grid-cols-1 gap-3 md:gap-4">
@@ -65,10 +65,10 @@ export const InvestigateEvidence: React.FC<InvestigateEvidenceProps> = ({ ticket
                 return (
                   <div
                     key={i}
-                    className="flex items-center justify-between p-3 md:p-4 bg-neutral-page border border-neutral-border rounded-xl group transition-all"
+                    className="flex items-center justify-between p-3 md:p-4 bg-neutral-page border border-neutral-border rounded-lg md:rounded-xl group transition-all"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="p-1.5 bg-neutral-border/30 rounded-lg text-secondary/60">
+                    <div className="flex items-center gap-2 md:gap-3">
+                      <div className="p-1 md:p-1.5 bg-neutral-border/30 rounded-md md:rounded-lg text-secondary/60">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           className="size-4"
@@ -97,7 +97,7 @@ export const InvestigateEvidence: React.FC<InvestigateEvidenceProps> = ({ ticket
                     </div>
                     <button
                       onClick={() => openEvidenceFile(path)}
-                      className="px-3 py-1.5 bg-secondary text-white text-xs font-bold rounded-lg hover:bg-secondary/90 transition-all"
+                      className="px-2 md:px-3 py-1 md:py-1.5 bg-secondary text-white text-xs font-bold rounded-md md:rounded-lg hover:bg-secondary/90 transition-all"
                     >
                       View
                     </button>
@@ -110,10 +110,10 @@ export const InvestigateEvidence: React.FC<InvestigateEvidenceProps> = ({ ticket
 
         {ticket.extracted_text && (
           <div>
-            <span className="text-sm font-bold block mb-3 text-secondary">
+            <span className="text-xs md:text-sm font-bold block mb-2 md:mb-3 text-secondary">
               Extracted OCR Text
             </span>
-            <div className="bg-neutral-page/50 p-3 md:p-4 rounded-xl border border-neutral-border text-sm font-medium text-secondary/80 leading-relaxed whitespace-pre-wrap max-h-40 overflow-y-auto custom-scrollbar">
+            <div className="bg-neutral-page/50 p-3 md:p-4 rounded-lg md:rounded-xl border border-neutral-border text-xs md:text-sm font-medium text-secondary/80 leading-relaxed whitespace-pre-wrap max-h-32 md:max-h-40 overflow-y-auto custom-scrollbar">
               {ticket.extracted_text}
             </div>
           </div>
@@ -121,7 +121,7 @@ export const InvestigateEvidence: React.FC<InvestigateEvidenceProps> = ({ ticket
 
         {attachmentPaths.length > 0 && (
           <div>
-            <span className="text-sm font-bold block mb-4 text-secondary">
+            <span className="text-xs md:text-sm font-bold block mb-3 md:mb-4 text-secondary">
               Attachments
             </span>
             <div className="grid grid-cols-1 gap-3 md:gap-4">
@@ -130,11 +130,11 @@ export const InvestigateEvidence: React.FC<InvestigateEvidenceProps> = ({ ticket
                 return (
                   <div
                     key={i}
-                    className="flex items-center gap-3 p-3 md:p-4 bg-neutral-page border border-neutral-border rounded-xl"
+                    className="flex items-center gap-2 md:gap-3 p-3 md:p-4 bg-neutral-page border border-neutral-border rounded-lg md:rounded-xl"
                   >
-                    <div className="w-8 h-8 bg-neutral-border/30 text-secondary/60 rounded-full flex items-center justify-center flex-shrink-0">
+                    <div className="w-6 md:w-8 h-6 md:h-8 bg-neutral-border/30 text-secondary/60 rounded-full flex items-center justify-center flex-shrink-0">
                       <svg
-                        className="w-4 h-4"
+                        className="w-3 md:w-4 h-3 md:h-4"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -149,7 +149,7 @@ export const InvestigateEvidence: React.FC<InvestigateEvidenceProps> = ({ ticket
                       </svg>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold truncate text-secondary">
+                      <p className="text-xs md:text-sm font-bold truncate text-secondary">
                         {filename}
                       </p>
                       <p className="text-xs font-medium text-secondary/60 opacity-70">
@@ -158,7 +158,7 @@ export const InvestigateEvidence: React.FC<InvestigateEvidenceProps> = ({ ticket
                     </div>
                     <button
                       onClick={() => onDownloadAttachment(path)}
-                      className="px-3 py-1.5 bg-secondary text-white text-xs font-bold rounded-lg hover:bg-secondary/90 transition-all"
+                      className="px-2 md:px-3 py-1 md:py-1.5 bg-secondary text-white text-xs font-bold rounded-md md:rounded-lg hover:bg-secondary/90 transition-all"
                     >
                       Download
                     </button>

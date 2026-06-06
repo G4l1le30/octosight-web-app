@@ -9,10 +9,25 @@ Uses the refactored architecture:
 """
 
 import os
+import sys
 import time
 import uuid
+import logging
 from datetime import datetime, timedelta, timezone
 from contextlib import asynccontextmanager
+from dotenv import load_dotenv
+
+load_dotenv()
+
+from app.config import settings
+
+logging.basicConfig(
+    level=getattr(logging, settings.log_level.upper(), logging.INFO),
+    format="%(asctime)s [%(levelname)s] %(name)s — %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+    stream=sys.stdout,
+)
+logger = logging.getLogger("octosight")
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -34,14 +49,29 @@ from app.models import (
     RuleConfig,
     Permission,
     RolePermission,
+    ActivityLog,
+    Achievement,
+    UserAchievement,
+    UserGamification,
 )
-from app.core.email_validation import (
-    EmailValidationError,
-    EmailValidationUnavailableError,
-    normalize_and_validate_real_email,
-)
+
 from app.core.security import hash_password, limiter
 from app.core.error_handlers import register_error_handlers
+from slowapi.middleware import SlowAPIMiddleware
+
+# Optional Sentry SDK
+SENTRY_DSN = os.getenv("SENTRY_DSN", "")
+if SENTRY_DSN:
+    try:
+        import sentry_sdk
+        sentry_sdk.init(
+            dsn=SENTRY_DSN,
+            environment=settings.environment,
+            traces_sample_rate=0.1,
+        )
+        logger.info("Sentry SDK initialized (env=%s)", settings.environment)
+    except Exception as exc:
+        logger.warning("Sentry SDK init failed: %s", exc)
 from app.modules.rule_config.service import RuleConfigService
 
 # Backward-compat routers (migrating to api/v1/)
@@ -65,11 +95,9 @@ def _seed_db(db) -> None:
 
     if admin_email:
         try:
-            admin_email = normalize_and_validate_real_email(admin_email)
-        except EmailValidationUnavailableError:
-            print("[Seed] Skipping admin user creation — email deliverability validation unavailable.")
-            admin_email = ""
-        except EmailValidationError as exc:
+            from email_validator import validate_email
+            admin_email = validate_email(admin_email, check_deliverability=False).normalized.lower()
+        except Exception as exc:
             print(f"[Seed] Skipping admin user — DEFAULT_ADMIN_EMAIL invalid: {exc}")
             admin_email = ""
 
@@ -85,6 +113,30 @@ def _seed_db(db) -> None:
         )
         db.commit()
         print(f"[Seed] Admin user created: {admin_email}")
+
+    user_email = (settings.default_user_email or "").strip()
+    user_password = settings.default_user_password
+
+    if user_email:
+        try:
+            from email_validator import validate_email
+            user_email = validate_email(user_email, check_deliverability=False).normalized.lower()
+        except Exception as exc:
+            print(f"[Seed] Skipping user — DEFAULT_USER_EMAIL invalid: {exc}")
+            user_email = ""
+
+    if user_email and user_password and not db.query(User).filter(User.email == user_email).first():
+        db.add(
+            User(
+                id=str(uuid.uuid4()),
+                full_name="OctoSight User",
+                email=user_email,
+                hashed_password=hash_password(user_password),
+                role="user",
+            )
+        )
+        db.commit()
+        print(f"[Seed] User created: {user_email}")
 
     # Role-based team users (octosight.{role}@gmail.com)
     default_pw = settings.default_admin_password or "octosight123"
@@ -478,7 +530,7 @@ def _seed_db(db) -> None:
         perm_defs = {
             # dashboard
             "dashboard.view": "View main dashboard",
-            "dashboard.view_team": "View team-level dashboard stats",
+
             # tickets
             "tickets.view": "View ticket list and details",
             "tickets.create": "Submit a new report / ticket",
@@ -502,9 +554,7 @@ def _seed_db(db) -> None:
             "rules.update": "Edit existing detection rule",
             "rules.deactivate": "Deactivate a detection rule",
             # ml
-            "ml.view_stats": "View ML model stats and charts",
             "ml.submit_feedback": "Submit feedback on ML predictions",
-            "ml.retrain": "Trigger ML model retraining",
             # users
             "users.view": "View user list",
             "users.update_role": "Change user roles",
@@ -578,7 +628,6 @@ def _seed_db(db) -> None:
             ],
             "moderator": [
                 "dashboard.view",
-                "dashboard.view_team",
                 "tickets.view",
                 "tickets.assign",
                 "tickets.comment",
@@ -595,7 +644,6 @@ def _seed_db(db) -> None:
                 "rules.create",
                 "rules.update",
                 "rules.deactivate",
-                "ml.view_stats",
                 "ml.submit_feedback",
                 "transactions.view",
                 "transactions.analyze",
@@ -610,7 +658,6 @@ def _seed_db(db) -> None:
                 "investigate.view",
                 "blacklist.view",
                 "rules.view",
-                "ml.view_stats",
                 "transactions.view",
                 "education.view",
             ],
@@ -623,8 +670,83 @@ def _seed_db(db) -> None:
         db.commit()
         print(f"[Seed] {len(perm_defs)} permissions created with role mappings")
 
+    # ── Achievement seeds ────────────────────────────────────────────────
+    if db.query(Achievement).count() == 0:
+        achievement_defs = [
+            ("first_report", "First Report", "Submit your first ticket", "count", 1, 50),
+            ("reporter_5", "Reporter x5", "Submit 5 tickets", "count", 5, 100),
+            ("reporter_10", "Reporter x10", "Submit 10 tickets", "count", 10, 200),
+            ("feedback_master", "Feedback Master", "Submit 10 feedbacks", "count", 10, 150),
+            ("accurate_eye", "Accurate Eye", "5 correct TP/FP labels", "count", 5, 150),
+            ("streak_3", "Streak 3", "3-day login streak", "streak", 3, 30),
+            ("streak_7", "Streak 7", "7-day login streak", "streak", 7, 100),
+            ("scholar", "Scholar", "Complete all education modules", "module", 0, 200),
+            ("phishing_hunter", "Phishing Hunter", "5 confirmed tickets", "count", 5, 250),
+            ("guardian", "Guardian", "20 total confirmed tickets", "count", 20, 500),
+            ("first_module", "First Step", "Complete your first education module", "module", 1, 50),
+            ("half_modules", "Halfway Scholar", "Complete 50% of education modules", "module", 4, 100),
+            ("quiz_ace", "Quiz Ace", "Score 100% on any quiz", "quiz", 100, 150),
+            ("bookworm", "Bookworm", "Read 10 articles", "count", 10, 100),
+        ]
+        for code, name, desc, crit_type, crit_val, pts in achievement_defs:
+            db.add(Achievement(
+                code=code, name=name, description=desc,
+                criteria_type=crit_type, criteria_value=crit_val, points=pts,
+            ))
+        db.commit()
+        print(f"[Seed] {len(achievement_defs)} achievements created")
 
-# ── Lifespan ────────────────────────────────────────────────────────────────
+    # ── Activity Log seeds ───────────────────────────────────────────────
+    if db.query(ActivityLog).count() == 0:
+        try:
+            admin_id = str(uuid.uuid4())
+            admin_user = db.query(User).filter(User.role == "admin").first()
+            if admin_user:
+                admin_id = admin_user.id
+            all_tickets_act = db.query(Ticket).order_by(Ticket.created_at).all()
+            now_act = datetime.now(timezone.utc)
+            activities = []
+            act_templates = [
+                "New phishing report submitted: {summary}",
+                "Ticket updated — status changed to {status}",
+                "Blacklist entry added for domain {url}",
+                "ML analysis completed for ticket {ticket_id}",
+            ]
+            for i, t in enumerate(all_tickets_act):
+                t_created = t.created_at or (now_act - timedelta(days=14))
+                activities.append(ActivityLog(
+                    activity_type="ticket_created",
+                    description=act_templates[0].format(summary=(t.summary or "No summary")[:80]),
+                    actor_id=admin_id,
+                    ticket_id=t.ticket_id,
+                    created_at=t_created,
+                ))
+                if i % 3 == 0:
+                    updated_at = t_created + timedelta(hours=2 + i)
+                    activities.append(ActivityLog(
+                        activity_type="ticket_updated",
+                        description=act_templates[1].format(status=t.status or "In Review"),
+                        actor_id=admin_id,
+                        ticket_id=t.ticket_id,
+                        created_at=updated_at,
+                    ))
+                if i % 4 == 0 and t.url:
+                    bl_at = t_created + timedelta(hours=4 + i)
+                    activities.append(ActivityLog(
+                        activity_type="blacklist_added",
+                        description=act_templates[2].format(url=t.url[:60]),
+                        actor_id=admin_id,
+                        ticket_id=t.ticket_id,
+                        created_at=bl_at,
+                    ))
+            db.add_all(activities)
+            db.commit()
+            print(f"[Seed] {len(activities)} activity log entries created")
+        except Exception as e:
+            db.rollback()
+            print(f"[Seed] activity logs skipped ({e})")
+
+    # ── Lifespan ────────────────────────────────────────────────────────────────
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -632,8 +754,8 @@ async def lifespan(app: FastAPI):
     retries = 10
     while retries > 0:
         try:
-            run_alembic_migrations()
             Base.metadata.create_all(bind=engine)
+            run_alembic_migrations()
             db = SessionLocal()
             try:
                 apply_migrations(db)
@@ -650,11 +772,11 @@ async def lifespan(app: FastAPI):
             break
         except Exception as exc:
             retries -= 1
-            print(f"[Startup] DB not ready, retrying... ({retries} left) — {exc}")
+            logger.warning("DB not ready, retrying... (%s left) — %s", retries, exc)
             time.sleep(5)
 
     if retries == 0:
-        print("[Startup] ERROR: Could not connect to database after 10 retries.")
+        logger.error("Could not connect to database after 10 retries.")
 
     yield
 
@@ -672,6 +794,9 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# Register global error handlers
+register_error_handlers(app)
+
 app.state.limiter = limiter
 
 # ── Middleware ────────────────────────────────────────────────────────────────
@@ -680,18 +805,33 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.allowed_origins_list,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization", "X-Requested-With"],
 )
+
+app.add_middleware(SlowAPIMiddleware)
 
 
 @app.middleware("http")
-async def add_security_headers(request, call_next):
+async def metrics_and_security(request, call_next):
+    start = time.time()
     response = await call_next(request)
+    duration = time.time() - start
+
+    # Security headers
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["X-XSS-Protection"] = "1; mode=block"
     response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+
+    # Basic request metrics logging
+    status_code = response.status_code
+    if status_code >= 500:
+        logger.error("Request: %s %s -> %d (%.3fs)", request.method, request.url.path, status_code, duration)
+    elif status_code >= 400:
+        logger.warning("Request: %s %s -> %d (%.3fs)", request.method, request.url.path, status_code, duration)
+    else:
+        logger.debug("Request: %s %s -> %d (%.3fs)", request.method, request.url.path, status_code, duration)
     return response
 
 

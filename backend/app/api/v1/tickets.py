@@ -26,10 +26,12 @@ from app.db.session import get_db
 from app.models.user import User
 from app.models.ticket import Ticket
 from app.models.feedback import MLFeedback
+from app.modules.notifications.service import NotificationService
 from app.schemas.ticket import (
     TicketAssign,
     BulkTicketUpdate,
     TicketFeedbackCreate,
+    TicketStatusUpdate,
 )
 from app.modules.tickets.service import TicketService
 
@@ -45,32 +47,32 @@ def list_tickets(
     status: str = None,
     priority: str = None,
     assigned_to: str = None,
+    sla_breached: bool = None,
     db: Session = Depends(get_db),
     _=Depends(require_permission("tickets.view")),
 ):
     """Paginated ticket listing with filters."""
     return TicketService.list_tickets(
-        db, page, per_page, sort_by, sort_dir, status, priority, assigned_to
+        db, page, per_page, sort_by, sort_dir, status, priority, assigned_to, sla_breached
     )
 
 
 @router.patch("/{ticket_id}/status")
 def update_ticket_status(
     ticket_id: str,
-    data: dict,
+    data: TicketStatusUpdate,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_permission("tickets.edit")),
+    current_user: User = Depends(require_permission("tickets.update_status")),
 ):
     """Update ticket status (used by Kanban drag-and-drop)."""
-    status = data.get("status")
-    if not status:
-        from fastapi import HTTPException
-        raise HTTPException(status_code=400, detail="status is required")
+    status = data.status
 
     ticket = db.query(Ticket).filter(Ticket.ticket_id == ticket_id).first()
     if not ticket:
         raise NotFoundException("Ticket not found")
 
+    old_status = ticket.status
     ticket.status = status
     from datetime import datetime, timezone
     ticket.updated_at = datetime.now(timezone.utc)
@@ -80,8 +82,50 @@ def update_ticket_status(
     from app.modules.activity.service import ActivityService
     ActivityService.log_ticket_updated(
         db, current_user.id, ticket.ticket_id,
-        f"Status updated via Kanban: {status}",
+        f"Status updated via Kanban: {old_status} -> {status}",
     )
+
+    # Create in-app notification for status change
+    NotificationService.create_notification(
+        db=db,
+        user_id=current_user.id,
+        notification_type="ticket_status_changed",
+        title=f"Ticket {ticket.ticket_id} status changed",
+        body=f"Status updated to {status}",
+        link=f"/admin/investigate/{ticket.ticket_id}",
+    )
+
+    # Email notification to ticket reporter
+    from app.models.user import User as UserModel
+    reporter = db.query(UserModel).filter(UserModel.id == ticket.user_id).first()
+    if reporter and reporter.email:
+        from app.modules.notifications.service import send_email_notification as _send_email
+        _send_email(
+            background_tasks=background_tasks,
+            subject=f"OctoSight - Report Status Update [{ticket.ticket_id}]",
+            email_to=reporter.email,
+            template_name="status_change.html",
+            template_body={
+                "ticket_id": ticket.ticket_id,
+                "type": ticket.type or "N/A",
+                "url": ticket.url or "N/A",
+                "sender_numbers": ticket.sender_numbers or "N/A",
+                "summary": (ticket.summary or "")[:300],
+                "risk_score": ticket.risk_score,
+                "priority": ticket.priority,
+                "bank_name": ticket.bank_name or "",
+                "bank_account": ticket.bank_account or "",
+                "reference_number": ticket.reference_number or "",
+                "old_status": old_status,
+                "new_status": status,
+                "notes": "",
+            },
+        )
+
+    # Gamification: when a ticket is confirmed, check confirmed-ticket achievements
+    if status == "Confirmed" and ticket.user_id:
+        from app.modules.gamification.service import GamificationService
+        GamificationService.add_points_and_check_achievements(db, ticket.user_id, 15, "confirmed_report")
 
     return {"status": "updated", "ticket_id": ticket.ticket_id, "new_status": ticket.status}
 
@@ -101,7 +145,7 @@ def assign_ticket(
 
     assignee_user = db.query(User).filter(User.email == data.assigned_to).first()
     if assignee_user and assignee_user.email:
-        frontend_url = os.getenv("NEXT_PUBLIC_API_URL", "http://localhost:3000").rstrip("/")
+        frontend_url = os.getenv("FRONTEND_URL", "http://localhost:3000").rstrip("/")
         send_email_notification(
             background_tasks=background_tasks,
             subject=f"OctoSight - Ticket Assigned [{ticket.ticket_id}]",
@@ -120,6 +164,17 @@ def assign_ticket(
                 "investigate_url": f"{frontend_url}/admin/investigate/{ticket.ticket_id}",
             },
         )
+    
+    # Create in-app notification for assignment
+    NotificationService.create_notification(
+        db=db,
+        user_id=current_user.id,
+        notification_type="ticket_assigned",
+        title=f"Ticket {ticket.ticket_id} assigned",
+        body=f"Assigned to {assignee_user.full_name if assignee_user else data.assigned_to}",
+        link=f"/admin/investigate/{ticket.ticket_id}",
+    )
+
     return {"status": "assigned", "ticket_id": ticket.ticket_id, "assigned_to": ticket.assigned_to}
 
 
@@ -158,6 +213,21 @@ def submit_feedback(
     db.add(feedback)
     db.commit()
     db.refresh(feedback)
+
+    # Create in-app notification for feedback submission
+    NotificationService.create_notification(
+        db=db,
+        user_id=current_user.id,
+        notification_type="feedback_submitted",
+        title=f"Feedback submitted for ticket {ticket.ticket_id}",
+        body=f"Feedback type: {data.feedback_type.upper()}",
+        link=f"/admin/investigate/{ticket.ticket_id}",
+    )
+
+    from app.modules.gamification.service import GamificationService
+    GamificationService.add_points_and_check_achievements(
+        db, current_user.id, 5, "feedback"
+    )
 
     return {
         "status": "submitted",

@@ -23,6 +23,7 @@ import {
   BrainCircuit,
 } from "lucide-react";
 import { toast } from "sonner";
+import { PermissionGate } from "@/components/ui/PermissionGate";
 
 export default function InvestigatePage({
   params,
@@ -236,7 +237,9 @@ export default function InvestigatePage({
   };
 
   const handleNotify = async () => {
-    const message = window.prompt("Enter warning message to send to the reporter:");
+    const message = window.prompt(
+      "Enter warning message to send to the reporter:",
+    );
     if (!message || !message.trim()) return;
     try {
       const res = await fetch(`/api/v1/tickets/${ticketId}/notify`, {
@@ -255,52 +258,21 @@ export default function InvestigatePage({
     }
   };
 
-  const handleScanUrl = async () => {
-    try {
-      toast.loading("Scanning URL...");
-      const res = await fetch(`/api/v1/admin/scan-tickets`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
-      toast.dismiss();
-      const data = await res.json();
-      const thisResult = (data.results || []).find(
-        (r: any) => r.ticket_id === ticketId,
-      );
-      if (thisResult) {
-        if (thisResult.error) {
-          toast.error(`Scan error: ${thisResult.error}`);
-        } else if (thisResult.live) {
-          toast.success(
-            `URL still live (${thisResult.status_code}), risk score ${thisResult.risk_score}${thisResult.escalated ? ", ticket escalated" : ""}`,
-          );
-        } else {
-          toast.info("URL is no longer live.");
-        }
-      } else {
-        toast.info("No scan result for this ticket (no URL or already scanned).");
-      }
-    } catch {
-      toast.dismiss();
-      toast.error("Connection error while scanning.");
-    }
-  };
-
   if (loading)
     return (
-      <div className="p-20 text-center font-normal opacity-70">
+      <div className="p-14 md:p-20 text-center font-normal opacity-70">
         Loading investigation data...
       </div>
     );
   if (!ticket)
     return (
-      <div className="p-20 text-center font-bold text-risk-high text-lg md:text-xl">
+      <div className="p-14 md:p-20 text-center font-bold text-risk-high text-lg md:text-xl">
         Ticket # {ticketId} Not Found
       </div>
     );
 
   return (
-    <div className="container mx-auto px-4 py-6 md:py-8 max-w-6xl">
+    <div className="container mx-auto px-3 md:px-4 py-6 md:py-8 max-w-6xl">
       <InvestigateHeader
         ticketId={ticket.ticket_id}
         onSave={() => {
@@ -344,7 +316,6 @@ export default function InvestigatePage({
           <MitigationActions
             ticket={ticket}
             openBlacklistModal={openBlacklistModal}
-            onScanUrl={handleScanUrl}
           />
         </div>
 
@@ -354,34 +325,35 @@ export default function InvestigatePage({
         </div>
 
         {/* ML Feedback */}
+        <PermissionGate permission="ml.submit_feedback">
         <div className="lg:col-span-1">
           <div className="card p-6 md:p-8 h-full flex flex-col">
             <h3 className="text-lg md:text-xl font-bold text-secondary mb-4 md:mb-6">
               ML Feedback
             </h3>
 
-            <div className="flex gap-3 mb-4 text-sm">
-              <div className="flex-1 bg-gray-50 rounded-lg p-2 text-center">
-                <span className="text-gray-500 block text-xs">ML Score</span>
-                <span className="font-bold text-gray-800">
+            <div className="flex gap-2 md:gap-3 mb-3 md:mb-4 text-xs md:text-sm">
+              <div className="flex-1 bg-gray-50 rounded-md md:rounded-lg p-1.5 md:p-2 text-center">
+                <span className="text-secondary block text-xs">ML Score</span>
+                <span className="font-bold text-secondary">
                   {ticket.ml_score ?? "N/A"}
                 </span>
               </div>
-              <div className="flex-1 bg-gray-50 rounded-lg p-2 text-center">
-                <span className="text-gray-500 block text-xs">Rule Score</span>
-                <span className="font-bold text-gray-800">
+              <div className="flex-1 bg-gray-50 rounded-md md:rounded-lg p-1.5 md:p-2 text-center">
+                <span className="text-secondary block text-xs">Rule Score</span>
+                <span className="font-bold text-secondary">
                   {ticket.rule_score ?? "N/A"}
                 </span>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 mb-4">
+            <div className="grid grid-cols-2 gap-1.5 md:gap-2 mb-3 md:mb-4">
               <button
                 onClick={() => setFeedbackType("tp")}
                 className={`flex flex-col items-center gap-1 p-3 rounded-lg border-2 text-xs font-medium transition-all ${
                   feedbackType === "tp"
                     ? "border-green-500 ring-2 ring-green-200 bg-green-50 text-green-700"
-                    : "border-gray-200 text-gray-600 hover:border-green-300 hover:bg-green-50/50"
+                    : "border-gray-200 text-secondary hover:border-green-300 hover:bg-green-50/50"
                 }`}
               >
                 Correct - Phishing
@@ -391,7 +363,7 @@ export default function InvestigatePage({
                 className={`flex flex-col items-center gap-1 p-3 rounded-lg border-2 text-xs font-medium transition-all ${
                   feedbackType === "fp"
                     ? "border-amber-500 ring-2 ring-amber-200 bg-amber-50 text-amber-700"
-                    : "border-gray-200 text-gray-600 hover:border-amber-300 hover:bg-amber-50/50"
+                    : "border-gray-200 text-secondary hover:border-amber-300 hover:bg-amber-50/50"
                 }`}
               >
                 False Alarm
@@ -401,7 +373,7 @@ export default function InvestigatePage({
                 className={`flex flex-col items-center gap-1 p-3 rounded-lg border-2 text-xs font-medium transition-all ${
                   feedbackType === "fn"
                     ? "border-red-500 ring-2 ring-red-200 bg-red-50 text-red-700"
-                    : "border-gray-200 text-gray-600 hover:border-red-300 hover:bg-red-50/50"
+                    : "border-gray-200 text-secondary hover:border-red-300 hover:bg-red-50/50"
                 }`}
               >
                 Missed Phishing
@@ -411,7 +383,7 @@ export default function InvestigatePage({
                 className={`flex flex-col items-center gap-1 p-3 rounded-lg border-2 text-xs font-medium transition-all ${
                   feedbackType === "tn"
                     ? "border-blue-500 ring-2 ring-blue-200 bg-blue-50 text-blue-700"
-                    : "border-gray-200 text-gray-600 hover:border-blue-300 hover:bg-blue-50/50"
+                    : "border-gray-200 text-secondary hover:border-blue-300 hover:bg-blue-50/50"
                 }`}
               >
                 Correct - Safe
@@ -421,12 +393,13 @@ export default function InvestigatePage({
             <button
               onClick={handleSubmitFeedback}
               disabled={!feedbackType || submittingFeedback}
-              className="w-full py-2 px-4 rounded-lg text-sm font-medium transition-all bg-gray-900 text-white hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-1.5 md:py-2 px-3 md:px-4 rounded-md md:rounded-lg text-xs md:text-sm font-medium transition-all bg-gray-900 text-white hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {submittingFeedback ? "Saving..." : "Submit Feedback"}
             </button>
           </div>
         </div>
+        </PermissionGate>
 
         {/* Similar Incidents */}
         <div className="lg:col-span-3">

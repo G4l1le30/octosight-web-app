@@ -21,11 +21,11 @@ interface IncidentTypeCardProps {
 export const IncidentTypeCard = ({ type, selected, onClick }: IncidentTypeCardProps) => {
   const getIcon = () => {
     switch (type) {
-      case "Website": return <Globe className="size-6 mb-2" />;
-      case "SMS": return <MessageSquare className="size-6 mb-2" />;
-      case "WhatsApp": return <WhatsAppIcon className="size-6 mb-2" />;
-      case "Email": return <Mail className="size-6 mb-2" />;
-      case "Transaction": return <CreditCard className="size-6 mb-2" />;
+      case "Website": return <Globe className="size-6 mb-1.5 md:mb-2" />;
+      case "SMS": return <MessageSquare className="size-6 mb-1.5 md:mb-2" />;
+      case "WhatsApp": return <WhatsAppIcon className="size-6 mb-1.5 md:mb-2" />;
+      case "Email": return <Mail className="size-6 mb-1.5 md:mb-2" />;
+      case "Transaction": return <CreditCard className="size-6 mb-1.5 md:mb-2" />;
     }
   };
 
@@ -34,7 +34,7 @@ export const IncidentTypeCard = ({ type, selected, onClick }: IncidentTypeCardPr
       type="button"
       onClick={onClick}
       className={cn(
-        "flex flex-col items-center justify-center p-3 md:p-4 rounded-xl border-2 transition-all active:scale-95",
+        "flex flex-col items-center justify-center p-3 md:p-4 rounded-lg md:rounded-xl border-2 transition-all active:scale-95",
         selected
           ? "border-primary bg-primary/5 text-primary shadow-md"
           : "border-neutral-border bg-white text-secondary opacity-60 hover:opacity-100 hover:border-gray-300"

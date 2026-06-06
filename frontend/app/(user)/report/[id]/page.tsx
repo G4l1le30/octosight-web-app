@@ -33,7 +33,7 @@ export default function DetailedReportPage() {
       const data = await response.json();
       setResult(data);
     } catch (err: any) {
-      toast.error(err.message);
+      toast.error(err.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -47,8 +47,8 @@ export default function DetailedReportPage() {
 
   if (authLoading) {
     return (
-      <div className="container mx-auto px-4 py-32 text-center">
-        <Loader2 className="animate-spin size-12 text-primary mx-auto mb-4" />
+      <div className="container mx-auto px-3 md:px-4 py-24 md:py-32 text-center">
+        <Loader2 className="animate-spin size-12 text-primary mx-auto mb-3 md:mb-4" />
         <p className="text-secondary font-medium">Loading...</p>
       </div>
     );
@@ -62,8 +62,8 @@ export default function DetailedReportPage() {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-32 text-center">
-        <Loader2 className="animate-spin size-12 text-primary mx-auto mb-4" />
+      <div className="container mx-auto px-3 md:px-4 py-24 md:py-32 text-center">
+        <Loader2 className="animate-spin size-12 text-primary mx-auto mb-3 md:mb-4" />
         <p className="text-secondary font-medium">Fetching report details...</p>
       </div>
     );
@@ -71,18 +71,20 @@ export default function DetailedReportPage() {
 
   if (!result) {
     return (
-      <div className="container mx-auto px-4 py-32 text-center max-w-md">
-        <div className="bg-risk-high/10 text-risk-high p-4 md:p-6 rounded-2xl border border-risk-high/20 mb-4 md:mb-6">
-          <AlertTriangle className="size-12 mx-auto mb-4" />
-          <h2 className="text-lg md:text-xl font-bold mb-2">Report Not Found</h2>
-          <p className="text-sm font-medium opacity-80">
+      <div className="container mx-auto px-3 md:px-4 py-24 md:py-32 text-center max-w-md">
+        <div className="bg-risk-high/10 text-risk-high p-4 md:p-6 rounded-xl md:rounded-2xl border border-risk-high/20 mb-4 md:mb-6">
+          <AlertTriangle className="size-12 mx-auto mb-3 md:mb-4" />
+          <h2 className="text-lg md:text-xl font-bold mb-1.5 md:mb-2">
+            Report Not Found
+          </h2>
+          <p className="text-xs md:text-sm font-medium opacity-80">
             The ticket ID you provided does not exist in our system.
           </p>
         </div>
         <Button
           onClick={() => router.push("/status")}
           variant="outline"
-          className="gap-2"
+          className="gap-1.5 md:gap-2"
         >
           <ArrowLeft className="size-4" /> Back to Tracking
         </Button>
@@ -91,11 +93,11 @@ export default function DetailedReportPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 md:py-12 max-w-5xl">
+    <div className="container mx-auto px-6 sm:px-8 py-8 md:py-12 max-w-6xl">
       <div className="mb-8 md:mb-10 flex items-center gap-3 md:gap-4 animate-in fade-in slide-in-from-left-4 duration-500">
         <button
           onClick={() => router.push("/status")}
-          className="p-2 rounded-xl border border-neutral-border hover:bg-neutral-page transition-all text-secondary/60 hover:text-primary group shadow-sm"
+          className="p-1.5 md:p-2 rounded-lg md:rounded-xl border border-neutral-border hover:bg-neutral-page transition-all text-secondary/60 hover:text-primary group shadow-sm"
           title="Back to History"
         >
           <ChevronLeft className="size-6 group-hover:-translate-x-0.5 transition-transform" />
@@ -104,13 +106,13 @@ export default function DetailedReportPage() {
           <h1 className="text-2xl md:text-3xl font-bold text-secondary">
             Analysis Report
           </h1>
-          <p className="text-sm font-bold text-secondary/60 mt-2">
+          <p className="text-xs md:text-sm font-bold text-secondary/60 mt-1.5 md:mt-2">
             Verified Phishing Investigation Details
           </p>
         </div>
       </div>
 
-      <div className="mb-8 animate-in fade-in slide-in-from-bottom-8 duration-500">
+      <div className="mb-6 md:mb-8 animate-in fade-in slide-in-from-bottom-8 duration-500">
         <StatusResult result={result} />
       </div>
     </div>

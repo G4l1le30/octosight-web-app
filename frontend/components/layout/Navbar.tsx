@@ -7,6 +7,7 @@ import { useAuth } from "@/lib/auth-context";
 import { usePathname } from "next/navigation";
 import { User } from "lucide-react";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
+import { ProfileDropdown } from "./ProfileDropdown";
 import { usePermissions } from "@/hooks/usePermissions";
 
 const Navbar: React.FC = () => {
@@ -109,11 +110,9 @@ const Navbar: React.FC = () => {
               <Link href="/check" className={getLinkClass("/check")}>
                 Fraud Check
               </Link>
-              {user && (
-                <Link href="/status" className={getLinkClass("/status")}>
-                  Check Status
-                </Link>
-              )}
+              <Link href="/status" className={getLinkClass("/status")}>
+                Check Status
+              </Link>
               <Link href="/edu" className={getLinkClass("/edu")}>
                 E-Learning
               </Link>
@@ -125,18 +124,19 @@ const Navbar: React.FC = () => {
 
           <div className="flex items-center gap-2">
             {user && !loading && (
-              <Link href="/profile" className="flex items-center gap-1.5 text-secondary hover:text-primary transition-colors">
+              <Link href="/profile" className="flex items-center text-secondary hover:text-primary transition-colors">
                 <User className="size-5" />
-                <span className="text-xs sm:text-sm font-semibold">Profile</span>
               </Link>
             )}
-            <NotificationBell />
-            {!user && !loading && (
+            {user && !loading && <NotificationBell />}
+            {user && !loading ? (
+              <ProfileDropdown user={user} logout={logout} isAdminRoute={isAdminRoute} />
+            ) : !loading ? (
               <>
                 <Link href="/login" className="text-[11px] sm:text-xs lg:text-sm font-bold text-secondary hover:text-primary px-1.5 sm:px-2 lg:px-3 py-0.5 sm:py-1 lg:py-1.5 transition-colors">Sign In</Link>
                 <Link href="/register" className="text-[11px] sm:text-xs lg:text-sm font-bold text-white bg-primary hover:bg-primary-dark px-2 sm:px-3 lg:px-4 py-0.5 sm:py-1 lg:py-1.5 rounded sm:rounded-md lg:rounded-lg transition-all">Register</Link>
               </>
-            )}
+            ) : null}
           </div>
         </nav>
 
@@ -276,24 +276,19 @@ const Navbar: React.FC = () => {
           <div className="border-t border-neutral-border pt-1.5 sm:pt-2 lg:pt-3 mt-1.5 sm:mt-2 lg:mt-3">
             {user ? (
               <>
-                <div className="flex items-center justify-between gap-2 sm:gap-3 mb-1.5 sm:mb-2 lg:mb-3">
-                  <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="w-5 sm:w-6 lg:w-8 h-5 sm:h-6 lg:h-8 bg-primary/10 text-primary rounded-full flex items-center justify-center text-[10px] sm:text-xs lg:text-sm font-bold">
-                      {user.full_name.charAt(0).toUpperCase()}
-                    </div>
-                    <div>
-                      <p className="text-xs sm:text-sm lg:text-sm font-bold">{user.full_name}</p>
-                      <p className="text-[10px] sm:text-xs text-secondary/60">{user.email}</p>
-                    </div>
-                  </div>
-                  <NotificationBell />
-                </div>
                 <Link
                   href="/profile"
                   onClick={() => setMobileOpen(false)}
-                  className="block py-1 sm:py-1.5 lg:py-2 text-xs sm:text-sm lg:text-sm font-bold text-primary"
+                  className="block py-1 sm:py-1.5 lg:py-2 text-xs sm:text-sm lg:text-sm font-medium hover:text-primary"
                 >
                   Profile
+                </Link>
+                <Link
+                  href="/notifications"
+                  onClick={() => setMobileOpen(false)}
+                  className="block py-1 sm:py-1.5 lg:py-2 text-xs sm:text-sm lg:text-sm font-medium hover:text-primary"
+                >
+                  Notifications
                 </Link>
                 {can("dashboard.view") && (
                   <Link

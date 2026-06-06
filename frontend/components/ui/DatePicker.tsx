@@ -280,17 +280,17 @@ export const DatePicker = ({
         onClick={() => setIsOpen(!isOpen)}
         onKeyDown={(e) => e.key === "Enter" && setIsOpen(!isOpen)}
         className={cn(
-          "w-full bg-white border-2 border-neutral-border rounded-md md:rounded-lg px-3 md:px-4 py-3 md:py-4 text-left transition-all cursor-pointer flex items-center justify-between",
+          "w-full bg-white border-2 border-neutral-border rounded-md md:rounded-lg px-3 md:px-4 py-1 md:py-2 text-left transition-all cursor-pointer flex items-center justify-between",
           triggerClassName,
           isOpen && "border-primary ring-4 ring-primary/5 shadow-sm",
           error && "border-risk-high",
           !value
-            ? "text-secondary/60 font-medium"
+            ? "text-secondary/80 font-medium"
             : "text-secondary font-medium",
         )}
       >
         <span className="truncate text-sm md:text-base">{formatDisplayDate(value)}</span>
-        <CalendarIcon className="size-5 text-secondary/60 shrink-0" />
+        <CalendarIcon className="size-5 text-secondary/80 shrink-0" />
       </div>
 
       {/* Popover Panel */}

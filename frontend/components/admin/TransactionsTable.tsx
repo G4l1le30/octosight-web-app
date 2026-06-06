@@ -144,10 +144,10 @@ export const TransactionsTable: React.FC<TransactionsTableProps> = ({
                 <td className="px-4 md:px-6 py-4 md:py-5 text-xs md:text-sm font-semibold text-secondary text-left">
                   {tx.reference_number}
                 </td>
-                <td className="px-4 md:px-6 py-4 md:py-5 text-left">
-                  <div className="font-semibold text-xs md:text-sm text-secondary">{tx.sender_name}</div>
+                <td className="px-4 md:px-6 py-4 md:py-5 text-left max-w-[150px] md:max-w-[200px]">
+                  <div className="font-semibold text-xs md:text-sm text-secondary break-words line-clamp-2">{tx.sender_name}</div>
                   {tx.sender_account && (
-                    <div className="text-xs font-medium text-secondary/80">
+                    <div className="text-xs font-medium text-secondary/80 truncate">
                       {tx.sender_bank} • {tx.sender_account}
                     </div>
                   )}
@@ -161,10 +161,12 @@ export const TransactionsTable: React.FC<TransactionsTableProps> = ({
                 <td className="px-4 md:px-6 py-4 md:py-5 text-center">
                   {statusBadge(tx.status)}
                 </td>
-                <td className="px-4 md:px-6 py-4 md:py-5 text-center text-xs md:text-sm font-semibold text-secondary/80">
-                  {tx.merchant_name || (
-                    <span className="text-secondary/60 font-medium">None</span>
-                  )}
+                <td className="px-4 md:px-6 py-4 md:py-5 text-center max-w-[120px] md:max-w-[180px]">
+                  <div className="text-xs md:text-sm font-semibold text-secondary/80 break-words line-clamp-2">
+                    {tx.merchant_name || (
+                      <span className="text-secondary/60 font-medium italic">None</span>
+                    )}
+                  </div>
                 </td>
                 <td className="px-4 md:px-6 py-4 md:py-5 text-center text-xs md:text-sm font-semibold text-secondary/80">
                   {formatDateTime(tx.transaction_date).full}

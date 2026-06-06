@@ -46,13 +46,24 @@ export const InvestigateEvidence: React.FC<InvestigateEvidenceProps> = ({ ticket
 
       <div className="space-y-4 md:space-y-6">
         <div>
-          <span className="text-xs md:text-sm font-bold block mb-2 md:mb-3 text-secondary">
+          <span className="text-xs md:text-sm font-bold block mb-3 md:mb-4 text-secondary">
             User Summary
           </span>
-          <div className="bg-neutral-page/50 p-3 md:p-4 rounded-lg md:rounded-xl border border-neutral-border text-xs md:text-sm font-medium text-secondary/80 leading-relaxed max-h-32 md:max-h-40 overflow-y-auto custom-scrollbar">
+          <div className="bg-neutral-page/50 p-3 md:p-4 rounded-lg md:rounded-xl border border-neutral-border text-xs md:text-sm font-medium text-secondary/80 leading-relaxed max-h-32 md:max-h-40 overflow-y-auto break-words custom-scrollbar">
             &quot;{ticket.summary || "No summary provided."}&quot;
           </div>
-        </div>
+          </div>
+
+          {ticket.extracted_text && (
+          <div className="mt-6 md:mt-8">
+            <span className="text-xs md:text-sm font-bold block mb-3 md:mb-4 text-secondary">
+              Extracted OCR Text
+            </span>
+            <div className="bg-neutral-page/50 p-3 md:p-4 rounded-lg md:rounded-xl border border-neutral-border text-xs md:text-sm font-medium text-secondary/80 leading-relaxed max-h-48 md:max-h-64 overflow-y-auto break-words custom-scrollbar">
+              {ticket.extracted_text}
+            </div>
+          </div>
+          )}
 
         {screenshotPaths.length > 0 && (
           <div>

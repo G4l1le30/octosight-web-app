@@ -26,7 +26,7 @@ class TestTicketUpdate:
 class TestAuditLogResponse:
     def test_from_attributes(self):
         log = AuditLogResponse(
-            id=1,
+            id="1",
             ticket_id="OCTO-001",
             admin_id="admin-1",
             action_taken="Status changed",

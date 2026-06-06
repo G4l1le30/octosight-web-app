@@ -405,7 +405,8 @@ class RuleEngine:
                 details["transaction_validation"] = "Transaction Details are Correct, BUT the Link is FAKE/UNAUTHORIZED"
             else:
                 # If the bank verified the transaction and there's no malicious link, it's safe.
-                score = 0
+                # We use 10 instead of 0 to indicate automated low risk (awaiting CS).
+                score = 10
                 details["keywords"] = "Clean (Verified)"
                 details["detected_scam_type"] = "Verified Transaction"
                 details["transaction_validation"] = "Transaction Confirmed by CIMB NIAGA Core Records"

@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { PermissionGate } from "@/components/ui/PermissionGate";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function InvestigatePage({
   params,
@@ -41,6 +42,7 @@ export default function InvestigatePage({
   const [actionLabel, setActionLabel] = useState("");
   const [feedbackType, setFeedbackType] = useState<string | null>(null);
   const [submittingFeedback, setSubmittingFeedback] = useState(false);
+  const [showFeedbackAnim, setShowFeedbackAnim] = useState(false);
 
   const [showSaveConfirm, setShowSaveConfirm] = useState(false);
   const [auditLogs, setAuditLogs] = useState<TicketAuditLog[]>([]);
@@ -225,6 +227,8 @@ export default function InvestigatePage({
       if (res.ok) {
         toast.success("ML feedback submitted successfully.");
         setFeedbackType(null);
+        setShowFeedbackAnim(true);
+        setTimeout(() => setShowFeedbackAnim(false), 2500);
       } else {
         const errData = await res.json().catch(() => ({}));
         toast.error(errData.detail || "Failed to submit ML feedback.");
@@ -327,7 +331,7 @@ export default function InvestigatePage({
         {/* ML Feedback */}
         <PermissionGate permission="ml.submit_feedback">
         <div className="lg:col-span-1">
-          <div className="card p-6 md:p-8 h-full flex flex-col">
+          <div className="card p-6 md:p-8 h-full flex flex-col relative overflow-hidden">
             <h3 className="text-lg md:text-xl font-bold text-secondary mb-4 md:mb-6">
               ML Feedback
             </h3>
@@ -397,6 +401,43 @@ export default function InvestigatePage({
             >
               {submittingFeedback ? "Saving..." : "Submit Feedback"}
             </button>
+
+            <AnimatePresence>
+              {showFeedbackAnim && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 1.05 }}
+                  transition={{ duration: 0.3 }}
+                  className="absolute inset-0 bg-white/90 backdrop-blur-sm z-10 flex flex-col items-center justify-center rounded-xl md:rounded-2xl border border-green-200"
+                >
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: [0, 1.2, 1] }}
+                    transition={{ type: "spring", stiffness: 200, damping: 10, delay: 0.1 }}
+                    className="w-12 h-12 md:w-16 md:h-16 bg-green-100 rounded-full flex items-center justify-center mb-3 text-green-600"
+                  >
+                    <CheckCircle className="w-6 h-6 md:w-8 md:h-8" />
+                  </motion.div>
+                  <motion.h3
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="text-sm md:text-base font-bold text-gray-900"
+                  >
+                    Feedback Received!
+                  </motion.h3>
+                  <motion.p
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                    className="text-xs md:text-sm text-gray-500 mt-1 text-center px-4"
+                  >
+                    Your input helps the ML engine learn.
+                  </motion.p>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
         </PermissionGate>

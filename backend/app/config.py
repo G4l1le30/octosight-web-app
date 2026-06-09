@@ -68,6 +68,7 @@ class Settings(BaseSettings):
     # ML
     ml_model_path: str = "models/spam_pipeline.pkl"
     ml_vectorizer_path: str = "models/vectorizer.pkl"
+    ml_service_url: Optional[str] = os.getenv("ML_SERVICE_URL", None)
 
     # Default admin
     default_admin_email: Optional[str] = None

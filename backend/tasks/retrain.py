@@ -1,87 +1,56 @@
-"""tasks/retrain.py — Scheduled ML model retraining."""
+"""tasks/retrain.py — Scheduled ML model retraining via External ML Service."""
 
-import csv
-import json
 import logging
-import os
-import shutil
-import subprocess
-import sys
-
+import httpx
 from celery_app import celery_app
+from app.config import settings
 from app.db.session import SessionLocal
 from app.models.feedback import MLFeedback
-from app.models.ticket import Ticket
 
 logger = logging.getLogger("octosight.retrain")
 
-
 @celery_app.task
 def retrain_model():
-    """Collect MLFeedback from DB, call ml/train.py, copy artifacts, reload engine."""
+    """
+    Triggers the retraining process on the external ML service (Hugging Face).
+    This task should be scheduled during low-traffic periods (e.g., 2 AM).
+    """
     db = SessionLocal()
     try:
-        feedbacks = db.query(MLFeedback).order_by(MLFeedback.created_at.desc()).all()
-        if not feedbacks:
-            logger.info("No ML feedback found. Skipping retrain.")
-            return {"status": "skipped", "samples": 0}
+        # 1. Check if there is new feedback to justify a retrain
+        feedback_count = db.query(MLFeedback).count()
+        if feedback_count < 5: # Threshold to avoid unnecessary training
+            logger.info(f"Only {feedback_count} feedback samples found. Skipping retrain.")
+            return {"status": "skipped", "reason": "not enough data"}
 
-        ticket_ids = list({f.ticket_id for f in feedbacks})
-        tickets = db.query(Ticket).filter(Ticket.ticket_id.in_(ticket_ids)).all()
-        ticket_map = {t.ticket_id: t for t in tickets}
+        # 2. Get the retrain URL (base service URL + /retrain)
+        if not settings.ml_service_url:
+            logger.error("ML_SERVICE_URL is not configured. Cannot trigger retrain.")
+            return {"status": "error", "reason": "ML_SERVICE_URL missing"}
 
-        label_map = {"tp": "phishing", "fp": "not phishing", "tn": "not phishing", "fn": "phishing"}
-        rows = []
-        for fb in feedbacks:
-            ticket = ticket_map.get(fb.ticket_id)
-            text = (ticket.summary or "") if ticket else ""
-            if not text:
-                text = (ticket.url or fb.notes or "")
-            rows.append({"text": text, "label": label_map.get(fb.feedback_type.lower(), "not phishing")})
+        # Extract base URL (e.g., remove /predict if present)
+        base_url = settings.ml_service_url.replace("/predict", "")
+        retrain_url = f"{base_url}/retrain"
+        
+        # 3. Trigger the request
+        # 'X-Retrain-Token' must match RETRAIN_TOKEN in Hugging Face Space secrets
+        retrain_token = os.getenv("RETRAIN_TOKEN", "octosight_secret_2024")
+        headers = {"X-Retrain-Token": retrain_token}
+        
+        logger.info(f"Triggering remote retrain at: {retrain_url}")
+        
+        with httpx.Client(timeout=30.0) as client:
+            response = client.post(retrain_url, headers=headers)
+            response.raise_for_status()
+            
+        logger.info("Remote retraining successfully triggered!")
+        return {"status": "triggered", "remote_url": retrain_url}
 
-        backend_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        export_dir = os.path.join(backend_root, "..", "ml", "datasets")
-        os.makedirs(export_dir, exist_ok=True)
-        export_path = os.path.join(export_dir, "celery_training_data.csv")
-
-        with open(export_path, "w", newline="", encoding="utf-8") as f:
-            writer = csv.DictWriter(f, fieldnames=["text", "label"])
-            writer.writeheader()
-            writer.writerows(rows)
-
-        artifacts_dir = os.path.join(backend_root, "..", "ml", "artifacts")
-        train_script = os.path.join(backend_root, "..", "ml", "train.py")
-
-        result = subprocess.run(
-            [sys.executable, train_script, "--data-path", export_path, "--output-dir", artifacts_dir],
-            capture_output=True, text=True, timeout=600,
-        )
-        if result.returncode != 0:
-            logger.error("Retrain failed: %s", result.stderr[:500])
-            return {"status": "error", "error": result.stderr[:500]}
-
-        backend_models = os.path.join(backend_root, "models")
-        os.makedirs(backend_models, exist_ok=True)
-        for name in ("model.pkl", "vectorizer.pkl"):
-            src = os.path.join(artifacts_dir, name)
-            dst = os.path.join(backend_models, f"spam_pipeline.pkl" if name == "model.pkl" else name)
-            if os.path.exists(src):
-                shutil.copy2(src, dst)
-
-        import importlib
-        from app.core import ml_engine
-        importlib.reload(ml_engine)
-
-        eval_path = os.path.join(artifacts_dir, "eval_report.json")
-        metrics = {}
-        if os.path.exists(eval_path):
-            with open(eval_path) as f:
-                metrics = json.load(f)
-
-        logger.info("Model retrained: %d samples", len(rows))
-        return {"status": "success", "samples": len(rows), "eval_metrics": metrics}
-    except Exception as exc:
-        logger.error("Retrain failed: %s", exc)
-        return {"status": "error", "error": str(exc)}
+    except httpx.HTTPStatusError as e:
+        logger.error(f"Failed to trigger remote retrain: {e.response.status_code} - {e.response.text}")
+        return {"status": "error", "error": f"HTTP {e.response.status_code}"}
+    except Exception as e:
+        logger.error(f"Retrain trigger failed: {str(e)}")
+        return {"status": "error", "error": str(e)}
     finally:
         db.close()

@@ -105,9 +105,12 @@ def apply_migrations(db: Session) -> None:
             print(f"[Migration] Skipping unsafe table name: {table}")
             continue
         try:
-            db.execute(text(ddl))
-            db.commit()
-            print(f"[Migration] Created table '{table}'")
+            # Check if table exists to avoid noisy prints
+            res = db.execute(text(f"SHOW TABLES LIKE '{table}'")).first()
+            if not res:
+                db.execute(text(ddl))
+                db.commit()
+                print(f"[Migration] Created table '{table}'")
         except Exception:
             db.rollback()
 

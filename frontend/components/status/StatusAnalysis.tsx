@@ -1,6 +1,6 @@
 import React from "react";
 import { Ticket } from "@/types/ticket";
-import { ShieldCheck, Info } from "lucide-react";
+import { ShieldCheck, Info, ShieldAlert, Shield, ExternalLink } from "lucide-react";
 
 interface StatusAnalysisProps {
   result: Ticket;
@@ -35,6 +35,8 @@ export const StatusAnalysis: React.FC<StatusAnalysisProps> = ({ result }) => {
   const normalizedMlPrediction = rawMlPrediction === "ham"
     ? "not phishing"
     : rawMlPrediction?.replace(/_/g, " ") ?? null;
+
+  const vtAnalysis = details.virustotal_analysis || [];
 
   return (
     <div className="space-y-4 md:space-y-6 pt-1.5 md:pt-2">
@@ -92,6 +94,96 @@ export const StatusAnalysis: React.FC<StatusAnalysisProps> = ({ result }) => {
           </div>
         </div>
       </div>
+
+      {/* VirusTotal Analysis */}
+      {vtAnalysis.length > 0 && (
+        <div className="bg-neutral-page/30 p-5 md:p-6 rounded-2xl md:rounded-3xl border border-neutral-border shadow-sm animate-in fade-in slide-in-from-right-4 duration-700">
+          <div className="flex items-center justify-between mb-5 md:mb-6">
+            <h3 className="text-sm md:text-base font-bold text-secondary flex items-center gap-2 md:gap-2.5">
+              <div className="p-1.5 md:p-2 bg-secondary/10 rounded-lg text-secondary">
+                <Shield className="size-5" />
+              </div>
+              External Threat Intelligence
+            </h3>
+            <span className="text-[10px] md:text-xs font-bold text-secondary/40 uppercase tracking-widest">
+              Live VT Scan
+            </span>
+          </div>
+          
+          <div className="space-y-4">
+            {vtAnalysis.map((item: any, idx: number) => {
+              const malicious = item.report?.malicious || 0;
+              const suspicious = item.report?.suspicious || 0;
+              
+              let statusColor = "text-green-600";
+              let bgColor = "bg-green-50/50";
+              let borderColor = "border-green-200/50";
+              let statusText = "Clean / Safe";
+              let accentColor = "bg-green-500";
+              let Icon = ShieldCheck;
+
+              if (malicious > 10) {
+                statusColor = "text-risk-high";
+                bgColor = "bg-risk-high/5";
+                borderColor = "border-risk-high/20";
+                statusText = "Threat Detected";
+                accentColor = "bg-risk-high";
+                Icon = ShieldAlert;
+              } else if (malicious > 0 || suspicious > 0) {
+                statusColor = "text-risk-medium";
+                bgColor = "bg-risk-medium/5";
+                borderColor = "border-risk-medium/20";
+                statusText = "Potential Risk";
+                accentColor = "bg-risk-medium";
+                Icon = ShieldAlert;
+              }
+
+              return (
+                <div key={idx} className={`${bgColor} ${borderColor} border rounded-xl md:rounded-2xl p-4 md:p-5 transition-all hover:shadow-lg hover:scale-[1.01] group relative overflow-hidden`}>
+                  <div className={`absolute top-0 left-0 w-1.5 h-full ${accentColor} opacity-70`} />
+                  
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start gap-4">
+                      <div className={`p-2.5 rounded-xl bg-white shadow-sm ${statusColor}`}>
+                        <Icon className="size-5 md:size-6" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm md:text-base font-bold text-secondary truncate max-w-[180px] sm:max-w-[300px]" title={item.filename}>
+                          {item.filename}
+                        </p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className={`text-[10px] md:text-xs font-bold px-2 py-0.5 rounded-full ${bgColor} ${statusColor} border ${borderColor}`}>
+                            {statusText}
+                          </span>
+                          <span className="text-[10px] md:text-xs font-bold text-secondary/40">
+                            {malicious} mal • {suspicious} susp
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {item.report?.vt_link && (
+                      <a 
+                        href={item.report.vt_link} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="p-2 rounded-xl bg-white border border-neutral-border text-secondary/40 hover:text-primary hover:border-primary/30 transition-all shadow-sm group/btn"
+                        title="View Analysis on VirusTotal"
+                      >
+                        <ExternalLink className="size-5 group-hover/btn:scale-110 transition-transform" />
+                      </a>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          
+          <p className="mt-4 md:mt-5 text-[10px] md:text-xs text-secondary/40 font-medium italic">
+            * VirusTotal analysis is based on global antivirus vendor signatures. 1-10 detections may indicate a false positive or new threat.
+          </p>
+        </div>
+      )}
 
       {/* Scenario Analysis Result */}
       {details.detected_scam_type && details.detected_scam_type !== "General Phishing" && (
@@ -201,3 +293,4 @@ export const StatusAnalysis: React.FC<StatusAnalysisProps> = ({ result }) => {
     </div>
   );
 };
+

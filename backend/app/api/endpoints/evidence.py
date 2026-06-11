@@ -4,17 +4,19 @@ Handles secure file uploads to Supabase Storage.
 """
 
 import uuid
+from typing import Optional
 from fastapi import APIRouter, Request, UploadFile, File, HTTPException, status, Depends
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from app.services.supabase_service import get_supabase_service, SupabaseStorageService
 from app.core.security import get_current_user, require_admin, limiter
+from app.core.virustotal_engine import VirusTotalEngine
 
 router = APIRouter(prefix="/api/v1/evidence", tags=["evidence"])
 
 # Allowed file extensions
-ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "pdf"}
+ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "pdf", "exe", "zip", "docx"}
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB
 
 
@@ -24,6 +26,7 @@ class EvidenceUploadResponse(BaseModel):
     filename: str
     preview_url: str
     message: str
+    vt_report: Optional[dict] = None
 
 
 def get_file_extension(filename: str) -> str:
@@ -79,12 +82,19 @@ async def upload_evidence(
     # ── Generate unique filename (UUID + original extension) ──
     unique_filename = f"{uuid.uuid4()}.{file_extension}"
 
+    # ── VirusTotal Scan (Hash-based) ──
+    file_hash = VirusTotalEngine.calculate_sha256(file_content)
+    vt_report = await VirusTotalEngine.check_file_hash(file_hash)
+
     # ── Determine content type ──
     content_type_map = {
         "png": "image/png",
         "jpg": "image/jpeg",
         "jpeg": "image/jpeg",
         "pdf": "application/pdf",
+        "exe": "application/x-msdownload",
+        "zip": "application/zip",
+        "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     }
     content_type = content_type_map.get(file_extension, "application/octet-stream")
 
@@ -113,7 +123,8 @@ async def upload_evidence(
     return EvidenceUploadResponse(
         filename=unique_filename,
         preview_url=preview_url,
-        message="File uploaded successfully.",
+        vt_report=vt_report,
+        message="File uploaded and scanned successfully." if vt_report else "File uploaded successfully (Scan skipped).",
     )
 
 

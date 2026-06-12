@@ -13,7 +13,7 @@ from typing import List, Optional
 load_dotenv(find_dotenv())
 
 _USER = os.getenv("DB_USER", "octouser")
-_PASS = os.getenv("DB_PASSWORD", "CHANGE_ME_IN_PRODUCTION")
+_PASS = os.getenv("DB_PASSWORD", "octopassword")
 _HOST = os.getenv("DB_HOST", "127.0.0.1")  # Gunakan 127.0.0.1 jika menjalankan uvicorn lokal
 _PORT = os.getenv("DB_PORT", "3306")
 _NAME = os.getenv("DB_NAME", "octosight_db")
@@ -57,9 +57,14 @@ class Settings(BaseSettings):
     mail_from_name: str = "OctoSight"
     mail_server: str = "smtp.gmail.com"
     mail_port: int = 587
+    mail_starttls: bool = True
+    mail_ssl_tls: bool = False
 
     # Google OAuth
     google_client_id: Optional[str] = None
+
+    # VirusTotal
+    virustotal_api_key: Optional[str] = os.getenv("VIRUSTOTAL_API_KEY", None)
 
     # Supabase
     supabase_url: Optional[str] = None

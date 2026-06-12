@@ -95,64 +95,51 @@ export const StatusAnalysis: React.FC<StatusAnalysisProps> = ({ result }) => {
         </div>
       </div>
 
-      {/* VirusTotal Analysis */}
+      {/* VirusTotal Analysis (External Attachment) */}
       {vtAnalysis.length > 0 && (
-        <div className="bg-neutral-page/30 p-5 md:p-6 rounded-2xl md:rounded-3xl border border-neutral-border shadow-sm animate-in fade-in slide-in-from-right-4 duration-700">
-          <div className="flex items-center justify-between mb-5 md:mb-6">
-            <h3 className="text-sm md:text-base font-bold text-secondary flex items-center gap-2 md:gap-2.5">
-              <div className="p-1.5 md:p-2 bg-secondary/10 rounded-lg text-secondary">
-                <Shield className="size-5" />
-              </div>
-              External Threat Intelligence
-            </h3>
-            <span className="text-[10px] md:text-xs font-bold text-secondary/40 uppercase tracking-widest">
-              Live VT Scan
-            </span>
-          </div>
+        <div className="bg-neutral-page/30 p-4 md:p-6 rounded-lg md:rounded-xl border border-neutral-border shadow-sm animate-in fade-in slide-in-from-right-4 duration-700">
+          <h3 className="text-sm md:text-base font-bold text-secondary mb-4 md:mb-5 flex items-center gap-1.5 md:gap-2">
+            <Shield className="size-5 text-secondary" />
+            External Attachment
+          </h3>
           
-          <div className="space-y-4">
+          <div className="space-y-3">
             {vtAnalysis.map((item: any, idx: number) => {
               const malicious = item.report?.malicious || 0;
               const suspicious = item.report?.suspicious || 0;
               
               let statusColor = "text-green-600";
-              let bgColor = "bg-green-50/50";
-              let borderColor = "border-green-200/50";
               let statusText = "Clean / Safe";
               let accentColor = "bg-green-500";
               let Icon = ShieldCheck;
 
               if (malicious > 10) {
                 statusColor = "text-risk-high";
-                bgColor = "bg-risk-high/5";
-                borderColor = "border-risk-high/20";
                 statusText = "Threat Detected";
                 accentColor = "bg-risk-high";
                 Icon = ShieldAlert;
               } else if (malicious > 0 || suspicious > 0) {
                 statusColor = "text-risk-medium";
-                bgColor = "bg-risk-medium/5";
-                borderColor = "border-risk-medium/20";
                 statusText = "Potential Risk";
                 accentColor = "bg-risk-medium";
                 Icon = ShieldAlert;
               }
 
               return (
-                <div key={idx} className={`${bgColor} ${borderColor} border rounded-xl md:rounded-2xl p-4 md:p-5 transition-all hover:shadow-lg hover:scale-[1.01] group relative overflow-hidden`}>
-                  <div className={`absolute top-0 left-0 w-1.5 h-full ${accentColor} opacity-70`} />
+                <div key={idx} className="bg-white border border-neutral-border rounded-lg md:rounded-xl p-3 md:p-4 transition-all hover:shadow-md group relative overflow-hidden">
+                  <div className={`absolute top-0 left-0 w-1 h-full ${accentColor} opacity-70`} />
                   
                   <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-start gap-4">
-                      <div className={`p-2.5 rounded-xl bg-white shadow-sm ${statusColor}`}>
-                        <Icon className="size-5 md:size-6" />
+                    <div className="flex items-start gap-3">
+                      <div className={`mt-0.5 ${statusColor}`}>
+                        <Icon className="size-4 md:size-5" />
                       </div>
                       <div className="min-w-0">
-                        <p className="text-sm md:text-base font-bold text-secondary truncate max-w-[180px] sm:max-w-[300px]" title={item.filename}>
+                        <p className="text-xs md:text-sm font-bold text-secondary truncate max-w-[180px] sm:max-w-[300px]" title={item.filename}>
                           {item.filename}
                         </p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className={`text-[10px] md:text-xs font-bold px-2 py-0.5 rounded-full ${bgColor} ${statusColor} border ${borderColor}`}>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className={`text-[10px] md:text-xs font-bold ${statusColor}`}>
                             {statusText}
                           </span>
                           <span className="text-[10px] md:text-xs font-bold text-secondary/40">
@@ -167,10 +154,10 @@ export const StatusAnalysis: React.FC<StatusAnalysisProps> = ({ result }) => {
                         href={item.report.vt_link} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="p-2 rounded-xl bg-white border border-neutral-border text-secondary/40 hover:text-primary hover:border-primary/30 transition-all shadow-sm group/btn"
+                        className="p-1 text-secondary/40 hover:text-primary transition-colors"
                         title="View Analysis on VirusTotal"
                       >
-                        <ExternalLink className="size-5 group-hover/btn:scale-110 transition-transform" />
+                        <ExternalLink className="size-4" />
                       </a>
                     )}
                   </div>
@@ -179,7 +166,7 @@ export const StatusAnalysis: React.FC<StatusAnalysisProps> = ({ result }) => {
             })}
           </div>
           
-          <p className="mt-4 md:mt-5 text-[10px] md:text-xs text-secondary/40 font-medium italic">
+          <p className="mt-4 text-[10px] md:text-xs text-secondary/80 font-medium">
             * VirusTotal analysis is based on global antivirus vendor signatures. 1-10 detections may indicate a false positive or new threat.
           </p>
         </div>
@@ -248,18 +235,6 @@ export const StatusAnalysis: React.FC<StatusAnalysisProps> = ({ result }) => {
               }
             >
               {details.keywords}
-            </span>
-          </li>
-          <li className="flex justify-between items-center pt-1.5 md:pt-2">
-            <span className="text-secondary">Malicious Attachment:</span>
-            <span
-              className={
-                details.attachments !== "Clean"
-                  ? "text-risk-high"
-                  : "text-green-600"
-              }
-            >
-              {details.attachments}
             </span>
           </li>
         </ul>

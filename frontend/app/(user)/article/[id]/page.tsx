@@ -341,10 +341,16 @@ export default function ArticlePage() {
                 Read the full article on the original source:
               </p>
               <a
-                href={article.url}
-                target="_blank"
+                href={article.url.startsWith('http') ? article.url : '#'}
+                target={article.url.startsWith('http') ? "_blank" : "_self"}
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 md:gap-2 text-sm md:text-base font-bold text-primary hover:underline"
+                onClick={(e) => {
+                  if (!article.url.startsWith('http')) {
+                    e.preventDefault();
+                    toast.error("Invalid external link.");
+                  }
+                }}
               >
                 View Original Article
               </a>

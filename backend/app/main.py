@@ -768,7 +768,43 @@ async def lifespan(app: FastAPI):
                 print(f"[Startup] Rule engine refreshed with {len(db_rules.get('keywords', []))} keywords from DB.")
             finally:
                 db.close()
-            print("[Startup] Database ready.")
+            
+            # ── External Service Health Checks ──
+            
+            # 1. Email Service Check
+            from app.modules.notifications.service import fast_mail, _mail_enabled
+            if _mail_enabled and fast_mail:
+                # We do this in a background-like way or non-blocking to log info
+                logger.info("[Startup] SMTP configured: %s:%d (STARTTLS: %s, SSL: %s)", 
+                            settings.mail_server, settings.mail_port, 
+                            settings.mail_starttls, settings.mail_ssl_tls)
+                # Note: Testing connection usually requires an awaitable, 
+                # but we are in a synchronous part of lifespan for simplicity 
+                # so we just log the status. For a real ping, we'd need to run 
+                # it in the event loop.
+                logger.info("[Startup] Mail check: MAIL_USERNAME=%s", settings.mail_username)
+
+            # 2. Redis Check
+            try:
+                from app.core.redis_client import RedisClient
+                r_client = RedisClient()
+                if settings.redis_url:
+                    if r_client.ping():
+                        print("[Startup] Redis connection successful.")
+                    else:
+                        print(f"[Startup] Redis check failed (URL: {settings.redis_url})")
+                else:
+                    print("[Startup] Redis: Using in-memory fallback (no REDIS_URL).")
+            except Exception as e:
+                print(f"[Startup] Redis health check encountered an error: {e}")
+
+            # 3. VirusTotal Check
+            if settings.virustotal_api_key:
+                print("[Startup] VirusTotal API Key configured. Ready for scanning.")
+            else:
+                print("[Startup] VirusTotal API Key NOT configured. File scanning will be skipped.")
+
+            print("[Startup] Database and services ready.")
             break
         except Exception as exc:
             retries -= 1

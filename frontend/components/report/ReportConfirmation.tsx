@@ -446,7 +446,7 @@ export const ReportConfirmation = ({
                   Generating explanation...
                 </div>
               ) : (
-                <p className="text-xs md:text-sm font-medium text-secondary leading-relaxed">
+                <p className="text-xs md:text-sm font-medium text-secondary leading-relaxed break-words whitespace-pre-wrap">
                   {aiExplanation}
                 </p>
               )}

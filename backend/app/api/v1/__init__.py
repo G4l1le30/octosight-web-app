@@ -16,9 +16,11 @@ from app.api.v1 import transactions
 from app.api.v1 import url_scanner
 from app.api.v1 import similarity
 from app.api.v1 import gamification
+from app.api.v1 import ml
 
 v1_router = APIRouter(prefix="/api/v1")
 
+v1_router.include_router(ml.router)
 v1_router.include_router(gamification.router)
 v1_router.include_router(health.router)
 v1_router.include_router(dashboard.router)

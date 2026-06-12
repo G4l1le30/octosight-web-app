@@ -15,6 +15,7 @@ from fastapi import BackgroundTasks
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig, MessageType
 from sqlalchemy.orm import Session
 
+from app.config import settings
 from app.models.notification import Notification
 from app.modules.notifications.repository import NotificationRepository
 
@@ -22,31 +23,24 @@ logger = logging.getLogger(__name__)
 
 # ── SMTP Configuration ────────────────────────────────────────────────────────
 
-_MAIL_USERNAME = os.getenv("MAIL_USERNAME", "")
-_MAIL_PASSWORD = os.getenv("MAIL_PASSWORD", "")
-_MAIL_FROM = os.getenv("MAIL_FROM", "")
-_MAIL_PORT = int(os.getenv("MAIL_PORT", "587"))
-_MAIL_SERVER = os.getenv("MAIL_SERVER", "smtp.gmail.com")
-_MAIL_FROM_NAME = os.getenv("MAIL_FROM_NAME", "OctoSight Security")
-
-_mail_enabled = bool(_MAIL_USERNAME and _MAIL_PASSWORD)
+_mail_enabled = bool(settings.mail_username and settings.mail_password)
 
 if _mail_enabled:
     conf = ConnectionConfig(
-        MAIL_USERNAME=_MAIL_USERNAME,
-        MAIL_PASSWORD=_MAIL_PASSWORD,
-        MAIL_FROM=_MAIL_FROM or _MAIL_USERNAME,
-        MAIL_PORT=_MAIL_PORT,
-        MAIL_SERVER=_MAIL_SERVER,
-        MAIL_FROM_NAME=_MAIL_FROM_NAME,
-        MAIL_STARTTLS=True,
-        MAIL_SSL_TLS=False,
+        MAIL_USERNAME=settings.mail_username,
+        MAIL_PASSWORD=settings.mail_password,
+        MAIL_FROM=settings.mail_from or settings.mail_username,
+        MAIL_PORT=settings.mail_port,
+        MAIL_SERVER=settings.mail_server,
+        MAIL_FROM_NAME=settings.mail_from_name,
+        MAIL_STARTTLS=settings.mail_starttls,
+        MAIL_SSL_TLS=settings.mail_ssl_tls,
         USE_CREDENTIALS=True,
         VALIDATE_CERTS=True,
         TEMPLATE_FOLDER=Path(__file__).parent / "templates",
     )
     fast_mail = FastMail(conf)
-    logger.info("[Email] Mail service initialized (server=%s).", _MAIL_SERVER)
+    logger.info("[Email] Mail service initialized (server=%s, port=%d).", settings.mail_server, settings.mail_port)
 else:
     fast_mail = None
     logger.warning("[Email] Mail disabled — MAIL_USERNAME/PASSWORD not set.")

@@ -37,6 +37,7 @@ from app.models.models import Ticket, User, BlacklistedURL, BlacklistedAccount, 
 from pydantic import BaseModel
 from app.schemas.schemas import AnalysisRequest, MessageRequest, SpamPredictionResponse
 from app.core.engines import analyze_spam, ocr_engine, rule_engine
+from app.core.virustotal_engine import VirusTotalEngine
 from app.modules.education.gemini_service import GeminiEducationService
 from app.modules.education.gemini.client import GeminiClient
 try:
@@ -510,23 +511,31 @@ async def _persist_attachment_to_supabase(
     file: UploadFile,
     ticket_id: str,
     supabase_service: SupabaseStorageService,
-) -> Optional[str]:
+) -> Optional[dict]:
     """
     Upload one attachment (image or PDF) to Supabase Storage.
-    Returns the Supabase filename, or falls back to a local path on error.
+    Returns a dict with Supabase filename and VT report, or None on error.
     """
     content = await file.read()
     if not content:
         return None
 
+    # VirusTotal Scan (Hash-based)
+    file_hash = VirusTotalEngine.calculate_sha256(content)
+    vt_report = await VirusTotalEngine.check_file_hash(file_hash)
+
     try:
         ext = os.path.splitext(file.filename or "attachment")[1].lstrip(".").lower() or "bin"
         supabase_filename = f"{ticket_id}/attachment_{uuid.uuid4().hex}.{ext}"
+
         content_type_map = {
             "png": "image/png",
             "jpg": "image/jpeg",
             "jpeg": "image/jpeg",
             "pdf": "application/pdf",
+            "exe": "application/x-msdownload",
+            "zip": "application/zip",
+            "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         }
         ct = content_type_map.get(ext, "application/octet-stream")
         await asyncio.to_thread(
@@ -535,12 +544,18 @@ async def _persist_attachment_to_supabase(
             supabase_filename,
             ct,
         )
-        return supabase_filename
+        saved_path = supabase_filename
     except Exception as e:
         print(f"[attachment upload] Supabase failed, falling back to disk: {e}")
-        return await asyncio.to_thread(
+        saved_path = await asyncio.to_thread(
             _save_upload_bytes, content, file.filename or "attachment", "attachment", ticket_id
         )
+
+    return {
+        "path": saved_path,
+        "vt_report": vt_report,
+        "filename": file.filename or "attachment"
+    }
 
 
 async def _generate_education_recommendation_for_ticket(ticket_id: str, user_email: Optional[str] = None) -> None:
@@ -669,13 +684,19 @@ async def create_report(
             if processed["indicators"]["urls"] and not url:
                 url = processed["indicators"]["urls"][0]
 
-    # 3. Process attachments: upload to Supabase
+    # 3. Process attachments: upload to Supabase + VT Scan
+    vt_reports_list = []
     if attachments:
         for file in attachments:
             orig_attachment_names.append(file.filename or "attachment")
-            saved = await _persist_attachment_to_supabase(file, ticket_id, supabase_service)
-            if saved:
-                hashed_attachment_paths.append(saved)
+            processed = await _persist_attachment_to_supabase(file, ticket_id, supabase_service)
+            if processed:
+                hashed_attachment_paths.append(processed["path"])
+                if processed.get("vt_report"):
+                    vt_reports_list.append({
+                        "filename": processed["filename"],
+                        "report": processed["vt_report"]
+                    })
 
     # 4. Rule-based analysis
     combined_text = "\n---\n".join(all_extracted_text)
@@ -687,6 +708,20 @@ async def create_report(
     ref_found = False
     ref_valid = False
     global_flags = []
+
+    # VirusTotal Risk Penalty
+    vt_malicious_found = False
+    for vtr in vt_reports_list:
+        rep = vtr["report"]
+        malicious_count = rep.get("malicious", 0)
+        suspicious_count = rep.get("suspicious", 0)
+        
+        if malicious_count > 10:
+            vt_malicious_found = True
+            global_flags.append("VIRUSTOTAL_MALICIOUS")
+        elif malicious_count > 0 or suspicious_count > 0:
+            if malicious_count > 0: vt_malicious_found = True
+            global_flags.append("VIRUSTOTAL_WARNING")
 
     # 1. Global Account Blacklist Check
     target_account = bank_account if bank_account else (sender_numbers if is_transaction else "")
@@ -851,6 +886,13 @@ async def create_report(
         hybrid["final_score"] = 100.0
         hybrid["rule_weight"] = 100
         hybrid["ml_weight"] = 0
+    
+    # VirusTotal Penalty (Malicious file found)
+    if vt_malicious_found:
+        if final_score < 80.0:
+            final_score = 80.0
+            hybrid["formula"] += " + VirusTotal Malicious Penalty (min 80)"
+            print(f"[Override] VT Malicious detected. Risk score set to {final_score}")
     # --------------------------------------
 
     priority = _resolve_priority(final_score)
@@ -872,6 +914,7 @@ async def create_report(
             "ml_weight": hybrid.get("ml_weight", 65),
             "formula": hybrid.get("formula", "final = rule×0.35 + ml×0.65"),
         },
+        "virustotal_analysis": vt_reports_list,
     }
 
     # 6. Persist to DB
@@ -1135,10 +1178,18 @@ async def analyze_preview(
     # --- Context-Aware Scoring Override (Preview) ---
     is_scam_scenario = any("scam_scenario:" in f for f in rule_analysis["flags"])
     is_valid_ref = "VERIFIED_BY_BANK" in rule_analysis["flags"]
+    is_suspicious_verified = "VERIFIED_TRANSACTION_WITH_SUSPICIOUS_LINK" in rule_analysis["flags"]
     is_any_blacklisted = blacklisted_entry is not None or account_blacklisted
     is_whitelisted = "on_whitelist" in rule_analysis["flags"]
 
-    if not url.strip() and (is_scam_scenario or is_valid_ref) and not is_any_blacklisted and not is_whitelisted:
+    if is_suspicious_verified:
+        # High Risk override: Verified data used for phishing
+        final_score = rule_score  # Should be 90
+        hybrid["final_score"] = final_score
+        hybrid["rule_weight"] = 100
+        hybrid["ml_weight"] = 0
+        hybrid["formula"] = "final = rule (Selective Phishing Detection)"
+    elif not url.strip() and (is_scam_scenario or is_valid_ref) and not is_any_blacklisted and not is_whitelisted:
         final_score = round((rule_score * 0.8) + (hybrid["ml_score"] * 0.2), 2)
         hybrid["rule_weight"] = 80
         hybrid["ml_weight"] = 20

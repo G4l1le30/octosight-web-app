@@ -13,7 +13,7 @@ from typing import List, Optional
 load_dotenv(find_dotenv())
 
 _USER = os.getenv("DB_USER", "octouser")
-_PASS = os.getenv("DB_PASSWORD", "octopassword")
+_PASS = os.getenv("DB_PASSWORD", "CHANGE_ME_IN_PRODUCTION")
 _HOST = os.getenv("DB_HOST", "127.0.0.1")  # Gunakan 127.0.0.1 jika menjalankan uvicorn lokal
 _PORT = os.getenv("DB_PORT", "3306")
 _NAME = os.getenv("DB_NAME", "octosight_db")
@@ -32,7 +32,7 @@ class Settings(BaseSettings):
     db_max_overflow: int = 20
 
     # JWT
-    secret_key: str = "octosight-secret-key-change-in-production-2024"
+    secret_key: str = os.getenv("SECRET_KEY", "CHANGE_ME_OCTOSIGHT_SECRET_KEY_2024")
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 15
     refresh_token_expire_days: int = 7
@@ -68,6 +68,7 @@ class Settings(BaseSettings):
     # ML
     ml_model_path: str = "models/spam_pipeline.pkl"
     ml_vectorizer_path: str = "models/vectorizer.pkl"
+    ml_service_url: Optional[str] = os.getenv("ML_SERVICE_URL", None)
 
     # Default admin
     default_admin_email: Optional[str] = None

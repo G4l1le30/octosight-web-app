@@ -96,17 +96,35 @@ def apply_migrations(db: Session) -> None:
         """,
     }
 
+    import re
+    def is_safe_identifier(name: str) -> bool:
+        return bool(re.match(r"^[a-zA-Z0-9_]+$", name))
+
     for table, ddl in pending_tables.items():
+        if not is_safe_identifier(table):
+            print(f"[Migration] Skipping unsafe table name: {table}")
+            continue
         try:
-            db.execute(text(ddl))
-            db.commit()
-            print(f"[Migration] Created table '{table}'")
+            # Check if table exists to avoid noisy prints
+            res = db.execute(text(f"SHOW TABLES LIKE '{table}'")).first()
+            if not res:
+                db.execute(text(ddl))
+                db.commit()
+                print(f"[Migration] Created table '{table}'")
         except Exception:
             db.rollback()
 
     for table, columns in pending_columns.items():
+        if not is_safe_identifier(table):
+            print(f"[Migration] Skipping unsafe table name: {table}")
+            continue
         for col, col_type in columns.items():
+            if not is_safe_identifier(col):
+                print(f"[Migration] Skipping unsafe column name: {col}")
+                continue
             try:
+                # Still using f-string for DDL as DDL doesn't support bind params in most DBs,
+                # but now with strict alphanumeric validation.
                 db.execute(
                     text(f"ALTER TABLE {table} ADD COLUMN {col} {col_type}")
                 )
